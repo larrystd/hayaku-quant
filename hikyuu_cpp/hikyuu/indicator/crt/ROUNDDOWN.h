@@ -1,0 +1,34 @@
+/*
+ * ROUNDDOWN.h
+ *
+ *  Copyright (c) 2019 hikyuu.org
+ *
+ *  Created on: 2019-4-14
+ *      Author: fasiondog
+ */
+
+#pragma once
+#ifndef INDICATOR_CRT_ROUNDDOWN_H_
+#define INDICATOR_CRT_ROUNDDOWN_H_
+
+#include "CVAL.h"
+
+namespace hku {
+
+/**
+ * Truncate upward, e.g. 10.1 is truncated to 11
+ * @ingroup Indicator
+ */
+Indicator HKU_API ROUNDDOWN(int ndigits = 2);
+
+inline Indicator ROUNDDOWN(const Indicator& ind, int n = 2) {
+    return ROUNDDOWN(n)(ind);
+}
+
+inline Indicator ROUNDDOWN(Indicator::value_t val, int n = 2) {
+    return ROUNDDOWN(CVAL(val), n);
+}
+
+}  // namespace hku
+
+#endif /* INDICATOR_CRT_ROUNDDOWN_H_ */

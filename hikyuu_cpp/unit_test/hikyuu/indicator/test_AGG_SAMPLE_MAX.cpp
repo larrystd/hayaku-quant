@@ -1,0 +1,120 @@
+/*
+ *  Copyright (c) 2025 hikyuu.org
+ *
+ *  Created on: 2026-07-04
+ *      Author: fasiondog
+ */
+
+#include "../test_config.h"
+#include <hikyuu/StockManager.h>
+#include <hikyuu/indicator/crt/KDATA.h>
+#include <hikyuu/plugin/interface/plugins.h>
+#include <hikyuu/plugin/extind.h>
+#include <hikyuu/plugin/device.h>
+#include "../plugin_valid.h"
+
+using namespace hku;
+
+/**
+ * @defgroup test_indicator_AGG_SAMPLE_MAX test_indicator_AGG_SAMPLE_MAX
+ * @ingroup test_hikyuu_indicator_suite
+ * @{
+ */
+
+/** @par Test points */
+TEST_CASE("test_AGG_SAMPLE_MAX") {
+    HKU_IF_RETURN(!pluginValid(), void());
+
+    auto k = getKData("sh000001", KQueryByDate(Datetime(20111115)));
+    auto mink =
+      getKData("sh000001", KQueryByDate(Datetime(20111115), Datetime(20111116), KQuery::MIN));
+
+    /** @arg Test the default parameter (the maximum in the 9:30-10:00 range) */
+    auto ind = AGG_SAMPLE_MAX(CLOSE());
+    auto result = ind(k);
+    CHECK_EQ(result.size(), k.size());
+    CHECK_EQ(result.name(), "AGG_SAMPLE_MAX");
+    CHECK_EQ(result.discard(), 0);
+
+    /** @arg Verify the maximum - find the highest close between 9:30 and 10:00 */
+    double expected_value = 0.0;
+    for (auto& kr : mink) {
+        int hour = kr.datetime.hour();
+        int minute = kr.datetime.minute();
+        if ((hour == 9 && minute >= 30) || (hour == 10 && minute == 0)) {
+            if (kr.closePrice > expected_value) {
+                expected_value = kr.closePrice;
+            }
+        }
+    }
+    CHECK_EQ(result[0], doctest::Approx(expected_value));
+}
+
+/** @par Test points */
+TEST_CASE("test_AGG_SAMPLE_MAX_time_range") {
+    HKU_IF_RETURN(!pluginValid(), void());
+
+    auto k = getKData("sh000001", KQueryByDate(Datetime(20111115), Datetime(20111118)));
+    auto mink =
+      getKData("sh000001", KQueryByDate(Datetime(20111115), Datetime(20111116), KQuery::MIN));
+
+    /** @arg Test the given time range parameter (10:00-11:00) */
+    auto ind = AGG_SAMPLE_MAX(CLOSE(), "10:00", "11:00");
+    auto result = ind(k);
+    CHECK_EQ(result.size(), k.size());
+    CHECK_EQ(result.name(), "AGG_SAMPLE_MAX");
+
+    /** @arg Verify the maximum of the time range */
+    double expected_value = 0.0;
+    for (auto& kr : mink) {
+        int hour = kr.datetime.hour();
+        int minute = kr.datetime.minute();
+        if ((hour == 10) || (hour == 11 && minute == 0)) {
+            if (kr.closePrice > expected_value) {
+                expected_value = kr.closePrice;
+            }
+        }
+    }
+    CHECK_EQ(result[0], doctest::Approx(expected_value));
+}
+
+//-----------------------------------------------------------------------------
+// test export
+//-----------------------------------------------------------------------------
+#if HKU_SUPPORT_SERIALIZATION
+
+/** @par Test points */
+TEST_CASE("test_AGG_SAMPLE_MAX_export") {
+    HKU_IF_RETURN(!pluginValid(), void());
+
+    StockManager& sm = StockManager::instance();
+    string filename(sm.tmpdir());
+    filename += "/AGG_SAMPLE_MAX.xml";
+
+    Stock stock = sm.getStock("sh000001");
+    KData kdata = stock.getKData(KQuery(-20));
+    Indicator x1 = AGG_SAMPLE_MAX(CLOSE())(kdata);
+    {
+        std::ofstream ofs(filename);
+        boost::archive::xml_oarchive oa(ofs);
+        oa << BOOST_SERIALIZATION_NVP(x1);
+    }
+
+    Indicator x2;
+    {
+        std::ifstream ifs(filename);
+        boost::archive::xml_iarchive ia(ifs);
+        ia >> BOOST_SERIALIZATION_NVP(x2);
+    }
+
+    CHECK_EQ(x1.name(), x2.name());
+    CHECK_UNARY(x1.size() == x2.size());
+    CHECK_UNARY(x1.discard() == x2.discard());
+    CHECK_UNARY(x1.getResultNumber() == x2.getResultNumber());
+    for (size_t i = 0; i < x1.size(); ++i) {
+        CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
+    }
+}
+#endif /* #if HKU_SUPPORT_SERIALIZATION */
+
+/** @} */
