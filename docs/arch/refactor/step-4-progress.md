@@ -1,4 +1,4 @@
-# 第 4 步：应用层与可选能力收口
+# 第 4 步：数据层、应用层与可选能力收口
 
 > 状态：方案草案，尚未执行
 >
@@ -11,7 +11,19 @@
 ## 1. 阶段背景
 
 第 3 步已经把研究、回测和模拟执行收口到 `DataEngine`、`ExecutionEngine`、
-`StrategyEngine` 与 `HikyuuSession`。但 `hikyuu_cpp/src/app` 当前仍同时承担以下职责：
+`StrategyEngine` 与 `HikyuuSession`。但 `hikyuu_cpp/src/data` 与 `hikyuu_cpp/src/app` 的
+职责仍未完全分开。
+
+`hikyuu_cpp/src/data` 当前同时包含：
+
+- 证券、K 线、查询、权息、财务等数据领域类型；
+- `DataEngine`、Driver、缓存、预加载和数据运行期；
+- 指标和因子计算；
+- HDF5、SQLite、MySQL、TDX、CSV 等存储或读取实现；
+- IPC、共享内存客户端和实时更新路径；
+- 对应用初始化、调度器、遥测、设备授权、VIP 扩展和商业因子插件的反向依赖。
+
+`hikyuu_cpp/src/app` 当前同时承担：
 
 - 核心进程与 Session 生命周期；
 - 动态插件装载和卸载；
@@ -21,8 +33,13 @@
 - 设备授权、VIP 指标、扩展功能和交易报告；
 - 调度器、系统信息和遥测上报。
 
-这些能力被统一放在 `app/plugin` 下，并不表示它们具有相同的产品职责，也不表示每个接口都应该
-继续留在核心库中。
+一部分可选能力被统一放在 `app/plugin` 下，另一部分实时和插件逻辑已经进入 `data/internal`、
+`data/driver/ipc` 和数据领域对象。这不表示它们具有相同的产品职责，也不表示每个接口都应该继续
+留在核心库中。
+
+当前最重要的结构问题不是文件数量，而是依赖方向：`app` 需要组合 `data`，但 `data` 又直接包含
+`app/GlobalInitializer.h`、`app/runtime/**` 和 `app/plugin/**`，形成双向耦合。第 4 步必须先切断
+这种反向依赖。
 
 当前 `hikyuu_cpp/src/xmake.lua` 只有一个 `target("hikyuu")`。`src` 下新增任何子目录，默认仍会
 进入同一个共享库。因此，本步骤明确禁止用新建 `src/ingest`、`src/realtime` 等目录来假装完成
@@ -30,8 +47,8 @@
 
 ## 2. 阶段目标
 
-本步骤的目标是缩小核心库的应用层和插件面，使默认安装只承担研究、回测和模拟执行，同时保留
-少量、边界清晰的官方可选能力。
+本步骤的目标是同时收紧数据层、应用层和插件面，使默认安装只承担研究、回测和模拟执行，同时
+保留少量、边界清晰的官方可选能力。
 
 最终产品只保留三个用户可理解的能力面：
 
@@ -110,30 +127,120 @@ core / ingest / realtime
 
 ### 4.1 纳入范围
 
-本步骤以 `hikyuu_cpp/src/app`，特别是 `hikyuu_cpp/src/app/plugin` 为主要审计对象，并同步处理其
+本步骤以 `hikyuu_cpp/src/data` 和 `hikyuu_cpp/src/app` 为两个主要审计对象，并同步处理它们的
 直接公共面：
 
+- `hikyuu_cpp/src/data/**`；
 - `hikyuu_cpp/src/app/**`；
-- `hikyuu_cpp/src/data/internal/DataRuntime.*` 中的插件所有权和加载逻辑；
+- `DataEngine`、`DataRuntime`、Driver Factory、存储实现和 IPC 路径；
+- 指标、因子中对应用插件、授权和遥测的依赖；
 - `hikyuu_pywrap/advanced/**` 中对应绑定；
-- `hikyuu/advanced/**`、`hikyuu/data/**` 和 GUI 中的直接调用；
+- `hikyuu_pywrap/data/**` 与 `hikyuu/advanced/**`、`hikyuu/data/**`、GUI 中的直接调用；
 - xmake 构建选项、安装规则和插件加载规则；
-- 对应 C++、Python、生命周期和导入边界测试；
+- 对应 C++、Python、数据读取、生命周期和导入边界测试；
 - 对应中英文用户文档。
 
-跨目录修改只能用于完成上述公共面收口，不能借机重排整个 `data`、`execution` 或 `strategy`
-目录。
+跨目录修改只能用于完成上述公共面收口，不能借机重排 `execution`、`strategy` 或其他无关目录。
 
 ### 4.2 明确不纳入范围
 
 - 不重新设计三个 Engine 的业务模型；
 - 不重新迁移 `hikyuu_cpp/src` 的顶层目录；
+- 不重写已有指标、因子、复权和 K 线算法；
+- 不因 `data` 文件数量多就合并或删除具有独立公式和测试的指标实现；
 - 不为了分类整齐而创建 `src/ingest`、`src/realtime`；
 - 不在本步骤内决定独立扩展仓库的最终地址和发布流程；
 - 不重写外部商业插件的内部实现；
 - 不把 Python 数据下载脚本整体改写为 C++；
 - 不新增第四个 Engine 或新的全局 Manager；
 - 不以保留所有历史入口为目标；确认无用的旧接口允许删除。
+
+### 4.3 `data` 的目标职责
+
+`data` 是核心研究与回测的数据领域，不等同于“数据导入工具”。最终只负责以下四类能力：
+
+1. 数据值类型和查询模型；
+2. `DataEngine` 提供的稳定只读查询；
+3. 数据 Driver 契约、默认本地读取实现、缓存和预加载；
+4. 指标和因子的纯计算能力。
+
+当前各部分的目标如下：
+
+| 当前目录或类型 | 是否属于核心 `data` | 处理目标 |
+| --- | --- | --- |
+| `Stock`、`KData`、`KQuery`、`KRecord`、`Block` 等领域类型 | 是 | 保留稳定语义，禁止依赖应用插件和进程初始化 |
+| `DataEngine` | 是 | 作为普通用户读取数据的唯一稳定门面，保持只读 |
+| `indicator/**` | 是 | 保留研究所需的指标计算；移除对 `app/runtime/sysinfo` 的依赖 |
+| `indicator_talib/**` | 可选计算适配器 | 保持按构建选项启用，不增加新的产品能力面 |
+| `factor/**` | 是 | 保留因子计算；商业持久化、授权检查和 ClickHouse 调用移出核心计算路径 |
+| `driver/*.h` | 是 | 保留最小 BaseInfo、BlockInfo、KData 读取契约 |
+| SQLite、HDF5 Driver | 是 | 作为默认本地存储实现，不能依赖插件系统 |
+| MySQL Driver | 官方可选适配器 | 继续支持，但核心未启用 MySQL 时不得包含其客户端依赖 |
+| ClickHouse Driver/插件 | 官方可选适配器 | 接入统一存储契约，不通过过宽的商业插件接口侵入 DataRuntime |
+| TDX、CSV、千龙实现 | 待逐项确认 | 有直接研究读取场景则作为适配器保留；只用于导入时归入 `ingest` |
+| `KDataPrivatedBufferImp`、`KDataSharedBufferImp` | 是 | 保留进程内 KData 缓冲和共享所有权语义 |
+| `KDataShmBufferImp`、`driver/ipc/**` | `realtime` 边界 | 不参与默认数据初始化；由实时组件显式装配 |
+| `DataRuntime` | 是，但必须瘦身 | 只管理 Driver、核心数据状态、缓存和预加载，不管理通用插件和服务 |
+| `StrategyContext` | 待澄清命名 | 若实际只控制数据加载范围，应收口为数据加载配置；不得在 data 中承载策略运行状态 |
+
+文件多不是删除依据。`indicator/**` 当前包含大量独立公式实现，只要它们属于研究公共面、拥有测试
+且不引入反向依赖，就仍是核心数据能力。需要收缩的是运行期耦合和可选后端，而不是机械减少源码
+数量。
+
+### 4.4 `DataRuntime` 的收口目标
+
+`DataRuntime` 当前同时管理数据、线程、通用插件、共享内存协商和商业扩展，职责过宽。最终边界为：
+
+```text
+HikyuuSession / app
+        │ 创建、配置、关闭
+        ▼
+DataEngine
+        │ 只读门面
+        ▼
+DataRuntime
+        ├── Driver 选择与连接池
+        ├── 证券、市场、板块、权息、财务数据状态
+        ├── 缓存和预加载
+        └── 数据加载事件（核心内最小契约）
+```
+
+`DataRuntime` 最终不得继续负责：
+
+- 持有通用 `PluginManager` 或按插件名发现商业功能；
+- 包含 `app/plugin/interface/**`；
+- 决定 ShmServer/DataServer 的服务角色；
+- 启动应用调度任务、遥测或设备授权；
+- 自动加载 VIP 指标、HkuExtra、TMReport 或商业因子存储；
+- 通过全局访问器在 Session 关闭后重新创建自己。
+
+存储适配器通过明确的 Driver 注册或构造注入进入数据层。`app` 负责组合和所有权，`data` 不负责
+寻找、授权或启动外部产品能力。
+
+### 4.5 `data` 与 `app` 的依赖方向
+
+最终只允许以下方向：
+
+```text
+app ───────────────► data
+ingest ────────────► data 的写入/存储契约
+realtime ──────────► data 的实时更新契约
+storage adapters ─► data 的 Driver 契约
+
+data ──X──► app
+```
+
+因此需要逐项消除当前反向依赖：
+
+- `IndicatorImp.cpp` 不再包含 `app/runtime/sysinfo.h`；
+- `DataDriverFactory.cpp`、`Stock.cpp`、`DataRuntime.cpp` 不再依赖 `GlobalInitializer`；
+- `DataRuntime` 不再包含 app 调度器、`plugins.h`、device、hkuextra、extind 和 sysinfo；
+- `Factor`、`FactorSet` 不再直接调用 app 中的授权和商业 factor façade；
+- `KQuery`、`KData`、`Stock` 不再直接调用 `app/plugin/hkuextra`；
+- 共享内存客户端通过最小实时端口接入，不让核心 data 包含 ShmServer 插件接口。
+
+若移除反向依赖需要新增接口，该接口必须由被依赖的一侧定义：数据读取/更新接口定义在 data，
+实现和装配留给 app、realtime 或存储适配器。禁止再建立新的跨层全局单例。
 
 ## 5. 现有 `app/plugin` 的目标归属
 
@@ -158,7 +265,8 @@ core / ingest / realtime
 
 ## 6. `app` 运行期的处理边界
 
-`app` 最终只负责组合和生命周期，不承载具体数据导入、行情协议或商业业务。
+`app` 最终只负责配置解析、对象组合和生命周期，不承载具体数据模型、数据导入、行情协议或商业
+业务。`app` 可以依赖 `data` 的稳定契约，`data` 不得反向调用 `app` 完成初始化或扩展发现。
 
 ### 6.1 Session 与进程生命周期
 
@@ -236,31 +344,46 @@ MySQL 和 ClickHouse 可以与主仓库分开发布，但必须继续参与官�
 
 ### 9.1 冻结清单
 
+- 记录 `data` 每个子目录、Driver、运行期入口及其 app 反向依赖；
 - 记录每个 façade、接口、插件 ID、动态库名称、Python 绑定和调用方；
 - 区分核心内部调用、官方可选能力、GUI 调用和未知外部调用；
 - 为计划删除的 API 建立拒绝列表或编译负向测试。
 
-### 9.2 先删除确定无用的入口
+### 9.2 先切断 `data` 对 `app` 的反向依赖
+
+- 从领域类型、指标、因子、Driver Factory 和 DataRuntime 中移除 app 头文件；
+- 将 Driver 注册、可选能力发现和服务启动改为由 app 显式装配；
+- 把 IPC/共享内存协商放到 realtime 边界，不在默认数据初始化中执行；
+- 逐批运行数据查询、指标、因子、复权和回测金标，禁止行为漂移。
+
+### 9.3 收窄 DataRuntime 和 Driver
+
+- 让 DataRuntime 只持有核心数据状态、Driver、缓存和预加载资源；
+- 移出通用 PluginManager、商业插件预加载、服务角色和应用调度；
+- 固定最小 Driver 契约，并以 HDF5/SQLite 作为默认实现验证；
+- 分别验证 MySQL 和 ClickHouse 适配器可安装、可缺失且版本兼容。
+
+### 9.4 删除确定无用的入口
 
 - 核对并处理 BackTest 插件入口；
 - 删除 `plugins.h`，改为最小显式包含；
 - 删除无调用方、无文档场景和无测试的 façade；
 - 每个删除批次独立通过构建和测试。
 
-### 9.3 收紧生命周期
+### 9.5 收紧生命周期
 
 - 统一 Session、DataRuntime、SpotAgent、服务和插件管理器的关闭顺序；
 - 修复裸插件指针、后台线程和一次性调度器问题；
 - 将网络、遥测和常驻服务改为显式启动。
 
-### 9.4 收口可选能力
+### 9.6 收口可选能力
 
 - 为 `ingest` 建立一个后端无关的导入契约；
 - 为 `realtime` 建立一个显式 start/stop 契约；
 - 将 MySQL、ClickHouse 接到统一存储契约；
 - 清理 Python 顶层及 `advanced` 中无边界的公共入口。
 
-### 9.5 最后决定物理拆分
+### 9.7 最后决定物理拆分
 
 - 先验证无可选组件时核心可以独立构建和运行；
 - 再增加独立 target、安装包或扩展仓库；
@@ -273,6 +396,11 @@ MySQL 和 ClickHouse 可以与主仓库分开发布，但必须继续参与官�
 - 默认核心只包含研究、回测、分析和模拟执行所需能力；
 - 用户可见的可选能力只有 `ingest` 和 `realtime`，存储后端作为适配器存在；
 - 未创建仅用于分类的 `src/ingest`、`src/realtime`；
+- `hikyuu_cpp/src/data/**` 不再包含 `app/**` 头文件；
+- `DataRuntime` 不再持有通用 PluginManager，不再启动服务、调度器、遥测或商业插件；
+- `DataEngine` 仍是稳定只读门面，Driver 和缓存实现不泄漏到普通公共 API；
+- 指标和因子核心计算不依赖设备授权、商业 façade 或 ClickHouse；
+- IPC、Shm 和实时更新只通过最小 data 端口接入，不参与默认数据初始化；
 - `plugins.h` 不再存在，剩余插件接口均有明确所有者和调用方；
 - 核心可以在没有 MySQL、ClickHouse、VIP 插件和实时服务的环境中构建和运行；
 - MySQL、ClickHouse 继续有官方读写、升级和兼容性测试。
@@ -280,6 +408,8 @@ MySQL 和 ClickHouse 可以与主仓库分开发布，但必须继续参与官�
 ### 10.2 行为与生命周期
 
 - `import hikyuu` 无网络请求、遥测、设备 UID 写入和后台服务启动；
+- HDF5/SQLite 下证券、K 线、板块、日历、财务和权息查询金标保持一致；
+- 指标、因子、复权和回测结果保持一致；
 - Session 连续 open/close、多次创建及异常关闭通过测试；
 - SpotAgent、ShmServer、DataServer 和调度器均能显式停止并释放线程；
 - 插件卸载后不存在 façade 或服务保存的悬空接口指针；
@@ -302,6 +432,10 @@ MySQL 和 ClickHouse 可以与主仓库分开发布，但必须继续参与官�
 
 ```text
 核心职责已经收窄
+        +
+data 与 app 已形成 app → data 单向依赖
+        +
+DataRuntime 只管理核心数据状态和读取运行期
         +
 可选能力只有 ingest 和 realtime 两个产品面
         +
