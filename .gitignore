@@ -3,7 +3,6 @@
 *.xml
 *.bak
 *.pyc
-*.pyi
 *.pyd
 *.so
 *.log
@@ -13,11 +12,15 @@
 *.suo
 *.dll
 *.lib
-*.so
 *.so.*
 *.so.*.*
 *.dylib
 *.a
+*.o
+*.obj
+*.d
+*.dep
+*.pch
 .metadata
 .settings
 .cproject
@@ -75,7 +78,30 @@
 .copilot*
 .github/copilot-instructions.md
 .cache
-.pytest_cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.tox/
+.nox/
+
+# Python runtime and packaging artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+wheelhouse/
+*.egg-info/
+
+# Local secrets (keep templates)
+.env
+.env.*
+!.env.example
 
 nohup.out
 temp
@@ -88,6 +114,9 @@ release.x86.version.h
 hikyuu.code-workspace
 /install
 /build
+/cmake-build-*/
+/CMakeFiles/
+/CMakeCache.txt
 /docs/build
 /docs/_build
 /docs/notepad-workspace
@@ -122,6 +151,9 @@ vs2015
 cover_report
 cover*.info
 *.gcno
+*.gcda
+*.profraw
+*.profdata
 vsxmake*
 hikyuu/cpp/libhku_hdf5_cpp.so.200
 hikyuu/cpp/libhku_hdf5_cpp.so.200.2.0
@@ -146,3 +178,30 @@ wget-*
 hikyuu/cpp/i18n/zh_CN/hikyuu_plugin.mo
 soft_copyright_application
 compile_commands.json
+
+# Native libraries copied into the Python package are build outputs.
+# Keep only the package markers and translation source tree.
+/hikyuu/cpp/*
+!/hikyuu/cpp/__init__.py
+!/hikyuu/cpp/i18n/
+!/hikyuu/cpp/i18n/**/
+!/hikyuu/cpp/i18n/**/__init__.py
+
+# Test runner output
+/test_data/tmp/
+/Testing/
+/test-results/
+
+# Large integration-test fixtures are kept outside Git.
+/test_data/sh_1min.h5
+/test_data/sz_1min.h5
+/test_data/sh_5min.h5
+/test_data/sz_5min.h5
+/test_data/stock.db
+/test_data/downloads/finance/gpcw20110930.dat
+/test_data/test_min_data.csv
+
+# Editor and OS temporary files
+*.swp
+*.swo
+Thumbs.db
