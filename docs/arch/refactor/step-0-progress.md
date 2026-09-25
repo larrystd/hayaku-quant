@@ -1,12 +1,14 @@
-# 第 0 步进度：API 清单与行为基线
+# 第一阶段完成报告：API 清单与行为基线
 
 > 对应总体方案：[接口收敛与边界重构方案](../refactor.md)
+>
+> 本文所称“第一阶段”，对应总体方案中的“第 0 步”。该阶段已经执行完毕，本文是完成报告，不是待执行计划。
 
 ## 1. 阶段目标
 
 在修改生产接口之前，完成两项基础工作：
 
-1. 建立 C++、pybind11 和 Python 对外接口清单，明确 Public API、Extension SPI、Internal API 和 Deprecated API；
+1. 建立首批高风险 C++ 接口清单，量化 pybind11 和 Python 导出面，并明确 Public API、Extension SPI、Internal API 和 Deprecated API 的分类规则；
 2. 固定当前回测、下单、资金和持仓行为，为后续重构提供可自动验证的基线。
 
 本阶段不拆分 `StockManager`、`TradeManagerBase` 或 `System`，不删除接口，也不改变回测行为。
@@ -33,7 +35,24 @@
 - `阻塞`：缺少数据、决策或外部条件，无法继续；
 - `已完成`：代码、测试、文档和验收全部完成。
 
-## 3. 工作分解与进度
+## 3. 执行前后对比
+
+| 对比项 | 执行前 | 执行后 | 变化 |
+| --- | --- | --- | --- |
+| API 盘点方式 | 没有统一、可重复执行的接口扫描器 | 新增 `tools/arch/extract_api_inventory.py` | 接口清单可重复生成和复核 |
+| 高风险 C++ 接口 | 数量和边界不明确 | 首批 13 个类、363 个公开方法全部分类 | Public 161、SPI 153、Internal 24、Deprecated 25 |
+| pybind11 暴露面 | 未量化 | 统计到 966 个绑定声明 | 暴露规模已有基线；本阶段不修改绑定 |
+| Python 隐式导出 | 多处 `import *`，没有规模记录 | 定位 23 个包含星号导出的文件 | 为后续建立 `__all__` 白名单提供依据 |
+| `Strategy` 下单路由 | 没有独立行为测试 | 新增 4 个 C++ case | 正数、负数、零量、最小交易单位及当前异常行为被固定 |
+| Python Public API | 没有专门的稳定入口测试，Python 共 42 个测试 | 新增 3 个 Public API 测试，共 45 个 | 核心符号和常用工厂入口受到保护 |
+| 回测金标 | 精确断言已散落在多个测试文件中，未统一登记 | 登记简单 System、风控 System、Portfolio 三组权威金标 | 后续重构可直接用现有断言发现行为变化 |
+| 已知缺陷 | 没有在重构基线中集中记录 | 登记 3 个缺陷候选 | 与接口重构分开处理，避免误改基线 |
+| 生产代码 | 当前行为基线 | 未修改生产代码和公开签名 | 本阶段没有引入兼容性变化 |
+| 回归结果 | small 41、unit 806、Python 42 | small 41、unit 810、Python 45，import 通过 | 新增测试全部通过，旧测试无回归 |
+
+说明：363 个方法是首批 13 个高风险编排类的完整分类，不代表整个仓库的全部公开符号。966 个 pybind11 声明和 23 个 Python 星号导出在本阶段完成了规模盘点；它们的逐项收敛在后续阶段进行。
+
+## 4. 工作分解与结果
 
 | 编号 | 工作项 | 状态 | 实际执行方式 | 产物 |
 | --- | --- | --- | --- | --- |
@@ -50,13 +69,13 @@
 
 以上任务存在交叉和合并执行，不能把分项时间简单相加。Git 时间戳可核验的阶段总耗时为 13 分 32 秒。
 
-## 4. 具体任务
+## 5. 执行明细与产出
 
 ### 0.1 自动提取接口
 
 已扫描：
 
-- `hikyuu_cpp/hikyuu/**/*.h` 中的公开类、函数和方法；
+- `hikyuu_cpp/hikyuu/**/*.h` 中选定的 13 个高风险类及其公开方法；
 - `hikyuu_pywrap/**/*.cpp` 中的 `m.def`、`.def`、`.def_static`、`.def_property*`；
 - `hikyuu/__init__.py`、`hikyuu/core.py`、`hikyuu/extend.py` 中的导入和导出；
 - 各子包 `__init__.py` 中的星号导入。
@@ -72,15 +91,16 @@
 - `hikyuu_pywrap/trade_sys/_System.cpp`；
 - `hikyuu_pywrap/strategy/_Strategy.cpp`。
 
-完成条件：
+验收证据：
 
-- 每个公开符号可以追溯到定义文件和绑定文件；
-- C++ 接口和 Python 名称之间建立对应关系；
-- 自动提取结果可重复生成，避免完全依赖手工维护。
+- 13 个选定类的每个已扫描方法均可追溯到定义文件和行号；
+- pybind11 声明按绑定文件计数，Python 星号导出按文件和行号登记；
+- 自动提取结果可重复生成，重复执行后工作树无差异；
+- 本阶段未建立 C++ 方法到 Python 名称的一对一映射，该工作在实际收缩绑定前完成。
 
 ### 0.2 核对接口使用情况
 
-对每个候选接口检查：
+本阶段对候选接口进行了首轮静态核对：
 
 - C++ 核心内部是否调用；
 - Python 包内部是否调用；
@@ -90,11 +110,12 @@
 - 是否标注了“internal”“test only”或类似说明；
 - 是否存在同义、重复或可以组合的入口。
 
-完成条件：
+验收证据：
 
-- 不能仅根据方法名称判断是否删除；
-- 每个计划迁移或废弃的接口至少有一条使用证据；
-- 无法确认的接口单独标记为“待确认”，不能直接归为可删除。
+- inventory 为 363 个方法记录了来源、首轮分类和处理决策；
+- 现有测试、文档注释和命名信息用于判断 Public、SPI、Internal、Deprecated；
+- 扫描器不提供语义级消费者计数，inventory 已明确记录这一限制；
+- 首轮分类不直接授权删除；实际移动或删除前仍需逐项执行引用扫描和兼容性复核。
 
 ### 0.3 建立 API Inventory
 
@@ -104,18 +125,17 @@
 docs/arch/api-inventory.md
 ```
 
-每条接口至少记录：
+当前生成表实际记录：
 
 | 字段 | 说明 |
 | --- | --- |
-| Symbol | C++ 或 Python 完整符号名 |
-| Defined in | 定义文件 |
-| Bound/Exported by | pybind11 或 Python 导出文件 |
-| Consumers | 核心、测试、示例和文档的主要调用位置 |
+| Owner | 接口所属 C++ 类型 |
+| Symbol | C++ 方法名 |
 | Classification | Public / SPI / Internal / Deprecated |
 | Decision | 保留、迁移、包装、弃用或删除 |
-| Replacement | 建议的新接口；没有则写 `—` |
-| Compatibility | 兼容期限和风险 |
+| Source | 定义文件和行号 |
+
+pybind11 部分按绑定文件记录声明数量，Python 部分记录星号导出的文件、行号和语句。Consumers、Replacement 和 Compatibility 尚未做成结构化列；在任何接口真正迁移或删除前必须补齐。
 
 首批已完成分类的对象：
 
@@ -126,7 +146,7 @@ docs/arch/api-inventory.md
 - `OrderBrokerBase`；
 - `DataDriverFactory`；
 - EV、CN、SG、MM、ST、TP、PG、SP 的 Base 类；
-- Python 顶层导出符号。
+- Python 顶层导出规模已盘点，但尚未逐符号分类。
 
 ### 0.4 审计 StockManager 基线测试
 
@@ -182,7 +202,7 @@ docs/arch/refactor/system-baseline.md
 - `TradeRequest` 的产生、延迟和清除；
 - 逐笔成交记录、现金和最终持仓。
 
-完成条件：
+验收证据：
 
 - 测试断言最终收益之外，还要断言逐笔交易；
 - 时间、价格、数量、费用、来源组件和现金余额均被检查；
@@ -196,16 +216,14 @@ docs/arch/refactor/system-baseline.md
 hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 ```
 
-覆盖范围：
+实际覆盖范围：
 
-- `order()` 正数进入买入路径；
-- `order()` 负数进入卖出路径；
-- `orderValue()` 的数量换算；
-- 最小交易单位和数量取整；
-- 滑点后的实际价格；
-- 无效价格、零数量和无效证券；
-- `buy()`、`sell()` 与 TradeManager/Broker 的路由关系；
-- 回测模式与非回测模式的差异。
+- `order()` 正数进入 `buy()` 路径，并保留下单元数据；
+- 普通负数当前被转换为 `MAX_DOUBLE` 卖出请求的现状；
+- 零数量和小于最小交易单位的正数不会进入买卖路径；
+- `-MAX_DOUBLE` 卖空仓哨兵进入 `sell()` 路径。
+
+尚未覆盖：`orderValue()`、滑点后价格、无效证券、真实 TradeManager/Broker 路由，以及回测与非回测模式差异。这些不计入本次 4 个 case 的已完成范围，应在相关生产接口开始重构前补测。
 
 已知关注点：
 
@@ -274,7 +292,7 @@ hikyuu/test/test_public_api.py
 hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 ```
 
-统一验证命令：
+已执行的统一验证命令：
 
 ```bash
 ./op.sh build
@@ -288,7 +306,7 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 
 ### 0.10 阶段评审
 
-评审时回答：
+已评审以下问题：
 
 1. 哪些接口可以直接转为 Internal？
 2. 哪些接口需要一个版本的弃用期？
@@ -304,9 +322,9 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 4. 当前 C++ 金标可发现成交、费用、现金、持仓和延迟请求变化，Python 测试可发现顶层入口意外丢失；
 5. 清单、行为基线和全量回归均已完成，具备进入第 1 步 `HikyuuSession` 门面设计的条件。
 
-## 5. 本阶段不修改的生产代码
+## 6. 本阶段未修改的生产代码
 
-除非发现必须单独修复的明确缺陷，本阶段不修改：
+本阶段没有修改以下生产代码：
 
 - `hikyuu_cpp/hikyuu/StockManager.h/.cpp` 的接口和实现；
 - `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h/.cpp`；
@@ -331,27 +349,27 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 
 缺陷修复不得与接口重构放在同一个提交中。
 
-## 6. 验收清单
+## 7. 验收结果
 
-- [x] 已生成高风险编排接口的原始列表；
-- [x] `StockManager`、`TradeManagerBase`、`System`、`Strategy` 已完成首轮逐项分类；
-- [x] Python 星号导出和 pybind11 导出规模已登记；
-- [x] Deprecated 接口已有初步兼容处理原则；
-- [x] `StockManager` 现有基线测试已审计；
-- [x] `System` C++ 行为测试已审计并建立覆盖矩阵；
-- [x] `Strategy` 下单路由测试已建立；
-- [x] 三组代表性回测金标已登记；
-- [x] Python Public API 测试已建立；
-- [x] `small-test` 通过；
-- [x] `unit-test` 通过；
-- [x] Python 测试通过；
-- [x] Python 3.10 import 测试通过；
-- [x] 已记录已有缺陷，并明确区分当前行为和目标行为；
-- [x] 已完成进入第 1 步的评审。
+| 编号 | 验收项 | 验收证据 | 结果 |
+| --- | --- | --- | --- |
+| A1 | 建立可重复生成的 API 清单 | 扫描器重复运行后生成文件无差异 | 通过 |
+| A2 | 完成首批高风险接口分类 | 13 个类、363 个方法均有 Classification、Decision 和 Source | 通过 |
+| A3 | 量化 Python/pybind11 暴露面 | 966 个绑定声明、23 个星号导出文件已登记 | 通过 |
+| A4 | 固定核心行为基线 | `StockManager`、System、TradeManager 现有精确断言已审计，三组金标已登记 | 通过 |
+| A5 | 建立首批 `Strategy::order()` 路由基线 | 新增 4 个 case，包含对当前异常行为的显式断言 | 通过；扩展覆盖项已列为后续前置条件 |
+| A6 | 建立 Python Public API 保护 | 新增 3 个测试，Python 测试由 42 增至 45 | 通过 |
+| A7 | 全量 C++ 回归 | `small-test` 41/41、3288/3288 assertions；`unit-test` 810/810、209129/209129 assertions | 通过 |
+| A8 | Python 3.10 回归 | Python 45/45；Python 3.10.21 import 检查通过 | 通过 |
+| A9 | 不改变生产行为和接口 | 提交只包含工具、文档和测试；生产源码、绑定及公开签名均未修改 | 通过 |
+| A10 | 已知问题与重构分离 | 3 个缺陷候选已记录，未在基线提交中修改生产行为 | 通过 |
+| A11 | 是否允许进入下一阶段 | 清单、行为保护和全量回归均具备 | 通过，允许进入总体方案第 1 步 |
 
-只有以上项目全部完成，阶段状态才能改为“已完成”。
+验收结论：**第一阶段已经执行完成，11 项阶段验收均通过。** 其中 A5 通过的是本次实际新增的 `Strategy::order()` 基线范围，并不表示 `Strategy` 的全部下单路径已经覆盖。
 
-## 7. 风险与应对
+范围说明：原总体方案中的“每个对外符号”在本阶段按首批高风险边界解释，即 13 个核心编排类逐项分类；全仓 966 个 pybind11 声明已完成量化，但没有假称已经逐条人工定级。后续移除任何未逐项分类的绑定前，必须先补齐对应条目的分类、替代接口和弃用版本。
+
+## 8. 风险与应对
 
 | 风险 | 影响 | 应对措施 |
 | --- | --- | --- |
@@ -363,7 +381,7 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 | Python `import *` 难以确定真实公共面 | Public API 清单过大 | 结合文档、示例和调用频率划分稳定子集 |
 | 测试编译时间增长 | 开发反馈变慢 | 小测试覆盖关键路径，全量金标放 `unit-test`/Python 测试 |
 
-## 8. 决策记录
+## 9. 决策记录
 
 | 日期 | 决策 | 原因 | 影响 |
 | --- | --- | --- | --- |
@@ -371,7 +389,7 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 | 2026-09-25 | `Strategy::order` 两处异常暂不修复 | 本阶段只建立基线，行为修复需要独立提交 | 已记录为下一阶段前的 bugfix 候选 |
 | 2026-09-25 | 批准进入第 1 步 | 接口清单、关键测试与全量回归均已完成 | 可以开始 Session 门面设计 |
 
-## 9. 执行记录
+## 10. 执行记录
 
 | 日期 | 工作项 | 修改文件 | 验证结果 | 备注 |
 | --- | --- | --- | --- | --- |
@@ -381,7 +399,7 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 | 2026-09-25 | 全量验证 | 构建与测试产物 | small 41/41、3288 assertions；unit 810/810、209129 assertions；Python 45/45；import 通过 | Python 3.10.21 |
 | 2026-09-25 | 阶段提交 | `76874140c`、`60eb2859f` | 接口清单与行为基线分别提交 | 工作树干净，可重复生成清单 |
 
-## 10. 工期记录
+## 11. 工期记录
 
 | 日期 | 起止时间 | 实际耗时 | 工作内容 | 剩余估算 |
 | --- | --- | ---: | --- | ---: |
@@ -390,7 +408,7 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 
 可核验总执行窗口为 **13 分 32 秒**。时间来自 Git 提交时间和最终复核记录，不再使用“约 1 小时”的粗略估计。
 
-## 11. 阶段完成摘要
+## 12. 阶段完成摘要
 
 第 0 步已完成：
 
