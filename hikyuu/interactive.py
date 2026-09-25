@@ -1,29 +1,39 @@
-#!/usr/bin/python
-# -*- coding: utf8 -*-
-# cp936
-#
-# The MIT License (MIT)
-#
-# Copyright (c) 2010-2017 fasiondog
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+"""Opt-in broad research environment.
 
-from hikyuu import *
+Unlike importing :mod:`hikyuu`, importing this module intentionally loads indicator and strategy
+helpers and opens the default data session.
+"""
+
+from pathlib import Path
+
+from hikyuu.analysis import *
+from hikyuu.core import *
+from hikyuu.extend import *
+from hikyuu.indicator import *
+from hikyuu.execution import *
+from hikyuu.session import open_session
+from hikyuu.strategy import *
+
+
+session = None
+data = None
+
+
+def load_hikyuu(config_file=None, ignore_preload=False, context=None):
+    """Open and retain the interactive data session, returning it to the caller."""
+
+    global session, data
+    if config_file is None:
+        config_file = Path.home() / ".hikyuu" / "hikyuu.ini"
+        if not config_file.exists():
+            from hikyuu.data.hku_config_template import generate_default_config
+            generate_default_config()
+    if session is not None and session.opened:
+        session.close()
+    session = open_session(config_file, ignore_preload=ignore_preload, context=context)
+    session.wait_ready()
+    data = session.data
+    return session
+
 
 load_hikyuu()

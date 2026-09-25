@@ -24,7 +24,7 @@ class KDataTest(unittest.TestCase):
         self.assertEqual(stock.is_null(), True)
 
     def test_kdata(self):
-        stock = sm["Sh000001"]
+        stock = data.get_stock("Sh000001")
         q = Query(0, 10)
         k = stock.get_kdata(q)
         self.assertEqual(len(k), 10)
@@ -47,9 +47,9 @@ class KDataTest(unittest.TestCase):
             return
 
         import pickle as pl
-        filename = sm.tmpdir() + "/KData.plk"
+        filename = tmp_dir + "/KData.plk"
         fh = open(filename, 'wb')
-        kdata = sm['sh000001'].get_kdata(Query(10, 20))
+        kdata = data.get_stock('sh000001').get_kdata(Query(10, 20))
         pl.dump(kdata, fh)
         fh.close()
         fh = open(filename, 'rb')

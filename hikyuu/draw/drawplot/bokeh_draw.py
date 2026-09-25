@@ -4,6 +4,9 @@
 Draw the related charts in the interactive mode, such as the K-line chart and the American K-line chart
 """
 
+from pathlib import Path
+from tempfile import gettempdir
+
 from hikyuu import *
 from hikyuu import htr
 
@@ -59,7 +62,7 @@ def gca():
 def show_gcf():
     global g_use_in_notbook
     if not g_use_in_notbook:
-        output_file("{}/bokeh.html".format(StockManager.instance().tmpdir()))
+        output_file(str(Path(gettempdir()) / "bokeh.html"))
     show(gcf())
 
 

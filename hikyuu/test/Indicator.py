@@ -9,6 +9,8 @@
 
 import unittest
 
+import numpy as np
+
 from test_init import *
 
 
@@ -156,7 +158,7 @@ class IndicatorTest(unittest.TestCase):
         self.assertEqual(a[4], 5 < 5)
 
     def test_IKDATA(self):
-        s = sm['sh000001']
+        s = data.get_stock('sh000001')
         q = Query(0, 10)
         k = s.get_kdata(q)
         o = OPEN(k)
@@ -211,8 +213,8 @@ class IndicatorTest(unittest.TestCase):
         # TODO: fails on Python3, not resolved yet
         """
         import pickle as pl
-        filename = sm.tmpdir() + '/Indicator.plk'
-        stock = sm['sh000001']
+        filename = tmp_dir + '/Indicator.plk'
+        stock = session.data.get_stock('sh000001')
         kdata = stock.getKData(Query(0,10))
         a = CLOSE(kdata)
         fh = open(filename, 'wb')
@@ -322,8 +324,7 @@ class IndicatorTest(unittest.TestCase):
         # print("\nTesting the combination with K-line data...")
 
         # Get the stock data
-        sm = StockManager.instance()
-        stock = sm['sh000001']
+        stock = session.data.get_stock('sh000001')
 
         if stock.is_null():
             print("⚠ Unable to get stock data, skipping this test")
@@ -360,7 +361,7 @@ class IndicatorTest(unittest.TestCase):
     def test_CODELIKE_NAMELIKE(self):
         """Test the CODELIKE and NAMELIKE indicators"""
         # Get the test stock
-        stock = sm['sh000001']
+        stock = session.data.get_stock('sh000001')
         k = stock.get_kdata(Query(-10))
         
         # Test CODELIKE - exact match
@@ -402,7 +403,7 @@ class IndicatorTest(unittest.TestCase):
             self.assertEqual(result[i], 0.0)
         
         # Test a Shenzhen stock
-        stock2 = sm['sz00001']
+        stock2 = data.get_stock('sz00001')
         if not stock2.is_null():
             k2 = stock2.get_kdata(Query(-10))
             
@@ -418,7 +419,7 @@ class IndicatorTest(unittest.TestCase):
                 self.assertEqual(result[i], 0.0)
         
         # Test NAMELIKE for a Shenzhen stock
-        stock3 = sm['sz000955']
+        stock3 = data.get_stock('sz000955')
         if not stock3.is_null():
             k3 = stock3.get_kdata(Query(-10))
             
@@ -429,7 +430,7 @@ class IndicatorTest(unittest.TestCase):
     
     def test_CODELIKE_NAMELIKE_wildcard(self):
         """Test the wildcard function of CODELIKE and NAMELIKE"""
-        stock = sm['sh000001']
+        stock = data.get_stock('sh000001')
         k = stock.get_kdata(Query(-10))
         
         # Test the wildcard * matching any sequence

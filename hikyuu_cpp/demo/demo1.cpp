@@ -14,11 +14,11 @@
  *
  *************************************************************/
 
-#include <hikyuu/hikyuu.h>
+#include <hikyuu.h>
 #include <thread>
 #include <chrono>
-#include <hikyuu/global/GlobalSpotAgent.h>
-#include <hikyuu/utilities/os.h>
+#include <app/runtime/GlobalSpotAgent.h>
+#include <common/os.h>
 
 #if defined(_WIN32)
 #include <Windows.h>
@@ -33,20 +33,9 @@ int main(int argc, char* argv[]) {
     SetConsoleOutputCP(CP_UTF8);
 #endif
 
-    // The plugin path setting:
-    // Method 1: before the initialization, set the plugin path to "." or "" and it is taken
-    // automatically from the plugindir of the hikyuu.ini config:
-    // StockManager::instance().setPluginPath("."); Method 2: before the initialization, set the
-    // plugin path yourself (if needed) otherwise it defaults to the .hikyuu/plugin directory under
-    // the user home, where the plugins can be copied
-    // StockManager::instance().setPluginPath("./plugin");
-
     // Modify the config file location yourself
-    hikyuu_init(fmt::format("{}/.hikyuu/hikyuu.ini", getUserDir()));
-
-    StockManager& sm = StockManager::instance();
-
-    Stock stk = sm.getStock("sh000001");
+    auto session = HikyuuSession::open(fmt::format("{}/.hikyuu/hikyuu.ini", getUserDir()));
+    Stock stk = session.data().getStock("sh000001");
     std::cout << stk << std::endl;
 
     auto k = stk.getKData(KQuery(-10));

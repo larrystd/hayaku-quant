@@ -6,9 +6,11 @@
 # Author: fasiondog
 # History: 1) 20130128, Added by fasiondog
 #===============================================================================
-from hikyuu import *
-
+import configparser
 import os
+import sys
+
+from hikyuu import open_session
 
 config_file = os.path.expanduser('~') + "/.hikyuu/hikyuu.ini"
 if not os.path.exists(config_file):
@@ -27,7 +29,7 @@ if not os.path.exists(config_file):
     
 #starttime = time.time()
 #print "Loading Day Data ..."
-hikyuu_init(config_file)
-sm = StockManager.instance()
+session = open_session(config_file)
+data = session.data
 #endtime = time.time()
 #print "%.2fs" % (endtime-starttime)

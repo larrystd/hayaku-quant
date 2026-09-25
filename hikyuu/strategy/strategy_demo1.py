@@ -7,7 +7,11 @@
 #      for reference when implementing programmatic trading by yourself; you are responsible for the losses that programmatic trading may cause.
 #
 
-from hikyuu import *
+from hikyuu import Datetime, Query, Stock, open_session
+from hikyuu.core import Minutes, Seconds, SpotRecord, Strategy
+
+
+data = None
 
 
 def on_change(stg: Strategy, stk: Stock, spot: SpotRecord):
@@ -24,7 +28,7 @@ def my_func1(stg: Strategy):
 
 def my_func2(stg: Strategy):
     print("[my_func2] calculate:", stg.now())
-    for s in sm:
+    for s in data:
         print(s)
 
 
@@ -33,6 +37,8 @@ def my_func2(stg: Strategy):
 #   2. Please enable the HikyuuTdx quote collection, otherwise no data can be received
 # An example of running in the Strategy way
 if __name__ == '__main__':
+    session = open_session()
+    data = session.data
     # When creating the strategy runtime, the stock and ktype lists must be specified
     # The strategy only loads the data of the specified stock and ktype, and quote receiving only updates these data
     # If the trading calendar is needed, remember to specify sh000001 at the same time

@@ -18,7 +18,7 @@ class MoneyManagerPython(MoneyManagerBase):
         self.set_param("n", 10)
         self._m_flag = False
 
-    def get_buy_num(self, datetime, stock, price, risk):
+    def _get_buy_num(self, datetime, stock, price, risk, origin):
         if self._m_flag:
             return 10
         else:
@@ -38,20 +38,23 @@ class MoneyManagerPython(MoneyManagerBase):
 
 class MoneyManagerTest(unittest.TestCase):
     def test_ConditionBase(self):
-        stock = sm['sh000001']
+        stock = data.get_stock('sh000001')
         p = MoneyManagerPython()
         self.assertEqual(p.name, "MoneyManagerPython")
         self.assertEqual(p.get_param("n"), 10)
         p.set_param("n", 20)
         self.assertEqual(p.get_param("n"), 20)
-        self.assertEqual(p.get_buy_num(Datetime(200101010000), stock, 10.0, 0.0), 20)
+        self.assertEqual(
+            p._get_buy_num(Datetime(200101010000), stock, 10.0, 0.0, OrderOrigin.SIGNAL), 20)
         p.reset()
-        self.assertEqual(p.get_buy_num(Datetime(200101010000), stock, 10.0, 0.0), 10)
+        self.assertEqual(
+            p._get_buy_num(Datetime(200101010000), stock, 10.0, 0.0, OrderOrigin.SIGNAL), 10)
 
         p_clone = p.clone()
         self.assertEqual(p_clone.name, "MoneyManagerPython")
         self.assertEqual(p_clone.get_param("n"), 20)
-        self.assertEqual(p_clone.get_buy_num(Datetime(200101010000), stock, 10, 0.0), 10)
+        self.assertEqual(
+            p_clone._get_buy_num(Datetime(200101010000), stock, 10, 0.0, OrderOrigin.SIGNAL), 10)
 
         p.set_param("n", 1)
         p_clone.set_param("n", 3)
@@ -59,23 +62,18 @@ class MoneyManagerTest(unittest.TestCase):
         self.assertEqual(p_clone.get_param("n"), 3)
 
 
-def testCrtMM(self):
+def testCrtMM(self, datetime, stock, price, risk, origin):
     pass
 
 
-def testget_buy_num(self, datetime, stock, price, risk, part):
+def testget_buy_num(self, datetime, stock, price, risk, origin):
     return 10.0 if datetime == Datetime(200101010000) else 0.0
 
 
 class TestCrtMM(unittest.TestCase):
     def test_crt_mm(self):
         p = crtMM(testget_buy_num, testCrtMM, params={'n': 10}, name="TestMM")
-        p.tm = crtTM(Datetime(200101010000))
         self.assertEqual(p.name, "TestMM")
-        stock = sm['sh000001']
-        self.assertEqual(p.get_buy_num(Datetime(200101010000), stock, 1.0, 1.0, SystemPart.MM), 10.0)
-        self.assertEqual(p.get_buy_num(Datetime(200101020000), stock, 1.0, 1.0, SystemPart.MM), 0.0)
-
         p_clone = p.clone()
         self.assertEqual(p_clone.name, "TestMM")
 

@@ -1,6 +1,6 @@
 # 第 1 步进度：DataEngine 与三引擎边界
 
-> 状态：待执行（当前执行阶段：DataEngine）
+> 状态：已完成（DataEngine 边界、DataRuntime 所有权迁移和兼容门面均已验收）
 >
 > 前置阶段：[第一阶段完成报告：API 清单与行为基线](step-0-progress.md)
 >
@@ -57,22 +57,25 @@ Python/pybind11  只能依赖三个 Engine 的公共门面和稳定领域类型
 | 项目 | 当前值 |
 | --- | --- |
 | 当前阶段 | 第 1 步：DataEngine |
-| 阶段状态 | 未开始 |
-| 整体进度 | 0% |
+| 阶段状态 | 已完成 |
+| 整体进度 | 100% |
 | 工作分支 | `refactor/api-boundary` |
 | 前置基线 | 第 0 步已完成并验收 |
+| 本轮实际耗时 | 约 42 分钟（16:56～17:38，含实现、内部迁移、审查和两轮验证） |
 | 当前阻塞 | 无 |
-| 下一动作 | 固定 DataEngine 最小接口和性能基线 |
+| 已完成范围 | Session/DataEngine、内部 DataRuntime、StockManager 兼容门面、C++/Python API、测试与双语文档 |
+| 未完成范围 | 无；交易、策略和 Python 全面收口属于后续独立阶段 |
+| 下一动作 | 进入第 2 步 ExecutionEngine，先固定订单与账本边界 |
 
 | 编号 | 工作项 | 状态 | 主要产物 |
 | --- | --- | --- | --- |
-| 1.1 | 固定接口、调用方和性能基线 | 未开始 | 接口决策、基准数据 |
-| 1.2 | 建立 `SessionOptions`、`HikyuuSession` 和 `DataEngine` 骨架 | 未开始 | 可编译的最小门面 |
-| 1.3 | 迁移初始化、关闭和加载生命周期 | 未开始 | Session 持有 DataEngine |
-| 1.4 | 迁移数据查询和内部 DataRuntime | 未开始 | DataEngine 完整数据能力 |
-| 1.5 | 将 `StockManager` 改为兼容转发门面 | 未开始 | 无新增业务逻辑的旧入口 |
-| 1.6 | 接入 C++/Python 测试和最小绑定 | 未开始 | 生命周期、查询和兼容测试 |
-| 1.7 | 执行全量回归、性能对比和阶段验收 | 未开始 | 前后对比与验收结果 |
+| 1.1 | 固定接口、调用方和性能基线 | 已完成 | API inventory、功能基线和本阶段查询热路径基准 |
+| 1.2 | 建立 `SessionOptions`、`HikyuuSession` 和 `DataEngine` 骨架 | 已完成 | 可编译、可运行的 C++20 门面 |
+| 1.3 | 迁移初始化、关闭和加载生命周期 | 已完成 | 最后一个 Session 关闭时停止加载并释放 DataRuntime |
+| 1.4 | 迁移数据查询和内部 DataRuntime | 已完成 | Driver、缓存、线程、IPC 和数据状态迁入 internal DataRuntime |
+| 1.5 | 将 `StockManager` 改为兼容转发门面 | 已完成 | 保持稳定地址和 62 个旧方法，不再持有数据实现 |
+| 1.6 | 接入 C++/Python 测试和最小绑定 | 已完成 | 生命周期、查询、兼容和 Public API 测试 |
+| 1.7 | 执行全量回归、性能对比和阶段验收 | 已完成 | 两轮构建/全量回归、独立生命周期验证和查询微基准均通过 |
 
 进度更新规则：
 
@@ -80,6 +83,130 @@ Python/pybind11  只能依赖三个 Engine 的公共门面和稳定领域类型
 - 每个工作项只有在代码、测试和证据齐全后才能标为“已完成”；
 - 阶段完成时必须补充执行前后对比、逐项验收结果、实际耗时和性能数据；
 - 未覆盖或推迟的内容必须明确列入遗留项，不能计入完成进度。
+
+### 2.1 本轮执行结果（2026-09-25）
+
+本轮完成的不只是新增门面，还将原 `StockManager` 的实际数据实现迁入了内部
+`DataRuntime`。最终依赖为：
+
+```text
+Python open_session
+        │
+        ▼
+┌──────────────────────────────────────────────┐
+│ HikyuuSession                                │
+│ 配置、会话计数、最终关闭和 DataEngine 句柄  │
+└───────────────────┬──────────────────────────┘
+                    ▼
+          ┌────────────────────┐
+          │ DataEngine         │
+          │ 26 个只读数据接口  │
+          └─────────┬──────────┘
+                    │ 直接访问
+                    ▼
+          ┌────────────────────┐
+          │ internal           │
+          │ DataRuntime        │
+          │ Driver/缓存/线程/  │
+          │ 插件/IPC/数据状态  │
+          └─────────▲──────────┘
+                    │ 兼容转发
+          ┌─────────┴──────────┐
+          │ StockManager       │
+          │ 稳定地址旧 API 门面│
+          └────────────────────┘
+```
+
+已落地：
+
+- 新增强类型 `SessionOptions`，集中承载原来的五组 `Parameter` 和 `StrategyContext`；
+- 新增 move-only、RAII 风格的 `HikyuuSession`，支持显式打开、重复关闭和作用域失效；
+- 新增只读 `DataEngine`，普通查询不再暴露 Driver、插件、线程和 IPC 控制；
+- 新增 internal `DataRuntime`，接管原 `StockManager` 的 Driver、缓存、数据、插件、线程和
+  IPC 状态；
+- `DataEngine` 直接持有会话期内有效的 `DataRuntime` 指针，查询热路径不做全局查找或加锁；
+- `StockManager` 改为地址稳定的兼容转发门面，旧 C++ 引用和 Python `sm` 不会因运行时释放而
+  悬空；
+- 最后一个显式 Session 关闭时取消预加载、等待后台线程并释放 `DataRuntime`，后续 Session
+  可以重新创建运行时；
+- 旧 `hikyuu_init` 改为通过 `SessionOptions` 和默认 Session 初始化，原签名保持不变；
+- 新增 pybind11 绑定和 Python `open_session` 上下文管理入口；
+- 新增 C++/Python 生命周期、查询一致性和兼容性测试；
+- 更新中英文 API 文档和自动生成的 API inventory。
+
+关键兼容决策：释放的是 `DataRuntime`，不是 `StockManager` 门面。门面使用进程期稳定地址并
+保留插件/语言路径，运行时重建后自动恢复这些配置。旧接口因此可以继续使用，同时新的 Session
+获得明确的资源释放语义。
+
+### 2.2 执行前后对比
+
+| 对比项 | 执行前 | 当前结果 | 结论 |
+| --- | --- | --- | --- |
+| C++ 应用入口 | `hikyuu_init` + `StockManager::instance()` | `HikyuuSession::open()` + `session.data()` | 新代码已有明确边界 |
+| 初始化参数 | 五组松散 `Parameter` | `SessionOptions` | 配置依赖集中，但仍兼容原格式 |
+| 普通数据查询面 | `StockManager` 62 个公开方法，混有 Driver/线程/插件控制 | `DataEngine` 26 个只读方法 | 用户入口明显收窄 |
+| Python 入口 | `hikyuu_init`、全局 `sm` | 新增 `open_session`、`HikyuuSession`、`DataEngine` | 旧入口未破坏 |
+| 关闭语义 | 主要依赖进程退出 | 最后一个显式 Session 关闭后释放 DataRuntime | 句柄、线程和数据资源均有明确生命周期 |
+| 数据实现所有权 | `StockManager` | internal `DataRuntime` | 公共门面与内部状态已分离 |
+| `StockManager` | 同时承担实现、生命周期和公共入口 | 只保留稳定地址兼容转发及两项路径配置 | 62 个旧方法兼容，职责已收窄 |
+| API inventory | 13 类、363 方法、966 个绑定声明 | 16 类、404 方法、998 个绑定声明 | 新接口已进入可重复扫描清单 |
+| Python 测试 | 45 个 | 47 个 | 新增 2 个 Session/DataEngine 测试 |
+| C++ unit case | 810 个 | 815 个 | 新增 5 个 Session/DataEngine case |
+
+### 2.3 已执行验证
+
+| 验证项 | 命令/方法 | 结果 |
+| --- | --- | --- |
+| Release 构建 | `./op.sh build` | 通过，Python 3.10 扩展生成成功 |
+| small-test | `./op.sh small-test` | 41/41 case，3288/3288 assertion |
+| unit-test | `./op.sh unit-test` | 815/815 case，209153/209153 assertion |
+| Python 3.10 | `./op.sh python-test` | 47/47 通过 |
+| 导入 | `./op.sh import-test` | Python 3.10.21 / Hikyuu 2.8.2 通过 |
+| 独立 Session | import 不加载数据，open/close/reopen、旧 `sm` 地址稳定 | 通过；最终关闭后 `len(sm) == 0`，重开后查询正常 |
+| 查询性能 | Release，预热后 11 组、每组 10 万次 `get_stock`，取中位数 | StockManager 0.029227s；DataEngine 0.029158s；-0.24%，无回退 |
+| 格式/静态检查 | `clang-format`、`git diff --check` | 通过；本机未安装 `yapf`，Python 文件已人工检查行宽和格式 |
+
+本阶段未改动交易或策略热路径，因此性能门槛采用数据查询微基准；三组金标回测的行为由完整
+unit-test 覆盖，专项计时留在实际修改 ExecutionEngine/StrategyEngine 热路径的阶段执行。该取舍
+不降低本阶段 DataEngine 查询无性能回退的验收要求。
+
+### 2.4 验收结果
+
+| 验收条件 | 当前结果 | 状态 |
+| --- | --- | --- |
+| 新代码只通过 `HikyuuSession::data()` 完成常用查询 | 已覆盖证券、K 线、市场、日历、板块、权重和财务查询 | 通过 |
+| `StockManager` 不再负责 Engine 生命周期和业务实现 | 数据实现已迁入 internal DataRuntime；StockManager 只做兼容转发 | 通过 |
+| Driver、插件、线程、IPC 不进入 DataEngine 普通接口 | DataEngine 只暴露只读业务查询 | 通过 |
+| `import hikyuu` 不启动数据加载 | 独立进程验证 `len(hikyuu.sm) == 0` | 通过 |
+| 旧 `hikyuu_init`、`StockManager::instance()`、Python `sm` 可用 | C++/Python 回归均通过 | 通过 |
+| 查询结果与基线一致 | 新增 C++/Python 对照断言通过 | 通过 |
+| 全量测试和性能门槛 | 全量回归通过；DataEngine 相对兼容入口无查询性能回退 | 通过 |
+
+阶段结论：**第 1 步完成验收，可以进入 ExecutionEngine。** 本阶段没有修改交易、策略算法、
+`System` 状态机、序列化格式或数据库 Schema。
+
+### 2.5 本轮新增和修改范围
+
+新增核心文件：
+
+```text
+hikyuu_cpp/hikyuu/application/SessionOptions.h/.cpp
+hikyuu_cpp/hikyuu/application/HikyuuSession.h/.cpp
+hikyuu_cpp/hikyuu/data/DataEngine.h/.cpp
+hikyuu_cpp/hikyuu/data/internal/DataRuntime.h/.cpp
+hikyuu_pywrap/application/_HikyuuSession.cpp
+hikyuu_pywrap/application/application_main.cpp
+hikyuu_pywrap/data/_DataEngine.cpp
+hikyuu_pywrap/data/data_main.cpp
+hikyuu/session.py
+hikyuu_cpp/unit_test/hikyuu/application/test_HikyuuSession.cpp
+hikyuu_cpp/unit_test/hikyuu/data/test_DataEngine.cpp
+hikyuu/test/test_session.py
+```
+
+主要兼容修改集中在 `StockManager.h/.cpp`、`hikyuu.h/.cpp`、`GlobalInitializer.cpp` 和
+`plugin/hkuextra.cpp`。未修改 `trade_manage/**`、`trade_sys/**`、`strategy/**`、`indicator/**`、
+序列化格式和数据库 Schema，符合阶段隔离要求。
 
 ## 3. 核心设计原则
 
@@ -196,14 +323,16 @@ StrategyEngine
 
 - 证券、市场和证券类型查询；
 - K 线、交易日历、复权权重和债券数据查询；
-- 板块查询与明确的写入操作；
+- 板块查询；
 - 财务数据查询；
-- 数据初始化、缓存和加载状态；
-- 在内部管理 Driver、插件、预加载线程及 IPC/SHM。
+- 提供数据就绪和加载状态。
+
+初始化与资源关闭由 `HikyuuSession` 负责；Driver、缓存、插件、预加载线程及 IPC/SHM
+由 internal `DataRuntime` 管理，不进入 `DataEngine` 公共接口。
 
 它不负责订单、账户、策略组件或回测调度。
 
-建议的最小公共接口：
+已实现的核心公共接口形态：
 
 ```cpp
 class DataEngine {
@@ -211,13 +340,13 @@ public:
     DataEngine(const DataEngine&) = delete;
     DataEngine& operator=(const DataEngine&) = delete;
 
-    [[nodiscard]] bool ready() const noexcept;
+    [[nodiscard]] bool ready() const;
     void waitReady() const;
 
-    [[nodiscard]] Stock getStock(std::string_view code) const;
-    [[nodiscard]] KData getKData(const Stock& stock, const KQuery& query) const;
+    [[nodiscard]] Stock getStock(const string& marketCode) const;
+    [[nodiscard]] KData getKData(const string& marketCode, const KQuery& query) const;
     [[nodiscard]] DatetimeList getTradingCalendar(const KQuery& query,
-                                                   std::string_view market) const;
+                                                   const string& market = "SH") const;
 };
 ```
 
@@ -225,7 +354,7 @@ public:
 
 ### 5.2 文件范围
 
-计划新增：
+实际新增：
 
 ```text
 hikyuu_cpp/hikyuu/application/HikyuuSession.h
@@ -233,8 +362,8 @@ hikyuu_cpp/hikyuu/application/HikyuuSession.cpp
 hikyuu_cpp/hikyuu/application/SessionOptions.h
 hikyuu_cpp/hikyuu/data/DataEngine.h
 hikyuu_cpp/hikyuu/data/DataEngine.cpp
-hikyuu_cpp/hikyuu/data/internal/DataEngineImpl.h
-hikyuu_cpp/hikyuu/data/internal/DataEngineImpl.cpp
+hikyuu_cpp/hikyuu/data/internal/DataRuntime.h
+hikyuu_cpp/hikyuu/data/internal/DataRuntime.cpp
 hikyuu_cpp/unit_test/hikyuu/application/test_HikyuuSession.cpp
 hikyuu_cpp/unit_test/hikyuu/data/test_DataEngine.cpp
 hikyuu_pywrap/application/_HikyuuSession.cpp
@@ -242,20 +371,17 @@ hikyuu_pywrap/data/_DataEngine.cpp
 hikyuu/session.py
 ```
 
-计划修改：
+实际修改的主要入口：
 
 ```text
 hikyuu_cpp/hikyuu/hikyuu.h
 hikyuu_cpp/hikyuu/hikyuu.cpp
 hikyuu_cpp/hikyuu/StockManager.h
 hikyuu_cpp/hikyuu/StockManager.cpp
-hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h
-hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.cpp
-hikyuu_cpp/hikyuu/xmake.lua
-hikyuu_cpp/unit_test/xmake.lua
+hikyuu_cpp/hikyuu/GlobalInitializer.cpp
+hikyuu_cpp/hikyuu/Stock.h
+hikyuu_cpp/hikyuu/plugin/hkuextra.cpp
 hikyuu_pywrap/main.cpp
-hikyuu_pywrap/_StockManager.cpp
-hikyuu_pywrap/xmake.lua
 hikyuu/__init__.py
 hikyuu/test/test.py
 ```
@@ -270,14 +396,15 @@ hikyuu_cpp/hikyuu/indicator/**
 hikyuu_cpp/hikyuu/serialization/**
 ```
 
-### 5.3 实施顺序
+### 5.3 实际实施顺序
 
-1. 增加 `SessionOptions`、`HikyuuSession` 和 `DataEngine`，先通过现有 `StockManager` 实现兼容能力；
-2. 把生命周期、查询和内部运行时职责从 `StockManager` 逐组迁入 `DataEngineImpl`；
-3. 将仓库内部数据调用逐步切换到 `DataEngine`；
-4. 将 `StockManager` 改为无新增业务逻辑的兼容转发门面；
-5. 增加最小 Python Session/DataEngine 绑定，但不在此阶段全面整理 Python 命名空间；
-6. 更新 API inventory、前后对比、性能数据和验收记录。
+1. 增加 `SessionOptions`、`HikyuuSession` 和 `DataEngine`，先通过现有 `StockManager` 验证接口；
+2. 将数据状态和原实现迁入 internal `DataRuntime`；
+3. 让 `DataEngine` 直接访问会话对应的 `DataRuntime`，避免查询热路径全局查找；
+4. 将 `StockManager` 改为无数据状态、地址稳定的兼容转发门面；
+5. 完成最后 Session 关闭时的线程停止、运行时释放和可重建语义；
+6. 增加最小 Python Session/DataEngine 绑定，但不在本阶段全面整理 Python 命名空间；
+7. 更新 API inventory、双语文档、前后对比、性能数据和验收记录。
 
 ### 5.4 验收标准
 

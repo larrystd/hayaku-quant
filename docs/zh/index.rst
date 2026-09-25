@@ -12,6 +12,7 @@ Welcome to Hikyuu's documentation!
    overview
    install
    quickstart
+   python_api
 
 .. toctree::
    :maxdepth: 1
@@ -23,11 +24,7 @@ Welcome to Hikyuu's documentation!
    stock_manager
    shm_server
    indicator/index
-   trade_manage/trade_manage
-   trade_sys/trade_sys
-   trade_portfolio/trade_portfolio
    factor.md
-   trade_sys/walkforward
    strategy
    others
    reference

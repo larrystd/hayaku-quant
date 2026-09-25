@@ -168,24 +168,6 @@ Miscellaneous Functions
         x = df_to_ind(df, '美国国债收益率10年', '日期')
 
 
-.. py:function:: parallel_run_sys(sys_list, query[, reset=False, reset_all=False]) -> List[FundsList]
-
-    Run multiple systems in parallel, and return a list of FundsList, the assets of each account (within the query time range)
-
-    :param sys_list: the system list
-    :param query: the query condition
-    :param bool reset: whether to reset according to the sharing attributes of the system parts before executing
-    :param bool reset_all: forcibly reset all the parts
-
-.. py:function:: parallel_run_pf(pf_list, query[, force=False]) -> List[FundsList]
-
-    Execute multiple portfolio strategies in parallel, and return a list of FundsList, the assets of each account (within the query time range)
-
-    :param list pf_list: the portfolio list
-    :param Query query: the query condition
-    :param bool force: force recalculating
-
-
 .. py:function:: multi_regression(stk, query, *inds) -> list
 
     Perform a multiple linear regression analysis on the stock, using the return of the stock close price as the dependent variable and the input indicators as the independent variables for the multiple linear regression.

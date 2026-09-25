@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import wraps
 
 from pyecharts import options as opts
@@ -5,7 +7,7 @@ from pyecharts.charts import Kline, Scatter, Line, Bar, Grid, Page
 from pyecharts.charts.base import Base as ChartBase
 from pyecharts.commons.utils import JsCode
 
-from hikyuu.core import KData, System
+from hikyuu.core import KData
 from .common import get_draw_title
 from hikyuu import *
 from hikyuu import htr
@@ -429,7 +431,7 @@ def kplot(kdata: KData, ind_main=None, ind_sub=None):
 
 
 @_chart_html_wrap
-def sysplot(sys: System):
+def sysplot(sys):
     kdata = sys.to
     datetimes = simple_datetime_list(kdata.get_datetime_list(), kdata.get_query().ktype)
     date_index = dict([(d, i) for i, d in enumerate(datetimes)])
@@ -539,7 +541,7 @@ def sys_performance(sys, ref_stk=None):
     funds = VALUE(funds)
     funds_return = [f.total_assets / f.total_base if f.total_base != 0.0 else constant.null_price for f in funds_list]
     funds_return = VALUE(funds_return, align_dates=ref_dates)
-    funds_return.name = htr("System Cumulative Return")
+    funds_return.name = htr("Strategy Cumulative Return")
     ref_return = ALIGN(ROCR(ref_k.close, 0), ref_dates)
     ref_return.name = f"{ref_stk.name}({ref_stk.market_code})"
 

@@ -14,7 +14,7 @@ from test_init import *
 
 class StockTest(unittest.TestCase):
     def test_stock(self):
-        stock = sm["Sh000001"]
+        stock = data.get_stock("Sh000001")
         self.assertEqual(stock.market, "SH")
         self.assertEqual(stock.code, "000001")
         self.assertEqual(stock.market_code, "SH000001")
@@ -34,12 +34,12 @@ class StockTest(unittest.TestCase):
         self.assertEqual(stock.get_krecord(0).datetime, Datetime(199012190000))
         self.assertEqual(stock.get_krecord(1, Query.MIN).datetime, Datetime(200001040932))
 
-        s1 = sm['sh000001']
-        s2 = sm['sh000001']
+        s1 = data.get_stock('sh000001')
+        s2 = data.get_stock('sh000001')
         self.assertTrue(s1 == s2)
         self.assertTrue(not (s1 != s2))
 
-        s2 = sm['sz000001']
+        s2 = data.get_stock('sz000001')
         self.assertTrue(not (s1 == s2))
         self.assertTrue(s1 != s2)
 
@@ -48,9 +48,9 @@ class StockTest(unittest.TestCase):
             return
 
         import pickle as pl
-        filename = sm.tmpdir() + '/Stock.plk'
+        filename = tmp_dir + '/Stock.plk'
         fh = open(filename, 'wb')
-        stock = sm['sh000001']
+        stock = data.get_stock('sh000001')
         pl.dump(stock, fh)
         fh.close()
         fh = open(filename, 'rb')
@@ -113,14 +113,8 @@ class StockTest(unittest.TestCase):
         self.assertEqual(len(k), 1)
         self.assertEqual(k[0], KRecord(Datetime(20010101), 5.0, 9.0, 4.0, 6.5, 1000.0, 100000.0))
 
-        self.assertTrue(stk not in sm)
-        sm.add_stock(stk)
-        self.assertTrue(stk in sm)
-        stk2 = sm['ab000001']
-        self.assertTrue(not stk2.is_null())
-        self.assertTrue(stk2, stk)
-        sm.remove_stock("ab000001")
-        self.assertTrue(stk not in sm)
+        # DataEngine is intentionally read-only; manager mutation is no longer a Python API.
+        self.assertTrue(data.get_stock('ab000001').is_null())
 
 
 def suite():

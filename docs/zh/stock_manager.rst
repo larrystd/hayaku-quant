@@ -149,12 +149,68 @@
         :rtype: int
 
 
-StockManager/Block/Stock
------------------------------
+HikyuuSession/DataEngine
+------------------------
+
+``HikyuuSession`` 是显式的运行会话，负责数据引擎的初始化和作用域访问。旧的
+``hikyuu_init``、``StockManager`` 和全局 ``sm`` 已删除。关闭 Session 会立即使其
+DataEngine 句柄失效；最后一个 Session 关闭时会停止数据加载并释放内部数据运行时。
+不要让同一 Session 的 ``close`` 与查询并发执行。
+
+.. code-block:: python
+
+    from hikyuu import Query, open_session
+
+    with open_session() as session:
+        stock = session.data.get_stock("sh000001")
+        kdata = session.data.get_kdata("sh000001", Query(-100))
+
+.. py:function:: open_session(filename=None, ignore_preload=False, context=None)
+
+    打开运行会话。返回值支持 Python 上下文管理器协议，退出 ``with`` 时自动关闭该会话。
+
+    :param str filename: 配置文件路径；缺省为 ``~/.hikyuu/hikyuu.ini``
+    :param bool ignore_preload: 是否忽略预加载配置
+    :param StrategyContext context: 数据加载范围
+    :rtype: HikyuuSession
+
+.. py:class:: HikyuuSession
+
+    .. py:attribute:: opened
+
+        会话是否仍然打开。
+
+    .. py:attribute:: ready
+
+        数据是否加载完成。
+
+    .. py:attribute:: data
+
+        当前会话持有的只读 :py:class:`DataEngine`。
+
+    .. py:method:: close()
+
+        关闭并使当前会话句柄失效，重复调用是安全的。最后一个显式 Session 会释放内部
+        数据运行时，兼容 ``StockManager`` 门面本身仍保持有效。
+
+.. py:class:: DataEngine
+
+    面向普通用户的只读数据入口，提供证券、K 线、市场、交易日历、板块、权重和财务数据查询。
+    Driver、插件、预加载线程和 IPC 控制不属于该公共接口。它直接访问当前
+    :py:class:`HikyuuSession` 持有的内部数据运行时，查询不会再经过 ``StockManager``。
+
+    常用方法包括 ``get_stock``、``get_stock_list``、``get_kdata``、
+    ``get_market_info``、``get_trading_calendar``、``get_block`` 和
+    ``get_history_finance_all_fields``。
+
+
+StockManager/Block/Stock（兼容接口）
+------------------------------------
 
 .. py:class:: StockManager
 
-    证券信息管理类
+    证券信息管理兼容类。新代码优先使用 :py:class:`DataEngine`；迁移期内现有方法保持可用。
+    该对象是地址稳定的转发门面，Driver、缓存和加载任务由内部数据运行时持有。
     
     .. py:attribute:: data_ready
     

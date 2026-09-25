@@ -43,21 +43,21 @@ target("core")
         add_shflags("-undefined dynamic_lookup", "-headerpad_max_install_names")
     end    
 
-    add_includedirs("../hikyuu_cpp")
+    add_includedirs(".", "../hikyuu_cpp/src")
 
     -- set_policy("build.optimization.lto", true)
     add_rules("c++.unity_build", {batchsize = 0})
     add_files("./**.cpp")
 
-    add_files("./*.cpp", "./factor/**.cpp", {unity_group="base"})
+    add_files("./*.cpp", "./common/**.cpp", "./data/factor/**.cpp", {unity_group="base"})
     add_files("./analysis/**.cpp", {unity_group="analysis"})
-    add_files("./data_driver/**.cpp", {unity_group="data_driver"})
-    add_files("./global/**.cpp", {unity_group="global"})
-    add_files("./indicator/**.cpp", {unity_group="indicator"})
-    add_files("./plugin/**.cpp", {unity_group="plugin"})
+    add_files("./app/**.cpp", {unity_group="app"})
+    add_files("./data/**.cpp", {unity_group="data"})
+    add_files("./data/driver/**.cpp", {unity_group="data_driver"})
+    add_files("./data/indicator/**.cpp", {unity_group="indicator"})
+    add_files("./advanced/**.cpp", {unity_group="advanced"})
+    add_files("./execution/**.cpp", {unity_group="execution"})
     add_files("./strategy/**.cpp", {unity_group="strategy"})
-    add_files("./trade_manage/**.cpp", {unity_group="trade_manage"})
-    add_files("./trade_sys/**.cpp", {unity_group="trade_sys"})
 
     on_load("windows", "linux", "macosx", function(target)
         import("lib.detect.find_tool")
@@ -197,5 +197,3 @@ target("core")
 
         os.cp("$(projectdir)/i18n/zh_CN/*.mo", "$(projectdir)/hikyuu/cpp/i18n/zh_CN/")
     end)
-
-

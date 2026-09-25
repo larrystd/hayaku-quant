@@ -25,9 +25,10 @@ import Signal
 import Stoploss
 import ProfitGoal
 import Slippage
-import AllocateFunds
 import test_common_sql
 import test_public_api
+import test_api_boundary
+import test_session
 
 if __name__ == "__main__":
 
@@ -59,9 +60,10 @@ if __name__ == "__main__":
     suite.addTest(Slippage.suite())
     suite.addTest(Slippage.suiteTestCrtSL())
 
-    suite.addTest(AllocateFunds.suite())
     suite.addTest(test_common_sql.suite())
     suite.addTest(test_public_api.suite())
+    suite.addTest(test_api_boundary.suite())
+    suite.addTest(test_session.suite())
 
     unittest.TextTestRunner(verbosity=2).run(suite)
     # unittest.main()

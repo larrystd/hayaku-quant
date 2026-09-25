@@ -9,8 +9,6 @@
 
 namespace py = pybind11;
 
-void export_analysis(py::module& m);
-
 void export_analysis_main(py::module& m) {
-    export_analysis(m);
+    // Analysis helpers operate on immutable BacktestResult/AccountSnapshot values in Python.
 }

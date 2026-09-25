@@ -5,17 +5,7 @@
 # Load the hikyuu library first, to prevent the DLL initialization failure caused by different common dependency libraries on windows
 from .core import *
 
-# Filter out the numpy warnings
-import os
-os.environ["NUMEXPR_MAX_THREADS"] = str(os.cpu_count())
-
 from datetime import datetime, timedelta, date  # NOQA: E402
-import numpy as np  # NOQA: E402
-import pandas as pd  # NOQA: E402
-
-# Solve the Chinese alignment problem
-pd.set_option('display.unicode.ambiguous_as_wide', True)
-pd.set_option('display.unicode.east_asian_width', True)
 
 # ------------------------------------------------------------------
 # Add hash support for Datetime and Stock, so that they can be used as the keys of a dict
@@ -218,6 +208,8 @@ def DatetimeList_to_np(data: DatetimeList):
 
 
 def DatetimeList_to_df(data: DatetimeList):
+    import pandas as pd
+
     return pd.DataFrame.from_records(dates_to_np(data))
 
 

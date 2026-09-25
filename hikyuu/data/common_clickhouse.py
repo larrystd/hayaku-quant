@@ -28,7 +28,7 @@ from pathlib import Path
 
 import clickhouse_connect
 
-from hikyuu import Datetime, UTCOffset
+from hikyuu.core import Datetime, UTCOffset
 from hikyuu.data.common import get_stktype_list, get_new_holidays
 from hikyuu.util import hku_catch, hku_debug, hku_info
 

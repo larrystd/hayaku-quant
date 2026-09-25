@@ -105,24 +105,18 @@ importdata
 
 > ℹ️ **Data coverage**: HikyuuTDX downloads **China A-share** historical data only and needs a one-time initial configuration in the GUI. Overseas markets (US stocks, etc.) are not available yet and will be supported gradually.
 
-### Step 3: Run your first backtest
+### Step 3: Open an explicit research session
 
 ```python
-from hikyuu.interactive import *
+from hikyuu import Query, open_session
+from hikyuu.execution import AccountConfig
 
-# Create a simulated trading account for backtesting, with initial capital of 300,000
-my_tm = crtTM(init_cash=300000)
-
-# Create a signal indicator (fast line: 5-day EMA; slow line: 10-day EMA)
-# Buy when the fast line crosses above the slow line, sell otherwise
-my_sg = SG_Flex(EMA(CLOSE(), n=5), slow_n=10)
-
-# Buy a fixed 1000 shares each time
-my_mm = MM_FixedCount(1000)
-
-# Create the trading system and run it
-sys = SYS_Simple(tm=my_tm, sg=my_sg, mm=my_mm)
-sys.run(sm['sz000001'], Query(-150))
+account = AccountConfig(initial_cash=300000, name="research")
+with open_session(account_config=account) as session:
+    session.wait_ready()
+    bars = session.data.get_kdata("sz000001", Query(-150))
+    snapshot = session.execution.snapshot()
+    print(len(bars), snapshot.funds)
 ```
 
 <p align="center">
@@ -218,24 +212,15 @@ client tools without worrying about third-party platform restrictions.
 
 > Rigorously architected around systematic trading concepts; every part can be replaced and combined freely
 
-| Layer                    | Part                         | Description                                        |
-| :----------------------- | :--------------------------- | :------------------------------------------------- |
-| **Portfolio layer**      | `Portfolio / PF`             | Portfolio: strategy scheduling across multiple systems |
-|                          | `Selector / SE`              | Selector: system / strategy screening              |
-|                          | `AllocateFunds / AF`         | Fund allocation: capital allocation across systems |
-|                          | `MultiFactor / MF`           | Multi-factor model: factor scoring and ranking     |
-| **Trading system SYS**   | `Environment / EV`           | Environment: market regime validity assessment     |
-|                          | `Condition / CN`             | Condition: situations where the system applies     |
-|                          | `Signal / SG`                | Signal: generates buy / sell signals               |
-|                          | `Stoploss / Stopprofit / ST` | Stop-loss / take-profit: risk-control exits        |
-|                          | `MoneyManager / MM`          | Money management: order size control               |
-|                          | `ProfitGoal / PG`            | Profit goal: exit when the target is reached       |
-|                          | `Slippage / SP`              | Slippage: price simulation in backtesting          |
-| **Trade management**     | `TradeManager / TM`          | Trade manager: account cash and position records   |
-|                          | `OrderBroker / OB`           | Order broker: broker connection for live trading   |
-| **Data layer**           | `StockManager`               | Unified security management                        |
-|                          | `KData`                      | K-line price / volume series                       |
-|                          | `Query`                      | Time-range query and filtering                     |
+| Domain                  | Main API                                      | Responsibility                              |
+| :---------------------- | :-------------------------------------------- | :------------------------------------------ |
+| **Data**                | `open_session / DataEngine`                   | Explicit data lifetime and market queries   |
+| **Execution**           | `AccountConfig / ExecutionEngine`            | Orders, cash, positions and trade history   |
+|                         | `AccountSnapshot / AccountView`               | Immutable account inspection                |
+| **Strategy**            | `StrategyDefinition / StrategyEngine`        | Component composition and orchestration     |
+|                         | `BacktestRequest / BacktestResult`            | Stable backtest input and output values     |
+| **Analysis**            | `hikyuu.analysis`                             | Explicit result conversion and analysis     |
+| **Extensions**          | `hikyuu.spi / hikyuu.advanced`               | Custom protocols and low-level controls     |
 
 ---
 
@@ -291,4 +276,3 @@ Python-side dependencies are listed in [requirements.txt](requirements.txt).
    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=fasiondog/hikyuu&type=date&legend=top-left" />
  </picture>
 </a>
-

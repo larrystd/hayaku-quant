@@ -274,9 +274,9 @@ if has_config("local") then
 end
 
 includes("./copy_dependents.lua")
-includes("./hikyuu_cpp/hikyuu")
+includes("./hikyuu_cpp/src")
 includes("./hikyuu_cpp/demo")
 if not is_plat("cross") then
   includes("./hikyuu_pywrap")
-  includes("./hikyuu_cpp/unit_test")
+  includes("./hikyuu_cpp/test")
 end

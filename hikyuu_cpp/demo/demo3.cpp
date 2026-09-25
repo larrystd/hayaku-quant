@@ -22,13 +22,14 @@
  *
  *************************************************************/
 
-#include <hikyuu/hikyuu.h>
+#include <hikyuu.h>
+#include <data/internal/DataRuntime.h>
 #include <thread>
 #include <chrono>
 #include <csignal>
-#include <hikyuu/global/GlobalSpotAgent.h>
-#include <hikyuu/utilities/node/NodeServer.h>
-#include <hikyuu/utilities/os.h>
+#include <app/runtime/GlobalSpotAgent.h>
+#include <common/node/NodeServer.h>
+#include <common/os.h>
 
 #if defined(_WIN32)
 #include <Windows.h>
@@ -43,7 +44,7 @@ void signal_handle(int signal) {
         HKU_INFO("Shutdown now ...");
         server.stop();
         releaseGlobalSpotAgent();
-        StockManager::quit();
+        releaseDataRuntime();
         exit(0);
     }
 }
@@ -63,10 +64,10 @@ int main(int argc, char* argv[]) {
     // The plugin path setting:
     // Method 1: before the initialization, set the plugin path to "." or "" and it is taken
     // automatically from the plugindir of the hikyuu.ini config:
-    // StockManager::instance().setPluginPath("."); Method 2: before the initialization, set the
+    // setDataRuntimePluginPath("."); Method 2: before initialization, set the
     // plugin path yourself (if needed) otherwise it defaults to the .hikyuu/plugin directory under
     // the user home, where the plugins can be copied
-    // StockManager::instance().setPluginPath("./plugin");
+    // setDataRuntimePluginPath("./plugin");
 
     try {
         // Get the basic configuration parameters
@@ -91,8 +92,7 @@ int main(int argc, char* argv[]) {
         // Do not load the historical financial information nor the ex-rights/ex-dividend data
         hkuParam.set<bool>("load_history_finance", false);
         hkuParam.set<bool>("load_stock_weight", false);
-        StockManager::instance().init(baseParam, blockParam, kdataParam, new_preloadParam,
-                                      hkuParam);
+        getDataRuntime().init(baseParam, blockParam, kdataParam, new_preloadParam, hkuParam);
 
         // Start the market data receiving
         startSpotAgent(true, 2);
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
             HKU_ASSERT(req.contains("codes"));
 
             string ktype = req["ktype"].get<string>();
-            auto& sm = StockManager::instance();
+            auto& sm = getDataRuntime();
             const auto& param = sm.getPreloadParameter();
             string low_ktype = ktype;
             to_lower(low_ktype);
@@ -176,7 +176,7 @@ int main(int argc, char* argv[]) {
 
     server.stop();
     releaseGlobalSpotAgent();
-    StockManager::quit();
+    releaseDataRuntime();
 
 #if defined(_WIN32)
     SetConsoleOutputCP(old_cp);

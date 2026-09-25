@@ -20,7 +20,7 @@ import hikyuu.flat as fb
 from hikyuu.util import *
 from hikyuu.fetcher.stock.zh_stock_a_sina_qq import get_spot as qq_get_spot
 from hikyuu.fetcher.stock.zh_stock_a_qmt import get_spot as qmt_get_spot
-from hikyuu import hikyuu_init, StockManager, constant, Datetime, TimeDelta
+from hikyuu import open_session, constant, Datetime, TimeDelta
 
 
 def create_fb_spot_record(builder, record):
@@ -257,16 +257,15 @@ def collect(server, use_proxy, source, seconds, phase1, phase2, ignore_weekend):
         print("未找到配置文件，请先运行 HikyuuTDX 进行配置与数据导入")
         exit(1)
 
-    hikyuu_init(config_file, ignore_preload=True)
-
-    sm = StockManager.instance()
+    session = open_session(config_file, ignore_preload=True)
+    data = session.data
     if source == 'qmt':
-        stk_list = [s for s in sm if s.valid and s.type in (
+        stk_list = [s for s in data if s.valid and s.type in (
             constant.STOCKTYPE_A, constant.STOCKTYPE_INDEX, constant.STOCKTYPE_ETF,
             constant.STOCKTYPE_GEM, constant.STOCKTYPE_START, constant.STOCKTYPE_A_BJ)]
     else:
         stk_list = [
-            stk.market_code.lower() for stk in sm if stk.valid and stk.type in
+            stk.market_code.lower() for stk in data if stk.valid and stk.type in
             (constant.STOCKTYPE_A, constant.STOCKTYPE_INDEX, constant.STOCKTYPE_GEM,
              constant.STOCKTYPE_START, constant.STOCKTYPE_A_BJ)
         ]

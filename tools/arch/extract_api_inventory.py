@@ -18,27 +18,39 @@ from typing import Iterable
 ROOT = Path(__file__).resolve().parents[2]
 
 HEADERS = (
-    "hikyuu_cpp/hikyuu/StockManager.h",
-    "hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h",
-    "hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h",
-    "hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h",
-    "hikyuu_cpp/hikyuu/trade_sys/system/System.h",
-    "hikyuu_cpp/hikyuu/strategy/Strategy.h",
-    "hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h",
-    "hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h",
-    "hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h",
-    "hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h",
-    "hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h",
-    "hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h",
-    "hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h",
+    "hikyuu_cpp/src/app/HikyuuSession.h",
+    "hikyuu_cpp/src/app/SessionOptions.h",
+    "hikyuu_cpp/src/data/DataEngine.h",
+    "hikyuu_cpp/src/data/driver/DataDriverFactory.h",
+    "hikyuu_cpp/src/execution/AccountConfig.h",
+    "hikyuu_cpp/src/execution/ExecutionEngine.h",
+    "hikyuu_cpp/src/execution/OrderRequest.h",
+    "hikyuu_cpp/src/execution/ExecutionReport.h",
+    "hikyuu_cpp/src/execution/AccountSnapshot.h",
+    "hikyuu_cpp/src/strategy/engine/StrategyDefinition.h",
+    "hikyuu_cpp/src/strategy/engine/StrategyEngine.h",
+    "hikyuu_cpp/src/strategy/engine/BacktestRequest.h",
+    "hikyuu_cpp/src/strategy/engine/BacktestResult.h",
+    "hikyuu_cpp/src/strategy/Strategy.h",
+    "hikyuu_cpp/src/strategy/environment/EnvironmentBase.h",
+    "hikyuu_cpp/src/strategy/condition/ConditionBase.h",
+    "hikyuu_cpp/src/strategy/signal/SignalBase.h",
+    "hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h",
+    "hikyuu_cpp/src/strategy/stoploss/StoplossBase.h",
+    "hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h",
+    "hikyuu_cpp/src/strategy/slippage/SlippageBase.h",
 )
 
 BINDING_GLOBS = (
     "hikyuu_pywrap/*.cpp",
-    "hikyuu_pywrap/data_driver/*.cpp",
+    "hikyuu_pywrap/app/*.cpp",
+    "hikyuu_pywrap/data/*.cpp",
+    "hikyuu_pywrap/data/driver/*.cpp",
     "hikyuu_pywrap/strategy/*.cpp",
-    "hikyuu_pywrap/trade_manage/*.cpp",
-    "hikyuu_pywrap/trade_sys/*.cpp",
+    "hikyuu_pywrap/execution/*.cpp",
+    "hikyuu_pywrap/analysis/*.cpp",
+    "hikyuu_pywrap/common/*.cpp",
+    "hikyuu_pywrap/advanced/*.cpp",
 )
 
 PYTHON_EXPORT_FILES = (
@@ -46,8 +58,12 @@ PYTHON_EXPORT_FILES = (
     "hikyuu/core.py",
     "hikyuu/extend.py",
     "hikyuu/indicator/__init__.py",
-    "hikyuu/trade_manage/__init__.py",
-    "hikyuu/trade_sys/__init__.py",
+    "hikyuu/data/__init__.py",
+    "hikyuu/execution/__init__.py",
+    "hikyuu/strategy/__init__.py",
+    "hikyuu/analysis/__init__.py",
+    "hikyuu/common/__init__.py",
+    "hikyuu/advanced/__init__.py",
 )
 
 

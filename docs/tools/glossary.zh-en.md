@@ -16,12 +16,12 @@
 - 术语变更走 PR review，改名视为全仓变更（代码注释、docstring、两棵文档树、README 一次性替换）。
 - 缩写（§10）在代码与文档中**保持大写**，首次出现给全称。
 
-## 2. 交易系统部件（Trade System Parts）
+## 2. 策略组件（Strategy Components）
 
 | 中文 | 英文（标准） | 缩写 | 代码对应 | 备注 |
 | --- | --- | --- | --- | --- |
 | 系统化交易 | systematic trading | — | — | 不是 "system trading" |
-| 交易系统 | trading system | SYS | `trade_sys/system`；类 `System`、`SYS_Simple` / `SYS_WalkForward` | |
+| 策略组件图 | strategy component graph | — | `StrategyDefinition`、`StrategyEngine` | |
 | 市场环境（判断） | market environment | EV | `trade_sys/environment`（`crtEV`、`EV_Bool` / `EV_TwoLine`） | |
 | 系统有效条件 | condition | CN | `trade_sys/condition`（`crtCN`、`CN_Bool` / `CN_OPLine`） | 系统适用条件 |
 | 信号指示器 | signal / signal generator | SG | `trade_sys/signal`（`crtSG`、`SG_Cross` 等） | **不用** "signal indicator" |
@@ -32,16 +32,16 @@
 | 头寸规模 / 下单数量 | position sizing | — | — | |
 | 盈利目标 | profit goal | PG | `trade_sys/profitgoal`（`crtPG`、`PG_FixedPercent` 等） | |
 | 滑点 / 移滑价差 | slippage | SP | `trade_sys/slippage`（`crtSP`、`SP_Normal` 等） | |
-| 系统选择器 / 标的筛选 | selector | SE | `trade_sys/selector`（`crtSE`、`SE_Fixed` 等） | |
-| 资金分配 | fund allocation / allocation | AF | `trade_sys/allocatefunds`（`crtAF`、`TC_FixedA` 等） | |
+| 标的筛选 | selector | SE | 策略域内部筛选组件 | |
+| 资金分配 | fund allocation / allocation | AF | 策略域内部资金分配组件 | |
 | 多因子模型 | multi-factor model | MF | `trade_sys/multifactor`（`crtMF`、`MF_ICWeight` 等） | |
-| 投资组合 | portfolio | PF | `trade_sys/portfolio` | |
+| 投资组合 | portfolio | PF | 策略域内部组合运行时 | |
 | 组合再平衡 | portfolio rebalancing | — | — | |
-| 交易管理 | trade management | TM | `trade_manage/` | |
-| 交易管理器 | trade manager | TM | 类名 `TradeManager`（`crtTM`） | |
-| 订单执行 / 下单代理 | order broker | OB | 类名 `OrderBrokerBase`（`crtOB`） | |
+| 订单执行 | order execution | — | `ExecutionEngine`、`AccountConfig` | |
+| 执行账户 | execution account | — | `AccountSnapshot`、`AccountView` | |
+| 下单代理 | order broker | OB | 扩展协议 `hikyuu.spi.OrderBrokerBase` | |
 | 回测 | backtest | — | — | 动词 backtest / 名词 backtest |
-| 滚动前推分析 | walk-forward analysis | — | `SYS_WalkForward` | 不是 "forward test" |
+| 滚动前推分析 | walk-forward analysis | — | 策略研究流程 | 不是 "forward test" |
 | 参数优化 | parameter optimization | — | `Parameter` | |
 
 ## 3. 交易与订单（Trading & Orders）

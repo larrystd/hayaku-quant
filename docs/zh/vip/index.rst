@@ -5,6 +5,5 @@
 
    vip-plan.md
    indicator
-   backtest
    dataserver
    dynamick

@@ -40,7 +40,7 @@ class SignalTest(unittest.TestCase):
 
         self.assertEqual(p.should_buy(Datetime(201201210000)), False)
         self.assertEqual(p.should_sell(Datetime(201201300000)), False)
-        k = sm['sh000001'].get_kdata(Query(-100))
+        k = data.get_stock('sh000001').get_kdata(Query(-100))
         self.assertEqual(k.empty(), False)
         p.to = k
         self.assertEqual(p.should_buy(Datetime(201201210000)), True)
@@ -105,7 +105,7 @@ class TestCrtSG(unittest.TestCase):
 
         self.assertEqual(p.should_buy(Datetime(201201210000)), False)
         self.assertEqual(p.should_sell(Datetime(201201300000)), False)
-        k = sm['sh000001'].get_kdata(Query(-100))
+        k = data.get_stock('sh000001').get_kdata(Query(-100))
         self.assertEqual(k.empty(), False)
         p.to = k
         self.assertEqual(p.should_buy(Datetime(201201210000)), True)

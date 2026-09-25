@@ -14,7 +14,7 @@ from test_init import *
 
 class MarketInfoTest(unittest.TestCase):
     def test_market(self):
-        market = sm.get_market_info("Sh")
+        market = data.get_market_info("Sh")
         self.assertEqual(market.market, "SH")
         self.assertEqual(market.name, u"上海证券交易所")
         self.assertEqual(market.description, u"上海市场")

@@ -1,0 +1,282 @@
+/*
+ *  Copyright (c) 2024 hikyuu.org
+ *
+ *  Created on: 2024-09-15
+ *      Author: fasiondog
+ */
+
+#include "test_config.h"
+#include <data/internal/DataRuntime.h>
+#include <strategy/selector/crt/SE_Optimal.h>
+#include <strategy/selector/imp/optimal/OptimalSelectorBase.h>
+#include "create_test_strategy.h"
+
+using namespace hku;
+
+/**
+ * @defgroup test_Selector_optimal test_Selector_optimal
+ * @ingroup test_hikyuu_trade_sys_suite
+ * @{
+ */
+
+/** @par Test points */
+TEST_CASE("test_SE_PerformanceOptimal") {
+    auto se = SE_PerformanceOptimal();
+    CHECK_EQ(se->name(), "SE_PerformanceOptimal");
+
+    /** @arg Try to add an empty system */
+    CHECK_THROWS(se->addSystem(internal::StrategyRuntimePtr()));
+    CHECK_UNARY(se->getProtoSystemList().empty());
+
+    /** @arg Try to add a system list containing an empty system */
+    auto sys = create_test_strategy(2, 3);
+    sys->setStock(getStock("sz000001"));
+    se->addSystemList(internal::StrategyRuntimeList{sys});
+    CHECK_EQ(se->getProtoSystemList().size(), 1);
+    CHECK_THROWS(se->addSystemList(internal::StrategyRuntimeList{sys, internal::StrategyRuntimePtr()}));
+    CHECK_EQ(se->getProtoSystemList().size(), 2);
+
+    /** @arg Try to add a system without a given security */
+    sys = create_test_strategy(2, 3);
+    // CHECK_THROWS(se->addSystem(sys));
+    se->addSystem(sys);
+    se->calculate(internal::StrategyRuntimeList(), KQueryByIndex(-50));
+    OptimalSelectorBase* raw_se = dynamic_cast<OptimalSelectorBase*>(se.get());
+    CHECK_UNARY(raw_se->getRunRanges().empty());
+
+    /** @arg Try to add a system list without a given security */
+    sys = create_test_strategy(2, 3);
+    se->addSystemList({sys});
+    se->calculate(internal::StrategyRuntimeList(), KQueryByIndex(-50));
+    CHECK_UNARY(raw_se->getRunRanges().empty());
+
+    /** @arg The candidate system list length is 0 */
+    se->removeAll();
+    REQUIRE(se->getProtoSystemList().empty());
+    se->calculate(internal::StrategyRuntimeList(), KQueryByIndex(-50));
+
+    /** @arg There is a single candidate system */
+    Stock stk = getStock("sz000001");
+    sys = create_test_strategy(2, 3);
+    sys->setStock(stk);
+    se->removeAll();
+    se->addSystem(sys);
+    REQUIRE(se->getProtoSystemList().size() == 1);
+    KQuery query(-50);
+    se->setParam<int>("train_len", 30);
+    se->setParam<int>("test_len", 25);
+    se->calculate(internal::StrategyRuntimeList(), query);
+    auto run_ranges = raw_se->getRunRanges();
+    CHECK_EQ(run_ranges.size(), 1);
+    auto dates = getDataRuntime().getTradingCalendar(query);
+    CHECK_EQ(run_ranges[0].start, dates[0]);
+    CHECK_EQ(run_ranges[0].run_start, dates[30]);
+    CHECK_EQ(run_ranges[0].end, dates[49] + Minutes(1));
+    for (size_t i = 0; i < 30; i++) {
+        CHECK_UNARY(se->getSelected(dates[i]).empty());
+    }
+    for (size_t i = 30; i < 50; i++) {
+        auto sw = se->getSelected(dates[i]);
+        CHECK_EQ(sw.size(), 1);
+        CHECK_EQ(sw[0].strategy->name(), sys->name());
+    }
+
+    query = KQueryByIndex(-60);
+    se->setParam<int>("train_len", 20);
+    se->setParam<int>("test_len", 10);
+    se->reset();
+    se->calculate(internal::StrategyRuntimeList(), query);
+    run_ranges = raw_se->getRunRanges();
+    CHECK_EQ(run_ranges.size(), 4);
+    dates = getDataRuntime().getTradingCalendar(query);
+    CHECK_EQ(run_ranges[0].start, dates[0]);
+    CHECK_EQ(run_ranges[0].run_start, dates[20]);
+    CHECK_EQ(run_ranges[0].end, dates[30]);
+    CHECK_EQ(run_ranges[1].start, dates[10]);
+    CHECK_EQ(run_ranges[1].run_start, dates[30]);
+    CHECK_EQ(run_ranges[1].end, dates[40]);
+    CHECK_EQ(run_ranges[2].start, dates[20]);
+    CHECK_EQ(run_ranges[2].run_start, dates[40]);
+    CHECK_EQ(run_ranges[2].end, dates[50]);
+    CHECK_EQ(run_ranges[3].start, dates[30]);
+    CHECK_EQ(run_ranges[3].run_start, dates[50]);
+    CHECK_EQ(run_ranges[3].end, dates[59] + Minutes(1));
+    for (size_t i = 0; i < 20; i++) {
+        CHECK_UNARY(se->getSelected(dates[i]).empty());
+    }
+    for (size_t i = 20; i < 60; i++) {
+        auto sw = se->getSelected(dates[i]);
+        CHECK_EQ(sw.size(), 1);
+        CHECK_EQ(sw[0].strategy->name(), sys->name());
+    }
+
+    /** @arg Multiple candidate systems, take the maximum */
+    se->removeAll();
+    vector<std::pair<int, int>> params{{3, 5}, {3, 10}, {5, 10}, {5, 20}};
+    for (const auto& param : params) {
+        sys = create_test_strategy(param.first, param.second);
+        sys->setStock(stk);
+        // sys->setParam("trace", true);
+        se->addSystem(sys);
+    }
+    REQUIRE(se->getProtoSystemList().size() == params.size());
+
+    query = KQueryByIndex(-125);
+    // se->setParam<bool>("trace", true);
+    se->setParam<int>("train_len", 30);
+    se->setParam<int>("test_len", 20);
+    se->calculate(internal::StrategyRuntimeList(), query);
+    run_ranges = raw_se->getRunRanges();
+    CHECK_EQ(run_ranges.size(), 5);
+    dates = getDataRuntime().getTradingCalendar(query);
+    CHECK_EQ(run_ranges[0].start, dates[0]);
+    CHECK_EQ(run_ranges[0].run_start, dates[30]);
+    CHECK_EQ(run_ranges[0].end, dates[50]);
+    CHECK_EQ(run_ranges[1].start, dates[20]);
+    CHECK_EQ(run_ranges[1].run_start, dates[50]);
+    CHECK_EQ(run_ranges[1].end, dates[70]);
+    CHECK_EQ(run_ranges[2].start, dates[40]);
+    CHECK_EQ(run_ranges[2].run_start, dates[70]);
+    CHECK_EQ(run_ranges[2].end, dates[90]);
+    CHECK_EQ(run_ranges[3].start, dates[60]);
+    CHECK_EQ(run_ranges[3].run_start, dates[90]);
+    CHECK_EQ(run_ranges[3].end, dates[110]);
+    CHECK_EQ(run_ranges[4].start, dates[80]);
+    CHECK_EQ(run_ranges[4].run_start, dates[110]);
+    CHECK_EQ(run_ranges[4].end, dates[124] + Minutes(1));
+    for (size_t i = 0; i < 30; i++) {
+        CHECK_UNARY(se->getSelected(dates[i]).empty());
+    }
+    for (size_t i = 30; i < 50; i++) {
+        auto sw = se->getSelected(dates[i]);
+        CHECK_EQ(sw.size(), 1);
+        CHECK_EQ(sw[0].strategy->name(), "test_sys_3_10");
+    }
+    for (size_t i = 50; i < 90; i++) {
+        auto sw = se->getSelected(dates[i]);
+        CHECK_EQ(sw.size(), 1);
+        CHECK_EQ(sw[0].strategy->name(), "test_sys_3_5");
+    }
+
+    /** @arg Multiple candidate systems, take the minimum */
+    // se->setParam<bool>("trace", true);
+    se->setParam<int>("mode", 1);
+    se->reset();
+    se->calculate(internal::StrategyRuntimeList(), query);
+    run_ranges = raw_se->getRunRanges();
+    CHECK_EQ(run_ranges.size(), 5);
+    dates = getDataRuntime().getTradingCalendar(query);
+    CHECK_EQ(run_ranges[0].start, dates[0]);
+    CHECK_EQ(run_ranges[0].run_start, dates[30]);
+    CHECK_EQ(run_ranges[0].end, dates[50]);
+    CHECK_EQ(run_ranges[1].start, dates[20]);
+    CHECK_EQ(run_ranges[1].run_start, dates[50]);
+    CHECK_EQ(run_ranges[1].end, dates[70]);
+    CHECK_EQ(run_ranges[2].start, dates[40]);
+    CHECK_EQ(run_ranges[2].run_start, dates[70]);
+    CHECK_EQ(run_ranges[2].end, dates[90]);
+    CHECK_EQ(run_ranges[3].start, dates[60]);
+    CHECK_EQ(run_ranges[3].run_start, dates[90]);
+    CHECK_EQ(run_ranges[3].end, dates[110]);
+    CHECK_EQ(run_ranges[4].start, dates[80]);
+    CHECK_EQ(run_ranges[4].run_start, dates[110]);
+    CHECK_EQ(run_ranges[4].end, dates[124] + Minutes(1));
+    for (size_t i = 0; i < 30; i++) {
+        CHECK_UNARY(se->getSelected(dates[i]).empty());
+    }
+    for (size_t i = 30; i < 50; i++) {
+        auto sw = se->getSelected(dates[i]);
+        CHECK_EQ(sw.size(), 1);
+        CHECK_EQ(sw[0].strategy->name(), "test_sys_5_20");
+    }
+    for (size_t i = 50; i < 70; i++) {
+        auto sw = se->getSelected(dates[i]);
+        CHECK_EQ(sw.size(), 1);
+        CHECK_EQ(sw[0].strategy->name(), "test_sys_5_10");
+    }
+    for (size_t i = 70; i < 110; i++) {
+        auto sw = se->getSelected(dates[i]);
+        CHECK_EQ(sw.size(), 1);
+        CHECK_EQ(sw[0].strategy->name(), "test_sys_5_10");
+    }
+    for (size_t i = 110; i < 125; i++) {
+        auto sw = se->getSelected(dates[i]);
+        CHECK_EQ(sw.size(), 1);
+        CHECK_EQ(sw[0].strategy->name(), "test_sys_5_20");
+    }
+}
+
+//-----------------------------------------------------------------------------
+// test export
+//-----------------------------------------------------------------------------
+#if HKU_SUPPORT_SERIALIZATION
+
+/** @par Test points */
+TEST_CASE("test_SE_PerformanceOptimal_export") {
+    DataRuntime& sm = getDataRuntime();
+    string filename(sm.tmpdir());
+    filename += "/SE_PerformanceOptimal.xml";
+
+    auto se1 = SE_PerformanceOptimal();
+    Stock stk = getStock("sz000001");
+    vector<std::pair<int, int>> params{{3, 5}, {3, 10}, {5, 10}, {5, 20}};
+    for (const auto& param : params) {
+        auto sys = create_test_strategy(param.first, param.second);
+        sys->setStock(stk);
+        // sys->setParam("trace", true);
+        se1->addSystem(sys);
+    }
+    KQuery query(-125);
+    se1->calculate(internal::StrategyRuntimeList(), query);
+    OptimalSelectorBase* raw_se1 = dynamic_cast<OptimalSelectorBase*>(se1.get());
+    auto run_ranges1 = raw_se1->getRunRanges();
+
+    // Currently a reset is needed after the calculation to serialize and reload normally
+    se1->reset();
+
+    {
+        std::ofstream ofs(filename);
+        boost::archive::xml_oarchive oa(ofs);
+        oa << BOOST_SERIALIZATION_NVP(se1);
+    }
+
+    SEPtr se2;
+    {
+        std::ifstream ifs(filename);
+        boost::archive::xml_iarchive ia(ifs);
+        ia >> BOOST_SERIALIZATION_NVP(se2);
+    }
+
+    CHECK_EQ(se1->name(), se2->name());
+    CHECK_UNARY(se2->getProtoSystemList().empty());
+    for (const auto& param : params) {
+        auto strategy = create_test_strategy(param.first, param.second);
+        strategy->setStock(stk);
+        se2->addSystem(strategy);
+    }
+    CHECK_EQ(se1->getProtoSystemList().size(), se2->getProtoSystemList().size());
+
+    // se2->setParam<bool>("trace", true);
+    se2->calculate(internal::StrategyRuntimeList(), query);
+    OptimalSelectorBase* raw_se2 = dynamic_cast<OptimalSelectorBase*>(se2.get());
+    auto run_ranges2 = raw_se2->getRunRanges();
+    CHECK_EQ(run_ranges1.size(), run_ranges2.size());
+    for (size_t i = 0, len = run_ranges1.size(); i < len; i++) {
+        CHECK_EQ(run_ranges1[i].start, run_ranges2[i].start);
+        CHECK_EQ(run_ranges1[i].run_start, run_ranges2[i].run_start);
+        CHECK_EQ(run_ranges1[i].end, run_ranges2[i].end);
+    }
+
+    auto dates = getDataRuntime().getTradingCalendar(query);
+    se1->calculate(internal::StrategyRuntimeList(), query);
+    for (const auto& date : dates) {
+        if (se1->getSelected(date).empty()) {
+            CHECK_UNARY(se2->getSelected(date).empty());
+        } else {
+            CHECK_EQ(se1->getSelected(date)[0].strategy->name(), se2->getSelected(date)[0].strategy->name());
+        }
+    }
+}
+#endif /* #if HKU_SUPPORT_SERIALIZATION */
+
+/** @} */

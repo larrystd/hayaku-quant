@@ -26,7 +26,6 @@
 
 from hikyuu.core import *
 from hikyuu import Datetime
-import pandas as pd
 
 
 Indicator.to_numpy = Indicator.to_np
@@ -65,6 +64,8 @@ def concat_to_df(dates, ind_list, head_stock_code=True, head_ind_name=False):
         198	2024-03-06 00:00:00	10.070455	9.776818
         199	2024-03-07 00:00:00	10.101364	9.738182
     """
+    import pandas as pd
+
     df = dates.to_df('ms')
     if not ind_list:
         return df

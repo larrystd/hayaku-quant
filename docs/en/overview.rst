@@ -39,19 +39,18 @@ Example code:
 
 ::
 
-    # create a simulated trading account for backtesting, with initial capital of 300,000
-    my_tm = crtTM(init_cash = 300000)
+    from hikyuu import Query, open_session
+    from hikyuu.execution import AccountConfig
 
-    # create a signal generator (fast line: 5-day EMA; slow line: 10-day EMA of the 5-day EMA;
-    # buy when the fast line crosses above the slow line, sell otherwise)
-    my_sg = SG_Flex(EMA(CLOSE(), n=5), slow_n=10)
+    # Runtime state is explicitly owned by the session.
+    account = AccountConfig(initial_cash=300000, name="research")
+    with open_session(account_config=account) as session:
+        session.wait_ready()
+        bars = session.data.get_kdata("sz000001", Query(-150))
+        snapshot = session.execution.snapshot()
 
-    # buy a fixed 1000 shares each time
-    my_mm = MM_FixedCount(1000)
-
-    # create the trading system and run it
-    sys = SYS_Simple(tm = my_tm, sg = my_sg, mm = my_mm)
-    sys.run(sm['sz000001'], Query(-150))
+    # Build and run component graphs with StrategyDefinition, BacktestRequest and StrategyEngine;
+    # see the Strategy engine chapter for the complete flow.
 
 .. figure:: _static/10000-overview.png
         :width: 600px

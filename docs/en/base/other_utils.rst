@@ -56,7 +56,7 @@ Functions
 
 .. py:function:: hku_save(var, filename)
 
-    Serialization: save a variable of a hikyuu built-in type (such as Stock, TradeManager, etc.) to the specified file, in XML format.
+    Serialization: save a supported Hikyuu value type (such as Stock or KData) to the specified file in XML format.
     
     :param var: a variable of a hikyuu built-in type
     :param str filename: the specified file name

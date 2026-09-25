@@ -25,7 +25,7 @@ class PythonTradeCost(TradeCostBase):
 
 class TradeCostTest(unittest.TestCase):
     def test_PythonTradeCost(self):
-        stock = sm['sh000001']
+        stock = data.get_stock('sh000001')
         tc = PythonTradeCost()
         self.assertEqual(tc.name, "PythonTradeCost")
 
@@ -39,7 +39,7 @@ class TradeCostTest(unittest.TestCase):
         self.assertEqual(cost, CostRecord(2, 2, 2, 2, 8))
 
     def test_ZeroTC(self):
-        stock = sm['sh000001']
+        stock = data.get_stock('sh000001')
         tc = TC_Zero()
         cost = tc.get_sell_cost(Datetime(201001010000), stock, 10.0, 100)
         self.assertEqual(cost, CostRecord(0, 0, 0, 0, 0))
@@ -53,7 +53,7 @@ class TradeCostTest(unittest.TestCase):
         self.assertEqual(cost, CostRecord(0, 0, 0, 0, 0))
 
     def test_FixedATC(self):
-        stock = sm['sh000001']
+        stock = data.get_stock('sh000001')
         tc = TC_FixedA()
         cost = tc.get_sell_cost(Datetime(200101010000), stock, 10.0, 2100)
         self.assertEqual(cost, CostRecord(37.8, 0, 2.1, 0, 39.9))

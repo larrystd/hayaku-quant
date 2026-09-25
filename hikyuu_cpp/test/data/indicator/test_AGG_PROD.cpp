@@ -1,0 +1,66 @@
+/*
+ *  Copyright (c) 2025 hikyuu.org
+ *
+ *  Created on: 2025-09-04
+ *      Author: fasiondog
+ */
+
+#include "test_config.h"
+#include <data/internal/DataRuntime.h>
+#include <data/indicator/crt/KDATA.h>
+#include <app/plugin/interface/plugins.h>
+#include <app/plugin/extind.h>
+#include <app/plugin/device.h>
+#include "app/plugin/plugin_valid.h"
+
+using namespace hku;
+
+/**
+ * @defgroup test_indicator_AGG_PROD test_indicator_AGG_PROD
+ * @ingroup test_hikyuu_indicator_suite
+ * @{
+ */
+
+// In the low precision mode the float overflows
+#if !HKU_USE_LOW_PRECISION
+
+/** @par Test points */
+TEST_CASE("test_AGG_PROD") {
+    HKU_IF_RETURN(!pluginValid(), void());
+
+    auto k = getKData("sz000001", KQueryByDate(Datetime(20111115)));
+    auto mink =
+      getKData("sz000001", KQueryByDate(Datetime(20111115), Null<Datetime>(), KQuery::MIN));
+
+    /** @arg The single day minute line aggregation */
+    auto ind = AGG_PROD(CLOSE(), KQuery::MIN);
+    auto result = ind(k);
+    CHECK_EQ(result.size(), k.size());
+    CHECK_EQ(result.name(), "AGG_PROD");
+    CHECK_EQ(result.discard(), 0);
+
+    auto mink2 =
+      getKData("sz000001", KQueryByDate(Datetime(20111115), Datetime(20111116), KQuery::MIN));
+    double sum = 1.0;
+    for (auto& kr : mink2) {
+        sum *= kr.closePrice;
+    }
+    CHECK_EQ(result[0], doctest::Approx(sum));
+
+    mink2 = getKData("sz000001", KQueryByDate(Datetime(20111205), Datetime(20111206), KQuery::MIN));
+    sum = 1.0;
+    for (auto& kr : mink2) {
+        sum *= kr.closePrice;
+    }
+    CHECK_EQ(result.back(), doctest::Approx(sum));
+
+    mink2 = getKData("sz000001", KQueryByDate(Datetime(20111118), Datetime(20111119), KQuery::MIN));
+    sum = 1.0;
+    for (auto& kr : mink2) {
+        sum *= kr.closePrice;
+    }
+    CHECK_EQ(result[3], doctest::Approx(sum));
+}
+#endif
+
+/** @} */

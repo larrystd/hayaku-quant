@@ -14,7 +14,7 @@ from test_init import *
 
 class StockTypeInfoTest(unittest.TestCase):
     def test_stockType(self):
-        stockType = sm.get_stock_type_info(1)
+        stockType = data.get_stock_type_info(1)
         self.assertEqual(stockType.type, 1)
         self.assertEqual(stockType.description, u"A股")
         self.assertEqual(stockType.tick, 0.01)
@@ -30,8 +30,8 @@ class StockTypeInfoTest(unittest.TestCase):
 
         # TODO: fails on Python3, not resolved yet
         """import pickle as pl
-        filename = sm.tmpdir() + '/StockTypeInfo.plk'
-        a = sm.getStockTypeInfo(1)
+        filename = tmp_dir + '/StockTypeInfo.plk'
+        a = data.get_stock_type_info(1)
         fh = open(filename, 'wb')
         pl.dump(a, fh)
         fh.close()

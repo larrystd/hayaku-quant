@@ -277,29 +277,30 @@ def uninstall():
 
 
 def copy_include(install_dir):
-    src_path = 'hikyuu_cpp/hikyuu'
-    dst_path = f'{install_dir}/include'
+    src_path = 'hikyuu_cpp/src'
+    dst_path = f'{install_dir}/include/hikyuu'
 
     for root, dirs, files in os.walk(src_path):
+        rel_root = os.path.relpath(root, src_path)
+        dst_root = dst_path if rel_root == '.' else os.path.join(dst_path, rel_root)
         for p in dirs:
-            dst_p = f'{dst_path}/{root[11:]}/{p}'
+            dst_p = os.path.join(dst_root, p)
             if not os.path.lexists(dst_p):
                 os.makedirs(dst_p)
             shutil.copy('hikyuu/cpp/__init__.py', dst_p)
 
         for fname in files:
             if len(fname) > 2 and fname[-2:] == ".h":
-                dst_p = f'{dst_path}/{root[11:]}'
-                if not os.path.lexists(dst_p):
-                    os.makedirs(dst_p)
-                shutil.copy(f'{root}/{fname}', dst_p)
+                if not os.path.lexists(dst_root):
+                    os.makedirs(dst_root)
+                shutil.copy(os.path.join(root, fname), dst_root)
 
     dst_path = f'{install_dir}/include/hikyuu/python'
     if not os.path.lexists(dst_path):
         os.makedirs(dst_path)
-    shutil.copy('hikyuu_pywrap/pybind_utils.h', dst_path)
-    shutil.copy('hikyuu_pywrap/pickle_support.h', dst_path)
-    shutil.copy('hikyuu_pywrap/convert_any.h', dst_path)
+    shutil.copy('hikyuu_pywrap/common/pybind_utils.h', dst_path)
+    shutil.copy('hikyuu_pywrap/common/pickle_support.h', dst_path)
+    shutil.copy('hikyuu_pywrap/common/convert_any.h', dst_path)
     shutil.copy('hikyuu/cpp/__init__.py', dst_path)
     shutil.copy('hikyuu/cpp/__init__.py', f'{install_dir}/include')
     shutil.copy('hikyuu/cpp/__init__.py', f'{install_dir}/include/hikyuu')

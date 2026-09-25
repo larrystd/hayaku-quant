@@ -92,24 +92,18 @@ importdata
 
 > ℹ️ **数据范围说明**：HikyuuTDX 目前仅支持下载**国内 A 股**历史数据，首次使用需在图形界面中完成初始配置；美股等其他市场暂不支持，后续将逐步补充。
 
-### 第 3 步：跑通第一个回测
+### 第 3 步：打开显式研究会话
 
 ```python
-from hikyuu.interactive import *
+from hikyuu import Query, open_session
+from hikyuu.execution import AccountConfig
 
-# 创建模拟交易账户进行回测，初始资金 30 万
-my_tm = crtTM(init_cash=300000)
-
-# 创建信号指示器（以 5 日 EMA 为快线，其 10 日 EMA 为慢线）
-# 快线向上穿越慢线时买入，反之卖出
-my_sg = SG_Flex(EMA(CLOSE(), n=5), slow_n=10)
-
-# 固定每次买入 1000 股
-my_mm = MM_FixedCount(1000)
-
-# 创建交易系统并运行
-sys = SYS_Simple(tm=my_tm, sg=my_sg, mm=my_mm)
-sys.run(sm['sz000001'], Query(-150))
+account = AccountConfig(initial_cash=300000, name="research")
+with open_session(account_config=account) as session:
+    session.wait_ready()
+    bars = session.data.get_kdata("sz000001", Query(-150))
+    snapshot = session.execution.snapshot()
+    print(len(bars), snapshot.funds)
 ```
 
 <p align="center">
@@ -178,24 +172,15 @@ sys.run(sm['sz000001'], Query(-150))
 
 > 遵循系统化交易理念严谨架构，每个部件可独立替换、自由组合
 
-| 层级                   | 部件                           | 说明                           |
-| :--------------------- | :----------------------------- | :----------------------------- |
-| **投资组合层**   | `Portfolio / PF`             | 投资组合：多系统的策略调度     |
-|                        | `Selector / SE`              | 系统对象选择：系统策略筛选     |
-|                        | `AllocateFunds / AF`         | 资金分配：多系统的资金分配     |
-|                        | `MultiFactor / MF`           | 多因子模型：因子评分与排序     |
-| **交易系统 SYS** | `Environment / EV`           | 市场环境：大盘环境有效性判断   |
-|                        | `Condition / CN`             | 系统有效条件：系统适用条件     |
-|                        | `Signal / SG`                | 信号指示器：产生买卖信号       |
-|                        | `Stoploss / Stopprofit / ST` | 止损 / 止盈：风险控制退出      |
-|                        | `MoneyManager / MM`          | 资金管理：买卖数量控制         |
-|                        | `ProfitGoal / PG`            | 盈利目标：目标达成退出         |
-|                        | `Slippage / SP`              | 滑点：回测价格模拟             |
-| **交易管理**     | `TradeManager / TM`          | 交易管理：账户资金与持仓记录   |
-|                        | `OrderBroker / OB`           | 订单执行：实盘下单 broker 对接 |
-| **数据层**       | `StockManager`               | 证券统一管理                   |
-|                        | `KData`                      | K 线量价序列                   |
-|                        | `Query`                      | 时间范围查询筛选               |
+| 领域                   | 主接口                                        | 职责                               |
+| :--------------------- | :-------------------------------------------- | :--------------------------------- |
+| **数据**               | `open_session / DataEngine`                   | 显式数据生命周期与行情查询         |
+| **执行**               | `AccountConfig / ExecutionEngine`            | 订单、现金、持仓与成交历史         |
+|                        | `AccountSnapshot / AccountView`               | 不可变账户视图                     |
+| **策略**               | `StrategyDefinition / StrategyEngine`        | 组件组合与策略编排                 |
+|                        | `BacktestRequest / BacktestResult`            | 稳定的回测输入与结果值             |
+| **分析**               | `hikyuu.analysis`                             | 显式结果转换与分析                 |
+| **扩展**               | `hikyuu.spi / hikyuu.advanced`               | 自定义协议与低层控制               |
 
 ---
 

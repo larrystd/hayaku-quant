@@ -155,12 +155,73 @@ Building Bar (Candlestick) Query Conditions
         :rtype: int
 
 
-StockManager/Block/Stock
--------------------------
+HikyuuSession/DataEngine
+------------------------
+
+``HikyuuSession`` is the explicit runtime session responsible for initialization and scoped access
+to the data engine. The legacy ``hikyuu_init`` function, ``StockManager`` class, and global ``sm``
+object have been removed. Closing a session immediately invalidates its DataEngine handle. Closing
+the final session stops data loading and releases the internal data runtime. Do not call ``close``
+concurrently with a query on the same session.
+
+.. code-block:: python
+
+    from hikyuu import Query, open_session
+
+    with open_session() as session:
+        stock = session.data.get_stock("sh000001")
+        kdata = session.data.get_kdata("sh000001", Query(-100))
+
+.. py:function:: open_session(filename=None, ignore_preload=False, context=None)
+
+    Open a runtime session. The returned object implements the Python context-manager protocol and
+    closes the session when leaving the ``with`` block.
+
+    :param str filename: configuration file path; defaults to ``~/.hikyuu/hikyuu.ini``
+    :param bool ignore_preload: whether to ignore preloading configuration
+    :param StrategyContext context: data loading scope
+    :rtype: HikyuuSession
+
+.. py:class:: HikyuuSession
+
+    .. py:attribute:: opened
+
+        Whether the session is open.
+
+    .. py:attribute:: ready
+
+        Whether data loading has completed.
+
+    .. py:attribute:: data
+
+        The read-only :py:class:`DataEngine` owned by this session.
+
+    .. py:method:: close()
+
+        Close and invalidate this session handle. Repeated calls are safe. The final explicit
+        session releases the internal data runtime; the compatibility ``StockManager`` facade
+        remains valid.
+
+.. py:class:: DataEngine
+
+    The read-only data entry point for ordinary users. It provides security, bar-data, market,
+    trading-calendar, sector, weight and financial-data queries. Driver, plugin, preload-thread and
+    IPC controls are not part of this public interface. It talks directly to the internal data
+    runtime owned by its :py:class:`HikyuuSession`; it does not route queries through
+    ``StockManager``.
+
+    Common methods include ``get_stock``, ``get_stock_list``, ``get_kdata``, ``get_market_info``,
+    ``get_trading_calendar``, ``get_block`` and ``get_history_finance_all_fields``.
+
+
+StockManager/Block/Stock (compatibility API)
+---------------------------------------------
 
 .. py:class:: StockManager
 
-    The security information manager
+    Compatibility security-information manager. New code should prefer :py:class:`DataEngine`;
+    existing methods remain available during the migration period. The object is a stable facade;
+    data drivers, caches and loading tasks are owned by the internal runtime.
 
     .. py:attribute:: data_ready
 

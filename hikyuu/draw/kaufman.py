@@ -34,7 +34,7 @@ See: 《精明交易者》（2006年 广东经济出版社）
 """
 
 from hikyuu import (
-    Query, StockManager, AMA, STDEV, CVAL, PRICELIST, EMA, CLOSE, HIGH, LOW, OPEN, KDATA, SG_Single, SG_Cross,
+    Query, AMA, STDEV, CVAL, PRICELIST, EMA, CLOSE, HIGH, LOW, OPEN, KDATA, SG_Single, SG_Cross,
     SG_Flex, RESULT
 )
 from .drawplot import (show_gcf, create_figure, ax_set_locator_formatter, adjust_axes_show, ax_draw_macd)

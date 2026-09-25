@@ -47,7 +47,7 @@ class DatetimeTest(unittest.TestCase):
 
         import pickle as pl
         a = Datetime(201001010000)
-        filename = sm.tmpdir() + "/Datetime.plk"
+        filename = tmp_dir + "/Datetime.plk"
         fh = open(filename, 'wb')
         pl.dump(a, fh)
         fh.close()

@@ -6,7 +6,11 @@
 # 作者：fasiondog
 # 历史：1）20130128, Added by fasiondog
 # ===============================================================================
-from hikyuu import *
+import hikyuu as hku
+from hikyuu.core import *
+from hikyuu.execution import *
+from hikyuu.indicator import *
+from hikyuu.strategy import *
 from configparser import ConfigParser
 from functools import lru_cache
 
@@ -30,12 +34,10 @@ tmp_dir = "test_data/tmp"
 if not os.path.lexists(tmp_dir):
     os.mkdir(tmp_dir)
 
-# starttime = time.time()
-# print "Loading Day Data ..."
-hikyuu_init(config_file)
-sm = StockManager.instance()
-# endtime = time.time()
-# print "%.2fs" % (endtime-starttime)
+# Keep the test runtime explicitly owned for the duration of the suite.
+session = hku.open_session(config_file)
+session.wait_ready()
+data = session.data
 
 # 仅在模块加载时读取一次配置
 _config = ConfigParser()

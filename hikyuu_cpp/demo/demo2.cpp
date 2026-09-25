@@ -13,9 +13,10 @@
  *
  *************************************************************/
 
-#include <hikyuu/hikyuu.h>
+#include <hikyuu.h>
 #include <thread>
 #include <chrono>
+#include <common/os.h>
 
 #if defined(_WIN32)
 #include <Windows.h>
@@ -48,21 +49,14 @@ int main(int argc, char* argv[]) {
     SetConsoleOutputCP(CP_UTF8);
 #endif
 
-    // The plugin path setting:
-    // Method 1: before the initialization, set the plugin path to "." or "" and it is taken
-    // automatically from the plugindir of the hikyuu.ini config:
-    // StockManager::instance().setPluginPath("."); Method 2: before the initialization, set the
-    // plugin path yourself (if needed) otherwise it defaults to the .hikyuu/plugin directory under
-    // the user home, where the plugins can be copied
-    // StockManager::instance().setPluginPath("./plugin");
-
     // Run multiple strategies in a multi-threaded way
     // Note: all the strategies in the same process share the same context!!!
     StrategyContext context({"sh000001", "sz000001"}, {KQuery::DAY});
 
     // On macosx an explicit init is needed for multi-threaded strategies, avoiding a plugin load
     // failure in an async thread
-    hikyuu_init(context, true);
+    auto session = HikyuuSession::open(fmt::format("{}/.hikyuu/hikyuu.ini", getUserDir()), true,
+                                       context);
 
     Strategy stg(context, "test");
 

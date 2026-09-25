@@ -1,5 +1,7 @@
 # -*- coding: utf8 -*-
 # cp936
+from __future__ import annotations
+
 """
 Draw the related charts in the interactive mode, such as the K-line chart and the American K-line chart
 """
@@ -868,11 +870,11 @@ def sysplot(sys, new=True, axes=None, style=1, only_draw_close=False):
         )
 
 
-def tm_performance(tm: TradeManager, query: Query, ref_stk: Stock = None, ext: bool = True, log: bool = False):
+def tm_performance(tm, query: Query, ref_stk: Stock = None, ext: bool = True, log: bool = False):
     """
     Draw the system performance, i.e. the account cumulative return curve
 
-    :param TradeManager tm: the account (the TradeManager) instance
+    :param tm: a legacy account-like object
     :param Stock ref_stk: the reference stock, sh000300 (the CSI 300) by default; the return curve
         of the reference object is drawn
     :param bool ext: whether to calculate the extended information (for the donators; otherwise the

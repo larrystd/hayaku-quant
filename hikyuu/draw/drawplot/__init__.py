@@ -29,7 +29,7 @@
 # 1. 20171122, Added by fasiondog
 # ===============================================================================
 
-from hikyuu.core import KData, Indicator, SignalBase, ConditionBase, EnvironmentBase, System, Portfolio, TradeManager, htr
+from hikyuu.core import KData, Indicator, SignalBase, ConditionBase, EnvironmentBase, htr
 
 import matplotlib
 from matplotlib.pylab import gca as mpl_gca
@@ -43,16 +43,10 @@ from .matplotlib_draw import ibar as mpl_ibar
 from .matplotlib_draw import sgplot as mpl_sgplot
 from .matplotlib_draw import cnplot as mpl_cnplot
 from .matplotlib_draw import evplot as mpl_evplot
-from .matplotlib_draw import sysplot as mpl_sysplot
 from .matplotlib_draw import ax_draw_macd as mpl_ax_draw_macd
 from .matplotlib_draw import ax_draw_macd2 as mpl_ax_draw_macd2
 from .matplotlib_draw import ax_set_locator_formatter as mpl_ax_set_locator_formatter
 from .matplotlib_draw import adjust_axes_show as mpl_adjust_axes_show
-from .matplotlib_draw import sys_performance as mpl_sys_performance
-from .matplotlib_draw import tm_performance as mpl_tm_performance
-from .matplotlib_draw import tm_heatmap as mpl_tm_heatmap
-from .matplotlib_draw import tm_year_profit as mpl_tm_year_profit
-from .matplotlib_draw import sys_heatmap as mpl_sys_heatmap
 from .matplotlib_draw import iheatmap as mpl_iheatmap
 from .matplotlib_draw import (DRAWNULL, STICKLINE, DRAWBAND, RGB, PLOYLINE,
                               DRAWLINE, DRAWTEXT, DRAWNUMBER, DRAWTEXT_FIX, DRAWNUMBER_FIX, DRAWSL,
@@ -70,11 +64,9 @@ from .bokeh_draw import ax_draw_macd2 as bk_ax_draw_macd2
 from .bokeh_draw import sgplot as bk_sgplot
 from .bokeh_draw import use_bokeh_in_notebook
 
-from .echarts_draw import sysplot as ec_sysplot
 from .echarts_draw import iplot as ec_iplot
 from .echarts_draw import ibar as ec_ibar
 from .echarts_draw import kplot as ec_kplot
-from .echarts_draw import sys_performance as ec_sys_performance
 
 g_draw_engine = 'matplotlib'
 
@@ -131,14 +123,6 @@ def use_draw_with_matplotlib():
     EnvironmentBase.plot = mpl_evplot
     ConditionBase.plot = mpl_cnplot
 
-    TradeManager.performance = mpl_tm_performance
-    System.plot = mpl_sysplot
-    System.performance = mpl_sys_performance
-    Portfolio.performance = mpl_sys_performance
-    TradeManager.heatmap = mpl_tm_heatmap
-    TradeManager.year_profit_bar = mpl_tm_year_profit
-    System.heatmap = mpl_sys_heatmap
-    Portfolio.heatmap = mpl_sys_heatmap
 
 
 def use_draw_with_echarts():
@@ -151,9 +135,6 @@ def use_draw_with_echarts():
     Indicator.plot = ec_iplot
     Indicator.bar = ec_ibar
 
-    System.plot = ec_sysplot
-    System.performance = ec_sys_performance
-    Portfolio.performance = ec_sys_performance
 
 
 def create_figure(n=1, figsize=None):

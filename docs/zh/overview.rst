@@ -29,18 +29,18 @@ Hikyuu Quant Framework 是一款基于 C++/Python 开发的开源超高速量化
 
 ::
 
-    #创建模拟交易账户进行回测，初始资金30万
-    my_tm = crtTM(init_cash = 300000)
+    from hikyuu import Query, open_session
+    from hikyuu.execution import AccountConfig
 
-    #创建信号指示器（以5日EMA为快线，5日EMA自身的10日EMA作为慢线，快线向上穿越慢线时买入，反之卖出）
-    my_sg = SG_Flex(EMA(CLOSE(), n=5), slow_n=10)
+    # 运行时状态由 Session 显式持有。
+    account = AccountConfig(initial_cash=300000, name="research")
+    with open_session(account_config=account) as session:
+        session.wait_ready()
+        bars = session.data.get_kdata("sz000001", Query(-150))
+        snapshot = session.execution.snapshot()
 
-    #固定每次买入1000股
-    my_mm = MM_FixedCount(1000)
-
-    #创建交易系统并运行
-    sys = SYS_Simple(tm = my_tm, sg = my_sg, mm = my_mm)
-    sys.run(sm['sz000001'], Query(-150))
+    # 使用 StrategyDefinition、BacktestRequest 与 StrategyEngine 组合并运行策略；
+    # 完整流程参见“策略引擎”章节。
 
 .. figure:: _static/10000-overview.png
         :width: 600px

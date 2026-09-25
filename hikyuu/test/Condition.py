@@ -9,8 +9,7 @@
 
 import unittest
 
-from test_init import *
-from hikyuu import *
+from test_init import ConditionBase, Datetime, Query, SignalBase, crtCN, data
 
 
 class ConditionPython(ConditionBase):
@@ -68,7 +67,7 @@ class TestCrtCN(unittest.TestCase):
         p.set_param("n", 20)
         self.assertEqual(p.get_param("n"), 20)
 
-        k = sm['sh000001'].get_kdata(Query(-100))
+        k = data.get_stock('sh000001').get_kdata(Query(-100))
         self.assertEqual(k.empty(), False)
         p.sg = SignalBase()  # The signal generator must already be specified when setting the trading object of cn
         p.to = k  # The _calculate function is called only when cn sets the trading object

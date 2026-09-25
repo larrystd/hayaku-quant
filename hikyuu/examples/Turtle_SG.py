@@ -7,7 +7,9 @@
 # History: 20160407, Added by fasiondog
 # ===============================================================================
 
-from hikyuu import *
+from hikyuu import Query
+from hikyuu.indicator import CLOSE, HHV, LLV, REF
+from hikyuu.strategy import SignalBase
 
 
 class TurtleSignal(SignalBase):
@@ -31,10 +33,10 @@ class TurtleSignal(SignalBase):
 
 
 if __name__ == "__main__":
-    from examples_init import *
+    from examples_init import data
 
     sg = TurtleSignal()
-    s = get_stock("sh000001")
+    s = data.get_stock("sh000001")
     k = s.get_kdata(Query(-500))
 
     # The actual calculation starts only when the trading object is set

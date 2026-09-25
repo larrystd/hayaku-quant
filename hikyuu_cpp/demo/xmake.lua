@@ -3,7 +3,7 @@ target("demo1")
     set_default(false)
     
     add_packages("boost", "spdlog", "fmt", "nng", "nlohmann_json")
-    add_includedirs("..")
+    add_includedirs("../src")
 
     if is_plat("windows") then
         add_cxflags("-wd4267")
@@ -27,7 +27,7 @@ target("demo2")
     set_default(false)
     
     add_packages("boost", "spdlog", "fmt", "nng", "nlohmann_json")
-    add_includedirs("..")
+    add_includedirs("../src")
 
     if is_plat("windows") then
         add_cxflags("-wd4267")
@@ -50,7 +50,7 @@ target("demo3")
     set_default(false)
     
     add_packages("boost", "spdlog", "fmt", "nng", "nlohmann_json")
-    add_includedirs("..")
+    add_includedirs("../src")
 
     if is_plat("windows") then
         add_cxflags("-wd4267")
@@ -67,4 +67,3 @@ target("demo3")
 
     add_files("./demo3.cpp")
 target_end()
-

@@ -5,6 +5,5 @@ Donor Features
 
    vip-plan.md
    indicator
-   backtest
    dataserver
    dynamick

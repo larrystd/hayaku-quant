@@ -7,7 +7,9 @@
 # History: 20160407, Added by fasiondog
 # ===============================================================================
 
-from hikyuu import *
+from hikyuu import Query
+from hikyuu.indicator import CLOSE, HHV, LLV, REF
+from hikyuu.strategy import crtSG
 
 
 def TurtleSG(self, k):
@@ -24,10 +26,10 @@ def TurtleSG(self, k):
 
 
 if __name__ == "__main__":
-    from examples_init import *
+    from examples_init import data
 
     sg = crtSG(TurtleSG, {'n': 20}, 'TurtleSG')
-    s = get_stock("sh000001")
+    s = data.get_stock("sh000001")
     k = s.get_kdata(Query(-500))
 
     # The actual calculation starts only when the trading object is set

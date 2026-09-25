@@ -49,7 +49,7 @@ class ParameterTest(unittest.TestCase):
     # def test_pickle(self):
     #     if not constant.pickle_support:
     #         return
-    #     tmpdir = sm.tmpdir()
+    #     tmpdir = tmp_dir
     #     fh = open(tmpdir + "/Parameter.plk", "wb")
     #     a = Parameter()
     #     a["bool"] = True

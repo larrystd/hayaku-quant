@@ -8,27 +8,25 @@ This inventory covers the high-risk orchestration interfaces selected for the fi
 
 | Metric | Count |
 | --- | ---: |
-| Reviewed C++ classes | 13 |
-| Unique C++ public methods | 363 |
-| pybind11 exports in reviewed modules | 966 |
-| Python files containing star exports | 23 |
+| Reviewed C++ classes | 21 |
+| Unique C++ public methods | 274 |
+| pybind11 exports in reviewed modules | 888 |
+| Python files containing star exports | 12 |
 
 ### Classification
 
 | Classification | Count |
 | --- | ---: |
-| Public | 161 |
-| SPI | 153 |
-| Internal | 24 |
-| Deprecated | 25 |
+| Public | 132 |
+| SPI | 140 |
+| Internal | 0 |
+| Deprecated | 2 |
 
 ### C++ surface by owner
 
 | Owner | Public methods found |
 | --- | ---: |
-| `TradeManagerBase` | 75 |
-| `StockManager` | 62 |
-| `System` | 53 |
+| `DataEngine` | 26 |
 | `MoneyManagerBase` | 25 |
 | `SignalBase` | 25 |
 | `Strategy` | 25 |
@@ -36,377 +34,298 @@ This inventory covers the high-risk orchestration interfaces selected for the fi
 | `ProfitGoalBase` | 16 |
 | `EnvironmentBase` | 14 |
 | `StoplossBase` | 14 |
+| `HikyuuSession` | 12 |
+| `OrderRequest` | 12 |
 | `SlippageBase` | 12 |
+| `AccountConfig` | 11 |
 | `DataDriverFactory` | 11 |
-| `OrderBrokerBase` | 8 |
+| `StrategyDefinition` | 11 |
+| `SessionOptions` | 8 |
+| `BacktestResult` | 6 |
+| `ExecutionEngine` | 6 |
+| `ExecutionReport` | 5 |
+| `AccountSnapshot` | 4 |
+| `BacktestRequest` | 4 |
+| `StrategyEngine` | 4 |
 
 ## Reviewed C++ interfaces
 
 | Owner | Symbol | Classification | Decision | Source |
 | --- | --- | --- | --- | --- |
-| `StockManager` | `StockManager` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:36` |
-| `StockManager` | `_testingSetIpcClientMode` | Internal | move to test fixture | `hikyuu_cpp/hikyuu/StockManager.h:78` |
-| `StockManager` | `addBlock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:167` |
-| `StockManager` | `addStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:257` |
-| `StockManager` | `addTempCsvStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:281` |
-| `StockManager` | `begin` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:373` |
-| `StockManager` | `cancelLoad` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/StockManager.h:329` |
-| `StockManager` | `clearPlugin` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/StockManager.h:380` |
-| `StockManager` | `dataReady` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:293` |
-| `StockManager` | `datadir` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:111` |
-| `StockManager` | `end` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:376` |
-| `StockManager` | `getAllCategory` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:157` |
-| `StockManager` | `getAllMarket` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:154` |
-| `StockManager` | `getBaseInfoDriver` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:101` |
-| `StockManager` | `getBaseInfoDriverParameter` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:83` |
-| `StockManager` | `getBlock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:165` |
-| `StockManager` | `getBlockDriverParameter` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:86` |
-| `StockManager` | `getBlockList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:182` |
-| `StockManager` | `getBlockListByIndexStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:189` |
-| `StockManager` | `getHikyuuParameter` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:95` |
-| `StockManager` | `getHistoryFinance` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:240` |
-| `StockManager` | `getHistoryFinanceAllFields` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:238` |
-| `StockManager` | `getHistoryFinanceFieldIndex` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:237` |
-| `StockManager` | `getHistoryFinanceFieldName` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:236` |
-| `StockManager` | `getKDataDriverParameter` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:89` |
-| `StockManager` | `getLoadTaskGroup` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/StockManager.h:310` |
-| `StockManager` | `getMarketInfo` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:135` |
-| `StockManager` | `getMarketStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:141` |
-| `StockManager` | `getPlugin` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/StockManager.h:322` |
-| `StockManager` | `getPluginPath` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/StockManager.h:318` |
-| `StockManager` | `getPreloadParameter` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:92` |
-| `StockManager` | `getStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:122` |
-| `StockManager` | `getStockBelongs` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:198` |
-| `StockManager` | `getStockList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:127` |
-| `StockManager` | `getStockTypeInfo` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:148` |
-| `StockManager` | `getStockTypeInfoList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:151` |
-| `StockManager` | `getStockWeightList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:250` |
-| `StockManager` | `getStrategyContext` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:98` |
-| `StockManager` | `getTradingCalendar` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:215` |
-| `StockManager` | `getZhBond10` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:220` |
-| `StockManager` | `hasCancelLoad` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/StockManager.h:333` |
-| `StockManager` | `init` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/StockManager.h:48` |
-| `StockManager` | `initializing` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:299` |
-| `StockManager` | `instance` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:33` |
-| `StockManager` | `isHoliday` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:227` |
-| `StockManager` | `isIpcClientMode` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/StockManager.h:72` |
-| `StockManager` | `isTradingHours` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:234` |
-| `StockManager` | `joinPreloadThread` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/StockManager.h:347` |
-| `StockManager` | `quit` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/StockManager.h:64` |
-| `StockManager` | `releaseShmServerBaseInfoCache` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/StockManager.h:369` |
-| `StockManager` | `reload` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/StockManager.h:54` |
-| `StockManager` | `reloadWith` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/StockManager.h:61` |
-| `StockManager` | `removeBlock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:173` |
-| `StockManager` | `removeStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:264` |
-| `StockManager` | `removeTempCsvStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:290` |
-| `StockManager` | `saveBlock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:171` |
-| `StockManager` | `setLanguagePath` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:326` |
-| `StockManager` | `setPluginPath` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/StockManager.h:315` |
-| `StockManager` | `size` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:114` |
-| `StockManager` | `thread_id` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/StockManager.h:305` |
-| `StockManager` | `tmpdir` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:108` |
-| `StockManager` | `waitDataReady` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/StockManager.h:296` |
-| `TradeManagerBase` | `TradeManagerBase` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:43` |
-| `TradeManagerBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:182` |
-| `TradeManagerBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:165` |
-| `TradeManagerBase` | `addPosition` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:700` |
-| `TradeManagerBase` | `addTradeRecord` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:689` |
-| `TradeManagerBase` | `borrowCash` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:616` |
-| `TradeManagerBase` | `borrowStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:640` |
-| `TradeManagerBase` | `buy` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:536` |
-| `TradeManagerBase` | `buyShort` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:602` |
-| `TradeManagerBase` | `cash` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:333` |
-| `TradeManagerBase` | `checkin` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:477` |
-| `TradeManagerBase` | `checkinStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:501` |
-| `TradeManagerBase` | `checkout` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:488` |
-| `TradeManagerBase` | `checkoutStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:516` |
-| `TradeManagerBase` | `clearBroker` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:198` |
-| `TradeManagerBase` | `clone` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:170` |
-| `TradeManagerBase` | `costFunc` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:71` |
-| `TradeManagerBase` | `currentCash` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:323` |
-| `TradeManagerBase` | `fetchAssetInfoFromBroker` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:727` |
-| `TradeManagerBase` | `firstDatetime` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:306` |
-| `TradeManagerBase` | `getBaseAssetsCurve` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:264` |
-| `TradeManagerBase` | `getBorrowCashCost` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:106` |
-| `TradeManagerBase` | `getBorrowStockCost` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:129` |
-| `TradeManagerBase` | `getBorrowStockList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:466` |
-| `TradeManagerBase` | `getBrokerLastDatetime` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:151` |
-| `TradeManagerBase` | `getBuyCost` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:83` |
-| `TradeManagerBase` | `getDebtCash` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:391` |
-| `TradeManagerBase` | `getDebtNumber` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:385` |
-| `TradeManagerBase` | `getFunds` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:677` |
-| `TradeManagerBase` | `getFundsCurve` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:216` |
-| `TradeManagerBase` | `getFundsList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:208` |
-| `TradeManagerBase` | `getHistoryPositionExtInfoList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:761` |
-| `TradeManagerBase` | `getHistoryPositionList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:429` |
-| `TradeManagerBase` | `getHoldNumber` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:373` |
-| `TradeManagerBase` | `getMarginRate` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:288` |
-| `TradeManagerBase` | `getMaxPullBack` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:752` |
-| `TradeManagerBase` | `getPerformance` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:742` |
-| `TradeManagerBase` | `getPosition` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:451` |
-| `TradeManagerBase` | `getPositionDict` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:420` |
-| `TradeManagerBase` | `getPositionExtInfo` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:791` |
-| `TradeManagerBase` | `getPositionExtInfoDict` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:784` |
-| `TradeManagerBase` | `getPositionExtInfoList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:772` |
-| `TradeManagerBase` | `getPositionList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:414` |
-| `TradeManagerBase` | `getProfitCumChangeCurve` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:248` |
-| `TradeManagerBase` | `getProfitCurve` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:232` |
-| `TradeManagerBase` | `getProfitPercentMonthly` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:801` |
-| `TradeManagerBase` | `getProfitPercentYearly` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:809` |
-| `TradeManagerBase` | `getReturnCashCost` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:116` |
-| `TradeManagerBase` | `getReturnStockCost` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:143` |
-| `TradeManagerBase` | `getSellCost` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:96` |
-| `TradeManagerBase` | `getShortHistoryPositionList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:441` |
-| `TradeManagerBase` | `getShortHoldNumber` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:379` |
-| `TradeManagerBase` | `getShortPosition` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:460` |
-| `TradeManagerBase` | `getShortPositionList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:435` |
-| `TradeManagerBase` | `getShortStockNumber` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:367` |
-| `TradeManagerBase` | `getStockNumber` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:361` |
-| `TradeManagerBase` | `getTradeList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:408` |
-| `TradeManagerBase` | `have` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:344` |
-| `TradeManagerBase` | `haveShort` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:355` |
-| `TradeManagerBase` | `initCash` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:294` |
-| `TradeManagerBase` | `initDatetime` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:300` |
-| `TradeManagerBase` | `isPythonObject` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:812` |
-| `TradeManagerBase` | `lastDatetime` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:313` |
-| `TradeManagerBase` | `name` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:56` |
-| `TradeManagerBase` | `precision` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:61` |
-| `TradeManagerBase` | `regBroker` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:191` |
-| `TradeManagerBase` | `reset` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:161` |
-| `TradeManagerBase` | `returnCash` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:627` |
-| `TradeManagerBase` | `returnStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:654` |
-| `TradeManagerBase` | `sell` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:558` |
-| `TradeManagerBase` | `sellShort` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:580` |
-| `TradeManagerBase` | `setBrokerLastDatetime` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:156` |
-| `TradeManagerBase` | `str` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:706` |
-| `TradeManagerBase` | `tocsv` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:716` |
-| `TradeManagerBase` | `updateWithWeight` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h:279` |
-| `OrderBrokerBase` | `OrderBrokerBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h:60` |
-| `OrderBrokerBase` | `_buy` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h:136` |
-| `OrderBrokerBase` | `_getAssetInfo` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h:156` |
-| `OrderBrokerBase` | `_sell` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h:152` |
-| `OrderBrokerBase` | `buy` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h:81` |
-| `OrderBrokerBase` | `getAssetInfo` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h:122` |
-| `OrderBrokerBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h:67` |
-| `OrderBrokerBase` | `sell` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h:96` |
-| `DataDriverFactory` | `getBaseInfoDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h:41` |
-| `DataDriverFactory` | `getBlockDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h:45` |
-| `DataDriverFactory` | `getKDataDriverPool` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h:49` |
-| `DataDriverFactory` | `init` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h:31` |
-| `DataDriverFactory` | `regBaseInfoDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h:39` |
-| `DataDriverFactory` | `regBlockDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h:43` |
-| `DataDriverFactory` | `regKDataDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h:47` |
-| `DataDriverFactory` | `release` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h:37` |
-| `DataDriverFactory` | `removeBaseInfoDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h:40` |
-| `DataDriverFactory` | `removeBlockDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h:44` |
-| `DataDriverFactory` | `removeKDataDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h:48` |
-| `System` | `System` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:71` |
-| `System` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:247` |
-| `System` | `_forceResetAll` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:244` |
-| `System` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:243` |
-| `System` | `clearDelayBuyRequest` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:271` |
-| `System` | `clone` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:182` |
-| `System` | `forceResetAll` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:175` |
-| `System` | `getBuyShortTradeRequest` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:162` |
-| `System` | `getBuyTradeRequest` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:155` |
-| `System` | `getCN` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:97` |
-| `System` | `getEV` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:94` |
-| `System` | `getMM` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:91` |
-| `System` | `getPG` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:109` |
-| `System` | `getQuery` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:147` |
-| `System` | `getSG` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:100` |
-| `System` | `getSP` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:112` |
-| `System` | `getST` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:103` |
-| `System` | `getSellShortTradeRequest` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:161` |
-| `System` | `getSellTradeRequest` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:159` |
-| `System` | `getStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:142` |
-| `System` | `getTM` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:88` |
-| `System` | `getTO` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:85` |
-| `System` | `getTP` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:106` |
-| `System` | `getTradeRecordList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:151` |
-| `System` | `haveDelayBuyRequest` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:278` |
-| `System` | `haveDelaySellRequest` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:274` |
-| `System` | `isPythonObject` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:288` |
-| `System` | `lastSuggestion` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:194` |
-| `System` | `name` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:82` |
-| `System` | `partChangedNotify` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:239` |
-| `System` | `pfProcessDelayBuyRequest` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:286` |
-| `System` | `pfProcessDelaySellRequest` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:283` |
-| `System` | `readyForRun` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:235` |
-| `System` | `reset` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:171` |
-| `System` | `run` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:222` |
-| `System` | `runMoment` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:229` |
-| `System` | `runMomentOnClose` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:232` |
-| `System` | `runMomentOnOpen` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:231` |
-| `System` | `sellForceOnClose` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:265` |
-| `System` | `sellForceOnOpen` | Internal | remove from the ordinary public surface | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:259` |
-| `System` | `setCN` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:124` |
-| `System` | `setEV` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:121` |
-| `System` | `setMM` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:118` |
-| `System` | `setNotSharedAll` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:165` |
-| `System` | `setPG` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:136` |
-| `System` | `setSG` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:127` |
-| `System` | `setSP` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:139` |
-| `System` | `setST` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:130` |
-| `System` | `setStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:145` |
-| `System` | `setTM` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:115` |
-| `System` | `setTO` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:188` |
-| `System` | `setTP` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:133` |
-| `System` | `str` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/trade_sys/system/System.h:251` |
-| `Strategy` | `Strategy` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:43` |
-| `Strategy` | `buy` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/strategy/Strategy.h:185` |
-| `Strategy` | `context` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:56` |
-| `Strategy` | `getCurrentPrice` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:132` |
-| `Strategy` | `getKData` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:170` |
-| `Strategy` | `getLastKData` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:149` |
-| `Strategy` | `getPriceByTime` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:141` |
-| `Strategy` | `getSP` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:123` |
-| `Strategy` | `getTM` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:114` |
-| `Strategy` | `isBacktesting` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:194` |
-| `Strategy` | `name` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:52` |
-| `Strategy` | `nextDatetime` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:181` |
-| `Strategy` | `now` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:177` |
-| `Strategy` | `onChange` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:89` |
-| `Strategy` | `onReceivedSpot` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:100` |
-| `Strategy` | `order` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:159` |
-| `Strategy` | `orderValue` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:168` |
-| `Strategy` | `runDaily` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:70` |
-| `Strategy` | `runDailyAt` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:79` |
-| `Strategy` | `running` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:60` |
-| `Strategy` | `sell` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/hikyuu/strategy/Strategy.h:189` |
-| `Strategy` | `setSP` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:127` |
-| `Strategy` | `setTM` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:118` |
-| `Strategy` | `start` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:106` |
-| `Strategy` | `today` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/hikyuu/strategy/Strategy.h:173` |
-| `EnvironmentBase` | `EnvironmentBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:34` |
-| `EnvironmentBase` | `_addValid` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:72` |
-| `EnvironmentBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:91` |
-| `EnvironmentBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:97` |
-| `EnvironmentBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:94` |
-| `EnvironmentBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:64` |
-| `EnvironmentBase` | `getQuery` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:53` |
-| `EnvironmentBase` | `getValue` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:81` |
-| `EnvironmentBase` | `getValues` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:88` |
-| `EnvironmentBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:99` |
-| `EnvironmentBase` | `isValid` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:79` |
-| `EnvironmentBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:42` |
-| `EnvironmentBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:47` |
-| `EnvironmentBase` | `setQuery` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h:50` |
-| `ConditionBase` | `ConditionBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:31` |
-| `ConditionBase` | `_addValid` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:82` |
-| `ConditionBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:96` |
-| `ConditionBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:102` |
-| `ConditionBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:99` |
-| `ConditionBase` | `at` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:42` |
-| `ConditionBase` | `cbegin` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:106` |
-| `ConditionBase` | `cend` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:110` |
-| `ConditionBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:86` |
-| `ConditionBase` | `data` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:44` |
-| `ConditionBase` | `getDatetimeList` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:68` |
-| `ConditionBase` | `getSG` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:65` |
-| `ConditionBase` | `getTM` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:59` |
-| `ConditionBase` | `getTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:53` |
-| `ConditionBase` | `getValues` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:75` |
-| `ConditionBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:114` |
-| `ConditionBase` | `isValid` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:93` |
-| `ConditionBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:38` |
-| `ConditionBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:47` |
-| `ConditionBase` | `setSG` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:62` |
-| `ConditionBase` | `setTM` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:56` |
-| `ConditionBase` | `setTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:50` |
-| `ConditionBase` | `size` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h:40` |
-| `SignalBase` | `SignalBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:30` |
-| `SignalBase` | `_addBuySignal` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:91` |
-| `SignalBase` | `_addSellSignal` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:99` |
-| `SignalBase` | `_addSignal` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:83` |
-| `SignalBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:137` |
-| `SignalBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:134` |
-| `SignalBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:131` |
-| `SignalBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:122` |
-| `SignalBase` | `getBuySignal` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:78` |
-| `SignalBase` | `getBuyValue` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:53` |
-| `SignalBase` | `getCycleEnd` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:115` |
-| `SignalBase` | `getCycleStart` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:114` |
-| `SignalBase` | `getSellSignal` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:81` |
-| `SignalBase` | `getSellValue` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:61` |
-| `SignalBase` | `getTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:111` |
-| `SignalBase` | `getValue` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:63` |
-| `SignalBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:139` |
-| `SignalBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:128` |
-| `SignalBase` | `nextTimeShouldBuy` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:69` |
-| `SignalBase` | `nextTimeShouldSell` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:75` |
-| `SignalBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:118` |
-| `SignalBase` | `setTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:105` |
-| `SignalBase` | `shouldBuy` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:38` |
-| `SignalBase` | `shouldSell` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:45` |
-| `SignalBase` | `startCycle` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h:113` |
-| `MoneyManagerBase` | `MoneyManagerBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:28` |
-| `MoneyManagerBase` | `_buyNotify` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:79` |
-| `MoneyManagerBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:160` |
-| `MoneyManagerBase` | `_getBuyNumber` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:144` |
-| `MoneyManagerBase` | `_getBuyShortNumber` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:153` |
-| `MoneyManagerBase` | `_getSellNumber` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:147` |
-| `MoneyManagerBase` | `_getSellShortNumber` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:150` |
-| `MoneyManagerBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:157` |
-| `MoneyManagerBase` | `_sellNotify` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:86` |
-| `MoneyManagerBase` | `buyNotify` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:75` |
-| `MoneyManagerBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:72` |
-| `MoneyManagerBase` | `currentBuyCount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:138` |
-| `MoneyManagerBase` | `currentSellCount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:142` |
-| `MoneyManagerBase` | `getBuyNumber` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:133` |
-| `MoneyManagerBase` | `getBuyShortNumber` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:121` |
-| `MoneyManagerBase` | `getQuery` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:66` |
-| `MoneyManagerBase` | `getSellNumber` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:99` |
-| `MoneyManagerBase` | `getSellShortNumber` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:110` |
-| `MoneyManagerBase` | `getTM` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:56` |
-| `MoneyManagerBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:162` |
-| `MoneyManagerBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:37` |
-| `MoneyManagerBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:42` |
-| `MoneyManagerBase` | `sellNotify` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:82` |
-| `MoneyManagerBase` | `setQuery` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:61` |
-| `MoneyManagerBase` | `setTM` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h:48` |
-| `StoplossBase` | `StoplossBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:30` |
-| `StoplossBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:94` |
-| `StoplossBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:91` |
-| `StoplossBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:88` |
-| `StoplossBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:56` |
-| `StoplossBase` | `getPrice` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:73` |
-| `StoplossBase` | `getShortPrice` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:83` |
-| `StoplossBase` | `getTM` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:43` |
-| `StoplossBase` | `getTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:49` |
-| `StoplossBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:96` |
-| `StoplossBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:37` |
-| `StoplossBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:52` |
-| `StoplossBase` | `setTM` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:40` |
-| `StoplossBase` | `setTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h:46` |
-| `ProfitGoalBase` | `ProfitGoalBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:30` |
-| `ProfitGoalBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:84` |
-| `ProfitGoalBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:81` |
-| `ProfitGoalBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:78` |
-| `ProfitGoalBase` | `buyNotify` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:52` |
-| `ProfitGoalBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:62` |
-| `ProfitGoalBase` | `getGoal` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:70` |
-| `ProfitGoalBase` | `getShortGoal` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:73` |
-| `ProfitGoalBase` | `getTM` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:37` |
-| `ProfitGoalBase` | `getTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:43` |
-| `ProfitGoalBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:86` |
-| `ProfitGoalBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:49` |
-| `ProfitGoalBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:58` |
-| `ProfitGoalBase` | `sellNotify` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:55` |
-| `ProfitGoalBase` | `setTM` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:34` |
-| `ProfitGoalBase` | `setTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h:40` |
-| `SlippageBase` | `SlippageBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:27` |
-| `SlippageBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:72` |
-| `SlippageBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:66` |
-| `SlippageBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:69` |
-| `SlippageBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:47` |
-| `SlippageBase` | `getRealBuyPrice` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:55` |
-| `SlippageBase` | `getRealSellPrice` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:63` |
-| `SlippageBase` | `getTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:34` |
-| `SlippageBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:74` |
-| `SlippageBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:40` |
-| `SlippageBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:43` |
-| `SlippageBase` | `setTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h:31` |
+| `HikyuuSession` | `HikyuuSession` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:25` |
+| `HikyuuSession` | `bindStrategy` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:47` |
+| `HikyuuSession` | `close` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:38` |
+| `HikyuuSession` | `data` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:44` |
+| `HikyuuSession` | `execution` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:52` |
+| `HikyuuSession` | `hasExecution` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:49` |
+| `HikyuuSession` | `hasStrategy` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:50` |
+| `HikyuuSession` | `isOpen` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:39` |
+| `HikyuuSession` | `open` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:33` |
+| `HikyuuSession` | `ready` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:40` |
+| `HikyuuSession` | `strategy` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:54` |
+| `HikyuuSession` | `waitReady` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/HikyuuSession.h:41` |
+| `SessionOptions` | `SessionOptions` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/SessionOptions.h:20` |
+| `SessionOptions` | `baseInfoParam` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/SessionOptions.h:28` |
+| `SessionOptions` | `blockParam` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/SessionOptions.h:32` |
+| `SessionOptions` | `context` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/SessionOptions.h:48` |
+| `SessionOptions` | `fromIni` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/SessionOptions.h:24` |
+| `SessionOptions` | `hikyuuParam` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/SessionOptions.h:44` |
+| `SessionOptions` | `kdataParam` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/SessionOptions.h:36` |
+| `SessionOptions` | `preloadParam` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/app/SessionOptions.h:40` |
+| `DataEngine` | `DataEngine` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:31` |
+| `DataEngine` | `getBlock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:51` |
+| `DataEngine` | `getBlockCategoryList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:50` |
+| `DataEngine` | `getBlockList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:52` |
+| `DataEngine` | `getHistoryFinance` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:68` |
+| `DataEngine` | `getHistoryFinanceAllFields` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:67` |
+| `DataEngine` | `getHistoryFinanceFieldIndex` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:66` |
+| `DataEngine` | `getHistoryFinanceFieldName` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:65` |
+| `DataEngine` | `getKData` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:42` |
+| `DataEngine` | `getMarketInfo` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:44` |
+| `DataEngine` | `getMarketList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:46` |
+| `DataEngine` | `getMarketStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:45` |
+| `DataEngine` | `getStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:40` |
+| `DataEngine` | `getStockBelongs` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:53` |
+| `DataEngine` | `getStockList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:41` |
+| `DataEngine` | `getStockTypeInfo` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:47` |
+| `DataEngine` | `getStockTypeInfoList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:48` |
+| `DataEngine` | `getStockWeightList` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:63` |
+| `DataEngine` | `getTradingCalendar` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:57` |
+| `DataEngine` | `getZhBond10` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:62` |
+| `DataEngine` | `initializing` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:36` |
+| `DataEngine` | `isHoliday` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:59` |
+| `DataEngine` | `isTradingHours` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:60` |
+| `DataEngine` | `ready` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:35` |
+| `DataEngine` | `size` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:39` |
+| `DataEngine` | `waitReady` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/data/DataEngine.h:37` |
+| `DataDriverFactory` | `getBaseInfoDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/data/driver/DataDriverFactory.h:41` |
+| `DataDriverFactory` | `getBlockDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/data/driver/DataDriverFactory.h:45` |
+| `DataDriverFactory` | `getKDataDriverPool` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/data/driver/DataDriverFactory.h:49` |
+| `DataDriverFactory` | `init` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/data/driver/DataDriverFactory.h:31` |
+| `DataDriverFactory` | `regBaseInfoDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/data/driver/DataDriverFactory.h:39` |
+| `DataDriverFactory` | `regBlockDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/data/driver/DataDriverFactory.h:43` |
+| `DataDriverFactory` | `regKDataDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/data/driver/DataDriverFactory.h:47` |
+| `DataDriverFactory` | `release` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/data/driver/DataDriverFactory.h:37` |
+| `DataDriverFactory` | `removeBaseInfoDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/data/driver/DataDriverFactory.h:40` |
+| `DataDriverFactory` | `removeBlockDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/data/driver/DataDriverFactory.h:44` |
+| `DataDriverFactory` | `removeKDataDriver` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/data/driver/DataDriverFactory.h:48` |
+| `AccountConfig` | `AccountConfig` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountConfig.h:22` |
+| `AccountConfig` | `accountId` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountConfig.h:68` |
+| `AccountConfig` | `brokers` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountConfig.h:72` |
+| `AccountConfig` | `costPolicy` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountConfig.h:48` |
+| `AccountConfig` | `initDatetime` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountConfig.h:40` |
+| `AccountConfig` | `initialCash` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountConfig.h:44` |
+| `AccountConfig` | `m_initDatetime` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountConfig.h:28` |
+| `AccountConfig` | `name` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountConfig.h:52` |
+| `AccountConfig` | `precision` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountConfig.h:56` |
+| `AccountConfig` | `supportBorrowCash` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountConfig.h:60` |
+| `AccountConfig` | `supportBorrowStock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountConfig.h:64` |
+| `ExecutionEngine` | `ExecutionEngine` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/ExecutionEngine.h:42` |
+| `ExecutionEngine` | `accountId` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/ExecutionEngine.h:49` |
+| `ExecutionEngine` | `history` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/ExecutionEngine.h:48` |
+| `ExecutionEngine` | `snapshot` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/ExecutionEngine.h:46` |
+| `ExecutionEngine` | `submit` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/ExecutionEngine.h:45` |
+| `ExecutionEngine` | `view` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/ExecutionEngine.h:47` |
+| `OrderRequest` | `OrderRequest` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:34` |
+| `OrderRequest` | `datetime` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:52` |
+| `OrderRequest` | `goalPrice` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:72` |
+| `OrderRequest` | `m_side` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:36` |
+| `OrderRequest` | `number` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:64` |
+| `OrderRequest` | `origin` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:80` |
+| `OrderRequest` | `planPrice` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:76` |
+| `OrderRequest` | `realPrice` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:60` |
+| `OrderRequest` | `remark` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:84` |
+| `OrderRequest` | `side` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:48` |
+| `OrderRequest` | `stock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:56` |
+| `OrderRequest` | `stoploss` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/OrderRequest.h:68` |
+| `ExecutionReport` | `ExecutionReport` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/ExecutionReport.h:25` |
+| `ExecutionReport` | `filled` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/ExecutionReport.h:33` |
+| `ExecutionReport` | `rejected` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/ExecutionReport.h:37` |
+| `ExecutionReport` | `status` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/ExecutionReport.h:29` |
+| `ExecutionReport` | `trade` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/ExecutionReport.h:41` |
+| `AccountSnapshot` | `AccountSnapshot` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountSnapshot.h:20` |
+| `AccountSnapshot` | `funds` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountSnapshot.h:26` |
+| `AccountSnapshot` | `positions` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountSnapshot.h:30` |
+| `AccountSnapshot` | `shortPositions` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/execution/AccountSnapshot.h:34` |
+| `StrategyDefinition` | `StrategyDefinition` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyDefinition.h:25` |
+| `StrategyDefinition` | `condition` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyDefinition.h:35` |
+| `StrategyDefinition` | `environment` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyDefinition.h:34` |
+| `StrategyDefinition` | `moneyManager` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyDefinition.h:32` |
+| `StrategyDefinition` | `name` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyDefinition.h:31` |
+| `StrategyDefinition` | `parameters` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyDefinition.h:40` |
+| `StrategyDefinition` | `profitGoal` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyDefinition.h:38` |
+| `StrategyDefinition` | `signal` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyDefinition.h:33` |
+| `StrategyDefinition` | `slippage` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyDefinition.h:39` |
+| `StrategyDefinition` | `stoploss` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyDefinition.h:36` |
+| `StrategyDefinition` | `takeProfit` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyDefinition.h:37` |
+| `StrategyEngine` | `StrategyEngine` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyEngine.h:40` |
+| `StrategyEngine` | `run` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyEngine.h:44` |
+| `StrategyEngine` | `running` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyEngine.h:50` |
+| `StrategyEngine` | `stop` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/StrategyEngine.h:47` |
+| `BacktestRequest` | `BacktestRequest` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/BacktestRequest.h:17` |
+| `BacktestRequest` | `kdata` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/BacktestRequest.h:19` |
+| `BacktestRequest` | `reset` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/BacktestRequest.h:20` |
+| `BacktestRequest` | `resetAll` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/BacktestRequest.h:21` |
+| `BacktestResult` | `BacktestResult` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/BacktestResult.h:22` |
+| `BacktestResult` | `empty` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/BacktestResult.h:28` |
+| `BacktestResult` | `query` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/BacktestResult.h:25` |
+| `BacktestResult` | `stock` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/BacktestResult.h:24` |
+| `BacktestResult` | `tradeCount` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/BacktestResult.h:27` |
+| `BacktestResult` | `trades` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/engine/BacktestResult.h:26` |
+| `Strategy` | `Strategy` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:49` |
+| `Strategy` | `buy` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/src/strategy/Strategy.h:191` |
+| `Strategy` | `context` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:62` |
+| `Strategy` | `getAccount` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:120` |
+| `Strategy` | `getCurrentPrice` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:138` |
+| `Strategy` | `getKData` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:176` |
+| `Strategy` | `getLastKData` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:155` |
+| `Strategy` | `getPriceByTime` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:147` |
+| `Strategy` | `getSP` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:129` |
+| `Strategy` | `isBacktesting` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:201` |
+| `Strategy` | `name` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:58` |
+| `Strategy` | `nextDatetime` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:187` |
+| `Strategy` | `now` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:183` |
+| `Strategy` | `onChange` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:95` |
+| `Strategy` | `onReceivedSpot` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:106` |
+| `Strategy` | `order` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:165` |
+| `Strategy` | `orderValue` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:174` |
+| `Strategy` | `runDaily` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:76` |
+| `Strategy` | `runDailyAt` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:85` |
+| `Strategy` | `running` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:66` |
+| `Strategy` | `sell` | Deprecated | keep a compatibility forwarder during migration | `hikyuu_cpp/src/strategy/Strategy.h:196` |
+| `Strategy` | `setAccount` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:124` |
+| `Strategy` | `setSP` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:133` |
+| `Strategy` | `start` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:112` |
+| `Strategy` | `today` | Public | retain until a reviewed replacement exists | `hikyuu_cpp/src/strategy/Strategy.h:179` |
+| `EnvironmentBase` | `EnvironmentBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:34` |
+| `EnvironmentBase` | `_addValid` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:72` |
+| `EnvironmentBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:91` |
+| `EnvironmentBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:97` |
+| `EnvironmentBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:94` |
+| `EnvironmentBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:64` |
+| `EnvironmentBase` | `getQuery` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:53` |
+| `EnvironmentBase` | `getValue` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:81` |
+| `EnvironmentBase` | `getValues` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:88` |
+| `EnvironmentBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:99` |
+| `EnvironmentBase` | `isValid` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:79` |
+| `EnvironmentBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:42` |
+| `EnvironmentBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:47` |
+| `EnvironmentBase` | `setQuery` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/environment/EnvironmentBase.h:50` |
+| `ConditionBase` | `ConditionBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:31` |
+| `ConditionBase` | `_addValid` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:82` |
+| `ConditionBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:96` |
+| `ConditionBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:102` |
+| `ConditionBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:99` |
+| `ConditionBase` | `at` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:42` |
+| `ConditionBase` | `cbegin` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:106` |
+| `ConditionBase` | `cend` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:110` |
+| `ConditionBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:86` |
+| `ConditionBase` | `data` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:44` |
+| `ConditionBase` | `getAccount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:59` |
+| `ConditionBase` | `getDatetimeList` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:68` |
+| `ConditionBase` | `getSG` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:65` |
+| `ConditionBase` | `getTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:53` |
+| `ConditionBase` | `getValues` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:75` |
+| `ConditionBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:114` |
+| `ConditionBase` | `isValid` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:93` |
+| `ConditionBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:38` |
+| `ConditionBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:47` |
+| `ConditionBase` | `setAccount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:56` |
+| `ConditionBase` | `setSG` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:62` |
+| `ConditionBase` | `setTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:50` |
+| `ConditionBase` | `size` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/condition/ConditionBase.h:40` |
+| `SignalBase` | `SignalBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:29` |
+| `SignalBase` | `_addBuySignal` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/signal/SignalBase.h:90` |
+| `SignalBase` | `_addSellSignal` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/signal/SignalBase.h:98` |
+| `SignalBase` | `_addSignal` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/signal/SignalBase.h:82` |
+| `SignalBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/signal/SignalBase.h:136` |
+| `SignalBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/signal/SignalBase.h:133` |
+| `SignalBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/signal/SignalBase.h:130` |
+| `SignalBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:121` |
+| `SignalBase` | `getBuySignal` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:77` |
+| `SignalBase` | `getBuyValue` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:52` |
+| `SignalBase` | `getCycleEnd` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:114` |
+| `SignalBase` | `getCycleStart` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:113` |
+| `SignalBase` | `getSellSignal` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:80` |
+| `SignalBase` | `getSellValue` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:60` |
+| `SignalBase` | `getTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:110` |
+| `SignalBase` | `getValue` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:62` |
+| `SignalBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:138` |
+| `SignalBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:127` |
+| `SignalBase` | `nextTimeShouldBuy` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:68` |
+| `SignalBase` | `nextTimeShouldSell` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:74` |
+| `SignalBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:117` |
+| `SignalBase` | `setTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:104` |
+| `SignalBase` | `shouldBuy` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:37` |
+| `SignalBase` | `shouldSell` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:44` |
+| `SignalBase` | `startCycle` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/signal/SignalBase.h:112` |
+| `MoneyManagerBase` | `MoneyManagerBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:28` |
+| `MoneyManagerBase` | `_buyNotify` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:79` |
+| `MoneyManagerBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:160` |
+| `MoneyManagerBase` | `_getBuyNumber` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:144` |
+| `MoneyManagerBase` | `_getBuyShortNumber` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:153` |
+| `MoneyManagerBase` | `_getSellNumber` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:147` |
+| `MoneyManagerBase` | `_getSellShortNumber` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:150` |
+| `MoneyManagerBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:157` |
+| `MoneyManagerBase` | `_sellNotify` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:86` |
+| `MoneyManagerBase` | `buyNotify` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:75` |
+| `MoneyManagerBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:72` |
+| `MoneyManagerBase` | `currentBuyCount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:138` |
+| `MoneyManagerBase` | `currentSellCount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:142` |
+| `MoneyManagerBase` | `getAccount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:56` |
+| `MoneyManagerBase` | `getBuyNumber` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:133` |
+| `MoneyManagerBase` | `getBuyShortNumber` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:121` |
+| `MoneyManagerBase` | `getQuery` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:66` |
+| `MoneyManagerBase` | `getSellNumber` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:99` |
+| `MoneyManagerBase` | `getSellShortNumber` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:110` |
+| `MoneyManagerBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:162` |
+| `MoneyManagerBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:37` |
+| `MoneyManagerBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:42` |
+| `MoneyManagerBase` | `sellNotify` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:82` |
+| `MoneyManagerBase` | `setAccount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:48` |
+| `MoneyManagerBase` | `setQuery` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/moneymanager/MoneyManagerBase.h:61` |
+| `StoplossBase` | `StoplossBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:30` |
+| `StoplossBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:94` |
+| `StoplossBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:91` |
+| `StoplossBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:88` |
+| `StoplossBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:56` |
+| `StoplossBase` | `getAccount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:43` |
+| `StoplossBase` | `getPrice` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:73` |
+| `StoplossBase` | `getShortPrice` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:83` |
+| `StoplossBase` | `getTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:49` |
+| `StoplossBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:96` |
+| `StoplossBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:37` |
+| `StoplossBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:52` |
+| `StoplossBase` | `setAccount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:40` |
+| `StoplossBase` | `setTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/stoploss/StoplossBase.h:46` |
+| `ProfitGoalBase` | `ProfitGoalBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:30` |
+| `ProfitGoalBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:84` |
+| `ProfitGoalBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:81` |
+| `ProfitGoalBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:78` |
+| `ProfitGoalBase` | `buyNotify` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:52` |
+| `ProfitGoalBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:62` |
+| `ProfitGoalBase` | `getAccount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:37` |
+| `ProfitGoalBase` | `getGoal` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:70` |
+| `ProfitGoalBase` | `getShortGoal` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:73` |
+| `ProfitGoalBase` | `getTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:43` |
+| `ProfitGoalBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:86` |
+| `ProfitGoalBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:49` |
+| `ProfitGoalBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:58` |
+| `ProfitGoalBase` | `sellNotify` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:55` |
+| `ProfitGoalBase` | `setAccount` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:34` |
+| `ProfitGoalBase` | `setTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/profitgoal/ProfitGoalBase.h:40` |
+| `SlippageBase` | `SlippageBase` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:27` |
+| `SlippageBase` | `_calculate` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:72` |
+| `SlippageBase` | `_clone` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:66` |
+| `SlippageBase` | `_reset` | SPI | expose only through the extension namespace | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:69` |
+| `SlippageBase` | `clone` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:47` |
+| `SlippageBase` | `getRealBuyPrice` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:55` |
+| `SlippageBase` | `getRealSellPrice` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:63` |
+| `SlippageBase` | `getTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:34` |
+| `SlippageBase` | `isPythonObject` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:74` |
+| `SlippageBase` | `name` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:40` |
+| `SlippageBase` | `reset` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:43` |
+| `SlippageBase` | `setTO` | SPI | move out of the ordinary top-level API | `hikyuu_cpp/src/strategy/slippage/SlippageBase.h:31` |
 
 ## pybind11 export counts
 
@@ -414,72 +333,67 @@ This table counts binding declarations, including overloads. A high count is a r
 
 | Binding file | Export declarations |
 | --- | ---: |
-| `hikyuu_pywrap/trade_manage/_TradeManager.cpp` | 59 |
-| `hikyuu_pywrap/_Datetime.cpp` | 57 |
-| `hikyuu_pywrap/trade_sys/_Signal.cpp` | 53 |
-| `hikyuu_pywrap/trade_sys/_Selector.cpp` | 50 |
-| `hikyuu_pywrap/_StockManager.cpp` | 42 |
-| `hikyuu_pywrap/_Stock.cpp` | 36 |
-| `hikyuu_pywrap/_TimeDelta.cpp` | 33 |
-| `hikyuu_pywrap/trade_sys/_System.cpp` | 33 |
-| `hikyuu_pywrap/trade_manage/_PositionRecord.cpp` | 32 |
-| `hikyuu_pywrap/trade_sys/_MoneyManager.cpp` | 31 |
-| `hikyuu_pywrap/trade_sys/_MultiFactor.cpp` | 31 |
-| `hikyuu_pywrap/trade_sys/_Condition.cpp` | 27 |
-| `hikyuu_pywrap/_Constant.cpp` | 24 |
-| `hikyuu_pywrap/_KData.cpp` | 22 |
-| `hikyuu_pywrap/trade_sys/_Environment.cpp` | 21 |
-| `hikyuu_pywrap/data_driver/_BaseInfoDriver.cpp` | 20 |
-| `hikyuu_pywrap/strategy/_Strategy.cpp` | 20 |
-| `hikyuu_pywrap/trade_sys/_ProfitGoal.cpp` | 19 |
-| `hikyuu_pywrap/trade_sys/_Slippage.cpp` | 19 |
-| `hikyuu_pywrap/_KQuery.cpp` | 18 |
-| `hikyuu_pywrap/trade_manage/_TradeRecord.cpp` | 17 |
-| `hikyuu_pywrap/trade_sys/_AllocateFunds.cpp` | 17 |
-| `hikyuu_pywrap/trade_sys/_Stoploss.cpp` | 17 |
-| `hikyuu_pywrap/main.cpp` | 16 |
-| `hikyuu_pywrap/trade_sys/_SCFilter.cpp` | 16 |
-| `hikyuu_pywrap/data_driver/_KDataDriver.cpp` | 15 |
-| `hikyuu_pywrap/_Block.cpp` | 14 |
-| `hikyuu_pywrap/data_driver/_BlockInfoDriver.cpp` | 14 |
-| `hikyuu_pywrap/trade_manage/_FundsRecord.cpp` | 14 |
-| `hikyuu_pywrap/trade_sys/_Portfolio.cpp` | 14 |
-| `hikyuu_pywrap/_KRecord.cpp` | 13 |
-| `hikyuu_pywrap/_StockWeight.cpp` | 13 |
-| `hikyuu_pywrap/trade_sys/_Normalize.cpp` | 13 |
-| `hikyuu_pywrap/trade_manage/_OrderBroker.cpp` | 12 |
-| `hikyuu_pywrap/trade_manage/_TradeCost.cpp` | 12 |
-| `hikyuu_pywrap/_MarketInfo.cpp` | 11 |
-| `hikyuu_pywrap/_Parameter.cpp` | 11 |
-| `hikyuu_pywrap/data_driver/_DataDriverFactory.cpp` | 11 |
-| `hikyuu_pywrap/_StockTypeInfo.cpp` | 9 |
-| `hikyuu_pywrap/trade_manage/_Performance.cpp` | 8 |
-| `hikyuu_pywrap/trade_manage/_CostRecord.cpp` | 7 |
-| `hikyuu_pywrap/_StrategyContext.cpp` | 6 |
-| `hikyuu_pywrap/_TransRecord.cpp` | 6 |
-| `hikyuu_pywrap/_arithmetic.cpp` | 6 |
-| `hikyuu_pywrap/_TimeLineRecord.cpp` | 5 |
-| `hikyuu_pywrap/trade_manage/_BorrowRecord.cpp` | 5 |
-| `hikyuu_pywrap/_DataType.cpp` | 4 |
-| `hikyuu_pywrap/trade_manage/_LoanRecord.cpp` | 4 |
-| `hikyuu_pywrap/trade_manage/_build_in.cpp` | 3 |
-| `hikyuu_pywrap/_Log.cpp` | 2 |
-| `hikyuu_pywrap/_misc.cpp` | 2 |
-| `hikyuu_pywrap/ioredirect.cpp` | 2 |
+| `hikyuu_pywrap/common/_Datetime.cpp` | 57 |
+| `hikyuu_pywrap/strategy/_Signal.cpp` | 53 |
+| `hikyuu_pywrap/execution/_ExecutionEngine.cpp` | 40 |
+| `hikyuu_pywrap/advanced/_extind.cpp` | 39 |
+| `hikyuu_pywrap/data/_Stock.cpp` | 36 |
+| `hikyuu_pywrap/common/_TimeDelta.cpp` | 33 |
+| `hikyuu_pywrap/execution/_PositionRecord.cpp` | 32 |
+| `hikyuu_pywrap/strategy/_MultiFactor.cpp` | 31 |
+| `hikyuu_pywrap/strategy/_MoneyManager.cpp` | 30 |
+| `hikyuu_pywrap/data/_DataEngine.cpp` | 29 |
+| `hikyuu_pywrap/strategy/_Condition.cpp` | 26 |
+| `hikyuu_pywrap/common/_Constant.cpp` | 24 |
+| `hikyuu_pywrap/data/_KData.cpp` | 22 |
+| `hikyuu_pywrap/strategy/_Environment.cpp` | 21 |
+| `hikyuu_pywrap/strategy/_StrategyEngine.cpp` | 21 |
+| `hikyuu_pywrap/data/driver/_BaseInfoDriver.cpp` | 20 |
+| `hikyuu_pywrap/strategy/_Slippage.cpp` | 19 |
+| `hikyuu_pywrap/data/_KQuery.cpp` | 18 |
+| `hikyuu_pywrap/strategy/_ProfitGoal.cpp` | 18 |
+| `hikyuu_pywrap/execution/_TradeRecord.cpp` | 17 |
+| `hikyuu_pywrap/strategy/_SCFilter.cpp` | 16 |
+| `hikyuu_pywrap/strategy/_Stoploss.cpp` | 16 |
+| `hikyuu_pywrap/data/driver/_KDataDriver.cpp` | 15 |
+| `hikyuu_pywrap/data/_Block.cpp` | 14 |
+| `hikyuu_pywrap/data/driver/_BlockInfoDriver.cpp` | 14 |
+| `hikyuu_pywrap/execution/_FundsRecord.cpp` | 14 |
+| `hikyuu_pywrap/data/_KRecord.cpp` | 13 |
+| `hikyuu_pywrap/data/_StockWeight.cpp` | 13 |
+| `hikyuu_pywrap/strategy/_Normalize.cpp` | 13 |
+| `hikyuu_pywrap/execution/_OrderBroker.cpp` | 12 |
+| `hikyuu_pywrap/execution/_TradeCost.cpp` | 12 |
+| `hikyuu_pywrap/main.cpp` | 12 |
+| `hikyuu_pywrap/common/_Parameter.cpp` | 11 |
+| `hikyuu_pywrap/data/_MarketInfo.cpp` | 11 |
+| `hikyuu_pywrap/data/driver/_DataDriverFactory.cpp` | 11 |
+| `hikyuu_pywrap/app/_HikyuuSession.cpp` | 10 |
+| `hikyuu_pywrap/data/_StockTypeInfo.cpp` | 9 |
+| `hikyuu_pywrap/advanced/_device.cpp` | 7 |
+| `hikyuu_pywrap/execution/_CostRecord.cpp` | 7 |
+| `hikyuu_pywrap/advanced/_KDataToClickHouseImporter.cpp` | 6 |
+| `hikyuu_pywrap/advanced/_KDataToHdf5Importer.cpp` | 6 |
+| `hikyuu_pywrap/advanced/_KDataToMySQLImporte.cpp` | 6 |
+| `hikyuu_pywrap/common/_arithmetic.cpp` | 6 |
+| `hikyuu_pywrap/data/_StrategyContext.cpp` | 6 |
+| `hikyuu_pywrap/data/_TransRecord.cpp` | 6 |
+| `hikyuu_pywrap/data/_TimeLineRecord.cpp` | 5 |
+| `hikyuu_pywrap/execution/_BorrowRecord.cpp` | 5 |
+| `hikyuu_pywrap/advanced/_hkuextra.cpp` | 4 |
+| `hikyuu_pywrap/data/_DataType.cpp` | 4 |
+| `hikyuu_pywrap/execution/_LoanRecord.cpp` | 4 |
+| `hikyuu_pywrap/advanced/_dataserver.cpp` | 3 |
+| `hikyuu_pywrap/execution/_cost_factories.cpp` | 3 |
+| `hikyuu_pywrap/advanced/_shmserver.cpp` | 2 |
+| `hikyuu_pywrap/common/_Log.cpp` | 2 |
+| `hikyuu_pywrap/common/ioredirect.cpp` | 2 |
+| `hikyuu_pywrap/execution/_OrderOrigin.cpp` | 2 |
 
 ## Python star exports
 
 | Source | Statement |
 | --- | --- |
-| `hikyuu/__init__.py:56` | `from .util import *` |
-| `hikyuu/__init__.py:57` | `from .extend import *` |
-| `hikyuu/__init__.py:61` | `from .indicator import *` |
-| `hikyuu/__init__.py:62` | `from .trade_manage import *` |
-| `hikyuu/__init__.py:63` | `from .trade_sys import *` |
-| `hikyuu/__init__.py:64` | `from .analysis import *` |
-| `hikyuu/__init__.py:65` | `from .hub import *` |
-| `hikyuu/__init__.py:66` | `from .draw import *` |
-| `hikyuu/__init__.py:126` | `from hikyuu_plugin_private import *` |
 | `hikyuu/core.py:11` | `from .cpp.core38 import *` |
 | `hikyuu/core.py:13` | `from .cpp.core39 import *` |
 | `hikyuu/core.py:15` | `from .cpp.core310 import *` |
@@ -492,8 +406,6 @@ This table counts binding declarations, including overloads. A high count is a r
 | `hikyuu/extend.py:6` | `from .core import *` |
 | `hikyuu/indicator/__init__.py:27` | `from .indicator import *` |
 | `hikyuu/indicator/__init__.py:28` | `from .pyind import *` |
-| `hikyuu/trade_manage/__init__.py:27` | `from .trade import *` |
-| `hikyuu/trade_sys/__init__.py:28` | `from .trade_sys import *` |
 
 ## First decisions
 
