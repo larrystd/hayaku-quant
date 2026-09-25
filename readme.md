@@ -1,278 +1,269 @@
-<p align="center">
-  <img src="docs/en/_static/00000-title.png" width="200" alt="title">
-</p>
+# Hayaku Quant
 
-<p align="center">
-  An open-source, high-performance quantitative trading framework in C++/Python<br>
-  focused on strategy analysis and backtesting<br>
-  <strong>Trading model R&amp;D · Ultra-fast engine · Efficient backtesting</strong>
-</p>
+Hayaku Quant 是一个以 C++20 为核心、通过 pybind11 提供 Python API 的量化研究与回测引擎。
 
-<p align="center">
-  <img src="https://github.com/fasiondog/hikyuu/workflows/win-build/badge.svg" alt="Windows build">
-  <img src="https://github.com/fasiondog/hikyuu/workflows/ubuntu-build/badge.svg" alt="Ubuntu build">
-  <img src="https://img.shields.io/github/license/fasiondog/hikyuu.svg" alt="License">
-  <img src="https://static.pepy.tech/badge/hikyuu" alt="Downloads">
-</p>
+项目源自 [Hikyuu](https://github.com/fasiondog/hikyuu)，当前正在进行破坏式架构重构：删除过宽的
+全局管理器和兼容接口，将数据、执行、策略三个核心职责收口到明确的 Engine 边界。
 
-<p align="center">
-  <b>English</b> | <a href="readme.zh.md">简体中文</a>
-</p>
+> 当前状态：**架构重构 POC，尚未发布稳定版本**。
+>
+> 当前 Python 导入名仍是 `hikyuu`，C++ 库名仍是 `hikyuu`。仓库更名已经完成，包、命名空间和
+> 发布物的更名将在边界稳定后单独进行。本项目目前不是上游 Hikyuu 的即插即用替代品。
 
-Hikyuu Quant Framework builds on mature systematic trading and portfolio management concepts, with a core
-focus on a fast research workflow for strategy (or asset) portfolios. It decomposes quantitative analysis
-into independently replaceable **strategy parts** — market environment, signals, stop-loss / take-profit,
-money management, profit goals, slippage, multi-factor models and fund allocation — which you can freely
-combine into your own strategy library and validate through backtesting.
+## 为什么重构
 
-> ⚠️ **Disclaimer**: This project is an open-source financial technology research tool. It is intended
-> for personal study, academic research and data analysis only. It does not constitute any investment
-> advice or trading guidance, and it does not provide or embed any securities trading service. The
-> framework only offers generic interface extension capability; users are advised to connect only to
-> compliant trading terminals provided by licensed institutions. Any trading interface, extension or
-> actual operation added or developed by the user is entirely at the user's own risk and legal
-> responsibility. Connecting to illegal trading channels or using the framework for non-compliant
-> trading scenarios is strictly prohibited.
+原有代码通过 `StockManager`、`TradeManager`、`System` 和大量顶层接口暴露内部状态，导致数据、
+交易、策略、插件及进程生命周期互相耦合。Hayaku Quant 的目标是：
 
----
+- 用 `HikyuuSession` 显式管理初始化、资源所有权和关闭；
+- 用 `DataEngine` 提供稳定、只读的市场数据查询；
+- 用 `ExecutionEngine` 统一订单、账户、持仓和账本写入；
+- 用 `StrategyEngine` 负责编排策略组件和回测运行；
+- Python、pybind11 和 C++ 使用一致的业务模块边界；
+- 删除旧接口，而不是长期维护两套 API；
+- 优先使用 C++20/C++17 标准能力，并在边界清晰的前提下保持计算性能。
 
-## 📊 Key Metrics
+## 当前架构
 
-<p align="center">
-  <table>
-    <tr>
-      <td align="center" width="33%">
-        <strong><code>⚡ 166ms</code></strong><br>
-        <sub>Sum over 19.13 million K-line bars after warm-up (AMD 7950x)</sub>
-      </td>
-      <td align="center" width="33%">
-        <strong><code>🧩 10+</code></strong><br>
-        <sub>Core strategy parts · freely composable asset library</sub>
-      </td>
-      <td align="center" width="33%">
-        <strong><code>💾 4 types</code></strong><br>
-        <sub>Storage backends (HDF5 / MySQL / ClickHouse / SQLite)</sub>
-      </td>
-    </tr>
-  </table>
-</p>
-
----
-
-## 🔗 Quick Links
-
-| Item                         | Link                                                                                                                                          |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🏠 **Project home page**     | [https://hikyuu.org/](https://hikyuu.org/)                                                                                                     |
-| 📚 **Documentation**         | [https://hikyuu-en.readthedocs.io/en/latest/](https://hikyuu-en.readthedocs.io/en/latest/)                                       |
-| 🚀 **Getting started**       | [Jupyter Notebook tutorial series](https://nbviewer.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/en/000-Index.ipynb?flush_cache=True) |
-| 🧰 **Strategy part library** | [https://gitee.com/fasiondog/hikyuu_hub](https://gitee.com/fasiondog/hikyuu_hub)                                                              |
-
----
-
-## ⚡ Quick Start (run your first backtest)
-
-### Requirements
-
-- **Python 3.10+** (3.9 and below are no longer supported for pip installation since 2.8.0)
-- Windows / Linux / macOS (Linux: Ubuntu 24.04+)
-- Main dependencies are installed automatically: `numpy`, `pandas`, `matplotlib`, `PySide6`,
-  `tables`, etc.
-
-### Step 1: Install
-
-```bash
-pip install hikyuu
+```text
+┌──────────────────────────────────────────────────────────────────────┐
+│ 用户代码                                                             │
+│ Python / C++                                                         │
+└───────────────────────────────┬──────────────────────────────────────┘
+                                ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ Python API                                                           │
+│ hikyuu.data │ hikyuu.execution │ hikyuu.strategy │ hikyuu.analysis │
+└───────────────────────────────┬──────────────────────────────────────┘
+                                ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ pybind11：按业务模块导出稳定 API                                    │
+└───────────────────────────────┬──────────────────────────────────────┘
+                                ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ HikyuuSession                                                        │
+│ 配置解析、Engine 所有权、初始化和关闭                               │
+└───────────────┬───────────────────┬───────────────────┬──────────────┘
+                ▼                   ▼                   ▼
+       ┌────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+       │ DataEngine     │  │ ExecutionEngine  │  │ StrategyEngine   │
+       │ 只读市场数据   │  │ 订单与账户账本   │  │ 策略与回测编排   │
+       └───────┬────────┘  └────────┬─────────┘  └────────┬─────────┘
+               └────────────────────┴─────────────────────┘
+                                    ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ common：时间、配置、日志、序列化、线程、网络等非业务基础设施       │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
-If the download is slow (for users in China), use a mirror:
+核心边界：
 
-```bash
-pip install hikyuu -i https://pypi.tuna.tsinghua.edu.cn/simple
+| 模块 | 负责 | 不负责 |
+| --- | --- | --- |
+| `HikyuuSession` | 配置、组合三个 Engine、生命周期 | 数据查询、记账、逐 Bar 策略逻辑 |
+| `DataEngine` | 证券、K 线、板块、日历、财务等只读查询 | 订单、账户和策略状态 |
+| `ExecutionEngine` | 订单提交、账户、持仓、资金和成交记录 | 信号判断和行情查询 |
+| `StrategyEngine` | 策略组件编排、回测、停止和结果快照 | 直接修改账本或 Driver |
+| `analysis` | 对账户和回测结果做只读分析 | 运行策略和写入交易状态 |
+| `common` | 无业务含义的通用基础设施 | 证券、行情、账户、订单和策略类型 |
+
+`StockManager`、`TradeManager`、`System` 及对应 Python 旧入口已经从当前 POC 删除。
+
+## 仓库结构
+
+```text
+hayaku-quant/
+├── hikyuu_cpp/
+│   ├── src/                 # C++ 核心实现
+│   │   ├── app/             # Session 与应用生命周期
+│   │   ├── data/            # 数据领域、DataEngine、Driver、指标和因子
+│   │   ├── execution/       # ExecutionEngine、账户、账本、Broker 和费用
+│   │   ├── strategy/        # StrategyEngine、策略组件和组合
+│   │   ├── analysis/        # 只读绩效与结果分析
+│   │   └── common/          # 通用基础设施
+│   └── test/                # 与 src 模块对应的 C++ 测试
+├── hikyuu_pywrap/           # 按业务模块组织的 pybind11 绑定
+├── hikyuu/                  # Python API、研究工具、绘图和数据工具
+├── docs/arch/               # 架构分析、重构方案和阶段验收记录
+├── test_data/               # 轻量测试数据；大型夹具不进入 Git
+├── op.sh                    # 本地构建、测试和诊断入口
+└── xmake.lua                # xmake 工程配置
 ```
 
-### Step 2: Import market data
+## 构建环境
 
-Import historical A-share market data with either method:
+当前 POC 的主要验证环境：
+
+- macOS / Apple Silicon；
+- C++20 编译器；
+- [xmake](https://xmake.io/) 3.0+；
+- Python 3.10；
+- Homebrew Python 默认路径 `/opt/homebrew/opt/python@3.10`。
+
+Linux 和 Windows 构建配置继承自上游，但当前重构结果仍需要在 CI 中重新完成跨平台验证。
+
+## 快速开始
+
+克隆并切换到当前开发分支：
 
 ```bash
-# Graphical interface (recommended for first use; it generates the configuration file)
-HikyuuTDX
-
-# Command line (requires having run HikyuuTDX once to generate the configuration)
-importdata
+git clone git@github.com:larrystd/hayaku-quant.git
+cd hayaku-quant
+git switch poc
 ```
 
-> ℹ️ **Data coverage**: HikyuuTDX downloads **China A-share** historical data only and needs a one-time initial configuration in the GUI. Overseas markets (US stocks, etc.) are not available yet and will be supported gradually.
+检查本机工具链：
 
-### Step 3: Open an explicit research session
+```bash
+./op.sh doctor
+```
+
+配置并编译 C++ 核心及 Python 3.10 扩展：
+
+```bash
+./op.sh configure shared
+./op.sh build
+./op.sh import-test
+```
+
+补齐[大型测试夹具](#测试数据)后，也可以一次完成配置、编译和全部测试：
+
+```bash
+./op.sh all shared
+```
+
+常用命令：
+
+| 命令 | 用途 |
+| --- | --- |
+| `./op.sh configure [shared\|static]` | 配置 Release 构建 |
+| `./op.sh build` | 编译 C++ 核心和 Python 扩展 |
+| `./op.sh small-test` | 构建并运行小型 C++ 测试集 |
+| `./op.sh unit-test` | 构建并运行完整 C++ 测试集 |
+| `./op.sh python-test` | 使用 Python 3.10 运行 Python 测试 |
+| `./op.sh test` | 运行全部测试 |
+| `./op.sh clean` | 清理 xmake 构建输出 |
+
+在 macOS/arm64 下，主要产物位于：
+
+```text
+build/release/macosx/arm64/lib/libhikyuu.dylib
+build/release/macosx/arm64/lib/small-test
+build/release/macosx/arm64/lib/unit-test
+hikyuu/cpp/core310.so
+```
+
+共享库构建下不要直接启动 `small-test` 或 `unit-test`，否则 macOS 可能找不到 OpenSSL 等动态库。
+请使用：
+
+```bash
+./op.sh run-small-binary
+./op.sh run-unit-binary
+```
+
+如 Python 或 xmake 不在默认位置，可以覆盖环境变量：
+
+```bash
+PYTHON_BIN=/path/to/python3.10 XMAKE_BIN=/path/to/xmake ./op.sh build
+```
+
+## Python API 示例
+
+运行前需要准备可用的数据配置；`open_session()` 默认读取 `~/.hikyuu/hikyuu.ini`。
 
 ```python
 from hikyuu import Query, open_session
 from hikyuu.execution import AccountConfig
 
-account = AccountConfig(initial_cash=300000, name="research")
+account = AccountConfig(name="research", initial_cash=300_000.0)
+
 with open_session(account_config=account) as session:
     session.wait_ready()
-    bars = session.data.get_kdata("sz000001", Query(-150))
-    snapshot = session.execution.snapshot()
-    print(len(bars), snapshot.funds)
+
+    stock = session.data.get_stock("sh600000")
+    bars = session.data.get_kdata("sh600000", Query(-150))
+    account_view = session.execution.view()
+
+    print(stock.market_code)
+    print(len(bars))
+    print(account_view.funds)
 ```
 
-<p align="center">
-  <img src="docs/en/_static/10000-overview.png" alt="Backtest result" width="900">
-</p>
+Session 关闭后，其 Data、Execution 和 Strategy Engine 引用都会失效。业务代码不应保存跨 Session
+的可变运行期对象。
 
-> 📖 See the [Jupyter Notebook tutorial series](https://nbviewer.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/en/000-Index.ipynb?flush_cache=True)
-> for the complete example.
+更完整的订单示例见
+[`hikyuu/examples/execution_engine.py`](hikyuu/examples/execution_engine.py)。
 
-### ❓ FAQ
+## 测试数据
 
-| Symptom                                                     | Solution                                                                              |
-| :---------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| `pip install` on Windows hangs while downloading PyQt / PySide6 | Use the Tsinghua mirror: `pip install hikyuu -i https://pypi.tuna.tsinghua.edu.cn/simple` |
-| `HikyuuTDX` GUI cannot import data                          | Use the `importdata` command instead (run the GUI once first to generate the config)   |
-| Errors about a missing hdf5 / dll                           | Run `pip install tables` to reinstall HDF5 support                                    |
-| Build tool for **building from source**                     | This project uses **xmake**, not cmake                                                |
+为了把 Git 数据控制在 10MB 以内，以下大型集成测试夹具不进入仓库历史：
 
-> 💡 For more questions see the [documentation](https://hikyuu.readthedocs.io/en/latest/index.html),
-> or [open an issue on Gitee](https://gitee.com/fasiondog/hikyuu/issues).
+```text
+test_data/sh_1min.h5
+test_data/sz_1min.h5
+test_data/sh_5min.h5
+test_data/sz_5min.h5
+test_data/stock.db
+test_data/downloads/finance/gpcw20110930.dat
+test_data/test_min_data.csv
+```
 
----
+轻量测试数据仍随仓库提供。全量数据相关测试需要在本地补齐上述文件；这些路径已经加入
+`.gitignore`，不会被误提交。
 
-## 🚀 Why Hikyuu?
+## 分支说明
 
-> Powerful features for your quantitative trading research
+```text
+legacy-snapshot
+       │
+       └── poc
+```
 
-### 💹 Flexible composition: build a categorized strategy asset library
+- `poc`：默认分支，当前架构重构主线；
+- `legacy-snapshot`：重构开始前的单提交代码快照；
+- 当前不使用 `main`；边界稳定、跨平台构建和发布流程完成后再建立正式主分支；
+- 上游完整 Git 历史不复制到本仓库，仍可从原 Hikyuu 仓库查询。
 
-Hikyuu provides a lightweight abstraction over systematic trading methods, encapsulating the market
-environment, signal generators, stop-loss / take-profit, money management, profit goals, slippage and
-fund allocation as independently replaceable **strategy parts**. You can combine them freely, backtest
-efficiently, and focus on the effect and impact of a single part during research. See
-"Core parts of the systematic trading architecture" below for the complete list.
+## 当前进度
 
-<p align="center">
-  <img src="docs/en/_static/10002-function-arc.png" alt="Functional architecture" width="800">
-</p>
+已完成：
 
-### 🚀 Extreme performance: build your own quant application with ease
+- 架构与公共 API 清点；
+- 三个 Engine 的窄门面；
+- `StockManager`、`TradeManager`、`System` 旧体系删除；
+- C++、pybind11、Python 目录按业务能力重排；
+- C++ 和 Python 接口边界测试；
+- Git 历史及大型测试数据瘦身。
 
-The project consists of three parts: a **high-performance C++ core library**, the **Python interface
-layer (hikyuu)**, and the **interactive exploration tool**.
+下一阶段：
 
-- **Measured on an AMD 7950x**: loading the full A-share market (19.13 million daily K-line bars) and
-  computing and summing the 20-day moving average for the first time takes only **6 seconds**; once the
-  data is warm, the same operation takes only **166 milliseconds**
-  ([📊 Performance benchmark details](https://mp.weixin.qq.com/s?__biz=MzkwMzY1NzYxMA==&mid=2247483768&idx=1&sn=33e40aa9633857fa7b4c7ded51c95ae7),
-  article in Chinese).
-- **C++ core library**: ships with a complete strategy framework, native multi-threading and multi-core
-  acceleration, leaving room to scale for very high computing demands. The core library can also be used
-  standalone, helping developers build custom quantitative tools quickly.
-- **Python interface layer (hikyuu)**: a lightweight wrapper around the C++ core with TA-Lib integrated;
-  converts seamlessly to and from numpy and pandas, so it plugs into the mainstream Python data analysis
-  ecosystem.
-- **hikyuu.interactive**: the interactive exploration tool, with built-in visualization of candlesticks,
-  indicators and signals, suitable for rapid strategy validation and backtest analysis.
+- 消除 `data -> app` 的反向依赖；
+- 让 `DataRuntime` 只管理核心数据状态、Driver、缓存和预加载；
+- 将数据导入收口为可选的 `ingest` 能力；
+- 将实时行情和 IPC 收口为可选的 `realtime` 能力；
+- 让 MySQL、ClickHouse 成为明确的可选存储适配器；
+- 移除默认初始化中的插件、网络、遥测和商业能力副作用。
 
-### 🍳 Concise syntax: explore strategies faster and more freely
+## 架构文档
 
-Both **object-oriented** and **command-line** styles are supported. Especially during strategy exploration,
-the command-line style is minimal and expressive, letting you validate ideas and iterate faster.
+- [原架构分析](docs/arch/old_architecture.md)
+- [总体重构方案](docs/arch/refactor.md)
+- [Step 0：基线与接口清点](docs/arch/refactor/step-0-progress.md)
+- [Step 1：三引擎设计](docs/arch/refactor/step-1-progress.md)
+- [Step 2：窄门面实现](docs/arch/refactor/step-2-progress.md)
+- [Step 3：旧体系退役与目录重构](docs/arch/refactor/step-3-progress.md)
+- [Step 4：数据层、应用层与可选能力收口](docs/arch/refactor/step-4-progress.md)
 
-### 🔐 Self-controlled: build your own cloud quant platform
+## 许可证与来源
 
-Combining **Python + Jupyter** with a cloud server gives you a fully self-controlled cloud quant platform.
-Once deployed, access it anywhere (phone, tablet or computer) and turn new ideas into practice quickly. It
-also integrates with mature AI and data analysis tools such as **numpy, scipy, pandas and TensorFlow** for
-building intelligent quantitative systems. You can customize the interface or deploy it as a service as
-needed.
+本项目保留上游 Hikyuu 的版权声明，并继续遵循仓库中的
+[Apache License 2.0](LICENSE) 及 [第三方许可证说明](THIRD_PARTY_LICENSES.md)。
 
-### 🎁 Modular and extensible data storage
+Hayaku Quant 是独立的重构实验仓库，与上游项目的正式发布和支持渠道无关。修改或分发代码时，
+请同时遵守相关依赖、数据源和交易接口的许可证与合规要求。
 
-Four storage backends are currently supported: **HDF5, MySQL, ClickHouse and SQLite**, with HDF5 as the
-default (compact, fast to read and write, and easy to back up). ClickHouse is available through a plugin:
-it reads and writes faster than HDF5 and uses far less space than MySQL, making it a better fit for
-minute-level and higher-frequency data.
+## 风险声明
 
-### 💻 Concise API design
-
-A complete strategy backtest system takes only a few lines of code — the intuitive API makes strategy
-development more efficient.
-
-### 🔓 Open source and transparent, with data under your control
-
-Released under the **Apache 2.0** license, with fully auditable source code. Core data and strategies stay
-entirely under your local control; the C++ core library can be used standalone, so you can build your own
-client tools without worrying about third-party platform restrictions.
-
----
-
-## 🏗️ Core parts of the systematic trading architecture
-
-> Rigorously architected around systematic trading concepts; every part can be replaced and combined freely
-
-| Domain                  | Main API                                      | Responsibility                              |
-| :---------------------- | :-------------------------------------------- | :------------------------------------------ |
-| **Data**                | `open_session / DataEngine`                   | Explicit data lifetime and market queries   |
-| **Execution**           | `AccountConfig / ExecutionEngine`            | Orders, cash, positions and trade history   |
-|                         | `AccountSnapshot / AccountView`               | Immutable account inspection                |
-| **Strategy**            | `StrategyDefinition / StrategyEngine`        | Component composition and orchestration     |
-|                         | `BacktestRequest / BacktestResult`            | Stable backtest input and output values     |
-| **Analysis**            | `hikyuu.analysis`                             | Explicit result conversion and analysis     |
-| **Extensions**          | `hikyuu.spi / hikyuu.advanced`               | Custom protocols and low-level controls     |
-
----
-
-## 📂 Browse the source
-
-> A **Star ⭐** is welcome, as are contributions
-
-| Platform        | Link                                                                      | Recommendation        |
-| :-------------- | :------------------------------------------------------------------------ | :-------------------- |
-| **GitHub**      | [https://github.com/fasiondog/hikyuu](https://github.com/fasiondog/hikyuu) | Overseas              |
-| **Gitee**       | [https://gitee.com/fasiondog/hikyuu](https://gitee.com/fasiondog/hikyuu)   | ✅ Recommended in China |
-| **GitCode**     | [https://gitcode.com/hikyuu/hikyuu](https://gitcode.com/hikyuu/hikyuu)     | ✅ Recommended in China |
-
----
-
-## ❤️ Sponsorship
-
-> 🙏 **Overseas sponsorship is being arranged.** International payment channels are not available yet. If you would like to support Hikyuu from overseas, please email **fasiondog@sina.com** and we will work out a way together.
->
-> Supporters in China can use the Alipay / WeChat subscription plans listed in the [Chinese edition](readme.zh.md). Non-monetary support is equally welcome — see [How you can help](#-how-you-can-help) below.
-
----
-
-## 🌟 How you can help
-
-Community contributions are welcome:
-
-- 🐛 Test and report bugs
-- 📝 Write documentation
-- 🔧 Develop new features
-- 🎨 Improve the website
-
-> 💡 **Please contribute by opening an issue on GitHub / Gitee / GitCode**
-
----
-
-## 📦 Dependencies
-
-The open-source projects directly depended on by the C++ core, together with their project URLs and
-licenses, are summarized in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) (indirect dependencies are
-not listed). Thanks to all the open-source authors for their contributions 👍
-
-Python-side dependencies are listed in [requirements.txt](requirements.txt).
-
----
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=fasiondog%2Fhikyuu&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=fasiondog/hikyuu&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=fasiondog/hikyuu&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=fasiondog/hikyuu&type=date&legend=top-left" />
- </picture>
-</a>
+本项目仅用于软件工程、量化研究和回测实验，不构成投资建议，也不提供证券交易服务。策略回测
+结果不代表未来收益。使用者应自行承担数据质量、模型偏差、交易接入和实际资金操作带来的风险。
