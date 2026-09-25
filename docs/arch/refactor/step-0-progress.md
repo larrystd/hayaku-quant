@@ -65,7 +65,7 @@
 | 0.7 | 登记三组权威回测金标 | 已完成 | 复用现有 C++ 测试 | 简单 System、风控 System、Portfolio 金标 |
 | 0.8 | 建立 Python Public API 白名单测试 | 已完成 | 新增测试并接入套件 | Python API 测试 |
 | 0.9 | 接入统一测试入口并执行全量回归 | 已完成 | 构建后连续执行四组测试 | 全部测试通过 |
-| 0.10 | 完成阶段评审和下一阶段准入判断 | 已完成 | 根据清单与回归结果评审 | 批准进入第 1 步 |
+| 0.10 | 完成阶段评审和下一阶段准入判断 | 已完成 | 根据清单与回归结果评审 | 批准进入 DataEngine 阶段 |
 
 以上任务存在交叉和合并执行，不能把分项时间简单相加。Git 时间戳可核验的阶段总耗时为 13 分 32 秒。
 
@@ -312,7 +312,7 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 2. 哪些接口需要一个版本的弃用期？
 3. Python 用户最常用的稳定入口有哪些？
 4. 当前测试能否发现成交、资金或持仓的行为变化？
-5. 是否具备进入第 1 步 `HikyuuSession` 重构的条件？
+5. 是否具备进入 DataEngine 重构阶段的条件？
 
 评审结论：
 
@@ -320,7 +320,7 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 2. 已标记 25 个 Deprecated 接口，保留兼容层并按版本迁移，不直接删除；
 3. Python 稳定入口先保护 `StockManager`、`Query`、`Datetime`、`Stock`、`KData` 及常用工厂函数；
 4. 当前 C++ 金标可发现成交、费用、现金、持仓和延迟请求变化，Python 测试可发现顶层入口意外丢失；
-5. 清单、行为基线和全量回归均已完成，具备进入第 1 步 `HikyuuSession` 门面设计的条件。
+5. 清单、行为基线和全量回归均已完成，具备进入 DataEngine 重构阶段的条件；`HikyuuSession` 作为三个 Engine 的生命周期容器在该阶段引入。
 
 ## 6. 本阶段未修改的生产代码
 
@@ -363,7 +363,7 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 | A8 | Python 3.10 回归 | Python 45/45；Python 3.10.21 import 检查通过 | 通过 |
 | A9 | 不改变生产行为和接口 | 提交只包含工具、文档和测试；生产源码、绑定及公开签名均未修改 | 通过 |
 | A10 | 已知问题与重构分离 | 3 个缺陷候选已记录，未在基线提交中修改生产行为 | 通过 |
-| A11 | 是否允许进入下一阶段 | 清单、行为保护和全量回归均具备 | 通过，允许进入总体方案第 1 步 |
+| A11 | 是否允许进入下一阶段 | 清单、行为保护和全量回归均具备 | 通过，允许进入 DataEngine 阶段 |
 
 验收结论：**第一阶段已经执行完成，11 项阶段验收均通过。** 其中 A5 通过的是本次实际新增的 `Strategy::order()` 基线范围，并不表示 `Strategy` 的全部下单路径已经覆盖。
 
@@ -387,7 +387,7 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 | --- | --- | --- | --- |
 | 2026-09-25 | 复用现有 C++ 精确断言作为三组回测金标 | 避免重复维护 JSON，现有断言粒度更细 | 后续行为变化直接由 unit-test 拦截 |
 | 2026-09-25 | `Strategy::order` 两处异常暂不修复 | 本阶段只建立基线，行为修复需要独立提交 | 已记录为下一阶段前的 bugfix 候选 |
-| 2026-09-25 | 批准进入第 1 步 | 接口清单、关键测试与全量回归均已完成 | 可以开始 Session 门面设计 |
+| 2026-09-25 | 批准进入 DataEngine 阶段 | 接口清单、关键测试与全量回归均已完成 | 可以开始 DataEngine 与 Session 开发 |
 
 ## 10. 执行记录
 
@@ -418,4 +418,4 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 - 新增 4 个 Strategy C++ 测试 case，Python 测试由 42 个增加到 45 个；
 - 三组金标覆盖简单 System、风险控制和 Portfolio；
 - 发现 `Strategy::order` 两处数量归一化缺陷候选，以及 `open_spend_time` 错误绑定；
-- 全量验证通过，批准进入第 1 步 `HikyuuSession` 重构。
+- 全量验证通过，批准按[第 1 步进度：DataEngine 与三引擎边界](step-1-progress.md)进入 DataEngine 阶段。

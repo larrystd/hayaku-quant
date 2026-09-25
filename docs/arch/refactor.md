@@ -112,6 +112,8 @@
 
 ## 4. 分阶段实施步骤
 
+> 执行方案更新：第 0 步已经完成。后续开发已收敛为 DataEngine、ExecutionEngine、StrategyEngine 和 Python/pybind11 接口收口四个独立阶段，具体文件边界、C++20/C++17 规范、性能门槛和验收方式以[第 1 步进度：DataEngine 与三引擎边界](refactor/step-1-progress.md)为准。下述原第 1～8 步保留为技术拆分参考，不再作为独立交付阶段。
+
 ## 第 0 步：冻结行为并建立 API 清单
 
 这一阶段不改变生产逻辑，只建立后续删接口所需的证据。
