@@ -27,6 +27,7 @@ import ProfitGoal
 import Slippage
 import AllocateFunds
 import test_common_sql
+import test_public_api
 
 if __name__ == "__main__":
 
@@ -60,6 +61,7 @@ if __name__ == "__main__":
 
     suite.addTest(AllocateFunds.suite())
     suite.addTest(test_common_sql.suite())
+    suite.addTest(test_public_api.suite())
 
     unittest.TextTestRunner(verbosity=2).run(suite)
     # unittest.main()
