@@ -75,21 +75,21 @@
 
 已扫描：
 
-- `hikyuu_cpp/hikyuu/**/*.h` 中选定的 13 个高风险类及其公开方法；
-- `hikyuu_pywrap/**/*.cpp` 中的 `m.def`、`.def`、`.def_static`、`.def_property*`；
-- `hikyuu/__init__.py`、`hikyuu/core.py`、`hikyuu/extend.py` 中的导入和导出；
+- `hayaku_cpp/hayaku/**/*.h` 中选定的 13 个高风险类及其公开方法；
+- `hayaku_pywrap/**/*.cpp` 中的 `m.def`、`.def`、`.def_static`、`.def_property*`；
+- `hayaku/__init__.py`、`hayaku/core.py`、`hayaku/extend.py` 中的导入和导出；
 - 各子包 `__init__.py` 中的星号导入。
 
 重点文件：
 
-- `hikyuu_cpp/hikyuu/StockManager.h`；
-- `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h`；
-- `hikyuu_cpp/hikyuu/trade_sys/system/System.h`；
-- `hikyuu_cpp/hikyuu/strategy/Strategy.h`；
-- `hikyuu_pywrap/_StockManager.cpp`；
-- `hikyuu_pywrap/trade_manage/_TradeManager.cpp`；
-- `hikyuu_pywrap/trade_sys/_System.cpp`；
-- `hikyuu_pywrap/strategy/_Strategy.cpp`。
+- `hayaku_cpp/hayaku/StockManager.h`；
+- `hayaku_cpp/hayaku/trade_manage/TradeManagerBase.h`；
+- `hayaku_cpp/hayaku/trade_sys/system/System.h`；
+- `hayaku_cpp/hayaku/strategy/Strategy.h`；
+- `hayaku_pywrap/_StockManager.cpp`；
+- `hayaku_pywrap/trade_manage/_TradeManager.cpp`；
+- `hayaku_pywrap/trade_sys/_System.cpp`；
+- `hayaku_pywrap/strategy/_Strategy.cpp`。
 
 验收证据：
 
@@ -105,7 +105,7 @@
 - C++ 核心内部是否调用；
 - Python 包内部是否调用；
 - 单元测试是否调用；
-- `docs/` 和 `hikyuu/examples/` 是否使用；
+- `docs/` 和 `hayaku/examples/` 是否使用；
 - 是否仅为 pybind11 子类扩展而存在；
 - 是否标注了“internal”“test only”或类似说明；
 - 是否存在同义、重复或可以组合的入口。
@@ -153,7 +153,7 @@ pybind11 部分按绑定文件记录声明数量，Python 部分记录星号导�
 审计文件：
 
 ```text
-hikyuu_cpp/unit_test/hikyuu/hikyuu/test_StockManager.cpp
+hayaku_cpp/unit_test/hayaku/hayaku/test_StockManager.cpp
 ```
 
 现有测试已经覆盖证券数量、证券/市场/类型查询、板块、交易日历和临时证券等核心行为。本阶段复用这些稳定断言，没有为追求文件数量而重复添加测试。
@@ -175,13 +175,13 @@ hikyuu_cpp/unit_test/hikyuu/hikyuu/test_StockManager.cpp
 仓库已存在以下精确行为测试：
 
 ```text
-hikyuu_cpp/unit_test/hikyuu/trade_sys/system/test_Simple_SYS_for_base.cpp
-hikyuu_cpp/unit_test/hikyuu/trade_sys/system/test_Simple_SYS_for_st.cpp
-hikyuu_cpp/unit_test/hikyuu/trade_sys/system/test_Simple_SYS_for_tp.cpp
-hikyuu_cpp/unit_test/hikyuu/trade_sys/system/test_Simple_SYS_for_pg.cpp
-hikyuu_cpp/unit_test/hikyuu/trade_sys/system/test_Simple_SYS_for_ev.cpp
-hikyuu_cpp/unit_test/hikyuu/trade_sys/system/test_Simple_SYS_for_cn.cpp
-hikyuu_cpp/unit_test/hikyuu/trade_sys/system/test_SYS_WalkForward.cpp
+hayaku_cpp/unit_test/hayaku/trade_sys/system/test_Simple_SYS_for_base.cpp
+hayaku_cpp/unit_test/hayaku/trade_sys/system/test_Simple_SYS_for_st.cpp
+hayaku_cpp/unit_test/hayaku/trade_sys/system/test_Simple_SYS_for_tp.cpp
+hayaku_cpp/unit_test/hayaku/trade_sys/system/test_Simple_SYS_for_pg.cpp
+hayaku_cpp/unit_test/hayaku/trade_sys/system/test_Simple_SYS_for_ev.cpp
+hayaku_cpp/unit_test/hayaku/trade_sys/system/test_Simple_SYS_for_cn.cpp
+hayaku_cpp/unit_test/hayaku/trade_sys/system/test_SYS_WalkForward.cpp
 ```
 
 审计结果记录在：
@@ -213,7 +213,7 @@ docs/arch/refactor/system-baseline.md
 新增文件：
 
 ```text
-hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
+hayaku_cpp/unit_test/hayaku/strategy/test_Strategy.cpp
 ```
 
 实际覆盖范围：
@@ -227,7 +227,7 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 
 已知关注点：
 
-- `hikyuu_cpp/hikyuu/strategy/Strategy.cpp` 中 `order()` 的买入数量会先计算取整值，但后续调用可能仍使用原始 `num`；
+- `hayaku_cpp/hayaku/strategy/Strategy.cpp` 中 `order()` 的买入数量会先计算取整值，但后续调用可能仍使用原始 `num`；
 - 本阶段先用测试明确期望行为；
 - 如果现状测试失败，将其登记为已知缺陷。修复应使用独立提交，不能悄悄改写金标来掩盖问题。
 
@@ -269,7 +269,7 @@ Portfolio：trade_sys/portfolio/test_PF_*.cpp
 新增文件：
 
 ```text
-hikyuu/test/test_public_api.py
+hayaku/test/test_public_api.py
 ```
 
 测试内容：
@@ -280,16 +280,16 @@ hikyuu/test/test_public_api.py
 - 后续引入 `__all__` 后，顶层只暴露白名单符号；
 - SPI 和 Internal 接口不会被误记为稳定 Public API。
 
-本阶段只记录和保护已经确认的稳定子集，不立即收缩 `hikyuu` 顶层导出。
+本阶段只记录和保护已经确认的稳定子集，不立即收缩 `hayaku` 顶层导出。
 
 ### 0.9 接入测试并执行回归
 
 实际修改：
 
 ```text
-hikyuu/test/test.py
-hikyuu/test/test_public_api.py
-hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
+hayaku/test/test.py
+hayaku/test/test_public_api.py
+hayaku_cpp/unit_test/hayaku/strategy/test_Strategy.cpp
 ```
 
 已执行的统一验证命令：
@@ -320,18 +320,18 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 2. 已标记 25 个 Deprecated 接口，保留兼容层并按版本迁移，不直接删除；
 3. Python 稳定入口先保护 `StockManager`、`Query`、`Datetime`、`Stock`、`KData` 及常用工厂函数；
 4. 当前 C++ 金标可发现成交、费用、现金、持仓和延迟请求变化，Python 测试可发现顶层入口意外丢失；
-5. 清单、行为基线和全量回归均已完成，具备进入 DataEngine 重构阶段的条件；`HikyuuSession` 作为三个 Engine 的生命周期容器在该阶段引入。
+5. 清单、行为基线和全量回归均已完成，具备进入 DataEngine 重构阶段的条件；`HayakuSession` 作为三个 Engine 的生命周期容器在该阶段引入。
 
 ## 6. 本阶段未修改的生产代码
 
 本阶段没有修改以下生产代码：
 
-- `hikyuu_cpp/hikyuu/StockManager.h/.cpp` 的接口和实现；
-- `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h/.cpp`；
-- `hikyuu_cpp/hikyuu/trade_sys/system/System.h/.cpp`；
-- `hikyuu_cpp/hikyuu/strategy/Strategy.h/.cpp`；
-- `hikyuu_pywrap/` 的绑定内容；
-- `hikyuu/__init__.py` 的导出行为；
+- `hayaku_cpp/hayaku/StockManager.h/.cpp` 的接口和实现；
+- `hayaku_cpp/hayaku/trade_manage/TradeManagerBase.h/.cpp`；
+- `hayaku_cpp/hayaku/trade_sys/system/System.h/.cpp`；
+- `hayaku_cpp/hayaku/strategy/Strategy.h/.cpp`；
+- `hayaku_pywrap/` 的绑定内容；
+- `hayaku/__init__.py` 的导出行为；
 - 指标、策略和交易费用算法；
 - 序列化格式及 Python pickle 格式；
 - 目录结构和动态库名称。
@@ -394,8 +394,8 @@ hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp
 | 日期 | 工作项 | 修改文件 | 验证结果 | 备注 |
 | --- | --- | --- | --- | --- |
 | 2026-09-25 | 建立接口扫描器 | `tools/arch/extract_api_inventory.py`、`docs/arch/api-inventory.md` | 13 类、363 方法、966 个绑定声明 | 可重复生成 |
-| 2026-09-25 | 增加 Strategy 路由基线 | `hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp` | 4 个新 case 通过 | 发现两个缺陷候选 |
-| 2026-09-25 | 增加 Python API 基线 | `hikyuu/test/test_public_api.py`、`hikyuu/test/test.py` | Python 45/45 | 保护稳定子集 |
+| 2026-09-25 | 增加 Strategy 路由基线 | `hayaku_cpp/unit_test/hayaku/strategy/test_Strategy.cpp` | 4 个新 case 通过 | 发现两个缺陷候选 |
+| 2026-09-25 | 增加 Python API 基线 | `hayaku/test/test_public_api.py`、`hayaku/test/test.py` | Python 45/45 | 保护稳定子集 |
 | 2026-09-25 | 全量验证 | 构建与测试产物 | small 41/41、3288 assertions；unit 810/810、209129 assertions；Python 45/45；import 通过 | Python 3.10.21 |
 | 2026-09-25 | 阶段提交 | `76874140c`、`60eb2859f` | 接口清单与行为基线分别提交 | 工作树干净，可重复生成清单 |
 

@@ -34,11 +34,11 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
 RUN ${MINICONDA_PATH}/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main && \
     ${MINICONDA_PATH}/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 
-# 配置pip镜像 + 安装hikyuu（pip包）
+# 配置pip镜像 + 安装hayaku（pip包）
 RUN ${MINICONDA_PATH}/bin/pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
     ${MINICONDA_PATH}/bin/pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn && \
     ${MINICONDA_PATH}/bin/pip install --no-cache-dir --upgrade pip && \
-    ${MINICONDA_PATH}/bin/pip install --no-cache-dir hikyuu
+    ${MINICONDA_PATH}/bin/pip install --no-cache-dir hayaku
 
 # 明确安装conda常用包（numpy/pandas等）
 RUN ${MINICONDA_PATH}/bin/conda install -y \

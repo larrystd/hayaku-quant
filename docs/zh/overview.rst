@@ -1,36 +1,36 @@
 .. figure:: _static/00000-title.png
 
-Hikyuu 简介
+Hayaku 简介
 ============
 
-Hikyuu Quant Framework 是一款基于 C++/Python 开发的开源超高速量化交易研究框架，聚焦策略分析、回测与实盘能力扩展（目前深度适配国内 A 股市场）。
+Hayaku Quant Framework 是一款基于 C++/Python 开发的开源超高速量化交易研究框架，聚焦策略分析、回测与实盘能力扩展（目前深度适配国内 A 股市场）。
+
+Hayaku 源自 `Hikyuu <https://github.com/fasiondog/hikyuu>`_。当前仓库是破坏式架构重构
+POC，并非上游项目的即插即用替代品。
 
 项目深耕量化交易核心技术领域，核心能力覆盖四大维度：**交易模型研发、极速计算引擎、高效回测体系、实盘交易拓展**。
 
 框架以成熟的系统化交易理念为核心，将完整交易体系拆解为**市场环境判断、系统有效条件、信号指示器、止损 / 止盈策略、资金管理策略、盈利目标策略、滑点算法、多因子模型、投资组合、资金分配策略**等独立组件。你可针对每个模块搭建专属策略库，在研究中自由组合、灵活回测，精准分析单一策略的有效性、稳定性，以及组合策略的整体收益表现。
 
-👉 **项目地址：**
+👉 **项目仓库：**
 
-* `GitHub <https://github.com/fasiondog/hikyuu>`_
-* `Gitee <https://gitee.com/fasiondog/hikyuu>`_
-* `GitCode <https://gitcode.com/hikyuu/hikyuu>`_
+* `Hayaku <https://github.com/larrystd/hayaku-quant>`_ — 当前重构仓库
+* `Hikyuu <https://github.com/fasiondog/hikyuu>`_ — 上游源码与历史
 
-👉 **项目首页：** `https://hikyuu.org/ <https://hikyuu.org/>`_
+👉 **项目首页：** `https://github.com/larrystd/hayaku-quant <https://github.com/larrystd/hayaku-quant>`_
 
-👉 **帮助文档：** `https://hikyuu.readthedocs.io/zh-cn/latest/index.html <https://hikyuu.readthedocs.io/zh-cn/latest/index.html>`_
+👉 **入门示例:** `https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/zh/000-Index.ipynb?flush_cache=True <https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/zh/000-Index.ipynb?flush_cache=True>`_
 
-👉 **入门示例:** `https://nbviewer.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/zh/000-Index.ipynb?flush_cache=True <https://nbviewer.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/zh/000-Index.ipynb?flush_cache=True>`_
+👉 **上游策略部件库：** `https://gitee.com/fasiondog/hikyuu_hub <https://gitee.com/fasiondog/hikyuu_hub>`_
 
-👉 **策略部件库：** `https://gitee.com/fasiondog/hikyuu_hub <https://gitee.com/fasiondog/hikyuu_hub>`_
-
-👉 感谢网友提供的 Hikyuu Ubuntu虚拟机环境, 百度网盘下载(提取码: ht8j): `下载地址 <https://pan.baidu.com/s/1CAiUWDdgV0c0VhPpe4AgVw?pwd=ht8j>`_
+👉 感谢网友提供的 Hayaku Ubuntu虚拟机环境, 百度网盘下载(提取码: ht8j): `下载地址 <https://pan.baidu.com/s/1CAiUWDdgV0c0VhPpe4AgVw?pwd=ht8j>`_
 
 示例代码：
 
 ::
 
-    from hikyuu import Query, open_session
-    from hikyuu.execution import AccountConfig
+    from hayaku import Query, open_session
+    from hayaku.execution import AccountConfig
 
     # 运行时状态由 Session 显式持有。
     account = AccountConfig(initial_cash=300000, name="research")
@@ -45,30 +45,30 @@ Hikyuu Quant Framework 是一款基于 C++/Python 开发的开源超高速量化
 .. figure:: _static/10000-overview.png
         :width: 600px
 
-完整示例参见：`入门示例 Notebook <https://nbviewer.jupyter.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/zh/000-Index.ipynb?flush_cache=True>`_
+完整示例参见：`入门示例 Notebook <https://nbviewer.jupyter.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/zh/000-Index.ipynb?flush_cache=True>`_
 
 
-🔥 为什么选择 Hikyuu？
+🔥 为什么选择 Hayaku？
 -------------------------
 
 **💹 组合灵活，分类构建策略资产库**
 
-Hikyuu 对系统化交易方法进行了轻量化抽象，涵盖市场环境判断、系统有效条件、信号指示器、止损 / 止盈策略、资金管理、盈利目标、滑点算法、交易对象筛选、资金分配等核心组件。你可以基于这些组件自由搭建专属策略库，灵活组合、高效回测，并在策略探索时专注于单一模块的效果与影响，大幅提升研究效率。主要功能架构如下：
+Hayaku 对系统化交易方法进行了轻量化抽象，涵盖市场环境判断、系统有效条件、信号指示器、止损 / 止盈策略、资金管理、盈利目标、滑点算法、交易对象筛选、资金分配等核心组件。你可以基于这些组件自由搭建专属策略库，灵活组合、高效回测，并在策略探索时专注于单一模块的效果与影响，大幅提升研究效率。主要功能架构如下：
 
 .. figure:: _static/10002-function-arc.png
         :width: 800px
 
 **🚀 极致性能，轻松构建专属量化应用**
 
-项目由三大部分构成：高性能 C++ 核心库、Python 接口层（hikyuu）、以及交互式探索工具。
+项目由三大部分构成：高性能 C++ 核心库、Python 接口层（hayaku）、以及交互式探索工具。
 
 * **性能实测：** AMD 7950x 实测：A 股全市场 1913 万日 K 线，首次加载 + 计算 20 日均线并求和，仅需 6 秒；数据预热后，同操作耗时仅需 166 毫秒。详见 `性能实测文章 <https://mp.weixin.qq.com/s?__biz=MzkwMzY1NzYxMA==&mid=2247483768&idx=1&sn=33e40aa9633857fa7b4c7ded51c95ae7&chksm=c093a09df7e4298b3f543121ba01334c0f8bf76e75c643afd6fc53aea1792ebb92de9a32c2be&mpshare=1&scene=23&srcid=05297ByHT6DEv6XAmyje1oOr&sharer_shareinfo=b38f5f91b4efd8fb60303a4ef4774748&sharer_shareinfo_first=b38f5f91b4efd8fb60303a4ef4774748#rd>`_
 
 * **C++ 核心库：** 内置完整策略框架，原生支持多线程与多核加速，为超高算力场景预留扩展空间；核心库可独立剥离使用，帮助开发者快速构建自定义量化工具。
 
-* **Python接口层（hikyuu）：** 对 C++ 核心进行轻量化封装，集成 TA-Lib，支持与 numpy、pandas 无缝互转，轻松对接主流 Python 数据分析生态。
+* **Python接口层（hayaku）：** 对 C++ 核心进行轻量化封装，集成 TA-Lib，支持与 numpy、pandas 无缝互转，轻松对接主流 Python 数据分析生态。
 
-* **hikyuu.interactive 交互式探索工具：** 内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
+* **hayaku.interactive 交互式探索工具：** 内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
 
 **🍳 语法简洁，策略探索更高效自由**
 
@@ -84,57 +84,10 @@ Hikyuu 对系统化交易方法进行了轻量化抽象，涵盖市场环境判�
 
 
 
-🎉 感谢捐赠，让 Hikyuu 走得更远
----------------------------------------------------------------
-
-🎁 `捐赠计划与附赠参见 <https://hikyuu.readthedocs.io/zh-cn/latest/vip/donate-plan.html>`_
-
-.. raw:: html
-
-    <table>
-    <thead>
-    <tr>
-    <th>说明</th>
-    <th>扫描方式</th>
-    <th>捐赠链接（与下方二维码同）</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td>请作者喝杯☕️（30元）（赠历史日线数据）</td>
-    <td>支付宝</td>
-    <td><a href="https://pay.ldxp.cn/item/gflv3v" rel="nofollow">https://pay.ldxp.cn/item/gflv3v</a></td>
-    </tr>
-    <tr>
-    <td>订阅180天（50元）（赠历史日线数据）</td>
-    <td>支付宝</td>
-    <td><a href="https://pay.ldxp.cn/item/du4h8s" rel="nofollow">https://pay.ldxp.cn/item/du4h8s</a></td>
-    </tr>
-    <tr>
-    <td>订阅365天（100元）（赠历史日/分/时/笔数据）</td>
-    <td>支付宝</td>
-    <td><a href="https://pay.ldxp.cn/item/ehbz9b" rel="nofollow">https://pay.ldxp.cn/item/ehbz9b</a></td>
-    </tr>
-    <tr>
-    <td>加入星球<br />(3台设备及其他，<br />首年300元，续费半价）<br />另有单独微信群及部件库（赠历史日/分/时/笔数据）</td>
-    <td>微信或知识星球</td>
-    <td><a href="https://t.zsxq.com/YSATD" rel="nofollow">https://t.zsxq.com/YSATD</a></td>
-    </tr>
-    </tbody>
-    </table>
-
-.. figure:: _static/dingyue.png
-
-捐赠用户支持群（仅接受捐赠用户，入群请注明： Hikyuu 订阅）
-
-.. figure:: _static/support.jpg
-
-
-
 项目依赖说明
 ---------------------------------------------------------------
 
-Hikyuu 的 C++ 核心模块直接依赖以下开源项目（间接依赖项及 Python 侧依赖未列出；Python 依赖可参考 requirements.txt 文件）。在此感谢所有开源作者的贡献。
+Hayaku 的 C++ 核心模块直接依赖以下开源项目（间接依赖项及 Python 侧依赖未列出；Python 依赖可参考 requirements.txt 文件）。在此感谢所有开源作者的贡献。
 
 .. raw:: html
 

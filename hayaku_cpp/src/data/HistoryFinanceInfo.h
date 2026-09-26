@@ -1,0 +1,36 @@
+#pragma once
+
+/*
+ *  Copyright (c) 2024 hikyuu.org
+ *
+ *  Created on: 2024-04-13
+ *      Author: fasiondog
+ */
+
+
+#include "MarketTypes.h"
+
+namespace hayaku {
+
+/**
+ * Historical financial information record
+ * @ingroup StockManage
+ */
+struct HAYAKU_API HistoryFinanceInfo {
+    Datetime fileDate;     ///< Used to distinguish the Q1, half-year, Q3 and annual reports
+    Datetime reportDate;   ///< Financial report date
+    vector<float> values;  ///< Detailed financial information; the field index can be queried with
+                           ///< DataEngine::getHistoryFinanceAllFields
+
+    HistoryFinanceInfo() = default;
+    HistoryFinanceInfo(const HistoryFinanceInfo&) = default;
+    HistoryFinanceInfo(HistoryFinanceInfo&& rv) noexcept
+    : fileDate(std::move(rv.fileDate)),
+      reportDate(std::move(rv.reportDate)),
+      values(std::move(rv.values)) {}
+
+    HistoryFinanceInfo& operator=(const HistoryFinanceInfo&) noexcept;
+    HistoryFinanceInfo& operator=(HistoryFinanceInfo&&) noexcept;
+};
+
+}  // namespace hayaku

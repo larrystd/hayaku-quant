@@ -29,7 +29,7 @@
 ```text
 ┌─────────────────────────────────────────────────────────────────────┐
 │ Python 稳定模块                                                     │
-│ hikyuu.data │ hikyuu.execution │ hikyuu.strategy │ hikyuu.analysis │
+│ hayaku.data │ hayaku.execution │ hayaku.strategy │ hayaku.analysis │
 └───────────────────────────────┬─────────────────────────────────────┘
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -37,7 +37,7 @@
 └───────────────────────────────┬─────────────────────────────────────┘
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│ HikyuuSession                                                       │
+│ HayakuSession                                                       │
 │ 配置、生命周期、Data/Execution/Strategy Engine 所有权              │
 └──────────────┬────────────────────┬──────────────────────┬───────────┘
                ▼                    ▼                      ▼
@@ -71,7 +71,7 @@ Driver、Broker、TradeCost 和策略扩展接口跟随所属业务模块，不�
 
 | 类型 | 最终职责 | 明确不负责 |
 | --- | --- | --- |
-| `HikyuuSession` | 解析配置、创建并持有三个 Engine、统一关闭 | 数据查询、记账、逐 Bar 策略逻辑 |
+| `HayakuSession` | 解析配置、创建并持有三个 Engine、统一关闭 | 数据查询、记账、逐 Bar 策略逻辑 |
 | `DataEngine` | 证券、行情、板块、日历、财务等只读查询 | Driver 管理、插件控制、线程/IPC 运维、可变全局状态 |
 | `ExecutionEngine` | 账户创建、订单校验与执行、唯一账本写入、账户快照 | 信号判断、行情查询、策略组件编排 |
 | `StrategyEngine` | 策略定义执行、逐 Bar 调度、延迟订单、停止和结果快照 | 直接改账本、直接调 Broker/Driver、暴露 Portfolio 内部钩子 |
@@ -79,9 +79,9 @@ Driver、Broker、TradeCost 和策略扩展接口跟随所属业务模块，不�
 最终稳定接口的形态如下，具体字段可在编码前用编译测试进一步固定，但旧类型不得重新进入签名：
 
 ```cpp
-class HikyuuSession {
+class HayakuSession {
 public:
-    static HikyuuSession open(const SessionOptions&);
+    static HayakuSession open(const SessionOptions&);
     DataEngine& data();
     ExecutionEngine& execution();
     StrategyEngine& strategy();
@@ -119,16 +119,16 @@ public:
 `domain/components/spi/adapters/support` 等横向技术分层。基础设施统一放入 `common`：
 
 ```text
-hikyuu_cpp/hikyuu/      ──► hikyuu_cpp/src/
-hikyuu_cpp/unit_test/   ──► hikyuu_cpp/test/
+hayaku_cpp/hayaku/      ──► hayaku_cpp/src/
+hayaku_cpp/unit_test/   ──► hayaku_cpp/test/
 ```
 
 `src` 只放生产代码，`test` 只放测试代码；`test` 内部目录与 `src` 的模块结构保持镜像。
 
 ```text
-hikyuu_cpp/src/
+hayaku_cpp/src/
 ├── app/
-│   ├── HikyuuSession.*
+│   ├── HayakuSession.*
 │   └── SessionOptions.*
 ├── data/                       # 获取、查询和计算市场数据
 │   ├── DataEngine.*
@@ -182,7 +182,7 @@ hikyuu_cpp/src/
     ├── threading/
     └── networking/
 
-hikyuu_cpp/test/
+hayaku_cpp/test/
 ├── app/
 ├── data/
 ├── execution/
@@ -194,7 +194,7 @@ hikyuu_cpp/test/
 绑定层和 Python 层按相同模块镜像：
 
 ```text
-hikyuu_pywrap/                  hikyuu/
+hayaku_pywrap/                  hayaku/
 ├── app/                       ├── session.py
 ├── data/                      ├── data/
 ├── execution/                 ├── execution/
@@ -216,7 +216,7 @@ hikyuu_pywrap/                  hikyuu/
 
 | 旧对象 | 最终替代 | 最终删除范围 |
 | --- | --- | --- |
-| `StockManager`、全局 `sm`、`hikyuu_init` | `HikyuuSession` + `DataEngine` | `StockManager.h/.cpp`、绑定、顶层 Python 名称和兼容测试 |
+| `StockManager`、全局 `sm`、`hayaku_init` | `HayakuSession` + `DataEngine` | `StockManager.h/.cpp`、绑定、顶层 Python 名称和兼容测试 |
 | `TradeManagerBase`、`TradeManager`、`TradeManagerPtr/TMPtr`、`crtTM` | `ExecutionRuntime` + `Ledger` + `AccountConfig/AccountId` | 继承体系、工厂、pybind trampoline、Python `trade_manage` |
 | `TradeManagerExecutionAdapter` | `ExecutionEngine` 直接持有 `ExecutionRuntime` | `trade/internal/TradeManagerExecutionAdapter.*` |
 | `System`、`SystemPtr`、`SYS_Simple`、`SYS_WalkForward` | `StrategyDefinition` + `StrategyRuntime` | `trade_sys/system/**`、System 绑定、旧工厂和 Python `trade_sys` 入口 |
@@ -235,25 +235,25 @@ hikyuu_pywrap/                  hikyuu/
 
 ### 1.5 Python 最终公共面
 
-`import hikyuu` 只提供版本、异常、Session、三个 Engine 和少量高频领域值类型；目标为
-`len(hikyuu.__all__) <= 30`。指标、策略工厂、扩展协议和运维能力使用显式模块导入。
+`import hayaku` 只提供版本、异常、Session、三个 Engine 和少量高频领域值类型；目标为
+`len(hayaku.__all__) <= 30`。指标、策略工厂、扩展协议和运维能力使用显式模块导入。
 
 ```text
-hikyuu                  Session、Engine、Datetime、Stock、KData、Query 等高频类型
-hikyuu.data             数据查询和值类型
-hikyuu.execution        Order/Execution/Account API
-hikyuu.strategy         StrategyDefinition/Backtest API 和组件工厂
-hikyuu.analysis         Performance 和回测结果分析
-hikyuu.common           Datetime、配置和其他必要基础类型
-hikyuu.advanced         IPC、数据服务、导入和运维控制
-hikyuu.interactive      允许研究场景使用的宽导入集合
+hayaku                  Session、Engine、Datetime、Stock、KData、Query 等高频类型
+hayaku.data             数据查询和值类型
+hayaku.execution        Order/Execution/Account API
+hayaku.strategy         StrategyDefinition/Backtest API 和组件工厂
+hayaku.analysis         Performance 和回测结果分析
+hayaku.common           Datetime、配置和其他必要基础类型
+hayaku.advanced         IPC、数据服务、导入和运维控制
+hayaku.interactive      允许研究场景使用的宽导入集合
 ```
 
 最终还必须满足：
 
-- `import hikyuu` 不访问网络、不初始化 Hub、不加载绘图库；
-- `dir(hikyuu)` 不出现 Driver、Broker、Importer、IPC 和旧大类；
-- 不存在 `hikyuu.trade_manage`、`hikyuu.trade_sys` 和 `hikyuu.compat`；
+- `import hayaku` 不访问网络、不初始化 Hub、不加载绘图库；
+- `dir(hayaku)` 不出现 Driver、Broker、Importer、IPC 和旧大类；
+- 不存在 `hayaku.trade_manage`、`hayaku.trade_sys` 和 `hayaku.compat`；
 - pybind11 不绑定 internal 方法、可变账本接口或 Portfolio 调度钩子；
 - 发布时重新生成 `.pyi`，不保留旧类占位声明。
 
@@ -269,7 +269,7 @@ hikyuu.interactive      允许研究场景使用的宽导入集合
 | Session 装配 | `bindExecution(TradeManagerPtr)`、`bindStrategy(SystemPtr)` | Session 原生拥有三个 Engine，无旧类型输入 |
 | Python 顶层 | `__all__` 790 项 | 不超过 30 项 |
 | 旧符号扫描 | 约 1,423 个匹配行、220 个生产文件 | 禁止旧符号为 0 |
-| 目录 | `hikyuu_cpp/hikyuu`、`unit_test` 及历史业务目录 | `hikyuu_cpp/src`、`test`，内部为 app/data/execution/strategy/analysis/common |
+| 目录 | `hayaku_cpp/hayaku`、`unit_test` 及历史业务目录 | `hayaku_cpp/src`、`test`，内部为 app/data/execution/strategy/analysis/common |
 
 `System.h/.cpp` 仍包含约 2300 行状态机，`TradeManagerBase` 仍有约 75 个公开方法，
 `System` 仍有约 53 个公开方法。继续只包门面不会缩小内部耦合，必须迁移所有权和调用方。
@@ -296,14 +296,14 @@ hikyuu.interactive      允许研究场景使用的宽导入集合
 | Data | `StockManager` 同时保存状态并被生产代码直接调用 | 状态和实现迁入 `DataRuntime`；除兼容壳自身外，C++ 生产代码的 `StockManager` include/实例调用为 0 | Core 编译、small-test、unit-test 通过 |
 | Execution | `ExecutionEngine -> Adapter -> TradeManager`，账户字段散落在旧实现 | `ExecutionEngine -> ExecutionRuntime -> Ledger`；Adapter 已删除；`TradeManager` 缩为 53/27 行兼容壳 | 新增 Runtime 直连、AccountId/Config/View/OrderOrigin 测试；unit-test 通过 |
 | Strategy | `StrategyEngine -> System::run()`，逐 Bar 状态机和四组延迟订单位于 `System` | 普通策略由 `StrategyRuntime` 执行；延迟订单集中到 `PendingOrderState`；下单经 `StrategyExecutionPort` | WalkForward 的非 Runtime 账户回退缺陷已在全量测试中发现并修复；unit-test 通过 |
-| Python | 顶层公开集合约 790 项且导入绘图相关模块 | `__all__` 固定为 30 项；删除顶层 `StockManager/TradeManager/System/hikyuu_init/sm`；顶层不再导入 Hub/绘图；pandas 改为按需导入 | Python 3.10 共 57 项测试通过；隔离进程副作用测试和 import-test 通过 |
+| Python | 顶层公开集合约 790 项且导入绘图相关模块 | `__all__` 固定为 30 项；删除顶层 `StockManager/TradeManager/System/hayaku_init/sm`；顶层不再导入 Hub/绘图；pandas 改为按需导入 | Python 3.10 共 57 项测试通过；隔离进程副作用测试和 import-test 通过 |
 
 本轮首次全量 unit-test 暴露 3 个 WalkForward 回归：兼容构造错误地拒绝
 `WalkForwardTradeManager`。修复 `StrategyExecutionPort` 的精确 legacy 回退后，结果为
 `832/832` 用例、`209250/209250` 断言通过。第二轮进一步完成：
 
 - `ExecutionEngine` 删除内部 `m_compatManager` 和 `_manager()`，直接持有 `ExecutionRuntime`；
-- `HikyuuSession::open` 原生接收 `AccountConfig`，Python 不再暴露旧 `bind_execution`；
+- `HayakuSession::open` 原生接收 `AccountConfig`，Python 不再暴露旧 `bind_execution`；
 - StockManager Python 绑定被删除，C++ 生产代码对 StockManager 的直接引用降为 0；
 - Strategy、Portfolio、Selector、AllocateFunds 和 WalkForward 的正常运行路径改经
   `StrategyRuntime`/`StrategyExecutionPort`，保留的 legacy 回退仅服务尚未迁移的旧协议；
@@ -325,7 +325,7 @@ git diff --check    PASS
 
 ```text
 StockManager 17        TradeManagerBase 18   TradeManagerPtr 39
-TMPtr 16               SystemPtr 35          hikyuu_init 14
+TMPtr 16               SystemPtr 35          hayaku_init 14
 TradeManagerExecutionAdapter 0
 ```
 
@@ -340,7 +340,7 @@ TradeManagerExecutionAdapter 0
 2. 删除 `TradeManagerBase/TradeManager`、`System` 和 `StockManager` 兼容壳及剩余绑定；
 3. 删除 C++ `ExecutionEngine(TradeManagerBase)`、`bindExecution/bindStrategy` 等兼容签名；
 4. 迁移 GUI、示例和文档后，删除 `trade_manage/trade_sys` Python 包及旧测试入口；
-5. 最后执行 `hikyuu_cpp/hikyuu -> src`、`unit_test -> test` 的物理迁移，并完成性能、
+5. 最后执行 `hayaku_cpp/hayaku -> src`、`unit_test -> test` 的物理迁移，并完成性能、
    峰值内存和 `.pyi` 验收。
 
 ### 2.2 兼容壳硬删除批次结果
@@ -348,9 +348,9 @@ TradeManagerExecutionAdapter 0
 本批继续执行了可独立完成的硬删除，没有等待最终目录搬迁：
 
 - 物理删除 `StockManager.h/.cpp` 和 `_StockManager.cpp`；生产代码、263 个 C++ 测试文件、
-  GUI、示例和绘图调用全部迁到 `DataRuntime`、`DataEngine` 或 `HikyuuSession`；
-- 删除 C++/Python `hikyuu_init`；实时 `Strategy` 改为显式持有自己的 `HikyuuSession`；
-- 删除公开 `ExecutionEngine(TradeManagerPtr)` 和 `HikyuuSession::bindExecution`，执行公共头、
+  GUI、示例和绘图调用全部迁到 `DataRuntime`、`DataEngine` 或 `HayakuSession`；
+- 删除 C++/Python `hayaku_init`；实时 `Strategy` 改为显式持有自己的 `HayakuSession`；
+- 删除公开 `ExecutionEngine(TradeManagerPtr)` 和 `HayakuSession::bindExecution`，执行公共头、
   pybind 和测试不再依赖 `TradeManagerBase/TradeManagerPtr/TMPtr`；
 - `StrategyDefinition` 不再持有 `SystemPtr`，删除 `StrategyEngine(SystemPtr)`，Session 改为
   `bindStrategy(const StrategyDefinition&)` 并注入同账户 `ExecutionEngine`；
@@ -375,10 +375,10 @@ unit-test 从上一批的 832 项变为 830 项，是因为删除了两个只验
 
 ```text
 TradeManagerBase 15    TradeManagerPtr 44    TMPtr 16
-SystemPtr 26           hikyuu_init 0         TradeManagerExecutionAdapter 0
+SystemPtr 26           hayaku_init 0         TradeManagerExecutionAdapter 0
 ```
 
-`StockManager` 和 `hikyuu_init` 的可执行引用已经为 0；仅 Python API 禁止名单和“旧名称
+`StockManager` 和 `hayaku_init` 的可执行引用已经为 0；仅 Python API 禁止名单和“旧名称
 不可见”测试中保留字符串字面量。下一批不能再完全并行：必须先把
 StrategyDefinition/组件对 TM 的依赖替换为
 `AccountId + AccountView + StrategyExecutionPort`，再解除 `ExecutionRuntime : TradeManagerBase`，
@@ -412,7 +412,7 @@ Session ──► DataEngine ──► DataRuntime ──► data/driver
   `StockManager::instance()` 改为显式 DataEngine/数据上下文；
 - 将 Driver 注册和数据写操作移入 `data/driver` 或 `advanced`，插件路径移入 Session 配置；
 - 通用网络、IPC 和共享内存设施放入 `common/networking`，数据协议实现仍归 `data/driver`；
-- 删除 `hikyuu_cpp/hikyuu/StockManager.*`、`export_StockManager`、Python `sm` 和 `hikyuu_init`；
+- 删除 `hayaku_cpp/hayaku/StockManager.*`、`export_StockManager`、Python `sm` 和 `hayaku_init`；
 - `DataRuntime` 保持 internal，不进入 pybind11。
 
 暂不改动行情算法、数据库 Schema、具体 HDF5/MySQL/SQLite/TDX 实现。
@@ -473,7 +473,7 @@ StrategyRuntime ──► DataEngine
 - Python 顶层改为显式、轻量、无副作用导入；
 - 示例、notebook、测试和双语文档全部改用 Session/Engine；
 - 删除 StockManager/TradeManager/System 的 trampoline、pickle 和旧工厂绑定；
-- 删除 `hikyuu/trade_manage`、`hikyuu/trade_sys` 及旧顶层属性；
+- 删除 `hayaku/trade_manage`、`hayaku/trade_sys` 及旧顶层属性；
 - 最终重新生成 `.pyi` 并用 API inventory 固定公开面。
 
 ### 3.6 C++ 与性能约束
@@ -509,19 +509,19 @@ StrategyRuntime ──► DataEngine
 | A 数据 | `data/**`、`data_driver/**`、数据调用方中的限定文件 | DataEngine 显式依赖、Driver 收入 data 模块、StockManager 调用清零 | C 负责其目录内的数据调用；最终由集成线删除门面 |
 | B 执行 | `trade/**`、`trade_manage/**`、执行测试 | Ledger、ExecutionRuntime、Broker/Cost SPI、执行金标 | 向 C 提供冻结的内部执行端口 |
 | C 策略 | `trade_sys/**`、`strategy/**`、策略测试 | StrategyRuntime、组件上下文、延迟订单、状态机原样迁移 | 接入 B 的执行端口后才能删除 System/TM |
-| D 暴露 | `hikyuu_pywrap/**`、`hikyuu/**`、Python 测试和 API 文档 | 新目录、显式导入、边界测试、stub 准备 | C++ 新接口稳定后切换绑定和删除旧包 |
+| D 暴露 | `hayaku_pywrap/**`、`hayaku/**`、Python 测试和 API 文档 | 新目录、显式导入、边界测试、stub 准备 | C++ 新接口稳定后切换绑定和删除旧包 |
 
 共享文件只由集成线修改：
 
 ```text
-hikyuu_cpp/hikyuu/hikyuu.h → hikyuu_cpp/src/hikyuu.h
-hikyuu_cpp/hikyuu/application/HikyuuSession.* → hikyuu_cpp/src/app/**
-hikyuu_cpp/hikyuu/xmake.lua → hikyuu_cpp/src/xmake.lua
-hikyuu_cpp/unit_test/xmake.lua → hikyuu_cpp/test/xmake.lua
-hikyuu_pywrap/main.cpp
-hikyuu_pywrap/xmake.lua
-hikyuu/__init__.py
-hikyuu/test/test.py
+hayaku_cpp/hayaku/hayaku.h → hayaku_cpp/src/hayaku.h
+hayaku_cpp/hayaku/application/HayakuSession.* → hayaku_cpp/src/app/**
+hayaku_cpp/hayaku/xmake.lua → hayaku_cpp/src/xmake.lua
+hayaku_cpp/unit_test/xmake.lua → hayaku_cpp/test/xmake.lua
+hayaku_pywrap/main.cpp
+hayaku_pywrap/xmake.lua
+hayaku/__init__.py
+hayaku/test/test.py
 docs/arch/api-inventory.md
 ```
 
@@ -556,9 +556,9 @@ docs/arch/api-inventory.md
 ### 6.1 静态结构
 
 - 生产代码中 `StockManager`、`TradeManagerBase`、`TradeManagerPtr/TMPtr`、`SystemPtr`、
-  `TradeManagerExecutionAdapter`、`hikyuu_init` 和全局 `sm` 引用为 0；
-- 生产代码全部位于 `hikyuu_cpp/src`，测试全部位于 `hikyuu_cpp/test`；
-- 不再存在 `hikyuu_cpp/hikyuu` 和 `hikyuu_cpp/unit_test`；
+  `TradeManagerExecutionAdapter`、`hayaku_init` 和全局 `sm` 引用为 0；
+- 生产代码全部位于 `hayaku_cpp/src`，测试全部位于 `hayaku_cpp/test`；
+- 不再存在 `hayaku_cpp/hayaku` 和 `hayaku_cpp/unit_test`；
 - 删除 `StockManager.*`、`trade_manage/**`、`trade_sys/system/**` 及对应绑定/Python 包；
 - `ExecutionEngine.h` 不包含任何旧 TradeManager 头；
 - `StrategyEngine.h` 不包含 `System.h`，运行期不调用 `System::run()`；
@@ -568,8 +568,8 @@ docs/arch/api-inventory.md
 
 ### 6.2 API
 
-- `len(hikyuu.__all__) <= 30`；
-- `import hikyuu` 无网络、Hub、GUI、绘图和数据加载副作用；
+- `len(hayaku.__all__) <= 30`；
+- `import hayaku` 无网络、Hub、GUI、绘图和数据加载副作用；
 - C++/Python 普通用户只通过 Session 和三个 Engine 完成数据查询、账户执行和策略运行；
 - SPI、advanced 与稳定用户 API 分离，所有公开方法都有归属和测试；
 - API inventory 中不存在兼容/deprecated 分组。
@@ -608,16 +608,16 @@ docs/arch/api-inventory.md
   `TradeManagerExecutionAdapter` 和 `StrategyConfig` 的生产实现、绑定及旧测试已删除；
 - C++ 生产代码与测试中的 `TradeManagerPtr/TMPtr`、`SystemPtr/SYSPtr`、
   `SYS_Simple/SYS_WalkForward` 静态扫描为 0；
-- Python 的 `hikyuu.trade_manage`、`hikyuu.trade_sys` 已删除；旧名称只保留在拒绝列表和
+- Python 的 `hayaku.trade_manage`、`hayaku.trade_sys` 已删除；旧名称只保留在拒绝列表和
   负向边界测试中，用于保证它们不会重新进入公共 API；
-- 顶层 `hikyuu.__all__` 为 30 项，普通导入不初始化数据、不加载绘图或网络模块。
+- 顶层 `hayaku.__all__` 为 30 项，普通导入不初始化数据、不加载绘图或网络模块。
 - 仓库当前没有 `.pyi` 产物或生成流程，因此不存在需要保留的旧类占位声明；
   公共面由 API inventory 和 Python 边界测试固定。
 
 ### 8.2 最终物理目录
 
 ```text
-hikyuu_cpp/
+hayaku_cpp/
 ├── src/
 │   ├── app/                    # Session、进程运行期与应用插件
 │   ├── data/                   # 行情值类型、DataEngine、driver、factor、indicator
@@ -633,7 +633,7 @@ hikyuu_cpp/
     ├── analysis/
     └── common/
 
-hikyuu_pywrap/
+hayaku_pywrap/
 ├── app/
 ├── data/
 ├── execution/
@@ -643,7 +643,7 @@ hikyuu_pywrap/
 └── advanced/
 ```
 
-`hikyuu_cpp/hikyuu`、`hikyuu_cpp/unit_test`、`trade_manage` 和
+`hayaku_cpp/hayaku`、`hayaku_cpp/unit_test`、`trade_manage` 和
 `trade_sys/system` 均已不存在。xmake、安装头文件复制逻辑和 API inventory 已切换到新路径。
 
 ### 8.3 最终验收

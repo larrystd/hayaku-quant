@@ -56,7 +56,7 @@ jobs:
       - name: test python
         run: |
           export PYTHONPATH=.
-          python3 hikyuu/test/test.py
+          python3 hayaku/test/test.py
           
       - name: test
         run: |

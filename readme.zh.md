@@ -8,17 +8,20 @@
 </p>
 
 <p align="center">
-  <img src="https://github.com/fasiondog/hikyuu/workflows/win-build/badge.svg" alt="Windows build">
-  <img src="https://github.com/fasiondog/hikyuu/workflows/ubuntu-build/badge.svg" alt="Ubuntu build">
-  <img src="https://img.shields.io/github/license/fasiondog/hikyuu.svg" alt="License">
-  <img src="https://static.pepy.tech/badge/hikyuu" alt="Downloads">
+  <img src="https://github.com/larrystd/hayaku-quant/actions/workflows/windows.yml/badge.svg?branch=poc" alt="Windows build">
+  <img src="https://github.com/larrystd/hayaku-quant/actions/workflows/ubuntu.yml/badge.svg?branch=poc" alt="Ubuntu build">
+  <img src="https://img.shields.io/github/license/larrystd/hayaku-quant.svg" alt="License">
+  <img src="https://static.pepy.tech/badge/hayaku" alt="Downloads">
 </p>
 
 <p align="center">
   <a href="readme.md">English</a> | <b>简体中文</b>
 </p>
 
-Hikyuu Quant Framework 依托成熟的系统化交易与投资组合理念，核心目标聚焦于打造策略(或资产)组合的快速策略研究体系，同时将量化分析体系拆解为市场环境、信号、止损 / 止盈、资金管理、收益目标、滑点、多因子、资金分配等可独立替换的**策略部件**，自由组合即可搭建专属策略库，并通过回测验证有效性。
+Hayaku Quant Framework 依托成熟的系统化交易与投资组合理念，核心目标聚焦于打造策略(或资产)组合的快速策略研究体系，同时将量化分析体系拆解为市场环境、信号、止损 / 止盈、资金管理、收益目标、滑点、多因子、资金分配等可独立替换的**策略部件**，自由组合即可搭建专属策略库，并通过回测验证有效性。
+
+> Hayaku 源自 [Hikyuu](https://github.com/fasiondog/hikyuu)。当前仓库是破坏式架构重构
+> POC，并非上游项目的即插即用替代品。
 
 > ⚠️ **免责声明**：本项目为开源金融技术研究工具，仅供个人学习、学术研究与数据分析使用，不构成任何投资建议与交易指导，不提供、不内置证券交易服务。用户自主新增、对接各类交易接口、开发拓展功能以及对应的实操行为，均由用户自行承担全部风险与法律责任，严禁对接非法交易通道、用于违规交易场景。
 
@@ -51,9 +54,9 @@ Hikyuu Quant Framework 依托成熟的系统化交易与投资组合理念，核
 
 | 项目                   | 链接                                                                                                                                              |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🏠**项目首页**   | [https://hikyuu.org/](https://hikyuu.org/)                                                                                                         |
-| 📚**帮助文档**   | [https://hikyuu.readthedocs.io/zh-cn/latest/index.html](https://hikyuu.readthedocs.io/zh-cn/latest/index.html)                                     |
-| 🚀**入门示例**   | [Jupyter Notebook 系列教程](https://nbviewer.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/zh/000-Index.ipynb?flush_cache=True) |
+| 🏠**项目仓库**   | [github.com/larrystd/hayaku-quant](https://github.com/larrystd/hayaku-quant)                                                                         |
+| 📚**文档源码**   | [`docs/`](docs/)                                                                                                                                     |
+| 🚀**入门示例**   | [Jupyter Notebook 系列教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/zh/000-Index.ipynb?flush_cache=True) |
 | 🧰**策略部件库** | [https://gitee.com/fasiondog/hikyuu_hub](https://gitee.com/fasiondog/hikyuu_hub)                                                                   |
 
 ---
@@ -69,13 +72,13 @@ Hikyuu Quant Framework 依托成熟的系统化交易与投资组合理念，核
 ### 第 1 步：安装
 
 ```bash
-pip install hikyuu
+pip install hayaku
 ```
 
 国内用户若下载缓慢，可换用镜像源：
 
 ```bash
-pip install hikyuu -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install hayaku -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 ### 第 2 步：导入行情数据
@@ -84,19 +87,19 @@ pip install hikyuu -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ```bash
 # 图形界面（推荐首次使用，会自动生成配置文件）
-HikyuuTDX
+HayakuTDX
 
-# 命令行（需先运行过一次 HikyuuTDX 生成配置）
+# 命令行（需先运行过一次 HayakuTDX 生成配置）
 importdata
 ```
 
-> ℹ️ **数据范围说明**：HikyuuTDX 目前仅支持下载**国内 A 股**历史数据，首次使用需在图形界面中完成初始配置；美股等其他市场暂不支持，后续将逐步补充。
+> ℹ️ **数据范围说明**：HayakuTDX 目前仅支持下载**国内 A 股**历史数据，首次使用需在图形界面中完成初始配置；美股等其他市场暂不支持，后续将逐步补充。
 
 ### 第 3 步：打开显式研究会话
 
 ```python
-from hikyuu import Query, open_session
-from hikyuu.execution import AccountConfig
+from hayaku import Query, open_session
+from hayaku.execution import AccountConfig
 
 account = AccountConfig(initial_cash=300000, name="research")
 with open_session(account_config=account) as session:
@@ -110,22 +113,23 @@ with open_session(account_config=account) as session:
   <img src="docs/zh/_static/10000-overview.png" alt="回测结果示意" width="900">
 </p>
 
-> 📖 完整示例参见 [Jupyter Notebook 系列教程](https://nbviewer.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/zh/000-Index.ipynb?flush_cache=True)
+> 📖 完整示例参见 [Jupyter Notebook 系列教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/zh/000-Index.ipynb?flush_cache=True)
 
 ### ❓ 上手常见问题
 
 | 现象                                              | 解决办法                                                                     |
 | :------------------------------------------------ | :--------------------------------------------------------------------------- |
-| Windows 下`pip install` 卡在下载 PyQt / PySide6 | 换清华源：`pip install hikyuu -i https://pypi.tuna.tsinghua.edu.cn/simple` |
-| `HikyuuTDX` 图形界面无法导入数据                | 改用命令行`importdata`（需先运行过一次 GUI 以生成配置文件）                |
+| Windows 下`pip install` 卡在下载 PyQt / PySide6 | 换清华源：`pip install hayaku -i https://pypi.tuna.tsinghua.edu.cn/simple` |
+| `HayakuTDX` 图形界面无法导入数据                | 改用命令行`importdata`（需先运行过一次 GUI 以生成配置文件）                |
 | 提示缺少 hdf5 / dll 相关错误                      | 执行`pip install tables` 重新安装 HDF5 支持                                |
 | **从源码构建**时的构建工具                  | 本项目使用**xmake**，不是 cmake                                        |
 
-> 💡 更多问题请查 [帮助文档](https://hikyuu.readthedocs.io/zh-cn/latest/index.html)，或在 [Gitee 提交 issue](https://gitee.com/fasiondog/hikyuu/issues)。
+> 💡 更多问题请查 [`docs/`](docs/) 文档源码，或在
+> [GitHub 提交 issue](https://github.com/larrystd/hayaku-quant/issues)。
 
 ---
 
-## 🚀 为什么选择 Hikyuu？
+## 🚀 为什么选择 Hayaku？
 
 > 强大的功能特性，助力您的量化交易研究
 
@@ -139,12 +143,12 @@ with open_session(account_config=account) as session:
 
 ### 🚀 极致性能，轻松构建专属量化应用
 
-项目由三大部分构成：**高性能 C++ 核心库**、**Python 接口层（hikyuu）** 以及 **交互式探索工具**。
+项目由三大部分构成：**高性能 C++ 核心库**、**Python 接口层（hayaku）** 以及 **交互式探索工具**。
 
 - **AMD 7950x 实测**：A 股全市场 1913 万日 K 线，首次加载并计算 20 日均线求和仅需 **6 秒**，数据预热后同操作仅需 **166 毫秒**（[📊 性能实测详情](https://mp.weixin.qq.com/s?__biz=MzkwMzY1NzYxMA==&mid=2247483768&idx=1&sn=33e40aa9633857fa7b4c7ded51c95ae7)）。
 - **C++ 核心库**：内置完整策略框架，原生支持多线程与多核加速，为超高算力场景预留扩展空间；核心库可独立剥离使用，帮助开发者快速构建自定义量化工具。
-- **Python 接口层（hikyuu）**：对 C++ 核心进行轻量化封装，集成 TA-Lib，支持与 numpy、pandas 无缝互转，轻松对接主流 Python 数据分析生态。
-- **hikyuu.interactive**：交互式探索工具，内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
+- **Python 接口层（hayaku）**：对 C++ 核心进行轻量化封装，集成 TA-Lib，支持与 numpy、pandas 无缝互转，轻松对接主流 Python 数据分析生态。
+- **hayaku.interactive**：交互式探索工具，内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
 
 ### 🍳 语法简洁，策略探索更高效自由
 
@@ -179,8 +183,8 @@ with open_session(account_config=account) as session:
 |                        | `AccountSnapshot / AccountView`               | 不可变账户视图                     |
 | **策略**               | `StrategyDefinition / StrategyEngine`        | 组件组合与策略编排                 |
 |                        | `BacktestRequest / BacktestResult`            | 稳定的回测输入与结果值             |
-| **分析**               | `hikyuu.analysis`                             | 显式结果转换与分析                 |
-| **扩展**               | `hikyuu.spi / hikyuu.advanced`               | 自定义协议与低层控制               |
+| **分析**               | `hayaku.analysis`                             | 显式结果转换与分析                 |
+| **扩展**               | `hayaku.spi / hayaku.advanced`               | 自定义协议与低层控制               |
 
 ---
 
@@ -188,30 +192,10 @@ with open_session(account_config=account) as session:
 
 > 欢迎 **Star ⭐**，参与贡献
 
-| 平台                 | 链接                                                                      | 推荐        |
-| :------------------- | :------------------------------------------------------------------------ | :---------- |
-| **GitHub**     | [https://github.com/fasiondog/hikyuu](https://github.com/fasiondog/hikyuu) | 海外        |
-| **码云 Gitee** | [https://gitee.com/fasiondog/hikyuu](https://gitee.com/fasiondog/hikyuu)   | ✅ 国内推荐 |
-| **GitCode**    | [https://gitcode.com/hikyuu/hikyuu](https://gitcode.com/hikyuu/hikyuu)     | ✅ 国内推荐 |
-
----
-
-## ❤️ 感谢捐赠，让 Hikyuu 走得更远
-
-| 方案                       | 说明                                                                                                                     | 方式                | 链接                                   |
-| :------------------------- | :----------------------------------------------------------------------------------------------------------------------- | :------------------ | :------------------------------------- |
-| ☕**请作者喝杯咖啡** | ¥30 · 一次性的小小支持（赠历史日线及 3 个月捐赠权益）                                                                  | 支付宝              | [前往捐赠](https://wzyp.cn/item/gflv3v) |
-| 📅**订阅 180 天**    | ¥50 · 半年期捐赠权益（赠历史日线）                                                                                     | 支付宝              | [前往捐赠](https://wzyp.cn/item/du4h8s) |
-| 🗓️**订阅 365 天**  | ¥100 · 全年期捐赠权益（赠历史日 / 分 / 时 / 笔数据）                                                                   | 支付宝              | [前往捐赠](https://wzyp.cn/item/ehbz9b) |
-| 🌌**加入知识星球**   | ¥300/年 · 首年 300 元，续费半价；捐赠权益 1 年可 3 台设备登录 · 专属微信群及策略部件库（赠历史日 / 分 / 时 / 笔数据） | 微信 / 知识星球 APP | [前往加入](https://t.zsxq.com/YSATD)    |
-
-> 🎁 **捐赠计划与附赠详见**：[https://hikyuu.readthedocs.io/zh-cn/latest/vip/donate-plan.html](https://hikyuu.readthedocs.io/zh-cn/latest/vip/donate-plan.html)
-
-捐赠用户支持群（仅接受捐赠用户，入群请注明：Hikyuu 订阅）
-
-<p align="center">
-  <img src="docs/zh/_static/support.jpg" alt="捐赠用户支持" width="150">
-</p>
+| 仓库 | 链接 | 角色 |
+| :--- | :--- | :--- |
+| **Hayaku** | [github.com/larrystd/hayaku-quant](https://github.com/larrystd/hayaku-quant) | 当前重构仓库 |
+| **Hikyuu** | [github.com/fasiondog/hikyuu](https://github.com/fasiondog/hikyuu) | 上游源码与历史 |
 
 ---
 
@@ -238,10 +222,10 @@ Python 侧依赖见 [requirements.txt](requirements.txt)。
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=fasiondog%2Fhikyuu&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=larrystd%2Fhayaku-quant&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=fasiondog/hikyuu&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=fasiondog/hikyuu&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=fasiondog/hikyuu&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=larrystd/hayaku-quant&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=larrystd/hayaku-quant&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=larrystd/hayaku-quant&type=date&legend=top-left" />
  </picture>
 </a>

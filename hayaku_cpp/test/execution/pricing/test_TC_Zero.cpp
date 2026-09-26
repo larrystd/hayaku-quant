@@ -1,0 +1,87 @@
+/*
+ * test_TC_Zero.cpp
+ *
+ *  Created on: 2013-2-14
+ *      Author: fasiondog
+ */
+
+#include "doctest/doctest.h"
+#include <data/DataRuntime.h>
+#include <execution/pricing/TradeCosts.h>
+
+#include <config.h>
+#if HAYAKU_SUPPORT_SERIALIZATION
+#include <fstream>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#endif
+
+using namespace hayaku;
+
+/**
+ * @defgroup test_TC_Zero test_TC_Zero
+ * @ingroup test_hayaku_trade_manage_suite
+ * @{
+ */
+
+/** @par Test points */
+TEST_CASE("test_TC_Zero") {
+    DataRuntime& sm = getDataRuntime();
+    Stock stock = sm.getStock("sh600004");
+    TradeCostPtr cost_func = TC_Zero();
+    CostRecord result;
+
+    /** @arg Check the name */
+    CHECK_EQ(cost_func->name(), "TC_Zero");
+
+    /** @arg Calculate the buy cost */
+    result = cost_func->getBuyCost(Datetime(200101010000), stock, 9.01, 1000);
+    CHECK_EQ(result, Null<CostRecord>());
+
+    /** @arg Calculate the sell cost */
+    result = cost_func->getSellCost(Datetime(200101010000), stock, 9.01, 1000);
+    CHECK_EQ(result, Null<CostRecord>());
+
+    /** @arg Test clone */
+    TradeCostPtr cost_clone_func = cost_func->clone();
+    CHECK_EQ(cost_clone_func->name(), "TC_Zero");
+    result = cost_clone_func->getBuyCost(Datetime(200101010000), stock, 9.01, 1000);
+    CHECK_EQ(result, Null<CostRecord>());
+    result = cost_clone_func->getSellCost(Datetime(200101010000), stock, 9.01, 1000);
+    CHECK_EQ(result, Null<CostRecord>());
+}
+
+#if HAYAKU_SUPPORT_SERIALIZATION
+/** @par Test points */
+TEST_CASE("test_ZeroCost_export") {
+    DataRuntime& sm = getDataRuntime();
+
+    string filename(sm.tmpdir());
+    filename += "/TC_Zero.xml";
+
+    TradeCostPtr zero = TC_Zero();
+    {
+        std::ofstream ofs(filename);
+        boost::archive::xml_oarchive oa(ofs);
+        oa << BOOST_SERIALIZATION_NVP(zero);
+    }
+
+    TradeCostPtr zero2;
+    {
+        std::ifstream ifs(filename);
+        boost::archive::xml_iarchive ia(ifs);
+        ia >> BOOST_SERIALIZATION_NVP(zero2);
+    }
+
+    Stock stock = sm.getStock("sh600004");
+
+    CostRecord result;
+    CHECK_EQ(zero2->name(), "TC_Zero");
+    result = zero2->getBuyCost(Datetime(200101010000), stock, 9.01, 1000);
+    CHECK_EQ(result, Null<CostRecord>());
+    result = zero2->getSellCost(Datetime(200101010000), stock, 9.01, 1000);
+    CHECK_EQ(result, Null<CostRecord>());
+}
+#endif /* HAYAKU_SUPPORT_SERIALIZATION */
+
+/** @} */

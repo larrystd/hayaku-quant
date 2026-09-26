@@ -7,7 +7,7 @@ C++ API参考, 使用下面的命令生成 Doxygen 文档:
 
 .. code-block:: shell
 
-    xmake doxygen -F hikyuu_cpp/Doxygen
+    xmake doxygen -F hayaku_cpp/Doxygen
 
 .. _developer:
 
@@ -32,18 +32,18 @@ xmake >= 2.8.2，网址：`<https://github.com/xmake-io/xmake>`_
 参见：`<https://xmake.io/#/zh-cn/guide/installation>`_
 
 
-3、克隆 Hikyuu 源码
+3、克隆 Hayaku 源码
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-执行以下命令克隆 hikyuu 源码：（请勿在中文目录下克隆代码）
+执行以下命令克隆 hayaku 源码：（请勿在中文目录下克隆代码）
 
 .. code-block:: shell
 
-    git clone https://github.com/fasiondog/hikyuu.git
+    git clone https://github.com/larrystd/hayaku-quant.git
 
 .. note::
 
-    **捐赠用户如需使用插件，请安装 hikyuu_plugin 包: pip install hikyuu_plugin**
+    **捐赠用户如需使用插件，请安装 hayaku_plugin 包: pip install hayaku_plugin**
 
     如最新代码使用插件发生崩溃，建议 checkout release 分支或对应版本分支进行编译。
 
@@ -88,7 +88,7 @@ Linux下需安装依赖的开发软件包。如 Ubuntu 下，执行以下命令�
 - python setup.py help        -- 查看帮助
 - python setup.py build       -- 执行编译
 - python setup.py install     -- 编译并执行安装（安装到 python 的 site-packages 目录下）
-- python setup.py uninstall   -- 删除已安装的Hikyuu
+- python setup.py uninstall   -- 删除已安装的Hayaku
 - python setup.py test        -- 执行单元测试（可带参数 --compile=1，先执行编译）
 - python setup.py clear       -- 清除本地编译结果
 - python setup.py wheel       -- 生成wheel安装包
@@ -105,7 +105,7 @@ Linux 下如修改 ~/.bashrc 文件，在末尾添加如下内容 （指向源�
 
 .. code-block:: shell
 
-    export PYTHONPATH=/path/to/hikyuu:$PYTHONPATH
+    export PYTHONPATH=/path/to/hayaku:$PYTHONPATH
 
 
 4、Windows 下转 Visual Studio 工程
@@ -122,13 +122,13 @@ Windows 下，习惯用 msvc 调试的，可以使用  xmake project -k vsxmake 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. 安装 pybind11-stubgen，使用命令 pip install pybind11-stubgen
-2. 运行 pybind11-stubgen hikyuu -o . 命令，即可正常提示帮助信息。
+2. 运行 pybind11-stubgen hayaku -o . 命令，即可正常提示帮助信息。
 
 
 6、使用插件
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-如自行编译的希望使用 hikyuu 插件的，请安装独立的插件包 pip install hikyuu-plugin
+如自行编译的希望使用 hayaku 插件的，请安装独立的插件包 pip install hayaku-plugin
 
 但请注意插件版本需要配套，最好使用 release 分支（或标签）进行编译，避免版本不匹配无法使用。
 
@@ -136,19 +136,19 @@ Windows 下，习惯用 msvc 调试的，可以使用  xmake project -k vsxmake 
 Docker 构建
 ------------
 
-源码 docker 目录下，提供了基于 Ubuntu/Debain/Fedora 的 Dockerfile_dev 文件，可以用来快速构建 Hikyuu 的编译环境。
+源码 docker 目录下，提供了基于 Ubuntu/Debain/Fedora 的 Dockerfile_dev 文件，可以用来快速构建 Hayaku 的编译环境。
 
 .. code-block:: shell
 
     cd docker
-    docker build -t hikyuu_dev -f Dockerfile_dev .
+    docker build -t hayaku_dev -f Dockerfile_dev .
 
-    docker run -it hikyuu_dev /bin/bash
+    docker run -it hayaku_dev /bin/bash
 
-进入 hikyuu 目录下，其他与源码编译步骤一致。
+进入 hayaku 目录下，其他与源码编译步骤一致。
 
-也可以使用基于 pip 安装 Hikyuu 的 dockerfile, 见 /docker/Dockerfile_miniconda 。
+也可以使用基于 pip 安装 Hayaku 的 dockerfile, 见 /docker/Dockerfile_miniconda 。
 
-Hikyuu 使用前需要导入数据，Docker镜像不包含界面，可以直接执行 python hikyuu/gui/importdata.py 命令导入数据。
+Hayaku 使用前需要导入数据，Docker镜像不包含界面，可以直接执行 python hayaku/gui/importdata.py 命令导入数据。
 
-hikyuu 配置文件在 /root/.hikyuu 目录下, 数据文件存储(HDF5)在 /root/stocks 目录下，可自行在创建docker容器时指定挂载目录。
+hayaku 配置文件在 /root/.hayaku 目录下, 数据文件存储(HDF5)在 /root/stocks 目录下，可自行在创建docker容器时指定挂载目录。

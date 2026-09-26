@@ -1,10 +1,10 @@
-# Hikyuu 项目架构
+# Hayaku 项目架构
 
-本文档描述 Hikyuu 2.8.2 的代码组织、核心组件、主要运行流程，以及各层之间的依赖关系。
+本文档描述 Hayaku 2.8.2 的代码组织、核心组件、主要运行流程，以及各层之间的依赖关系。
 
 ## 1. 总体架构
 
-Hikyuu 采用“Python 门面 + pybind11 绑定 + C++ 核心引擎 + 可插拔数据驱动”的分层架构。
+Hayaku 采用“Python 门面 + pybind11 绑定 + C++ 核心引擎 + 可插拔数据驱动”的分层架构。
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────┐
@@ -13,7 +13,7 @@ Hikyuu 采用“Python 门面 + pybind11 绑定 + C++ 核心引擎 + 可插拔�
                                    │
                                    ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ Python 层：hikyuu/                                                       │
+│ Python 层：hayaku/                                                       │
 │                                                                          │
 │  ┌────────────────┐ ┌────────────────┐ ┌─────────────────────────────┐  │
 │  │ interactive.py │ │ Python API     │ │ analysis / draw             │  │
@@ -27,14 +27,14 @@ Hikyuu 采用“Python 门面 + pybind11 绑定 + C++ 核心引擎 + 可插拔�
                                    │ import core310.so
                                    ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ 绑定层：hikyuu_pywrap/                                                   │
+│ 绑定层：hayaku_pywrap/                                                   │
 │                                                                          │
 │  Stock/KData │ Indicator │ Trade System │ Portfolio │ Strategy/Broker   │
 └──────────────────────────────────┬───────────────────────────────────────┘
                                    │ pybind11 调用
                                    ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ C++ 核心：hikyuu_cpp/hikyuu/                                            │
+│ C++ 核心：hayaku_cpp/hayaku/                                            │
 │                                                                          │
 │  ┌───────────────────┐  ┌───────────────────┐  ┌────────────────────┐  │
 │  │ 证券与行情模型    │  │ 指标计算引擎      │  │ 单策略 System      │  │
@@ -67,11 +67,11 @@ Hikyuu 采用“Python 门面 + pybind11 绑定 + C++ 核心引擎 + 可插拔�
 
 | 目录 | 职责 |
 | --- | --- |
-| `hikyuu_cpp/hikyuu/` | C++ 核心领域模型、指标引擎、回测系统、组合管理和数据驱动 |
-| `hikyuu_pywrap/` | 使用 pybind11 将 C++ 对象和函数暴露给 Python |
-| `hikyuu/` | Python API、数据导入、绘图、GUI、交互式研究工具和 Python 扩展组件 |
-| `hikyuu_cpp/unit_test/` | 基于 doctest 的 C++ 单元测试 |
-| `hikyuu/test/` | Python 单元测试 |
+| `hayaku_cpp/hayaku/` | C++ 核心领域模型、指标引擎、回测系统、组合管理和数据驱动 |
+| `hayaku_pywrap/` | 使用 pybind11 将 C++ 对象和函数暴露给 Python |
+| `hayaku/` | Python API、数据导入、绘图、GUI、交互式研究工具和 Python 扩展组件 |
+| `hayaku_cpp/unit_test/` | 基于 doctest 的 C++ 单元测试 |
+| `hayaku/test/` | Python 单元测试 |
 | `test_data/` | 单元测试使用的 SQLite、HDF5 等测试数据 |
 | `docs/` | 中英文使用文档和架构文档 |
 
@@ -83,17 +83,17 @@ Hikyuu 采用“Python 门面 + pybind11 绑定 + C++ 核心引擎 + 可插拔�
 └─────────┬──────────┘
           ▼
 ┌────────────────────────────┐
-│ hikyuu/                    │
+│ hayaku/                    │
 │ Python API 与研究工具      │
 └─────────────┬──────────────┘
               ▼
 ┌────────────────────────────┐       ┌────────────────────────────┐
-│ hikyuu/cpp/core310.so      │◀──────│ hikyuu_pywrap/             │
+│ hayaku/cpp/core310.so      │◀──────│ hayaku_pywrap/             │
 │ Python 动态扩展            │ 编译  │ pybind11 绑定源码          │
 └─────────────┬──────────────┘ 生成  └────────────────────────────┘
               ▼
 ┌────────────────────────────┐
-│ hikyuu_cpp/hikyuu/         │
+│ hayaku_cpp/hayaku/         │
 │ C++ 核心引擎               │
 └─────────────┬──────────────┘
               ▼
@@ -136,11 +136,11 @@ Python 是面向用户的门面，核心行情对象、指标运算和回测逻�
 
 主要入口：
 
-- `hikyuu_cpp/hikyuu/StockManager.h`
-- `hikyuu_cpp/hikyuu/Stock.h`
-- `hikyuu_cpp/hikyuu/KData.h`
-- `hikyuu_cpp/hikyuu/KQuery.h`
-- `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h`
+- `hayaku_cpp/hayaku/StockManager.h`
+- `hayaku_cpp/hayaku/Stock.h`
+- `hayaku_cpp/hayaku/KData.h`
+- `hayaku_cpp/hayaku/KQuery.h`
+- `hayaku_cpp/hayaku/data_driver/DataDriverFactory.h`
 
 ## 4. 指标引擎
 
@@ -180,10 +180,10 @@ Python 是面向用户的门面，核心行情对象、指标运算和回测逻�
 
 主要入口：
 
-- `hikyuu_cpp/hikyuu/indicator/Indicator.h`
-- `hikyuu_cpp/hikyuu/indicator/IndicatorImp.h`
-- `hikyuu_cpp/hikyuu/indicator/`
-- `hikyuu_cpp/hikyuu/indicator_talib/`
+- `hayaku_cpp/hayaku/indicator/Indicator.h`
+- `hayaku_cpp/hayaku/indicator/IndicatorImp.h`
+- `hayaku_cpp/hayaku/indicator/`
+- `hayaku_cpp/hayaku/indicator_talib/`
 
 ## 5. 单策略交易系统
 
@@ -239,10 +239,10 @@ Python 是面向用户的门面，核心行情对象、指标运算和回测逻�
 
 主要入口：
 
-- `hikyuu_cpp/hikyuu/trade_sys/system/System.h`
-- `hikyuu_cpp/hikyuu/trade_sys/system/System.cpp`
-- `hikyuu_cpp/hikyuu/trade_manage/TradeManager.h`
-- `hikyuu_cpp/hikyuu/trade_sys/`
+- `hayaku_cpp/hayaku/trade_sys/system/System.h`
+- `hayaku_cpp/hayaku/trade_sys/system/System.cpp`
+- `hayaku_cpp/hayaku/trade_manage/TradeManager.h`
+- `hayaku_cpp/hayaku/trade_sys/`
 
 ## 6. 组合管理
 
@@ -282,10 +282,10 @@ Python 是面向用户的门面，核心行情对象、指标运算和回测逻�
 
 主要入口：
 
-- `hikyuu_cpp/hikyuu/trade_sys/portfolio/Portfolio.h`
-- `hikyuu_cpp/hikyuu/trade_sys/selector/`
-- `hikyuu_cpp/hikyuu/trade_sys/allocatefunds/`
-- `hikyuu_cpp/hikyuu/trade_sys/multifactor/`
+- `hayaku_cpp/hayaku/trade_sys/portfolio/Portfolio.h`
+- `hayaku_cpp/hayaku/trade_sys/selector/`
+- `hayaku_cpp/hayaku/trade_sys/allocatefunds/`
+- `hayaku_cpp/hayaku/trade_sys/multifactor/`
 
 ## 7. 策略运行与实盘扩展
 
@@ -327,7 +327,7 @@ Python 是面向用户的门面，核心行情对象、指标运算和回测逻�
         │                └──────────────────────────────────────┘
         ▼
 ┌────────────────┐
-│ libhikyuu.dylib│
+│ libhayaku.dylib│
 └───────┬────────┘
         ├──────────────▶ core310.so
         ├──────────────▶ small-test
@@ -348,11 +348,11 @@ Python 是面向用户的门面，核心行情对象、指标运算和回测逻�
 主要构建产物：
 
 ```text
-build/release/macosx/arm64/lib/libhikyuu.dylib
+build/release/macosx/arm64/lib/libhayaku.dylib
 build/release/macosx/arm64/lib/core.so
 build/release/macosx/arm64/lib/small-test
 build/release/macosx/arm64/lib/unit-test
-hikyuu/cpp/core310.so
+hayaku/cpp/core310.so
 ```
 
 ## 9. 架构特点
@@ -368,7 +368,7 @@ hikyuu/cpp/core310.so
 ### 需要注意的约束
 
 - `StockManager`、全局行情快捷变量等引入了较强的全局状态；
-- 导入 `hikyuu.interactive` 会触发数据初始化，存在明显副作用；
+- 导入 `hayaku.interactive` 会触发数据初始化，存在明显副作用；
 - 新增公共功能通常需要同步修改 C++、pybind11、Python 类型声明、测试和文档；
 - shared 构建依赖多个动态库，独立运行测试二进制时需要正确设置 RPATH 或 `DYLD_LIBRARY_PATH`；
 - 回测基于 K 线事件模型，不等同于完整的订单簿和交易所撮合模拟。
@@ -385,4 +385,4 @@ C++ 行情、指标、回测与组合引擎
 数据驱动、数据库、文件和外部交易接口
 ```
 
-Hikyuu 的核心定位是面向中国证券市场的高性能量化研究和回测框架。其优势在于完整的领域模型、可组合的交易系统以及 C++/Python 双层接口；如果用于生产级实盘交易，还需要在券商接入、订单状态机、成交对账、风控和监控层继续扩展。
+Hayaku 的核心定位是面向中国证券市场的高性能量化研究和回测框架。其优势在于完整的领域模型、可组合的交易系统以及 C++/Python 双层接口；如果用于生产级实盘交易，还需要在券商接入、订单状态机、成交对账、风控和监控层继续扩展。

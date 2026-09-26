@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Script to automatically compile zh_CN.po to hikyuu.mo
-# The hikyuu.mo will be saved in the zh_CN subdirectory
+# Script to automatically compile zh_CN.po to hayaku.mo
+# The hayaku.mo will be saved in the zh_CN subdirectory
 
 # 获取脚本所在目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,9 +9,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # 定义输入和输出路径
 PO_FILE="${SCRIPT_DIR}/zh_CN.po"
 ZH_CN_DIR="${SCRIPT_DIR}/zh_CN"
-MO_FILE="${ZH_CN_DIR}/hikyuu.mo"
+MO_FILE="${ZH_CN_DIR}/hayaku.mo"
 
-echo "Updating translation from zh_CN.po to hikyuu.mo..."
+echo "Updating translation from zh_CN.po to hayaku.mo..."
 
 # 检查po文件是否存在
 if [ ! -f "$PO_FILE" ]; then

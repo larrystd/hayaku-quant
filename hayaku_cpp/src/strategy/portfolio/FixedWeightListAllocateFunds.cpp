@@ -1,0 +1,59 @@
+/*
+ *  Copyright (c) 2025 hikyuu.org
+ *
+ *  Created on: 2025-02-07
+ *      Author: fasiondog
+ */
+
+#include "FixedWeightListAllocateFunds.h"
+
+#if HAYAKU_SUPPORT_SERIALIZATION
+BOOST_CLASS_EXPORT(hayaku::FixedWeightListAllocateFunds)
+#endif
+
+namespace hayaku {
+
+FixedWeightListAllocateFunds::FixedWeightListAllocateFunds()
+: AllocateFundsBase("AF_FixedWeightList") {
+    setParam<PriceList>("weights", PriceList());
+    // The common parameter must be set to false, the automatic weight adjustment is forbidden
+    setParam<bool>("auto_adjust_weight", false);
+}
+
+FixedWeightListAllocateFunds::FixedWeightListAllocateFunds(const PriceList& weights)
+: AllocateFundsBase("AF_FixedWeightList") {
+    setParam<PriceList>("weights", weights);
+    // The common parameter must be set to false, the automatic weight adjustment is forbidden
+    setParam<bool>("auto_adjust_weight", false);
+}
+
+FixedWeightListAllocateFunds::~FixedWeightListAllocateFunds() {}
+
+void FixedWeightListAllocateFunds::_checkParam(const string& name) const {
+    if ("auto_adjust_weight" == name) {
+        bool auto_adjust_weight = getParam<bool>("auto_adjust_weight");
+        HAYAKU_CHECK(!auto_adjust_weight, R"(param "auto_adjust_weight" must be false!)");
+    }
+}
+
+StrategyWeightList FixedWeightListAllocateFunds ::_allocateWeight(const Datetime& date,
+                                                                const StrategyWeightList& se_list) {
+    StrategyWeightList result;
+    const PriceList& weights = getParam<const PriceList&>("weights");
+    size_t w_total = weights.size();
+    size_t wi = 0;
+    for (auto iter = se_list.begin(); iter != se_list.end() && wi < w_total; ++iter) {
+        result.emplace_back(iter->strategy, weights[wi++]);
+    }
+
+    return result;
+}
+
+AFPtr HAYAKU_API AF_FixedWeightList(const PriceList& weights) {
+    HAYAKU_ERROR_IF(weights.empty(), "Input weights is empty!");
+    auto p = make_shared<FixedWeightListAllocateFunds>(weights);
+    p->setParam<PriceList>("weights", weights);
+    return p;
+}
+
+} /* namespace hayaku */

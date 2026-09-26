@@ -1,7 +1,7 @@
 Technical Indicators
 ====================
 
-.. py:module:: hikyuu.indicator
+.. py:module:: hayaku.indicator
 
 
 .. toctree::

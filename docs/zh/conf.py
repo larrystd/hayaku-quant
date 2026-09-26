@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Hikyuu documentation build configuration file (Chinese source tree).
+# Hayaku documentation build configuration file (Chinese source tree).
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -20,8 +20,8 @@ version = 'latest'
 release = version
 
 # General information about the project.
-project = 'Hikyuu Quant Framework'
-copyright = '2017, fasiondog, <a href="https://hikyuu.org/">Hikyuu</a>'
+project = 'Hayaku Quant Framework'
+copyright = '2017, fasiondog and Hayaku contributors, <a href="https://github.com/larrystd/hayaku-quant">Hayaku</a>'
 author = 'fasiondog'
 
 extensions = [
@@ -55,6 +55,6 @@ html_css_files = [
 
 html_use_index = True
 html_search_language = 'zh'
-htmlhelp_basename = 'Hikyuudoc'
+htmlhelp_basename = 'Hayakudoc'
 
 needs_sphinx = '4.2.0'

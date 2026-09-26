@@ -12,7 +12,7 @@
   * 旧中文 key 仍可使用（如 `performance["当前总资产"]`），已标记废弃，运行时输出告警，建议尽快迁移
   * 中文环境下 `performance.report()` 输出仍为中文（由 gettext 译文提供，见 `i18n/zh_CN.po`）
   * `SE_PerformanceOptimal` 参数默认值改为 `key="Account Avg Annual Return %"`（原“帐户平均年收益率%”，旧值仍可用）
-  * hikyuu.analysis、hikyuu.draw 模块内部默认 key 已同步更新
+  * hayaku.analysis、hayaku.draw 模块内部默认 key 已同步更新
   * 新旧 key 对照表：
 
 | 旧中文 key | 新英文 key |
@@ -152,7 +152,7 @@
 
 **🚀 新增特性**
 
-* feat(HikyuuTdx): 补充 689 科创板号段
+* feat(HayakuTdx): 补充 689 科创板号段
 * feat(indicator): 新增指标 BETA、KURT(超额峰度)、SKEW(总体偏度)、COV(样本协方差)
 * feat(indicator): 新增指标 TS_RANK(计算时间序列排名比例)、SIGNED_POWER(带符号乘幂运算)
 * feat(indicator): 更新 DIFF 函数以支持自定义差分周期n
@@ -178,7 +178,7 @@
 
 * fix(IBarsLasts): 优化参数验证逻辑，确保 n <= 0 时返回全 NaN 序列
 * fix(Indicator): INDEXC 等公式在 kdata 有停牌缺少日期的时候出错的问题
-* fix(HikyuuTdx): 修复 TDX 本地日线导入 ETF/B股/LOF/REIT 等品种价格精度10倍偏差
+* fix(HayakuTdx): 修复 TDX 本地日线导入 ETF/B股/LOF/REIT 等品种价格精度10倍偏差
 * fix(factor): python接口添加恢复类型参数到因子构造函数
 * fix(data import): 调整导入策略，移除非日线时对成交量和成交额为0的过滤
 * fix(indicator): 修复双输入指标计算 prepare 方法中的上下文获取逻辑
@@ -264,12 +264,12 @@
 * feat(trade_manage): 新增 getPositionDict 方法用于获取当前全部持仓记录字典
 * feat(core): 添加许可证过期提醒功能
 * feat(plugin): 添加 AGG_VWAP 指标的 KData 重载版本
-* feat(hikyuu): 添加基于策略上下文的初始化函数
+* feat(hayaku): 添加基于策略上下文的初始化函数
 * 发布版本支持 python 3.14
 
 **⚡️ 优化改进**
 
-* refactor(hikyuu/utilities/thread): 优化并行计算
+* refactor(hayaku/utilities/thread): 优化并行计算
 * feat(misc): 添加批量获取账户资金和性能数据的功能
 * feat(stock): StockManager 添加互斥锁防止初始化冲突，支持加载扩展指标插件
 * feat(agent): 添加多线程控制的互斥锁防止代理启停冲突
@@ -278,7 +278,7 @@
 
 * fix(trade_sys): crtST和现有接口不符无法使用
 * fix(factor): 修复 MultiFactorBase 克隆和序列化中缺失 m_norm 的问题
-* feat(HikyuuTdx): 优化板块信息下载，添加超时处理，防止卡死
+* feat(HayakuTdx): 优化板块信息下载，添加超时处理，防止卡死
 
 ## 2.7.6 - 2026年2月3日
 
@@ -305,7 +305,7 @@
 **🐞 缺陷修复**
 
 * fixed 使用更安全的方式处理python临时对象类型降级问题，防止某些情况崩溃
-* fix(hikyuutdx): 初次使用下载时，板块信息下载报错
+* fix(hayakutdx): 初次使用下载时，板块信息下载报错
 * fixed(data): 调整科创板/北交所最小交易量配置为 100
 * fix(trade_sys): 卖出时通过MM判断卖出数量, 以便分钟级别回测时可以通过MM进行T+1控制
 * fix(allocatefunds): 修正资金分配权重计算逻辑, 确保实际分配的权重不超过可分配权重上限，避免超出预设的资金分配限制，提高资金分配的准确性和安全性
@@ -344,9 +344,9 @@
 
 * 调整ETF最小交易量默认配置为100
 * feat(trade): 支持缩扩股业务处理
-* feat(HikyuuTdx): 导入股票交易和时间数据时过滤价格为零的记录
-* feat(HikyuuTdx): 改进股票数据导入逻辑并增强错误处理
-* feat(hikyuu_cpp): 调整对 reload_time 配置的解析和验证，只有当配置正确时才启用自动重载功能
+* feat(HayakuTdx): 导入股票交易和时间数据时过滤价格为零的记录
+* feat(HayakuTdx): 改进股票数据导入逻辑并增强错误处理
+* feat(hayaku_cpp): 调整对 reload_time 配置的解析和验证，只有当配置正确时才启用自动重载功能
 * 优化预加载加载取消逻辑，避免无效操作
 * 优化调整全局变量初始化与清理顺序
 * 线程池及 PluginManager 优化
@@ -358,7 +358,7 @@
 * fix(data): 修复导入股票数据时交易量比较的错误日志输出，py311不支持f-str双引号嵌套
 * fix(trade_manage): 增加对缩股的处理逻辑
 * fix(mysql): 调整K线数据金额字段精度, KRecord 中的amount保持为万元(原为千元， 和其他存储引擎不一致)
-* fix(hikyuu_cpp): 调整ETF、基金和B股的分时数据价格精度
+* fix(hayaku_cpp): 调整ETF、基金和B股的分时数据价格精度
 * fix(draw): 解决matplotlib绘制指标时内部缺值或异常时无法绘图的问题
 * fix(StrategyContext): 修复 K 线类型去重逻辑中的大小写问题，以便不区分大小写
 
@@ -366,7 +366,7 @@
 
 **🚀 新增特性**
 
-* 增加数据重载时间配置项, 新增 `reload_time` 配置项，用于指定每日数据重新加载的时间（格式为 HH:MM），默认值为 "00:00。需手工更改或 hikyuu.ini 或在 load 参数中指定
+* 增加数据重载时间配置项, 新增 `reload_time` 配置项，用于指定每日数据重新加载的时间（格式为 HH:MM），默认值为 "00:00。需手工更改或 hayaku.ini 或在 load 参数中指定
 * 添加crtSCFilter函数用于快速创建评分过滤器实例
 * 新增 crtNorm 函数用于快速创建标准化/归一化等算法函数
 * 取消行业板块数据下载
@@ -377,7 +377,7 @@
 * fixed: 限制日期范围以适配 ClickHouse DateTime 类型
 * fixed: 修改Stock_Number结构体中的number类型为double，windows下容易出现精度错误
 * fixed: 更新盈利目标策略接口参数说明与实现逻辑，移除了部分子类中冗余的 `_calculate` 空实现
-* fixed: HikyuuTdx 在导入股票数据时，增加对低价股低点差异的绝对值判断，避免因价格过低导致的相对误差误判。
+* fixed: HayakuTdx 在导入股票数据时，增加对低价股低点差异的绝对值判断，避免因价格过低导致的相对误差误判。
 
 ## 2.7.0 - 2025年11月1日
 
@@ -387,14 +387,14 @@
 
 **⚡️ 优化改进**
 
-* 主包 hikyuu 去除 arrow 依赖，需要 arrow 相关功能需独立安装 pip install hikyuu-plugin，并手工引入 from hikyuu_plugin.extra import *。使用该方式，也便于自行编译的朋友，使用插件。
+* 主包 hayaku 去除 arrow 依赖，需要 arrow 相关功能需独立安装 pip install hayaku-plugin，并手工引入 from hayaku_plugin.extra import *。使用该方式，也便于自行编译的朋友，使用插件。
 * clickhouse 预加载过程中直接读取数据时，保证其读取数据和预加载完成后一致
 * 优化KData构造函数中的数据加载逻辑，避免在重加载或设置K线数据列表时出现数据无效的风险。
 * 优化板块数据下载
 
 **🐞 缺陷修复**
 
-* fixed：HikyuuTDX 首次运行时因 use_download 未初始化导致闪退
+* fixed：HayakuTDX 首次运行时因 use_download 未初始化导致闪退
 * fixed：释放预加载K线数据时同时释放已加载的历史财务数据，保证重加载时读取最新的历史财务数据
 
 ## 2.6.9 - 2025年10月19日
@@ -441,18 +441,18 @@
 
 **⚡️ 优化改进**
 
-* HikyuuTDX 优化板块信息下载，防止下载失败情况下板块信息丢失
+* HayakuTDX 优化板块信息下载，防止下载失败情况下板块信息丢失
 * [vip]优化 clickhouse 存储引擎，日线整体预加载优化至8秒，目前存储引擎日线整体加载速度: HDF5 6秒 -> clickhouse 8秒 -> mysql 22秒
-* HikyuuTDX 从 PyQt5 迁移至 PySide6
-* feat(hikyuu_cpp): 在 Performance 类中新增"未平仓帐户收益率%"统计项
+* HayakuTDX 从 PyQt5 迁移至 PySide6
+* feat(hayaku_cpp): 在 Performance 类中新增"未平仓帐户收益率%"统计项
 * feat(draw): 为 tm_performance 和 sys_performance 函数添加返回主图 axis 的功能，便于用户在绘图后对图表进行进一步的自定义操作和调整。
 * 编译工程优化，基于xmake合并编译功能，整体编译实际缩短三分之二
 
 **🐞 缺陷修复**
 
-* fix(hikyuu): 默认情况下不启动行情接收，防止在开盘后因自身合成缺失导致从 dataserver 获取行情也缺失的问题。
+* fix(hayaku): 默认情况下不启动行情接收，防止在开盘后因自身合成缺失导致从 dataserver 获取行情也缺失的问题。
 * fix(datetime): 修复 UTC 偏移量计算在非 Windows 平台下的问题可能不准确。
-* fix(hikyuu): realtime_update 优化实时更新功能中的股票列表获取逻辑
+* fix(hayaku): realtime_update 优化实时更新功能中的股票列表获取逻辑
 * fix(data): 修复10年债券收益率数据导入时的日期判断逻辑
 
 ## 2.6.8 - 2025年9月5日

@@ -15,7 +15,7 @@
 
 ```text
 ┌────────────────────────────────────────────────────────────┐
-│ HikyuuSession                                              │
+│ HayakuSession                                              │
 │ DataEngine / ExecutionEngine / StrategyEngine 生命周期    │
 └───────┬────────────────────┬───────────────────────┬───────┘
         ▼                    ▼                       ▼
@@ -35,7 +35,7 @@
                               │ 成熟账本/Broker  │
                               └──────────────────┘
 
-Python：hikyuu.data / hikyuu.execution / hikyuu.strategy
+Python：hayaku.data / hayaku.execution / hayaku.strategy
 兼容层：StockManager / TradeManagerBase / System 继续可用
 ```
 
@@ -44,9 +44,9 @@ Python：hikyuu.data / hikyuu.execution / hikyuu.strategy
 - `DataEngine` 负责只读市场数据；
 - `ExecutionEngine` 只负责订单执行、账户快照和成交历史；
 - `StrategyEngine` 只负责一次策略运行、结果快照和协作停止；
-- `HikyuuSession` 负责三个 Engine 的所有权和关闭失效，不承载交易或策略逻辑；
-- Python 普通入口按领域模块组织，SPI 和低层运维接口分别进入 `hikyuu.spi` 和
-  `hikyuu.advanced`；
+- `HayakuSession` 负责三个 Engine 的所有权和关闭失效，不承载交易或策略逻辑；
+- Python 普通入口按领域模块组织，SPI 和低层运维接口分别进入 `hayaku.spi` 和
+  `hayaku.advanced`；
 - 旧类保留为构造期依赖和兼容后端；绑定完成后的运行期代码只调用 Engine 的窄接口。
 
 ## 2. 工作项完成情况
@@ -57,7 +57,7 @@ Python：hikyuu.data / hikyuu.execution / hikyuu.strategy
 | 2.2 | 实现 ExecutionEngine 和兼容适配 | 已完成 | 5 个专项 C++ case，逐笔交易与账户状态对照 |
 | 2.3 | 实现 StrategyEngine 和 System 兼容适配 | 已完成 | 4 个专项 C++ case，旧 System 金标逐笔一致 |
 | 2.4 | 建立 Python 稳定命名空间和绑定 | 已完成 | 8 个 API boundary 测试、三个领域模块 |
-| 2.5 | 接入 HikyuuSession 三引擎生命周期 | 已完成 | C++/Python 打开、绑定、幂等、关闭失效测试 |
+| 2.5 | 接入 HayakuSession 三引擎生命周期 | 已完成 | C++/Python 打开、绑定、幂等、关闭失效测试 |
 | 2.6 | 更新 API inventory 和双语文档 | 已完成 | inventory 可重复生成，中英文文档同步 |
 | 2.7 | 全量构建、测试、性能和阶段验收 | 已完成 | Release、small、unit、Python 3.10、import 全通过 |
 
@@ -88,14 +88,14 @@ inventory 总数增加的原因是把 Engine 及其值类型正式纳入扫描�
 新增：
 
 ```text
-hikyuu_cpp/hikyuu/trade/OrderRequest.h
-hikyuu_cpp/hikyuu/trade/ExecutionReport.h
-hikyuu_cpp/hikyuu/trade/AccountSnapshot.h
-hikyuu_cpp/hikyuu/trade/ExecutionEngine.h/.cpp
-hikyuu_cpp/hikyuu/trade/internal/TradeManagerExecutionAdapter.h/.cpp
-hikyuu_pywrap/trade/_ExecutionEngine.cpp
-hikyuu_pywrap/trade/trade_main.cpp
-hikyuu_cpp/unit_test/hikyuu/trade/test_ExecutionEngine.cpp
+hayaku_cpp/hayaku/trade/OrderRequest.h
+hayaku_cpp/hayaku/trade/ExecutionReport.h
+hayaku_cpp/hayaku/trade/AccountSnapshot.h
+hayaku_cpp/hayaku/trade/ExecutionEngine.h/.cpp
+hayaku_cpp/hayaku/trade/internal/TradeManagerExecutionAdapter.h/.cpp
+hayaku_pywrap/trade/_ExecutionEngine.cpp
+hayaku_pywrap/trade/trade_main.cpp
+hayaku_cpp/unit_test/hayaku/trade/test_ExecutionEngine.cpp
 ```
 
 设计结果：
@@ -112,11 +112,11 @@ hikyuu_cpp/unit_test/hikyuu/trade/test_ExecutionEngine.cpp
 新增：
 
 ```text
-hikyuu_cpp/hikyuu/trade_sys/engine/StrategyConfig.h
-hikyuu_cpp/hikyuu/trade_sys/engine/BacktestResult.h/.cpp
-hikyuu_cpp/hikyuu/trade_sys/engine/StrategyEngine.h/.cpp
-hikyuu_pywrap/trade_sys/_StrategyEngine.cpp
-hikyuu_cpp/unit_test/hikyuu/trade_sys/engine/test_StrategyEngine.cpp
+hayaku_cpp/hayaku/trade_sys/engine/StrategyConfig.h
+hayaku_cpp/hayaku/trade_sys/engine/BacktestResult.h/.cpp
+hayaku_cpp/hayaku/trade_sys/engine/StrategyEngine.h/.cpp
+hayaku_pywrap/trade_sys/_StrategyEngine.cpp
+hayaku_cpp/unit_test/hayaku/trade_sys/engine/test_StrategyEngine.cpp
 ```
 
 设计结果：
@@ -132,23 +132,23 @@ hikyuu_cpp/unit_test/hikyuu/trade_sys/engine/test_StrategyEngine.cpp
 新增或收口：
 
 ```text
-hikyuu/data/__init__.py
-hikyuu/execution/__init__.py
-hikyuu/strategy/__init__.py
-hikyuu/spi/__init__.py
-hikyuu/advanced/__init__.py
-hikyuu/_public_api.py
-hikyuu/test/test_api_boundary.py
+hayaku/data/__init__.py
+hayaku/execution/__init__.py
+hayaku/strategy/__init__.py
+hayaku/spi/__init__.py
+hayaku/advanced/__init__.py
+hayaku/_public_api.py
+hayaku/test/test_api_boundary.py
 docs/zh/python_api.rst
 docs/en/python_api.rst
 ```
 
-`HikyuuSession` 新增 `bindExecution/bindStrategy`、`execution/strategy` 和状态查询。绑定采用一次绑定
+`HayakuSession` 新增 `bindExecution/bindStrategy`、`execution/strategy` 和状态查询。绑定采用一次绑定
 规则：同一个账户或 System 重复绑定幂等，不同对象会被拒绝；关闭时请求策略停止并等待退出，再
 使三个 Engine 句柄失效。Python 对应使用 snake_case 名称。
 
-顶层显式旧属性暂不删除，保证 `hikyuu.MA`、`hikyuu.System` 等既有代码继续运行；但
-`from hikyuu import *` 和交互补全现在受明确白名单约束。测试中原来依赖顶层意外泄漏的 `np`
+顶层显式旧属性暂不删除，保证 `hayaku.MA`、`hayaku.System` 等既有代码继续运行；但
+`from hayaku import *` 和交互补全现在受明确白名单约束。测试中原来依赖顶层意外泄漏的 `np`
 已改为显式 `import numpy as np`。
 
 ## 5. 验收结果
@@ -157,11 +157,11 @@ docs/en/python_api.rst
 
 | 验证项 | 命令/方法 | 结果 |
 | --- | --- | --- |
-| Release 构建 | `./op.sh build` | 通过，生成 `libhikyuu.dylib` 和 `core310.so` |
+| Release 构建 | `./op.sh build` | 通过，生成 `libhayaku.dylib` 和 `core310.so` |
 | small-test | `./op.sh small-test` | 41/41 case，3288/3288 assertion |
 | unit-test | `./op.sh unit-test` | 826/826 case，209218/209218 assertion |
 | Python 3.10 | `./op.sh python-test` | 56/56 通过 |
-| import | `./op.sh import-test` | Python 3.10.21、Hikyuu 2.8.2 通过 |
+| import | `./op.sh import-test` | Python 3.10.21、Hayaku 2.8.2 通过 |
 | API inventory | `python3.10 tools/arch/extract_api_inventory.py` | 23 类、449 方法、1033 个绑定声明 |
 | 策略金标 | StrategyEngine 与直接 System 对照 | 证券、查询和逐笔成交记录完全一致 |
 | 执行金标 | ExecutionEngine 与绑定 TradeManager 对照 | 买卖、卖空、拒单、资金、持仓和历史一致 |
@@ -198,7 +198,7 @@ Release 模式、Python 3.10，预热后取 21 组中位数：
 三条并行工作线均已完成并通过统一验收。运行期调用入口已经收敛为：
 
 ```text
-HikyuuSession
+HayakuSession
 ├── DataEngine
 ├── ExecutionEngine
 └── StrategyEngine

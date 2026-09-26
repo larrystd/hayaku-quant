@@ -1,4 +1,4 @@
-# 量化术语中英对照表 / Hikyuu Glossary (Chinese–English)
+# 量化术语中英对照表 / Hayaku Glossary (Chinese–English)
 
 > 用途：**统一代码注释、docstring、文档与 README 的英文用词**。凡本表收录的词，全项目必须按同一映射使用，
 > 不得同义词混用（例如 `money management` 与 `fund management` 不得混指同一组件）。
@@ -39,7 +39,7 @@
 | 组合再平衡 | portfolio rebalancing | — | — | |
 | 订单执行 | order execution | — | `ExecutionEngine`、`AccountConfig` | |
 | 执行账户 | execution account | — | `AccountSnapshot`、`AccountView` | |
-| 下单代理 | order broker | OB | 扩展协议 `hikyuu.spi.OrderBrokerBase` | |
+| 下单代理 | order broker | OB | 扩展协议 `hayaku.spi.OrderBrokerBase` | |
 | 回测 | backtest | — | — | 动词 backtest / 名词 backtest |
 | 滚动前推分析 | walk-forward analysis | — | 策略研究流程 | 不是 "forward test" |
 | 参数优化 | parameter optimization | — | `Parameter` | |
@@ -155,7 +155,7 @@
 | 证券管理 | stock manager | `StockManager`（`get_stock_manager()`） |
 | 数据驱动 | data driver | `data_driver/` |
 | 存储引擎 | storage engine | HDF5 / MySQL / SQLite / TDX 驱动 |
-| 数据导入 | data import | `plugin/` 导入器（如 `KDataTo*Importer`） |
+| 数据导入 | data import | `hayaku.ingest`；底层兼容类为 `KDataTo*Importer` |
 | 基础信息 | base info | `BaseInfoDriver` |
 | 财务数据 | finance data | `HistoryFinanceInfo` / `FinanceInfo` |
 | 共享内存数据服务 | shared-memory data service (IPC) | `ShmServer` / `dataserver` 插件、`KDataShm*` |
@@ -177,7 +177,7 @@
 
 ## 8. 业绩指标名（Performance.cpp，已落地）
 
-> `hikyuu_cpp/hikyuu/trade_manage/Performance.cpp` 的 53 个指标名**已完成英文化**：英文 key 为正式
+> `hayaku_cpp/hayaku/trade_manage/Performance.cpp` 的 53 个指标名**已完成英文化**：英文 key 为正式
 > 输出键名，原中文 key 通过 `legacyKeyMap()` 提供向后兼容（旧中文 key → 新英文 key 一一映射），
 > 中文名统一由 `chineseNameMap()` 提供。下表即当前实现中的正式英文键名。
 
@@ -237,9 +237,9 @@
 | 52 | 最大连续赢利R乘数 | Max Consecutive Win R-Multiple |
 | 53 | 最大连续亏损R乘数 | Max Consecutive Loss R-Multiple |
 
-## 9. 绘图文案（hikyuu/draw，计划译名，阶段 6 落地）
+## 9. 绘图文案（hayaku/draw，计划译名，阶段 6 落地）
 
-> 用途：`hikyuu/draw/**` 的**图上显示文案**改为英文 msgid + `htr()` 时，按下表取词
+> 用途：`hayaku/draw/**` 的**图上显示文案**改为英文 msgid + `htr()` 时，按下表取词
 > （方案见 `design_英文化双语文档_代码注释.md` §5.1；**当前实现仍为中文硬编码，本表为落地基准**）。
 > **业绩类文案必须直接引用 §8 的既有键名**，不得自造同义写法
 > （v7 曾因 `Account average annual return %` 与 §8 的 `Account Avg Annual Return %` 不一致导致单测失败）。

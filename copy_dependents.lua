@@ -49,11 +49,14 @@ task("copy_dependents")
                             end
                         else
                             for _, filedir in ipairs(os.dirs(pkg_path[i] .. "/*")) do
+                                -- hku_utils still ships its compatibility headers under the
+                                -- upstream "hikyuu" directory; only our install destination is
+                                -- branded as hayaku.
                                 local pos = string.find(filedir, "hikyuu")
                                 if pos == nil then
                                     os.trycp(filedir, destpath .. "/include")
                                 else
-                                    os.trycp(filedir .. "/utilities", destpath .. "/include/hikyuu")
+                                    os.trycp(filedir .. "/utilities", destpath .. "/include/hayaku")
                                 end
                             end
                         end

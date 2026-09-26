@@ -1,14 +1,14 @@
 # Factor Management
 
-hikyuu provides a complete factor management system, including the management of the single factor Factor and the factor set FactorSet. A factor is the basic building block of the quantitative analysis, usually composed of the technical indicators or the other calculation formulas.
+hayaku provides a complete factor management system, including the management of the single factor Factor and the factor set FactorSet. A factor is the basic building block of the quantitative analysis, usually composed of the technical indicators or the other calculation formulas.
 
 ## Best Practices
 
 1. **Naming convention**: the factor names should be descriptive and are not case-sensitive
 2. **Factor set organization**: organize the related factors into the same FactorSet for easy management
 3. **Data validation**: use the `check=True` parameter to verify whether the stock list belongs to the specified block
-4. **Factor update**: after the daily market data download is completed, `update_all_factors_values()` should be called in time to update all the stored factor values, ensuring that the factor data is synchronized with the market data. This method is not integrated into HikyuuTdx and importdata, and needs to be called manually by yourself, because sometimes a data check is needed, and the factor values are saved only after confirming that the data is correct.
-5. **Saving the factor values**: for the high-frequency aggregated factor values or the high-frequency factor values, it is recommended to set `need_save_value=True` and save them to the database. Because of Hikyuu's ultra-high calculation speed, the ordinary daily-frequency factor values (such as MA5) are usually not recommended to be saved to the database, because reading the factor values from the storage is slower, **which is different from the habit of the other quantitative frameworks relying on the factor storage to improve the speed**. It is recommended to test and decide by yourself according to your needs. Usually the original factor values are saved directly, without the cross-section, the standardization, etc.; these can be done by the MF. For the factors needing the cross-section values, the corresponding security set usually needs to be specified, which can be specified directly by Factor and FactorSet.
+4. **Factor update**: after the daily market data download is completed, `update_all_factors_values()` should be called in time to update all the stored factor values, ensuring that the factor data is synchronized with the market data. This method is not integrated into HayakuTdx and importdata, and needs to be called manually by yourself, because sometimes a data check is needed, and the factor values are saved only after confirming that the data is correct.
+5. **Saving the factor values**: for the high-frequency aggregated factor values or the high-frequency factor values, it is recommended to set `need_save_value=True` and save them to the database. Because of Hayaku's ultra-high calculation speed, the ordinary daily-frequency factor values (such as MA5) are usually not recommended to be saved to the database, because reading the factor values from the storage is slower, **which is different from the habit of the other quantitative frameworks relying on the factor storage to improve the speed**. It is recommended to test and decide by yourself according to your needs. Usually the original factor values are saved directly, without the cross-section, the standardization, etc.; these can be done by the MF. For the factors needing the cross-section values, the corresponding security set usually needs to be specified, which can be specified directly by Factor and FactorSet.
 
 6. **Saving the special factor values**: for the special factor values not calculated through the indicators (such as PRICELIST or Indicator()), you can use the `save_special_values_to_db()` method to save the pre-calculated factor values directly
 7. **Using the donating user features**: ⚠️ the database storage and reading operations related to the factors are all the donating user features, and the database engine only supports ClickHouse. Before using them, please confirm that you have obtained the corresponding permissions. Including but not limited to: `save_to_db()`, `remove_from_db()`, `save_values()`, `get_all_values()`, `get_values()` and the other database-related operation methods.
@@ -46,7 +46,7 @@ Factor(name, formula, ktype=KQuery.DAY, brief="", details="", need_save_value=Fa
 - `ktype` (KQuery.KType): the K-line type, defaulting to the daily line
 - `brief` (str): the brief description, defaulting to empty
 - `details` (str): the detailed description, defaulting to empty
-- `need_save_value` (bool): whether the factor value data needs to be persisted, defaulting to False. When it is set to True, the calculated values of the specified stock set of the factor starting from start_date are saved to the database. Since Hikyuu's calculation speed is much faster than the database storage, the values of each security calculated by the ordinary daily-frequency factors are usually not recommended to be saved to the database; what usually needs to be saved to the database is the factor values aggregated from the high frequency to the daily frequency or the high-frequency factor values
+- `need_save_value` (bool): whether the factor value data needs to be persisted, defaulting to False. When it is set to True, the calculated values of the specified stock set of the factor starting from start_date are saved to the database. Since Hayaku's calculation speed is much faster than the database storage, the values of each security calculated by the ordinary daily-frequency factors are usually not recommended to be saved to the database; what usually needs to be saved to the database is the factor values aggregated from the high frequency to the daily frequency or the high-frequency factor values
 
 - `start_date` (Datetime): the start date, the starting date when storing the data, defaulting to the minimum date
 - `block` (Block): the block information, the security set; if it is empty, it is all, defaulting to empty
@@ -187,7 +187,7 @@ factor.save_special_values_to_db(stock, dates, values, replace=False)
 ### The Factor Usage Example
 
 ```
-from hikyuu import *
+from hayaku import *
 
 # Create the factor object
 special_factor = Factor("SPECIAL_FACTOR", PRICELIST(), KQuery.DAY, "特殊因子", "预计算因子值")
@@ -327,7 +327,7 @@ named_factor = factor_set["MA5"]
 ### The FactorSet Usage Example
 
 ```
-from hikyuu import *
+from hayaku import *
 
 # Create the technical indicator factors
 ma5 = MA(CLOSE(), 5)
@@ -373,7 +373,7 @@ if factor_set.has_factor("MA5"):
 The factors and the factor sets can be used together with the multi-factor composition algorithms:
 
 ```
-from hikyuu import *
+from hayaku import *
 
 # Way 1: use an Indicator list
 indicators = [MA(CLOSE(), 5), MA(CLOSE(), 10)]
@@ -395,7 +395,7 @@ mf_equal = MF_EqualWeight(factor_set, stocks, query)
 <p>All the following global factor management functions are the donating user features, and the database engine only supports ClickHouse.</p>
 </div>
 
-Besides the methods of the Factor and the FactorSet classes, hikyuu also provides a series of the global functions for the database management and the batch operations of the factors.
+Besides the methods of the Factor and the FactorSet classes, hayaku also provides a series of the global functions for the database management and the batch operations of the factors.
 
 ### The Factor Database Operations ⚠️ Donating user features
 
@@ -404,7 +404,7 @@ Besides the methods of the Factor and the FactorSet classes, hikyuu also provide
 Check whether the factor with the specified name and type exists in the database
 
 ```python
-from hikyuu import *
+from hayaku import *
 
 # Check whether the daily-line factor exists ⚠️ Donating user feature
 exists = has_factor("MA5")
@@ -424,7 +424,7 @@ weekly_exists = has_factor("MA5", KQuery.WEEK)
 Get the factor metadata with the specified name and type
 
 ```python
-from hikyuu import *
+from hayaku import *
 
 # Get the daily-line factor ⚠️ Donating user feature
 factor = get_factor("MA5")
@@ -513,7 +513,7 @@ update_all_factors_values(KQuery.WEEK)
 Validate whether the factor name is legal
 
 ```python
-from hikyuu import *
+from hayaku import *
 
 # Validate whether the factor name is legal
 is_valid = is_valid_factor_name("MA5")
@@ -601,7 +601,7 @@ for factor_set in all_sets:
 ### The Global Factor Management Usage Example
 
 ```
-from hikyuu import *
+from hayaku import *
 
 # 1. Create and manage the factors
 ma5 = MA(CLOSE(), 5)
@@ -654,7 +654,7 @@ if not loaded_set.is_null():
 ### Q: Are there any special considerations for the high-frequency factor values?
 
 **A:** The suggestions for handling the high-frequency factor values:
-- Consider whether it is really necessary to save them to the database (Hikyuu's calculation speed is very fast)
+- Consider whether it is really necessary to save them to the database (Hayaku's calculation speed is very fast)
 - Test and decide the storage strategy according to the actual needs
 
 ### Q: When I have modified the security set (block) of the factor, how are the previously saved factor values updated?

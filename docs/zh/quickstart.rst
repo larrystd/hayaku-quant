@@ -6,13 +6,13 @@
 开始请先下载数据
 ----------------
 
-pip 安装 Hikyuu 后，可在命令行终端中执行 hikyuutdx 命令，启动数据下载工具，并按界面提示下载数据：
+pip 安装 Hayaku 后，可在命令行终端中执行 hayakutdx 命令，启动数据下载工具，并按界面提示下载数据：
 
 .. figure:: _static/install-20190228.png
 
 .. note::
 
-    如在命令行终端中无法执行 hikyuutdx 命令，请到 python 安装目录下的 Scripts （通常是安装python时没有将该路径放入系统 PATH 路径中）子目录中选择该执行文件（HikyuuTDX.exe）。如果还是不行，可以到 python/Lib/site-packages 下找到 hikyuu 的安装目录，在其下的 gui 目录中有 HikyuuTdx.py, 可以从命令行终端中直接执行 python HikyuuTdx.py 执行观察报错信息。
+    如在命令行终端中无法执行 hayakutdx 命令，请到 python 安装目录下的 Scripts （通常是安装python时没有将该路径放入系统 PATH 路径中）子目录中选择该执行文件（HayakuTDX.exe）。如果还是不行，可以到 python/Lib/site-packages 下找到 hayaku 的安装目录，在其下的 gui 目录中有 HayakuTdx.py, 可以从命令行终端中直接执行 python HayakuTdx.py 执行观察报错信息。
 
 如不希望使用 GUI 图形界面下载，可在命令行终端中执行 importdata 命令，如下图所示：
 
@@ -20,16 +20,16 @@ pip 安装 Hikyuu 后，可在命令行终端中执行 hikyuutdx 命令，启动
 
 .. note::
 
-    由于 importdata 命令使用的是 HikyuuTDX 生成的配置文件，windows建议至少运行过一次 HikyuuTDX 进行配置（可以不执行导入，但配置后必须先退出），否则将使用默认配置。如果默认配置导入出错，可以自行修改用户目录下.hikyuu目录中的相应配置文件。
+    由于 importdata 命令使用的是 HayakuTDX 生成的配置文件，windows建议至少运行过一次 HayakuTDX 进行配置（可以不执行导入，但配置后必须先退出），否则将使用默认配置。如果默认配置导入出错，可以自行修改用户目录下.hayaku目录中的相应配置文件。
 
 
 
 通过代码示例学习
 -----------------
 
-您可以从下面的网址访问最新的代码示例，这些示例将帮助您逐步了解和掌握 Hikyuu 的使用以及系统交易的相关理念。在日常使用 Hikyuu 的过程中，您可以在本帮助内查询相应的内建指标、策略、函数的详细说明，获得更多的信息。
+您可以从下面的网址访问最新的代码示例，这些示例将帮助您逐步了解和掌握 Hayaku 的使用以及系统交易的相关理念。在日常使用 Hayaku 的过程中，您可以在本帮助内查询相应的内建指标、策略、函数的详细说明，获得更多的信息。
 
-`<https://nbviewer.jupyter.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/zh/000-Index.ipynb?flush_cache=True>`_ 
+`<https://nbviewer.jupyter.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/zh/000-Index.ipynb?flush_cache=True>`_
 
 上述示例代码均使用 Jupyter notebook 编辑和运行，您可以从每个示例网址的右上角下载示例代码，并在 Jupyter notebook 中打开直接运行。
 
@@ -46,22 +46,22 @@ pip 安装 Hikyuu 后，可在命令行终端中执行 hikyuutdx 命令，启动
 从 Python Shell 中运行
 -----------------------
 
-您可以使用任意的 Python 客户端工具运行 Hikyuu。运行 Hikyuu。如下图所示，是在 cmd 中 Python shell 环境下运行 hikyuu。从上述示例中拷贝代码时，**应注意将开头带有“%”的代码去除，如 “%time”，** 这些是 ipython 的魔力代码，只在 ipython 环境中生效，普通的 shell 中没有。
+您可以使用任意的 Python 客户端工具运行 Hayaku。运行 Hayaku。如下图所示，是在 cmd 中 Python shell 环境下运行 hayaku。从上述示例中拷贝代码时，**应注意将开头带有“%”的代码去除，如 “%time”，** 这些是 ipython 的魔力代码，只在 ipython 环境中生效，普通的 shell 中没有。
 
 
 .. figure:: _static/quickstart_shell.png
         :width: 700px
 
-运行 Hikyuu 交互式工具，需在首先将其引入，代码如下：
+运行 Hayaku 交互式工具，需在首先将其引入，代码如下：
         
 ::
 
-    #在交互式环境下使用hikyuu，首先需引入hikyuu交互工具
-    from hikyuu.interactive import *
+    #在交互式环境下使用hayaku，首先需引入hayaku交互工具
+    from hayaku.interactive import *
     
 .. note::
 
-    Hikyuu本身是普通的Python包，而 hikyuu.interactive 为 Hikyuu 包中包含的交互式工具。如希望基于 hikyuu 包开发自己的其他程序而不是作为交互式程序使用，可以参考 hikyuu/interactive/interactive.py 实现 hikyuu 的正常初始化。
+    Hayaku本身是普通的Python包，而 hayaku.interactive 为 Hayaku 包中包含的交互式工具。如希望基于 hayaku 包开发自己的其他程序而不是作为交互式程序使用，可以参考 hayaku/interactive/interactive.py 实现 hayaku 的正常初始化。
 
 
 使用 Jupyter notebook 编辑和运行
@@ -119,12 +119,12 @@ Jupyter notebook（此前被称为 IPython notebook）是一个基于web的交�
 
     jupyter notebook
     
-6. 为了方便起见，可以在桌面建立批处理文件，如希望工作目录为“d:\\workspace\\hikyuu\\examples”，则可使用记事本输入下面的内容后，保存为“.bat”文件，之后可直接在桌面双击该文件，即可启动:
+6. 为了方便起见，可以在桌面建立批处理文件，如希望工作目录为“d:\\workspace\\hayaku\\examples”，则可使用记事本输入下面的内容后，保存为“.bat”文件，之后可直接在桌面双击该文件，即可启动:
 
 ::
 
     d:
-    cd \workspace\hikyuu\examples
+    cd \workspace\hayaku\examples
     jupyter notebook
 
 7. 在浏览器中，输入你的远程服务器地址，如 “http://服务器地址:8888” 即可访问。如可以在手机浏览器中访问，并可直接通过手机对代码进行编辑并运行，如：
@@ -134,7 +134,7 @@ Jupyter notebook（此前被称为 IPython notebook）是一个基于web的交�
 matplotlib显示图形时中文字体乱码的问题
 ---------------------------------------
 
-通常 hikyuu 绘图已经默认支持中文，如果仍出现乱码，可参考此处，或百度。
+通常 hayaku 绘图已经默认支持中文，如果仍出现乱码，可参考此处，或百度。
 
 需修改 matplotlib 配置文件，把字体改为支持中文的字体。matplotlib文件位于 python安装目录/matplotlib/mpl-data/matplotlibrc，可用任意文本编辑器打开编辑，文件位置如下图所示：
 
@@ -156,7 +156,7 @@ matplotlib显示图形时中文字体乱码的问题
     
 2. 删除 “.matplotlib” 目录下的字体缓存文件 “fontList.py3k.cache”。（Ubuntu 下，该位置为用户目录 .cache/matplotlib，删除该目录下所有文件）
 
-3. 检查 “c:\\windows\\fons” 目录下，是否存在 simhei.ttf 文件，如果没有可从网上搜索下载或加入Hikyuu QQ群下载字体文件，将该字体文件拷贝至 “c:\\windows\\fons” 目录下。
+3. 检查 “c:\\windows\\fons” 目录下，是否存在 simhei.ttf 文件，如果没有可从网上搜索下载或加入Hayaku QQ群下载字体文件，将该字体文件拷贝至 “c:\\windows\\fons” 目录下。
 
 4. 经历以上步骤还是无法正常显示，请检查用户目录下是否也存在 matplotlib 的配置，如 Windows 中用户目录下的 .matplotlib（见下图示例）。此时可删除用户目录下的 .matplotlib 下的 matplotlibrc 文件，或者整个目录的内容删除。
 
@@ -196,9 +196,8 @@ PyCharm 等 IDE 无法正常提示帮助信息
 -----------------------------------
 
 1. 安装 pybind11-stubgen，使用命令 pip install pybind11-stubgen
-2. 运行 pybind11-stubgen hikyuu 命令，即可正常提示帮助信息。
+2. 运行 pybind11-stubgen hayaku 命令，即可正常提示帮助信息。
 
 .. note::
 
-    2.3.1 版本开始，hikyuu 打包时已经默认生成 pyi 文件
-        
+    2.3.1 版本开始，hayaku 打包时已经默认生成 pyi 文件

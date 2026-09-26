@@ -1,7 +1,7 @@
 基础设施
 ========
 
-.. py:module:: hikyuu
+.. py:module:: hayaku
     
 
 .. toctree::

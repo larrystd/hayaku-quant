@@ -1,0 +1,25 @@
+/*
+ *  Copyright (c) 2024 hikyuu.org
+ *
+ *  Created on: 2024-03-30
+ *      Author: fasiondog
+ */
+
+#include "MultiFactorAllocaterFunds.h"
+
+namespace hayaku {
+
+MultiFactorAllocaterFunds::MultiFactorAllocaterFunds() : AllocateFundsBase("AF_Multi_factor") {}
+
+MultiFactorAllocaterFunds::~MultiFactorAllocaterFunds() {}
+
+StrategyWeightList MultiFactorAllocaterFunds::_allocateWeight(const Datetime& date,
+                                                            const StrategyWeightList& se_list) {
+    return se_list;
+}
+
+AFPtr HAYAKU_API AF_MultiFactor() {
+    return make_shared<MultiFactorAllocaterFunds>();
+}
+
+}  // namespace hayaku

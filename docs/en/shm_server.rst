@@ -3,13 +3,13 @@
 shm Data Server (single-machine shared memory)
 ==============================================
 
-When multiple hikyuu processes run on the same machine at the same time (such as Jupyter research, strategy backtesting, data collection), and they use the **same data directory** (the ``datadir`` of the ``[hikyuu]`` section in ``hikyuu.ini``), one of the processes can act as the **server**, publishing the loaded data as the shared memory snapshots, and the other processes, as **clients**, read them with zero copy, avoiding each process repeatedly preloading and repeatedly occupying the memory.
+When multiple hayaku processes run on the same machine at the same time (such as Jupyter research, strategy backtesting, data collection), and they use the **same data directory** (the ``datadir`` of the ``[hayaku]`` section in ``hayaku.ini``), one of the processes can act as the **server**, publishing the loaded data as the shared memory snapshots, and the other processes, as **clients**, read them with zero copy, avoiding each process repeatedly preloading and repeatedly occupying the memory.
 
 Effect: only the server bears the time-consuming preloading and all the memory overhead; the startup time and the memory usage of the clients drop greatly, and the data seen by each process remains consistent.
 
 .. important::
 
-    Different from the old version's "automatically negotiating the master and the slave at the process startup", the server is **not created automatically**: you must **explicitly call** :func:`start_shm_server` in a process to start the service. Any hikyuu process (including the caller itself) will **never** automatically become the server because it cannot connect to the service — when the connection fails, it only degrades to the standalone mode, loading all the data by itself (the behavior is exactly the same as when this feature is not enabled).
+    Different from the old version's "automatically negotiating the master and the slave at the process startup", the server is **not created automatically**: you must **explicitly call** :func:`start_shm_server` in a process to start the service. Any hayaku process (including the caller itself) will **never** automatically become the server because it cannot connect to the service — when the connection fails, it only degrades to the standalone mode, loading all the data by itself (the behavior is exactly the same as when this feature is not enabled).
 
     This feature (**both the server and the client sides**) is entirely provided by the standalone VIP plugin ``shmserver`` and requires a valid VIP license:
 
@@ -30,8 +30,8 @@ The server is controlled to start and stop within its own process with the Pytho
 
 .. py:function:: start_shm_server(datadir: str = '', publish_shm: bool = True, recv_spot: bool = True) -> bool
 
-    Start the shm data server within the current process, for the other hikyuu processes to read with zero copy as the clients. It must be called after the hikyuu
-    initialization (``import hikyuu`` completes the initialization by default); calling it before the initialization will return ``False`` because the data is not ready.
+    Start the shm data server within the current process, for the other hayaku processes to read with zero copy as the clients. It must be called after the hayaku
+    initialization (``import hayaku`` completes the initialization by default); calling it before the initialization will return ``False`` because the data is not ready.
 
     :param str datadir: the data directory; when empty, the current StockManager data directory is used
     :param bool publish_shm: whether to publish the two kinds of the shared memory snapshots (the K-line hot data + the basic information)
@@ -51,13 +51,13 @@ Typical usage: start the service in a resident server process, and the other res
 ::
 
     # Process A —— the server (resident)
-    import hikyuu as hku
-    if not hku.start_shm_server():
+    import hayaku as hayaku
+    if not hayaku.start_shm_server():
         ...  # the plugin is missing / the license is invalid; this process will run in the standalone mode
 
     # Process B / C / … —— the clients
-    import hikyuu as hku
-    hku.load_hikyuu(use_shm_server=True)  # explicitly join the service of process A; this process enters the client mode
+    import hayaku as hayaku
+    hayaku.load_hayaku(use_shm_server=True)  # explicitly join the service of process A; this process enters the client mode
 
 .. note::
 
@@ -69,9 +69,9 @@ Typical usage: start the service in a resident server process, and the other res
 
     The server process only acts as the snapshot publisher and does not need to join the other shm services. ``use_shm_server`` is disabled by default; the server
     process completes the initialization and the publishing in the standalone mode without any extra handling; only when ``use_shm_server=True`` is explicitly set in the configuration file,
-    the server process needs to skip the client probing with ``load_hikyuu(use_shm_server=False)`` — otherwise this process
+    the server process needs to skip the client probing with ``load_hayaku(use_shm_server=False)`` — otherwise this process
     will first act as a client to connect to the existing service, and after retrying for about 10 seconds, print
-    the ``Failed connect to hikyuu shm server, fallback to standalone mode!`` warning and then degrade to the standalone mode
+    the ``Failed connect to hayaku shm server, fallback to standalone mode!`` warning and then degrade to the standalone mode
     (the data can still be loaded and published normally, with only an extra startup wait and a harmless warning). The command line tool ``shmserver`` has explicitly
     disabled the client probing.
 
@@ -83,17 +83,17 @@ You can also use the command line tool ``shmserver`` installed with the package 
 
 ::
 
-    # It can be executed directly after the pip installation; when it is not yet installed as a command, the equivalent is: python -m hikyuu.gui.shmserver
+    # It can be executed directly after the pip installation; when it is not yet installed as a command, the equivalent is: python -m hayaku.gui.shmserver
     shmserver [options]
 
     Options:
-    --datadir TEXT         the data directory; when empty, the [hikyuu] datadir in hikyuu.ini is used
+    --datadir TEXT         the data directory; when empty, the [hayaku] datadir in hayaku.ini is used
     --publish_shm BOOLEAN  whether to publish the shared memory snapshots (the K-line hot data + the basic information), defaulting to True
     --recv_spot BOOLEAN    whether this process receives the real-time market data and mirrors it into the tail of the snapshot, defaulting to True
-    --config TEXT          specify the hikyuu configuration file path; when empty, the default ~/.hikyuu/hikyuu.ini is used
+    --config TEXT          specify the hayaku configuration file path; when empty, the default ~/.hayaku/hayaku.ini is used
 
 After the server process is started, if the other research / backtest processes want to join as the clients (instead of independently loading all the data), they need to explicitly enable ``use_shm_server=True`` in the configuration
-or the ``load_hikyuu`` parameters, and use the same ``datadir`` as the server.
+or the ``load_hayaku`` parameters, and use the same ``datadir`` as the server.
 
 How It Works
 ------------
@@ -115,12 +115,12 @@ How It Works
 Configuration Items
 -------------------
 
-They are all in the ``[hikyuu]`` section of ``hikyuu.ini``, and take effect on the **client** (the server is controlled by the parameters of :func:`start_shm_server`).
+They are all in the ``[hayaku]`` section of ``hayaku.ini``, and take effect on the **client** (the server is controlled by the parameters of :func:`start_shm_server`).
 ``use_shm_server`` defaults to ``False``; it only needs to be explicitly enabled when joining an existing service:
 
 ::
 
-    [hikyuu]
+    [hayaku]
     tmpdir = /home/user/stock/tmp
     datadir = /home/user/stock
     ; whether this process acts as a client to connect to the existing shm service; defaults to False (always running in the standalone mode), set it to True when joining is needed
@@ -229,22 +229,22 @@ If the Python main thread of the server holds the GIL for a long time (e.g. a pi
 
 **How to turn this feature off completely?**
 
-``use_shm_server`` defaults to ``False``: do not start the server, and do not enable this option in any process's configuration or ``load_hikyuu``
+``use_shm_server`` defaults to ``False``: do not start the server, and do not enable this option in any process's configuration or ``load_hayaku``
 parameters; all the processes will run completely in the standalone mode, with the behavior the same as when this feature is not enabled.
 
 **Which files will be left in the temporary directory?**
 
 The service address is in the system temporary directory (on unix, take the environment variable ``TMPDIR``, defaulting to ``/tmp``; on Windows, take the system temporary directory);
-the socket / named pipe file name is like ``hikyuu_shm_server_{hash}.ipc`` (on Windows, the named pipe with the same name),
-and there are also the accompanying ``.lock`` files; the server also uses ``hikyuu_ks.last`` / ``hikyuu_bi.last`` to record the current shared memory
+the socket / named pipe file name is like ``hayaku_shm_server_{hash}.ipc`` (on Windows, the named pipe with the same name),
+and there are also the accompanying ``.lock`` files; the server also uses ``hayaku_ks.last`` / ``hayaku_bi.last`` to record the current shared memory
 segment names, used to clean up the residual segments of the last abnormally exited server. When the server exits normally, it deletes the shared memory segments; the lock files and the record files
 are empty files themselves, and the residuals can be safely deleted manually.
 
 .. warning::
 
-    The shared memory segment names and their record files (``hikyuu_ks.last`` / ``hikyuu_bi.last``) are globally fixed and are not isolated by
+    The shared memory segment names and their record files (``hayaku_ks.last`` / ``hayaku_bi.last``) are globally fixed and are not isolated by
     ``datadir``. Therefore, after modifying the ``datadir`` in the configuration, if the server started with the old ``datadir`` is
     **still running**, the old and the new servers will share the same segment record file: when the later starter publishes the snapshot, it will clean up the shared memory segment currently used by the previous
     server according to the record, causing the clients newly connected to it afterwards to fail to hit the snapshot and degrade to the IPC requests (the data is still
     correct, the existing clients are not affected, and only the new clients' latency increases). In actual use, ``datadir`` is generally fixed, so the impact is
-    limited; if you need to switch ``datadir``, it is recommended to first close all the hikyuu processes running with the old ``datadir``, and then start the processes with the new configuration.
+    limited; if you need to switch ``datadir``, it is recommended to first close all the hayaku processes running with the old ``datadir``, and then start the processes with the new configuration.

@@ -7,7 +7,7 @@
 # History: 20160407, Added by fasiondog
 # ===============================================================================
 
-from hikyuu import *
+from hayaku import *
 
 
 class TurtleSignal(SignalBase):

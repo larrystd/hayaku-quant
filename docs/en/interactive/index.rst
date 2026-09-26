@@ -1,13 +1,13 @@
 Interactive Tools
 =================
 
-Hikyuu is a Python quantitative framework for researching the system trading, and you can build your own client programs on top of it. The Hikyuu library itself comes with an interactive tool, which can be explored in the Python Shell environment, and can be imported in the Python shell with "from hikyuu.interactive". This tool mainly provides the plotting functions based on matplotlib, making it easy to draw the K-lines, the indicators, the signals, etc. in the interactive environment.
+Hayaku is a Python quantitative framework for researching the system trading, and you can build your own client programs on top of it. The Hayaku library itself comes with an interactive tool, which can be explored in the Python Shell environment, and can be imported in the Python shell with "from hayaku.interactive". This tool mainly provides the plotting functions based on matplotlib, making it easy to draw the K-lines, the indicators, the signals, etc. in the interactive environment.
 
 To draw the figures with matplotlib, you must understand the two basic objects in the matplotlib drawing: figure and axes. The window (figure) is the container of the axes object; when drawing, you first need to specify the window, draw the corresponding axes in the window, and then draw the figures in the axes. Drawing a figure in matplotlib requires specifying in which axes the figure is drawn. When the axes is not specified in the plotting function, the current axes will be used by default; if no axes exists, matplotlib will automatically create a window and its contained axes.
 
 For the detailed examples of the drawing:
 
-`<https://nbviewer.jupyter.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/en/000-Index.ipynb?flush_cache=True>`_
+`<https://nbviewer.jupyter.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/en/000-Index.ipynb?flush_cache=True>`_
 
 
 Drawing the Combined Window

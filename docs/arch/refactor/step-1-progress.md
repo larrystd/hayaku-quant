@@ -16,13 +16,13 @@
 | `TradeManagerBase`、`OrderBrokerBase` | `ExecutionEngine` | 执行订单并维护账户账本 |
 | `System` | `StrategyEngine` | 编排策略组件并产生订单请求 |
 
-`HikyuuSession` 只负责三个 Engine 的创建、持有、访问和关闭，不承载业务逻辑。Python/pybind11 是最外层的接口适配层，不是第四个业务引擎。
+`HayakuSession` 只负责三个 Engine 的创建、持有、访问和关闭，不承载业务逻辑。Python/pybind11 是最外层的接口适配层，不是第四个业务引擎。
 
 目标结构：
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│ HikyuuSession                                               │
+│ HayakuSession                                               │
 │ 生命周期、配置、Engine 所有权                               │
 └───────────────┬──────────────────┬──────────────────────────┘
                 │                  │
@@ -70,7 +70,7 @@ Python/pybind11  只能依赖三个 Engine 的公共门面和稳定领域类型
 | 编号 | 工作项 | 状态 | 主要产物 |
 | --- | --- | --- | --- |
 | 1.1 | 固定接口、调用方和性能基线 | 已完成 | API inventory、功能基线和本阶段查询热路径基准 |
-| 1.2 | 建立 `SessionOptions`、`HikyuuSession` 和 `DataEngine` 骨架 | 已完成 | 可编译、可运行的 C++20 门面 |
+| 1.2 | 建立 `SessionOptions`、`HayakuSession` 和 `DataEngine` 骨架 | 已完成 | 可编译、可运行的 C++20 门面 |
 | 1.3 | 迁移初始化、关闭和加载生命周期 | 已完成 | 最后一个 Session 关闭时停止加载并释放 DataRuntime |
 | 1.4 | 迁移数据查询和内部 DataRuntime | 已完成 | Driver、缓存、线程、IPC 和数据状态迁入 internal DataRuntime |
 | 1.5 | 将 `StockManager` 改为兼容转发门面 | 已完成 | 保持稳定地址和 62 个旧方法，不再持有数据实现 |
@@ -94,7 +94,7 @@ Python open_session
         │
         ▼
 ┌──────────────────────────────────────────────┐
-│ HikyuuSession                                │
+│ HayakuSession                                │
 │ 配置、会话计数、最终关闭和 DataEngine 句柄  │
 └───────────────────┬──────────────────────────┘
                     ▼
@@ -120,7 +120,7 @@ Python open_session
 已落地：
 
 - 新增强类型 `SessionOptions`，集中承载原来的五组 `Parameter` 和 `StrategyContext`；
-- 新增 move-only、RAII 风格的 `HikyuuSession`，支持显式打开、重复关闭和作用域失效；
+- 新增 move-only、RAII 风格的 `HayakuSession`，支持显式打开、重复关闭和作用域失效；
 - 新增只读 `DataEngine`，普通查询不再暴露 Driver、插件、线程和 IPC 控制；
 - 新增 internal `DataRuntime`，接管原 `StockManager` 的 Driver、缓存、数据、插件、线程和
   IPC 状态；
@@ -129,7 +129,7 @@ Python open_session
   悬空；
 - 最后一个显式 Session 关闭时取消预加载、等待后台线程并释放 `DataRuntime`，后续 Session
   可以重新创建运行时；
-- 旧 `hikyuu_init` 改为通过 `SessionOptions` 和默认 Session 初始化，原签名保持不变；
+- 旧 `hayaku_init` 改为通过 `SessionOptions` 和默认 Session 初始化，原签名保持不变；
 - 新增 pybind11 绑定和 Python `open_session` 上下文管理入口；
 - 新增 C++/Python 生命周期、查询一致性和兼容性测试；
 - 更新中英文 API 文档和自动生成的 API inventory。
@@ -142,10 +142,10 @@ Python open_session
 
 | 对比项 | 执行前 | 当前结果 | 结论 |
 | --- | --- | --- | --- |
-| C++ 应用入口 | `hikyuu_init` + `StockManager::instance()` | `HikyuuSession::open()` + `session.data()` | 新代码已有明确边界 |
+| C++ 应用入口 | `hayaku_init` + `StockManager::instance()` | `HayakuSession::open()` + `session.data()` | 新代码已有明确边界 |
 | 初始化参数 | 五组松散 `Parameter` | `SessionOptions` | 配置依赖集中，但仍兼容原格式 |
 | 普通数据查询面 | `StockManager` 62 个公开方法，混有 Driver/线程/插件控制 | `DataEngine` 26 个只读方法 | 用户入口明显收窄 |
-| Python 入口 | `hikyuu_init`、全局 `sm` | 新增 `open_session`、`HikyuuSession`、`DataEngine` | 旧入口未破坏 |
+| Python 入口 | `hayaku_init`、全局 `sm` | 新增 `open_session`、`HayakuSession`、`DataEngine` | 旧入口未破坏 |
 | 关闭语义 | 主要依赖进程退出 | 最后一个显式 Session 关闭后释放 DataRuntime | 句柄、线程和数据资源均有明确生命周期 |
 | 数据实现所有权 | `StockManager` | internal `DataRuntime` | 公共门面与内部状态已分离 |
 | `StockManager` | 同时承担实现、生命周期和公共入口 | 只保留稳定地址兼容转发及两项路径配置 | 62 个旧方法兼容，职责已收窄 |
@@ -161,7 +161,7 @@ Python open_session
 | small-test | `./op.sh small-test` | 41/41 case，3288/3288 assertion |
 | unit-test | `./op.sh unit-test` | 815/815 case，209153/209153 assertion |
 | Python 3.10 | `./op.sh python-test` | 47/47 通过 |
-| 导入 | `./op.sh import-test` | Python 3.10.21 / Hikyuu 2.8.2 通过 |
+| 导入 | `./op.sh import-test` | Python 3.10.21 / Hayaku 2.8.2 通过 |
 | 独立 Session | import 不加载数据，open/close/reopen、旧 `sm` 地址稳定 | 通过；最终关闭后 `len(sm) == 0`，重开后查询正常 |
 | 查询性能 | Release，预热后 11 组、每组 10 万次 `get_stock`，取中位数 | StockManager 0.029227s；DataEngine 0.029158s；-0.24%，无回退 |
 | 格式/静态检查 | `clang-format`、`git diff --check` | 通过；本机未安装 `yapf`，Python 文件已人工检查行宽和格式 |
@@ -174,11 +174,11 @@ unit-test 覆盖，专项计时留在实际修改 ExecutionEngine/StrategyEngine
 
 | 验收条件 | 当前结果 | 状态 |
 | --- | --- | --- |
-| 新代码只通过 `HikyuuSession::data()` 完成常用查询 | 已覆盖证券、K 线、市场、日历、板块、权重和财务查询 | 通过 |
+| 新代码只通过 `HayakuSession::data()` 完成常用查询 | 已覆盖证券、K 线、市场、日历、板块、权重和财务查询 | 通过 |
 | `StockManager` 不再负责 Engine 生命周期和业务实现 | 数据实现已迁入 internal DataRuntime；StockManager 只做兼容转发 | 通过 |
 | Driver、插件、线程、IPC 不进入 DataEngine 普通接口 | DataEngine 只暴露只读业务查询 | 通过 |
-| `import hikyuu` 不启动数据加载 | 独立进程验证 `len(hikyuu.sm) == 0` | 通过 |
-| 旧 `hikyuu_init`、`StockManager::instance()`、Python `sm` 可用 | C++/Python 回归均通过 | 通过 |
+| `import hayaku` 不启动数据加载 | 独立进程验证 `len(hayaku.sm) == 0` | 通过 |
+| 旧 `hayaku_init`、`StockManager::instance()`、Python `sm` 可用 | C++/Python 回归均通过 | 通过 |
 | 查询结果与基线一致 | 新增 C++/Python 对照断言通过 | 通过 |
 | 全量测试和性能门槛 | 全量回归通过；DataEngine 相对兼容入口无查询性能回退 | 通过 |
 
@@ -190,22 +190,22 @@ unit-test 覆盖，专项计时留在实际修改 ExecutionEngine/StrategyEngine
 新增核心文件：
 
 ```text
-hikyuu_cpp/hikyuu/application/SessionOptions.h/.cpp
-hikyuu_cpp/hikyuu/application/HikyuuSession.h/.cpp
-hikyuu_cpp/hikyuu/data/DataEngine.h/.cpp
-hikyuu_cpp/hikyuu/data/internal/DataRuntime.h/.cpp
-hikyuu_pywrap/application/_HikyuuSession.cpp
-hikyuu_pywrap/application/application_main.cpp
-hikyuu_pywrap/data/_DataEngine.cpp
-hikyuu_pywrap/data/data_main.cpp
-hikyuu/session.py
-hikyuu_cpp/unit_test/hikyuu/application/test_HikyuuSession.cpp
-hikyuu_cpp/unit_test/hikyuu/data/test_DataEngine.cpp
-hikyuu/test/test_session.py
+hayaku_cpp/hayaku/application/SessionOptions.h/.cpp
+hayaku_cpp/hayaku/application/HayakuSession.h/.cpp
+hayaku_cpp/hayaku/data/DataEngine.h/.cpp
+hayaku_cpp/hayaku/data/internal/DataRuntime.h/.cpp
+hayaku_pywrap/application/_HayakuSession.cpp
+hayaku_pywrap/application/application_main.cpp
+hayaku_pywrap/data/_DataEngine.cpp
+hayaku_pywrap/data/data_main.cpp
+hayaku/session.py
+hayaku_cpp/unit_test/hayaku/application/test_HayakuSession.cpp
+hayaku_cpp/unit_test/hayaku/data/test_DataEngine.cpp
+hayaku/test/test_session.py
 ```
 
-主要兼容修改集中在 `StockManager.h/.cpp`、`hikyuu.h/.cpp`、`GlobalInitializer.cpp` 和
-`plugin/hkuextra.cpp`。未修改 `trade_manage/**`、`trade_sys/**`、`strategy/**`、`indicator/**`、
+主要兼容修改集中在 `StockManager.h/.cpp`、`hayaku.h/.cpp`、`GlobalInitializer.cpp` 和
+`plugin/hayakuextra.cpp`。未修改 `trade_manage/**`、`trade_sys/**`、`strategy/**`、`indicator/**`、
 序列化格式和数据库 Schema，符合阶段隔离要求。
 
 ## 3. 核心设计原则
@@ -286,7 +286,7 @@ StrategyEngine
 - 普通拒单、无信号和数据缺失使用状态值，不使用异常控制高频流程；
 - 配置错误、初始化失败等边界错误可以抛出项目既有异常；
 - Engine 默认不可复制；只有语义明确时允许移动；
-- 生命周期由 `HikyuuSession` 管理，不增加新的全局单例；
+- 生命周期由 `HayakuSession` 管理，不增加新的全局单例；
 - Public API、Extension SPI、Internal API 必须在头文件和 inventory 中明确分类；
 - 新增接口必须说明调用方，不能仅为“以后可能用到”而暴露。
 
@@ -313,7 +313,7 @@ StrategyEngine
 
 相同 Release 构建下，代表性回测中位耗时回退超过 5% 必须分析原因，超过 10% 不得验收，除非有明确、记录在案的功能收益和人工批准。
 
-性能测试沿用仓库已有机制：使用 `hikyuu_cpp/unit_test/hikyuu/test_config.h` 的 `ENABLE_BENCHMARK_TEST` 开关、`BENCHMARK_TIME_MSG` 和 `SpendTimer`。正式对比使用 Release 构建，先预热，再至少运行 10 次并记录中位数；macOS 峰值内存使用 `/usr/bin/time -l` 记录。Debug 构建结果不得用于阶段性能验收。
+性能测试沿用仓库已有机制：使用 `hayaku_cpp/unit_test/hayaku/test_config.h` 的 `ENABLE_BENCHMARK_TEST` 开关、`BENCHMARK_TIME_MSG` 和 `SpendTimer`。正式对比使用 Release 构建，先预热，再至少运行 10 次并记录中位数；macOS 峰值内存使用 `/usr/bin/time -l` 记录。Debug 构建结果不得用于阶段性能验收。
 
 ## 5. 第一阶段：DataEngine
 
@@ -327,7 +327,7 @@ StrategyEngine
 - 财务数据查询；
 - 提供数据就绪和加载状态。
 
-初始化与资源关闭由 `HikyuuSession` 负责；Driver、缓存、插件、预加载线程及 IPC/SHM
+初始化与资源关闭由 `HayakuSession` 负责；Driver、缓存、插件、预加载线程及 IPC/SHM
 由 internal `DataRuntime` 管理，不进入 `DataEngine` 公共接口。
 
 它不负责订单、账户、策略组件或回测调度。
@@ -357,48 +357,48 @@ public:
 实际新增：
 
 ```text
-hikyuu_cpp/hikyuu/application/HikyuuSession.h
-hikyuu_cpp/hikyuu/application/HikyuuSession.cpp
-hikyuu_cpp/hikyuu/application/SessionOptions.h
-hikyuu_cpp/hikyuu/data/DataEngine.h
-hikyuu_cpp/hikyuu/data/DataEngine.cpp
-hikyuu_cpp/hikyuu/data/internal/DataRuntime.h
-hikyuu_cpp/hikyuu/data/internal/DataRuntime.cpp
-hikyuu_cpp/unit_test/hikyuu/application/test_HikyuuSession.cpp
-hikyuu_cpp/unit_test/hikyuu/data/test_DataEngine.cpp
-hikyuu_pywrap/application/_HikyuuSession.cpp
-hikyuu_pywrap/data/_DataEngine.cpp
-hikyuu/session.py
+hayaku_cpp/hayaku/application/HayakuSession.h
+hayaku_cpp/hayaku/application/HayakuSession.cpp
+hayaku_cpp/hayaku/application/SessionOptions.h
+hayaku_cpp/hayaku/data/DataEngine.h
+hayaku_cpp/hayaku/data/DataEngine.cpp
+hayaku_cpp/hayaku/data/internal/DataRuntime.h
+hayaku_cpp/hayaku/data/internal/DataRuntime.cpp
+hayaku_cpp/unit_test/hayaku/application/test_HayakuSession.cpp
+hayaku_cpp/unit_test/hayaku/data/test_DataEngine.cpp
+hayaku_pywrap/application/_HayakuSession.cpp
+hayaku_pywrap/data/_DataEngine.cpp
+hayaku/session.py
 ```
 
 实际修改的主要入口：
 
 ```text
-hikyuu_cpp/hikyuu/hikyuu.h
-hikyuu_cpp/hikyuu/hikyuu.cpp
-hikyuu_cpp/hikyuu/StockManager.h
-hikyuu_cpp/hikyuu/StockManager.cpp
-hikyuu_cpp/hikyuu/GlobalInitializer.cpp
-hikyuu_cpp/hikyuu/Stock.h
-hikyuu_cpp/hikyuu/plugin/hkuextra.cpp
-hikyuu_pywrap/main.cpp
-hikyuu/__init__.py
-hikyuu/test/test.py
+hayaku_cpp/hayaku/hayaku.h
+hayaku_cpp/hayaku/hayaku.cpp
+hayaku_cpp/hayaku/StockManager.h
+hayaku_cpp/hayaku/StockManager.cpp
+hayaku_cpp/hayaku/GlobalInitializer.cpp
+hayaku_cpp/hayaku/Stock.h
+hayaku_cpp/hayaku/plugin/hayakuextra.cpp
+hayaku_pywrap/main.cpp
+hayaku/__init__.py
+hayaku/test/test.py
 ```
 
 本阶段不修改：
 
 ```text
-hikyuu_cpp/hikyuu/trade_manage/**
-hikyuu_cpp/hikyuu/trade_sys/**
-hikyuu_cpp/hikyuu/strategy/Strategy.*
-hikyuu_cpp/hikyuu/indicator/**
-hikyuu_cpp/hikyuu/serialization/**
+hayaku_cpp/hayaku/trade_manage/**
+hayaku_cpp/hayaku/trade_sys/**
+hayaku_cpp/hayaku/strategy/Strategy.*
+hayaku_cpp/hayaku/indicator/**
+hayaku_cpp/hayaku/serialization/**
 ```
 
 ### 5.3 实际实施顺序
 
-1. 增加 `SessionOptions`、`HikyuuSession` 和 `DataEngine`，先通过现有 `StockManager` 验证接口；
+1. 增加 `SessionOptions`、`HayakuSession` 和 `DataEngine`，先通过现有 `StockManager` 验证接口；
 2. 将数据状态和原实现迁入 internal `DataRuntime`；
 3. 让 `DataEngine` 直接访问会话对应的 `DataRuntime`，避免查询热路径全局查找；
 4. 将 `StockManager` 改为无数据状态、地址稳定的兼容转发门面；
@@ -408,11 +408,11 @@ hikyuu_cpp/hikyuu/serialization/**
 
 ### 5.4 验收标准
 
-- 新代码可以只通过 `HikyuuSession::data()` 完成常用数据查询；
+- 新代码可以只通过 `HayakuSession::data()` 完成常用数据查询；
 - `StockManager` 不再负责 Engine 生命周期，也不再增加业务逻辑；
 - Driver、插件、线程和 IPC 控制不出现在 `DataEngine` 普通公共接口；
-- `import hikyuu` 不启动数据加载；
-- 旧 `hikyuu_init()`、`StockManager::instance()` 和 Python `sm` 仍可工作；
+- `import hayaku` 不启动数据加载；
+- 旧 `hayaku_init()`、`StockManager::instance()` 和 Python `sm` 仍可工作；
 - 数据查询结果与当前基线一致；
 - 全量测试和性能门槛通过。
 
@@ -459,48 +459,48 @@ public:
 计划新增：
 
 ```text
-hikyuu_cpp/hikyuu/trade/OrderRequest.h
-hikyuu_cpp/hikyuu/trade/ExecutionReport.h
-hikyuu_cpp/hikyuu/trade/AccountSnapshot.h
-hikyuu_cpp/hikyuu/trade/ExecutionEngine.h
-hikyuu_cpp/hikyuu/trade/ExecutionEngine.cpp
-hikyuu_cpp/hikyuu/trade/internal/Ledger.h
-hikyuu_cpp/hikyuu/trade/internal/Ledger.cpp
-hikyuu_cpp/hikyuu/trade/internal/BacktestMatcher.h
-hikyuu_cpp/hikyuu/trade/internal/BacktestMatcher.cpp
-hikyuu_cpp/hikyuu/trade/BrokerAdapter.h
-hikyuu_cpp/hikyuu/trade/BrokerAdapter.cpp
-hikyuu_cpp/unit_test/hikyuu/trade/test_ExecutionEngine.cpp
-hikyuu_pywrap/trade/_ExecutionEngine.cpp
+hayaku_cpp/hayaku/trade/OrderRequest.h
+hayaku_cpp/hayaku/trade/ExecutionReport.h
+hayaku_cpp/hayaku/trade/AccountSnapshot.h
+hayaku_cpp/hayaku/trade/ExecutionEngine.h
+hayaku_cpp/hayaku/trade/ExecutionEngine.cpp
+hayaku_cpp/hayaku/trade/internal/Ledger.h
+hayaku_cpp/hayaku/trade/internal/Ledger.cpp
+hayaku_cpp/hayaku/trade/internal/BacktestMatcher.h
+hayaku_cpp/hayaku/trade/internal/BacktestMatcher.cpp
+hayaku_cpp/hayaku/trade/BrokerAdapter.h
+hayaku_cpp/hayaku/trade/BrokerAdapter.cpp
+hayaku_cpp/unit_test/hayaku/trade/test_ExecutionEngine.cpp
+hayaku_pywrap/trade/_ExecutionEngine.cpp
 ```
 
 计划修改：
 
 ```text
-hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h
-hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.cpp
-hikyuu_cpp/hikyuu/trade_manage/TradeManager.h
-hikyuu_cpp/hikyuu/trade_manage/TradeManager.cpp
-hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h
-hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.cpp
-hikyuu_cpp/hikyuu/strategy/Strategy.h
-hikyuu_cpp/hikyuu/strategy/Strategy.cpp
-hikyuu_cpp/hikyuu/xmake.lua
-hikyuu_cpp/unit_test/xmake.lua
-hikyuu_pywrap/trade_manage/_TradeManager.cpp
-hikyuu_pywrap/trade_manage/_OrderBroker.cpp
-hikyuu_pywrap/xmake.lua
-hikyuu/test/test.py
+hayaku_cpp/hayaku/trade_manage/TradeManagerBase.h
+hayaku_cpp/hayaku/trade_manage/TradeManagerBase.cpp
+hayaku_cpp/hayaku/trade_manage/TradeManager.h
+hayaku_cpp/hayaku/trade_manage/TradeManager.cpp
+hayaku_cpp/hayaku/trade_manage/OrderBrokerBase.h
+hayaku_cpp/hayaku/trade_manage/OrderBrokerBase.cpp
+hayaku_cpp/hayaku/strategy/Strategy.h
+hayaku_cpp/hayaku/strategy/Strategy.cpp
+hayaku_cpp/hayaku/xmake.lua
+hayaku_cpp/unit_test/xmake.lua
+hayaku_pywrap/trade_manage/_TradeManager.cpp
+hayaku_pywrap/trade_manage/_OrderBroker.cpp
+hayaku_pywrap/xmake.lua
+hayaku/test/test.py
 ```
 
 本阶段不修改：
 
 ```text
-hikyuu_cpp/hikyuu/StockManager.*
-hikyuu_cpp/hikyuu/data/**
-hikyuu_cpp/hikyuu/data_driver/**
-hikyuu_cpp/hikyuu/trade_sys/*/imp/**
-hikyuu_cpp/hikyuu/indicator/**
+hayaku_cpp/hayaku/StockManager.*
+hayaku_cpp/hayaku/data/**
+hayaku_cpp/hayaku/data_driver/**
+hayaku_cpp/hayaku/trade_sys/*/imp/**
+hayaku_cpp/hayaku/indicator/**
 ```
 
 `System` 只允许增加调用新 ExecutionEngine 的兼容适配点，不在本阶段重写逐 Bar 编排。
@@ -567,47 +567,47 @@ public:
 计划新增：
 
 ```text
-hikyuu_cpp/hikyuu/trade_sys/engine/StrategyEngine.h
-hikyuu_cpp/hikyuu/trade_sys/engine/StrategyEngine.cpp
-hikyuu_cpp/hikyuu/trade_sys/engine/StrategyConfig.h
-hikyuu_cpp/hikyuu/trade_sys/engine/BacktestResult.h
-hikyuu_cpp/hikyuu/trade_sys/engine/internal/StrategyRuntime.h
-hikyuu_cpp/hikyuu/trade_sys/engine/internal/StrategyRuntime.cpp
-hikyuu_cpp/hikyuu/trade_sys/component/ComponentContext.h
-hikyuu_cpp/unit_test/hikyuu/trade_sys/engine/test_StrategyEngine.cpp
-hikyuu_pywrap/trade_sys/_StrategyEngine.cpp
+hayaku_cpp/hayaku/trade_sys/engine/StrategyEngine.h
+hayaku_cpp/hayaku/trade_sys/engine/StrategyEngine.cpp
+hayaku_cpp/hayaku/trade_sys/engine/StrategyConfig.h
+hayaku_cpp/hayaku/trade_sys/engine/BacktestResult.h
+hayaku_cpp/hayaku/trade_sys/engine/internal/StrategyRuntime.h
+hayaku_cpp/hayaku/trade_sys/engine/internal/StrategyRuntime.cpp
+hayaku_cpp/hayaku/trade_sys/component/ComponentContext.h
+hayaku_cpp/unit_test/hayaku/trade_sys/engine/test_StrategyEngine.cpp
+hayaku_pywrap/trade_sys/_StrategyEngine.cpp
 ```
 
 计划修改：
 
 ```text
-hikyuu_cpp/hikyuu/trade_sys/system/System.h
-hikyuu_cpp/hikyuu/trade_sys/system/System.cpp
-hikyuu_cpp/hikyuu/trade_sys/system/TradeRequest.h
-hikyuu_cpp/hikyuu/trade_sys/system/TradeRequest.cpp
-hikyuu_cpp/hikyuu/trade_sys/environment/EnvironmentBase.h
-hikyuu_cpp/hikyuu/trade_sys/condition/ConditionBase.h
-hikyuu_cpp/hikyuu/trade_sys/signal/SignalBase.h
-hikyuu_cpp/hikyuu/trade_sys/moneymanager/MoneyManagerBase.h
-hikyuu_cpp/hikyuu/trade_sys/stoploss/StoplossBase.h
-hikyuu_cpp/hikyuu/trade_sys/profitgoal/ProfitGoalBase.h
-hikyuu_cpp/hikyuu/trade_sys/slippage/SlippageBase.h
-hikyuu_cpp/hikyuu/xmake.lua
-hikyuu_cpp/unit_test/xmake.lua
-hikyuu_pywrap/trade_sys/_System.cpp
-hikyuu_pywrap/xmake.lua
-hikyuu/test/test.py
+hayaku_cpp/hayaku/trade_sys/system/System.h
+hayaku_cpp/hayaku/trade_sys/system/System.cpp
+hayaku_cpp/hayaku/trade_sys/system/TradeRequest.h
+hayaku_cpp/hayaku/trade_sys/system/TradeRequest.cpp
+hayaku_cpp/hayaku/trade_sys/environment/EnvironmentBase.h
+hayaku_cpp/hayaku/trade_sys/condition/ConditionBase.h
+hayaku_cpp/hayaku/trade_sys/signal/SignalBase.h
+hayaku_cpp/hayaku/trade_sys/moneymanager/MoneyManagerBase.h
+hayaku_cpp/hayaku/trade_sys/stoploss/StoplossBase.h
+hayaku_cpp/hayaku/trade_sys/profitgoal/ProfitGoalBase.h
+hayaku_cpp/hayaku/trade_sys/slippage/SlippageBase.h
+hayaku_cpp/hayaku/xmake.lua
+hayaku_cpp/unit_test/xmake.lua
+hayaku_pywrap/trade_sys/_System.cpp
+hayaku_pywrap/xmake.lua
+hayaku/test/test.py
 ```
 
 本阶段不修改：
 
 ```text
-hikyuu_cpp/hikyuu/data/**
-hikyuu_cpp/hikyuu/data_driver/**
-hikyuu_cpp/hikyuu/trade/internal/**
-hikyuu_cpp/hikyuu/trade_sys/*/imp/**
-hikyuu_cpp/hikyuu/indicator/**
-hikyuu_cpp/hikyuu/serialization/**
+hayaku_cpp/hayaku/data/**
+hayaku_cpp/hayaku/data_driver/**
+hayaku_cpp/hayaku/trade/internal/**
+hayaku_cpp/hayaku/trade_sys/*/imp/**
+hayaku_cpp/hayaku/indicator/**
+hayaku_cpp/hayaku/serialization/**
 ```
 
 ### 7.3 实施顺序
@@ -645,7 +645,7 @@ docs/arch/refactor/step-3-strategy-engine-progress.md
 目标命名空间：
 
 ```text
-hikyuu                 高频稳定类型、工厂和 open_session
+hayaku                 高频稳定类型、工厂和 open_session
 ├── data               DataEngine 及数据查询辅助
 ├── strategy           StrategyEngine、配置和回测结果
 ├── execution          ExecutionEngine、订单和账户快照
@@ -658,44 +658,44 @@ hikyuu                 高频稳定类型、工厂和 open_session
 计划修改或新增：
 
 ```text
-hikyuu/__init__.py
-hikyuu/core.py
-hikyuu/extend.py
-hikyuu/session.py
-hikyuu/data/__init__.py
-hikyuu/strategy/__init__.py
-hikyuu/execution/__init__.py
-hikyuu/advanced/__init__.py
-hikyuu/spi/__init__.py
-hikyuu/indicator/__init__.py
-hikyuu/trade_manage/__init__.py
-hikyuu/trade_sys/__init__.py
-hikyuu_pywrap/main.cpp
-hikyuu_pywrap/application/**
-hikyuu_pywrap/data/**
-hikyuu_pywrap/trade/**
-hikyuu_pywrap/trade_manage/**
-hikyuu_pywrap/trade_sys/**
-hikyuu/test/test_public_api.py
-hikyuu/test/test.py
+hayaku/__init__.py
+hayaku/core.py
+hayaku/extend.py
+hayaku/session.py
+hayaku/data/__init__.py
+hayaku/strategy/__init__.py
+hayaku/execution/__init__.py
+hayaku/advanced/__init__.py
+hayaku/spi/__init__.py
+hayaku/indicator/__init__.py
+hayaku/trade_manage/__init__.py
+hayaku/trade_sys/__init__.py
+hayaku_pywrap/main.cpp
+hayaku_pywrap/application/**
+hayaku_pywrap/data/**
+hayaku_pywrap/trade/**
+hayaku_pywrap/trade_manage/**
+hayaku_pywrap/trade_sys/**
+hayaku/test/test_public_api.py
+hayaku/test/test.py
 ```
 
 本阶段不修改：
 
 ```text
-hikyuu_cpp/hikyuu/data/** 的业务实现
-hikyuu_cpp/hikyuu/trade/** 的业务实现
-hikyuu_cpp/hikyuu/trade_sys/engine/** 的业务实现
-hikyuu_cpp/hikyuu/trade_sys/*/imp/**
-hikyuu_cpp/hikyuu/indicator/**
+hayaku_cpp/hayaku/data/** 的业务实现
+hayaku_cpp/hayaku/trade/** 的业务实现
+hayaku_cpp/hayaku/trade_sys/engine/** 的业务实现
+hayaku_cpp/hayaku/trade_sys/*/imp/**
+hayaku_cpp/hayaku/indicator/**
 ```
 
 ### 8.3 实施顺序
 
 1. 明确顶层稳定白名单并建立 `__all__`；
 2. 显式导入替代层层 `import *`；
-3. 将扩展协议移入 `hikyuu.spi`；
-4. 将低层控制移入 `hikyuu.advanced`；
+3. 将扩展协议移入 `hayaku.spi`；
+4. 将低层控制移入 `hayaku.advanced`；
 5. 旧路径保留兼容转发并发出 `DeprecationWarning`；
 6. 修复 `open_spend_time` 的错误绑定；
 7. 更新文档示例，执行 notebook/示例冒烟测试；
@@ -703,7 +703,7 @@ hikyuu_cpp/hikyuu/indicator/**
 
 ### 8.4 验收标准
 
-- `dir(hikyuu)` 和 `hikyuu.__all__` 只包含明确批准的稳定接口；
+- `dir(hayaku)` 和 `hayaku.__all__` 只包含明确批准的稳定接口；
 - 普通用户类不出现 Driver、线程、IPC 和 `_calculate/_reset/_clone` 等内部入口；
 - `DataEngine`、`ExecutionEngine`、`StrategyEngine` 从规定路径稳定导入；
 - 所有迁移符号都有新路径、兼容转发和弃用警告；
@@ -794,7 +794,7 @@ docs: publish engine API migration guide
 
 三引擎重构完成时必须同时满足：
 
-- 普通用户主要通过 `HikyuuSession` 和三个 Engine 完成任务；
+- 普通用户主要通过 `HayakuSession` 和三个 Engine 完成任务；
 - `StockManager`、`TradeManagerBase`、`System` 不再承担新业务逻辑；
 - 三个旧类只剩兼容转发，并有明确弃用计划；
 - DataEngine、ExecutionEngine、StrategyEngine 的依赖方向无循环；

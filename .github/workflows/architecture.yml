@@ -1,0 +1,20 @@
+name: architecture-boundaries
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  layering:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+      - name: Test boundary scanner
+        run: python3 -m unittest discover -s tools/arch -p 'test_check_app_dependencies.py'
+      - name: Check data and analysis layer
+        run: python3 tools/arch/check_app_dependencies.py

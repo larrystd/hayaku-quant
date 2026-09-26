@@ -2,7 +2,7 @@ Strategy engine
 ===============
 
 The Python strategy boundary is centered on three explicit value/facade types from
-``hikyuu.strategy``:
+``hayaku.strategy``:
 
 ``StrategyDefinition``
     An immutable component graph. At minimum it receives a money-management component and a
@@ -21,9 +21,9 @@ Basic flow
 
 .. code-block:: python
 
-    from hikyuu import Query, open_session
-    from hikyuu.execution import AccountConfig
-    from hikyuu.strategy import BacktestRequest, StrategyDefinition, StrategyEngine
+    from hayaku import Query, open_session
+    from hayaku.execution import AccountConfig
+    from hayaku.strategy import BacktestRequest, StrategyDefinition, StrategyEngine
 
     # ``money_manager`` and ``signal`` are component instances created by a built-in component
     # constructor or by the explicit crtMM/crtSG extension factories.
@@ -41,13 +41,13 @@ Component extensions
 
 The component base classes and the ``crtCN``, ``crtEV``, ``crtMM``, ``crtPG``, ``crtSG``,
 ``crtSP``, ``crtST``, ``crtMF``, ``crtSCFilter`` and ``crtNorm`` factories live in
-``hikyuu.strategy``. They are not injected into the package root. Lower-level extension protocols
-are also available through ``hikyuu.spi``.
+``hayaku.strategy``. They are not injected into the package root. Lower-level extension protocols
+are also available through ``hayaku.spi``.
 
 Removed runtime
 ---------------
 
 The Python ``Strategy``/``System``/``Portfolio`` runtime bindings and the
-``hikyuu.trade_sys`` package have been removed. Data services and importer controls are explicit
-opt-ins in ``hikyuu.advanced``; account execution belongs to
-``hikyuu.execution``. There is no ``TradeManager`` property or implicit process-global account.
+``hayaku.trade_sys`` package have been removed. Data services and importer controls are explicit
+opt-ins in ``hayaku.advanced``; account execution belongs to
+``hayaku.execution``. There is no ``TradeManager`` property or implicit process-global account.

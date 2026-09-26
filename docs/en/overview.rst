@@ -1,11 +1,14 @@
 .. figure:: _static/00000-title.png
 
-About Hikyuu
+About Hayaku
 ============
 
-Hikyuu Quant Framework is an open-source, extremely fast quantitative trading research framework
+Hayaku Quant Framework is an open-source, extremely fast quantitative trading research framework
 written in C++/Python. It focuses on strategy analysis, backtesting and the extension to live
 trading (currently deeply adapted to the Chinese A-share market).
+
+Hayaku is derived from `Hikyuu <https://github.com/fasiondog/hikyuu>`_. This repository is a
+breaking architecture-refactor POC, not a drop-in replacement for the upstream project.
 
 The project is dedicated to the core technologies of quantitative trading, with capabilities in four
 dimensions: **trading model development, an extremely fast computation engine, an efficient
@@ -18,29 +21,26 @@ allocation**. You can build your own strategy library for each module, combine t
 research and backtest flexibly, and analyze the effectiveness and robustness of a single strategy as
 well as the overall return of combined strategies.
 
-Project repositories:
+Repositories:
 
-* `GitHub <https://github.com/fasiondog/hikyuu>`_
-* `Gitee <https://gitee.com/fasiondog/hikyuu>`_
-* `GitCode <https://gitcode.com/hikyuu/hikyuu>`_
+* `Hayaku <https://github.com/larrystd/hayaku-quant>`_ — active refactor repository
+* `Hikyuu <https://github.com/fasiondog/hikyuu>`_ — upstream source and history
 
-Project home page: `https://hikyuu.org/ <https://hikyuu.org/>`_
+Project home page: `https://github.com/larrystd/hayaku-quant <https://github.com/larrystd/hayaku-quant>`_
 
-Documentation: `https://hikyuu.readthedocs.io/en/latest/index.html <https://hikyuu.readthedocs.io/en/latest/index.html>`_
+Getting started: `https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/en/000-Index.ipynb?flush_cache=True <https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/en/000-Index.ipynb?flush_cache=True>`_
 
-Getting started: `https://nbviewer.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/en/000-Index.ipynb?flush_cache=True <https://nbviewer.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/en/000-Index.ipynb?flush_cache=True>`_
+Upstream strategy part library: `https://gitee.com/fasiondog/hikyuu_hub <https://gitee.com/fasiondog/hikyuu_hub>`_
 
-Strategy part library: `https://gitee.com/fasiondog/hikyuu_hub <https://gitee.com/fasiondog/hikyuu_hub>`_
-
-Thanks to a community member who provided an Ubuntu virtual machine image with Hikyuu preinstalled;
+Thanks to a community member who provided an Ubuntu virtual machine image with Hayaku preinstalled;
 download it from Baidu Netdisk (extraction code: ht8j): `download <https://pan.baidu.com/s/1CAiUWDdgV0c0VhPpe4AgVw?pwd=ht8j>`_
 
 Example code:
 
 ::
 
-    from hikyuu import Query, open_session
-    from hikyuu.execution import AccountConfig
+    from hayaku import Query, open_session
+    from hayaku.execution import AccountConfig
 
     # Runtime state is explicitly owned by the session.
     account = AccountConfig(initial_cash=300000, name="research")
@@ -55,15 +55,15 @@ Example code:
 .. figure:: _static/10000-overview.png
         :width: 600px
 
-The complete example is available in the `Getting Started Notebook <https://nbviewer.jupyter.org/github/fasiondog/hikyuu/blob/master/hikyuu/examples/notebook/en/000-Index.ipynb?flush_cache=True>`_
+The complete example is available in the `Getting Started Notebook <https://nbviewer.jupyter.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/en/000-Index.ipynb?flush_cache=True>`_
 
 
-Why Hikyuu?
+Why Hayaku?
 -------------------------
 
 **Flexible composition: build a categorized strategy asset library**
 
-Hikyuu provides a lightweight abstraction of systematic trading methods, covering market environment,
+Hayaku provides a lightweight abstraction of systematic trading methods, covering market environment,
 condition, signal generator, stop-loss / take-profit, money management, profit goal, slippage,
 selector and fund allocation. You can assemble your own strategy library from these parts,
 combine and backtest them efficiently, and focus on the effect and impact of a single module while
@@ -76,7 +76,7 @@ is shown below:
 **Extreme performance: build your own quantitative application with ease**
 
 The project consists of three parts: a high-performance C++ core library, a Python interface layer
-(hikyuu), and interactive exploration tools.
+(hayaku), and interactive exploration tools.
 
 * **Measured performance:** on an AMD 7950x, loading the full A-share market (19.13 million daily
   bars) and computing and summing the 20-day moving average for the first time takes only 6 seconds;
@@ -87,11 +87,11 @@ The project consists of three parts: a high-performance C++ core library, a Pyth
   multi-core acceleration, leaving room to scale for very high computing demands. The core library
   can also be used standalone, helping developers build custom quantitative tools quickly.
 
-* **Python interface layer (hikyuu):** a lightweight wrapper around the C++ core with TA-Lib
+* **Python interface layer (hayaku):** a lightweight wrapper around the C++ core with TA-Lib
   integrated; converts seamlessly to and from numpy and pandas, so it plugs into the mainstream
   Python data analysis ecosystem.
 
-* **hikyuu.interactive exploration tool:** built-in visualization of candlesticks, indicators and
+* **hayaku.interactive exploration tool:** built-in visualization of candlesticks, indicators and
   signals, suitable for rapid strategy validation and backtest analysis.
 
 **Concise syntax: explore strategies faster and more freely**
@@ -117,57 +117,10 @@ far less space than MySQL, making it a better fit for minute-level and higher-fr
 
 
 
-Thanks to our donors
----------------------------------------------------------------
-
-`Donation plans and benefits <https://hikyuu.readthedocs.io/en/latest/vip/donate-plan.html>`_
-
-.. raw:: html
-
-    <table>
-    <thead>
-    <tr>
-    <th>Description</th>
-    <th>Payment method</th>
-    <th>Donation link (same as the QR code below)</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-    <td>Buy the author a coffee (CNY 30) (includes historical daily data)</td>
-    <td>Alipay</td>
-    <td><a href="https://pay.ldxp.cn/item/gflv3v" rel="nofollow">https://pay.ldxp.cn/item/gflv3v</a></td>
-    </tr>
-    <tr>
-    <td>180-day subscription (CNY 50) (includes historical daily data)</td>
-    <td>Alipay</td>
-    <td><a href="https://pay.ldxp.cn/item/du4h8s" rel="nofollow">https://pay.ldxp.cn/item/du4h8s</a></td>
-    </tr>
-    <tr>
-    <td>365-day subscription (CNY 100) (includes historical daily/minute/hour/tick data)</td>
-    <td>Alipay</td>
-    <td><a href="https://pay.ldxp.cn/item/ehbz9b" rel="nofollow">https://pay.ldxp.cn/item/ehbz9b</a></td>
-    </tr>
-    <tr>
-    <td>Join the Zsxq community<br />(3 devices and more,<br />CNY 300 for the first year, half price to renew)<br />Includes a separate WeChat group and the part library (includes historical daily/minute/hour/tick data)</td>
-    <td>WeChat or Zsxq</td>
-    <td><a href="https://t.zsxq.com/YSATD" rel="nofollow">https://t.zsxq.com/YSATD</a></td>
-    </tr>
-    </tbody>
-    </table>
-
-.. figure:: _static/dingyue.png
-
-Support group for donors only (when joining, please note: Hikyuu subscription)
-
-.. figure:: _static/support.jpg
-
-
-
 Dependencies
 ---------------------------------------------------------------
 
-The C++ core of Hikyuu depends directly on the following open-source projects (indirect dependencies
+The C++ core of Hayaku depends directly on the following open-source projects (indirect dependencies
 and Python-side dependencies are not listed; see requirements.txt for the Python dependencies).
 Thanks to all the open-source authors for their contributions.
 

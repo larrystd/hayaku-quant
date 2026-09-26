@@ -25,7 +25,7 @@ Dynamic Period K-lines
     
         Notes:
         
-        1. Hikyuu has built in the DAY3, DAY5 and DAY7 extended K-lines based on the number of bars, and the MIN3 extended K-line based on time conversion
+        1. Hayaku has built in the DAY3, DAY5 and DAY7 extended K-lines based on the number of bars, and the MIN3 extended K-line based on time conversion
         2. It is recommended to create the custom conversion function that calculates the period end points of the K-line type in the way of a hub c++ part, because python has the GIL lock, and creating the conversion function in python may make it impossible to calculate with multiple threads
         3. Registering dynamic K-lines is not thread-safe; please do the other operations after the registration is completed
     

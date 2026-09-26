@@ -6,8 +6,17 @@ import os
 import sys
 try:
     from setuptools import find_packages, setup
+    from setuptools.dist import Distribution
 except ImportError:
     from distutils.core import find_packages, setup
+    from distutils.dist import Distribution
+
+
+class BinaryDistribution(Distribution):
+    """Mark wheels as platform-specific: native modules are bundled as package data."""
+
+    def has_ext_modules(self):
+        return True
 
 
 def parse_requirements(filename):
@@ -22,64 +31,79 @@ current_plat = sys.platform
 # if current_plat == 'linux':
 #     requirements.remove('PyQt5')
 
-hku_version = ''
+hayaku_version = ''
 with open('xmake.lua', 'r', encoding='utf-8') as f:
     for line in f:
         if len(line) > 15 and line[:11] == 'set_version':
             pre_pos = line.find('"') + 1
             end_pos = line.find('"', pre_pos)
-            hku_version = line[pre_pos:end_pos]
+            hayaku_version = line[pre_pos:end_pos]
             break
 
-if not hku_version:
+if not hayaku_version:
     print("Cannot find the set_version statement in xmake.lua, failed to get the version number!")
     exit(0)
 
-print('current hikyuu version:', hku_version)
+print('current hayaku version:', hayaku_version)
 
 py_version = platform.python_version_tuple()
 py_version = int(py_version[0]) * 10 + int(py_version[1])
 
-hku_name = "hikyuu"  # "hikyuu-noarrow"
-# hku_version = "1.0.9"
-hku_author = "fasiondog"
-hku_author_email = "fasiondog@sina.com"
+hayaku_name = "hayaku"  # "hayaku-noarrow"
+# hayaku_version = "1.0.9"
+hayaku_author = "fasiondog"
+hayaku_author_email = "fasiondog@sina.com"
 
-hku_license = "MIT"
-hku_keywords = [
+hayaku_license = "MIT"
+hayaku_keywords = [
     "quant", "trade", "System Trading", "backtester", "量化", "程序化交易", "量化交易",
     "系统交易"
 ]
-hku_platforms = "Independant"
-hku_url = "http://hikyuu.org/"
+hayaku_platforms = "Independant"
+hayaku_url = "https://github.com/larrystd/hayaku-quant"
 
-hku_description = "Hikyuu Quant Framework for System Trading Analysis and backtester"
+hayaku_description = "Hayaku Quant Framework for System Trading Analysis and backtester"
 with open("./readme.md", encoding='utf-8') as f:
-    hku_long_description = f.read()
+    hayaku_long_description = f.read()
 
-hku_data_files = []
+hayaku_data_files = []
 
-packages = ['hikyuu']
-for root, dirs, files in os.walk('hikyuu'):
+packages = ['hayaku']
+for root, dirs, files in os.walk('hayaku'):
     for p in dirs:
         if p.find('__pycache__') < 0 and p.find('ipynb_checkpoints') < 0 \
                 and p.find('virtual_documents') < 0 and p.find('idea') < 0 and p.find('venv') < 0:
             packages.append(f'{root}/{p}')
 
+excluded_native_data = [
+    'ingest*.so', 'ingest*.pyd',
+    'libhayaku-ingest*.so', 'libhayaku-ingest*.so.*',
+    'libhayaku-ingest*.dylib', 'hayaku-ingest*.dll',
+    'realtime*.so', 'realtime*.pyd',
+    'libhayaku-realtime*.so', 'libhayaku-realtime*.so.*',
+    'libhayaku-realtime*.dylib', 'hayaku-realtime*.dll',
+    'libhayaku_abi_*',
+]
+# MySQL is disabled in the default core build. An explicitly MySQL-enabled wheel must opt in
+# to bundling its client until the storage adapter has a separate distribution.
+if os.environ.get('HAYAKU_PACKAGE_MYSQL_CLIENT') != '1':
+    excluded_native_data.extend(['libmysqlclient*', 'mysqlclient*.dll'])
+
 setup(
-    name=hku_name,
-    version=hku_version,
-    description=hku_description,
+    distclass=BinaryDistribution,
+    name=hayaku_name,
+    version=hayaku_version,
+    description=hayaku_description,
     # long_description_content_type="text/x-rst",
     long_description_content_type='text/markdown',
-    long_description=hku_long_description,
-    author=hku_author,
-    author_email=hku_author_email,
-    license=hku_license,
+    long_description=hayaku_long_description,
+    author=hayaku_author,
+    author_email=hayaku_author_email,
+    license=hayaku_license,
     license_files=['LICENSE.txt'],
-    keywords=hku_keywords,
-    platforms=hku_platforms,
-    url=hku_url,
+    keywords=hayaku_keywords,
+    platforms=hayaku_platforms,
+    url=hayaku_url,
     packages=packages,  # find_packages(),
     zip_safe=False,
     include_package_data=True,
@@ -91,7 +115,13 @@ setup(
             '*.png'
         ],
     },
-    data_files=hku_data_files,
+    # Keep the optional ingestion extension out of the default hayaku wheel even when it was
+    # built earlier in the same checkout. Its Python entry module remains available and reports
+    # a clear missing-extension error until the optional binary is installed separately.
+    exclude_package_data={
+        '': excluded_native_data,
+    },
+    data_files=hayaku_data_files,
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
@@ -123,13 +153,13 @@ setup(
     entry_points={
         # On win11, using the GUI mode times out immediately, so the download fails
         # 'gui_scripts': [
-        #     'HikyuuTDX=hikyuu.gui.HikyuuTDX:start',
+        #     'HayakuTDX=hayaku.gui.HayakuTDX:start',
         # ],
         'console_scripts': [
-            'HikyuuTDX=hikyuu.gui.HikyuuTDX:start',
-            'importdata=hikyuu.gui.importdata:main',
-            'dataserver=hikyuu.gui.dataserver:main',
-            'shmserver=hikyuu.gui.shmserver:main',
+            'HayakuTDX=hayaku.gui.HayakuTDX:start',
+            'importdata=hayaku.gui.importdata:main',
+            'dataserver=hayaku.gui.dataserver:main',
+            'shmserver=hayaku.gui.shmserver:main',
         ]
     },
     install_requires=requirements,

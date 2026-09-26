@@ -1,4 +1,4 @@
-.. py:currentmodule:: hikyuu
+.. py:currentmodule:: hayaku
 .. highlight:: python
 
 Basic Data Types

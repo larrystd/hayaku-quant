@@ -1,4 +1,4 @@
-.. py:currentmodule:: hikyuu
+.. py:currentmodule:: hayaku
 .. highlight:: python
 
 全局变量与常量定义
@@ -7,7 +7,7 @@
 全局变量
 ---------
 
-.. note:: 以下全局变量仅在 hikyuu 交互式工具中存在，hikyuu库中并无定义。
+.. note:: 以下全局变量仅在 hayaku 交互式工具中存在，hayaku库中并无定义。
 
 .. py:data:: sm
 

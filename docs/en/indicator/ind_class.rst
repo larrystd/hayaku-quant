@@ -1,4 +1,4 @@
-.. py:currentmodule:: hikyuu.indicator
+.. py:currentmodule:: hayaku.indicator
 .. highlight:: python
 
 Indicator

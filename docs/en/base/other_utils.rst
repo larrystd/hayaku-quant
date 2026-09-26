@@ -1,4 +1,4 @@
-.. py:currentmodule:: hikyuu
+.. py:currentmodule:: hayaku
 .. highlight:: python
 
 Miscellaneous and Auxiliary
@@ -54,16 +54,16 @@ Functions
     
     :param LOG_LEVEL level: the specified log printing level
 
-.. py:function:: hku_save(var, filename)
+.. py:function:: hayaku_save(var, filename)
 
-    Serialization: save a supported Hikyuu value type (such as Stock or KData) to the specified file in XML format.
+    Serialization: save a supported Hayaku value type (such as Stock or KData) to the specified file in XML format.
     
-    :param var: a variable of a hikyuu built-in type
+    :param var: a variable of a hayaku built-in type
     :param str filename: the specified file name
 
-.. py:function:: hku_load(filename)
+.. py:function:: hayaku_load(filename)
 
-    Read the variable saved by hku_save into var.
+    Read the variable saved by hayaku_save into var.
     
     :param str filename: the serialization file to be loaded.
     :return: the variable previously saved by serialization

@@ -1,10 +1,10 @@
 # Third-Party Licenses
 
-The C++ core of Hikyuu depends directly on the following open-source projects.
+The C++ core of Hayaku depends directly on the following open-source projects.
 Indirect (transitive) dependencies and Python-side dependencies are not listed
 here; for the Python dependencies see [requirements.txt](requirements.txt).
 
-Hikyuu itself is released under the [Apache License 2.0](LICENSE). Many thanks
+Hayaku itself is released under the [Apache License 2.0](LICENSE). Many thanks
 to all the open-source authors for their contributions.
 
 | Name           | Project                                                                                 | License                                                                                 |

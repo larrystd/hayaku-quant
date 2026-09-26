@@ -1,14 +1,14 @@
 # System、Strategy 与 Portfolio 行为基线
 
-本文档登记第 0 步直接复用或新增的行为基线。Hikyuu 已有大量逐笔精确断言，因此不再复制一套内容相同的 JSON 金标；现有 C++ 测试即为权威金标，Python 测试负责稳定导入面。
+本文档登记第 0 步直接复用或新增的行为基线。Hayaku 已有大量逐笔精确断言，因此不再复制一套内容相同的 JSON 金标；现有 C++ 测试即为权威金标，Python 测试负责稳定导入面。
 
 ## 1. 三组核心金标
 
 | 金标 | 权威测试 | 固定行为 |
 | --- | --- | --- |
-| 简单 System | `hikyuu_cpp/unit_test/hikyuu/trade_sys/system/test_Simple_SYS_for_base.cpp` | MA 交叉、非延迟/延迟买卖、逐笔日期、计划价、成交价、数量、费用、现金和来源组件 |
+| 简单 System | `hayaku_cpp/unit_test/hayaku/trade_sys/system/test_Simple_SYS_for_base.cpp` | MA 交叉、非延迟/延迟买卖、逐笔日期、计划价、成交价、数量、费用、现金和来源组件 |
 | 风控 System | `test_Simple_SYS_for_st.cpp`、`test_Simple_SYS_for_tp.cpp`、`test_Simple_SYS_for_pg.cpp`、`test_Simple_SYS_for_ev.cpp`、`test_Simple_SYS_for_cn.cpp` | 止损、止盈、目标价、环境和条件对开仓/平仓的影响 |
-| Portfolio | `hikyuu_cpp/unit_test/hikyuu/trade_sys/portfolio/test_PF_for_base.cpp` 及同目录 PF 测试 | 多 System 调度、Selector、AllocateFunds、组合账户和延迟交易 |
+| Portfolio | `hayaku_cpp/unit_test/hayaku/trade_sys/portfolio/test_PF_for_base.cpp` 及同目录 PF 测试 | 多 System 调度、Selector、AllocateFunds、组合账户和延迟交易 |
 
 这些测试使用仓库内 `test_data/`，不依赖用户真实行情库或网络。其断言直接比较领域对象和数值，避免 JSON 序列化格式变化造成无意义差异。
 
@@ -28,8 +28,8 @@
 | TradeRequest 序列化 | `test_export.cpp` | 已覆盖 |
 | System 序列化 | `test_export.cpp` | 已覆盖 |
 | SystemPart 名称和枚举 | `test_SystemPart.cpp` | 已覆盖 |
-| Strategy 数量路由 | `hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp` | 本阶段新增 |
-| Python 稳定入口 | `hikyuu/test/test_public_api.py` | 本阶段新增 |
+| Strategy 数量路由 | `hayaku_cpp/unit_test/hayaku/strategy/test_Strategy.cpp` | 本阶段新增 |
+| Python 稳定入口 | `hayaku/test/test_public_api.py` | 本阶段新增 |
 
 ## 3. Strategy 新增基线
 
@@ -45,7 +45,7 @@
 
 ### 4.1 正数订单没有使用归一化数量
 
-文件：`hikyuu_cpp/hikyuu/strategy/Strategy.cpp`
+文件：`hayaku_cpp/hayaku/strategy/Strategy.cpp`
 
 当前代码计算了 `buy_num`：
 
@@ -62,7 +62,7 @@ double buy_num = int64_t(num / min_trade_num) * min_trade_num;
 
 ### 4.2 普通负数订单会变成卖出全部
 
-文件：`hikyuu_cpp/hikyuu/strategy/Strategy.cpp`
+文件：`hayaku_cpp/hayaku/strategy/Strategy.cpp`
 
 当前判断：
 
@@ -83,7 +83,7 @@ else if ((sell_num + num) < min_trade_num) {
 
 ### 4.3 `open_spend_time` 绑定到错误函数
 
-文件：`hikyuu_pywrap/main.cpp`
+文件：`hayaku_pywrap/main.cpp`
 
 `open_spend_time` 当前绑定到了 `close_spend_time`。这是独立的绑定错误，后续应单独修复并增加 Python 测试。
 
@@ -93,11 +93,11 @@ else if ((sell_num + num) < min_trade_num) {
 
 | 命令 | 结果 |
 | --- | --- |
-| `./op.sh build` | 通过，生成 `hikyuu/cpp/core310.so` |
+| `./op.sh build` | 通过，生成 `hayaku/cpp/core310.so` |
 | `./op.sh small-test` | 41/41 cases，3288/3288 assertions |
 | `./op.sh unit-test` | 810/810 cases，209129/209129 assertions |
 | `./op.sh python-test` | 45/45 tests |
-| `./op.sh import-test` | Python 3.10.21、Hikyuu 2.8.2 导入通过 |
+| `./op.sh import-test` | Python 3.10.21、Hayaku 2.8.2 导入通过 |
 
 ## 6. 后续使用规则
 

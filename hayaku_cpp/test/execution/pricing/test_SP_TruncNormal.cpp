@@ -1,0 +1,29 @@
+/*
+ *  Copyright (c) 2025 hikyuu.org
+ *
+ *  Created on: 2025-10-25
+ *      Author: fasiondog
+ */
+
+#include "test_config.h"
+#include <data/DataRuntime.h>
+#include <execution/pricing/SlippageModels.h>
+
+using namespace hayaku;
+
+/**
+ * @defgroup test_Slippage test_Slippage
+ * @ingroup test_hayaku_trade_sys_suite
+ * @{
+ */
+
+/** @par Test points */
+TEST_CASE("test_SP_TruncNormal") {
+    auto sp = SP_TruncNormal(0.0, 0.1);
+    CHECK_EQ(sp->name(), "SP_TruncNormal");
+
+    CHECK_GE(sp->getRealBuyPrice(Datetime(202201010930), 10.0), 10.0);
+    CHECK_LE(sp->getRealSellPrice(Datetime(202201010930), 10.0), 10.0);
+}
+
+/** @} */

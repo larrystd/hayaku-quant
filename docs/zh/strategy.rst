@@ -1,7 +1,7 @@
 策略引擎
 ========
 
-Python 策略边界由 ``hikyuu.strategy`` 中的三个显式值类型/门面构成：
+Python 策略边界由 ``hayaku.strategy`` 中的三个显式值类型/门面构成：
 
 ``StrategyDefinition``
     不可变的策略组件图。至少显式传入资金管理组件和信号组件；环境、条件、止损、止盈、
@@ -18,9 +18,9 @@ Python 策略边界由 ``hikyuu.strategy`` 中的三个显式值类型/门面构
 
 .. code-block:: python
 
-    from hikyuu import Query, open_session
-    from hikyuu.execution import AccountConfig
-    from hikyuu.strategy import BacktestRequest, StrategyDefinition, StrategyEngine
+    from hayaku import Query, open_session
+    from hayaku.execution import AccountConfig
+    from hayaku.strategy import BacktestRequest, StrategyDefinition, StrategyEngine
 
     # money_manager 与 signal 可由内置组件构造器或显式 crtMM/crtSG 扩展工厂创建。
     definition = StrategyDefinition(money_manager, signal, name="demo")
@@ -37,11 +37,11 @@ Python 策略边界由 ``hikyuu.strategy`` 中的三个显式值类型/门面构
 
 组件基类以及 ``crtCN``、``crtEV``、``crtMM``、``crtPG``、``crtSG``、``crtSP``、
 ``crtST``、``crtMF``、``crtSCFilter`` 和 ``crtNorm`` 工厂位于
-``hikyuu.strategy``，不会再注入包顶层。更底层的扩展协议位于 ``hikyuu.spi``。
+``hayaku.strategy``，不会再注入包顶层。更底层的扩展协议位于 ``hayaku.spi``。
 
 已删除的运行时
 --------------
 
-Python 的 ``Strategy``/``System``/``Portfolio`` 运行时绑定以及 ``hikyuu.trade_sys`` 包已经
-删除。数据服务和导入控制通过 ``hikyuu.advanced`` 显式使用；账户执行属于
-``hikyuu.execution``。新接口不再提供 ``TradeManager`` 属性，也不再隐式创建进程级账户。
+Python 的 ``Strategy``/``System``/``Portfolio`` 运行时绑定以及 ``hayaku.trade_sys`` 包已经
+删除。数据服务和导入控制通过 ``hayaku.advanced`` 显式使用；账户执行属于
+``hayaku.execution``。新接口不再提供 ``TradeManager`` 属性，也不再隐式创建进程级账户。

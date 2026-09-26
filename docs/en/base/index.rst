@@ -1,7 +1,7 @@
 Infrastructure
 ==============
 
-.. py:module:: hikyuu
+.. py:module:: hayaku
 
 
 .. toctree::

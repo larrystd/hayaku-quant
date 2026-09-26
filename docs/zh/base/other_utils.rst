@@ -1,4 +1,4 @@
-.. py:currentmodule:: hikyuu
+.. py:currentmodule:: hayaku
 .. highlight:: python
 
 杂项或辅助
@@ -54,16 +54,16 @@
     
     :param LOG_LEVEL level: 指定的日志打印级别
 
-.. py:function:: hku_save(var, filename)
+.. py:function:: hayaku_save(var, filename)
 
-    序列化，将hikyuu内建类型的变量（如Stock、TradeManager等）保存在指定的文件中，格式为XML。
+    序列化，将hayaku内建类型的变量（如Stock、TradeManager等）保存在指定的文件中，格式为XML。
     
-    :param var: hikyuu内建类型的变量
+    :param var: hayaku内建类型的变量
     :param str filename: 指定的文件名
 
-.. py:function:: hku_load(filename)
+.. py:function:: hayaku_load(filename)
 
-    将通过 hku_save 保存的变量，读取到var中。
+    将通过 hayaku_save 保存的变量，读取到var中。
     
     :param str filename: 待载入的序列化文件。
     :return: 之前被序列化保存的文件

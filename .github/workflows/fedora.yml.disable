@@ -19,15 +19,15 @@ jobs:
         uses: actions/checkout@v4
 
       # 步骤2：构建Fedora镜像（宿主Ubuntu上执行）
-      - name: Build hikyuu Fedora image
+      - name: Build hayaku Fedora image
         run: |
           # 构建镜像（指定Dockerfile路径）
-          docker build -f docker/Dockerfile_dev_fedora -t hikyuu-fedora:latest .
+          docker build -f docker/Dockerfile_dev_fedora -t hayaku-fedora:latest .
           # 验证镜像存在
-          docker images | grep hikyuu-fedora
+          docker images | grep hayaku-fedora
 
       # 步骤3：在构建好的容器中执行测试（通过docker run手动启动容器）
-      - name: Run tests in hikyuu Fedora container
+      - name: Run tests in hayaku Fedora container
         run: |
           # 用docker run启动容器，挂载当前目录到容器内的/app（确保路径一致）
           # --rm：容器退出后自动删除
@@ -36,13 +36,13 @@ jobs:
           docker run --rm \
             -v $GITHUB_WORKSPACE:/app \
             -w /app \
-            hikyuu-fedora:latest \
+            hayaku-fedora:latest \
             bash -ic "
               # 在容器内执行的命令
               ls;
               xmake f -c -k shared --feedback=n -y;
               xmake -b core;
               export PYTHONPATH=.:$PYTHONPATH;
-              python hikyuu/test/test.py;
+              python hayaku/test/test.py;
               xmake r small-test;
             "

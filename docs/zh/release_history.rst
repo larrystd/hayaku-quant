@@ -15,7 +15,7 @@
     - test(data): 增加针对真实通达信数据导入的集成测试
 
 2. 缺陷修复
-    - fixed HikyuuTdx 无法申请试用许可，字体显示过大
+    - fixed HayakuTdx 无法申请试用许可，字体显示过大
 
 
 2.6.6 - 2025年7月29日
@@ -39,8 +39,8 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. 新增功能与优化
-    - hikyuutdx 中下载历史财务与板块信息可选
-    - hikyuutdx 按网友维新提供的思路增加数据校验
+    - hayakutdx 中下载历史财务与板块信息可选
+    - hayakutdx 按网友维新提供的思路增加数据校验
     - 新增指标 BARSLASTCOUNT
     - 优化行情服务器连接重试逻辑, 防止数据未加载完毕时退出需要等待较长时间
     - 新增 SE_EvaluateOptimal 选择器，允许用户使用自定义评估函数进行寻优
@@ -105,7 +105,7 @@
     - Strategy 优化 getKData 函数处理未来时间的逻辑和参数默认值
     - 为 MultiFactorBase 添加并行计算选项 "parallel" 参数，默认值为 true
     - 优化 SimplePortfolio 调仓逻辑: 保护对延迟买卖系统可能造成的未来操作及其他
-    - add python util func: hku_benchmark
+    - add python util func: hayaku_benchmark
     - 优化 AF, 对于当日买入的股票，延迟到下一个交易日开盘时处理，避免在当天卖出
     - 调整 PRICELIST 指标, 只允许作为子节点, 不再接收以Indicator作为输入，容易造成误解（语义不符）
 
@@ -158,7 +158,7 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. 新增特性
-    - 调整数据加载策略, load_hikyuu 中传入的加载参数优先于默认配置文件, 同时增加 preload_num 参数控制预加载数量
+    - 调整数据加载策略, load_hayaku 中传入的加载参数优先于默认配置文件, 同时增加 preload_num 参数控制预加载数量
     - 新增指标 KALMAN(卡尔曼滤波), TR(真实波动幅度)
     - 优化 Hub 功能
         - 改进 help_part 以便 get_part 默认参数
@@ -173,7 +173,7 @@
 2. 功能优化
     - WEAVE、SG 支持多参数或列表输入
     - 优化 crtMM 函数的卖出数量接口, get_sell_num 增加默认值, 可为 None
-    - Hikyuutdx 分钟级数据导入时增加保护; 补充创业板302段
+    - Hayakutdx 分钟级数据导入时增加保护; 补充创业板302段
     - 为 evplot 和 cnplot 函数增加颜色和透明度参数
     - 支持macosx下 hub 使用c++部件
     - 对 null stock 调用 setKRecordList 增加保护
@@ -215,8 +215,8 @@ fixed python 3.12 版本以下地域板块导入失败
     - 新增 AF_FixedWeightList
 
 2. 功能优化
-    - HikyuuTDX 优化 增加提示信息: HDF5存储不可同时读写; 数据导入尝试对增加对服务器的校验，防止错误数据导入; 更新地域板块获取详情,优化板块导入; 添加及调整北证50指数导入
-    - 调整库加载方式, 支持直接导入库，通过 load_hikyuu 进行数据加载
+    - HayakuTDX 优化 增加提示信息: HDF5存储不可同时读写; 数据导入尝试对增加对服务器的校验，防止错误数据导入; 更新地域板块获取详情,优化板块导入; 添加及调整北证50指数导入
+    - 调整库加载方式, 支持直接导入库，通过 load_hayaku 进行数据加载
     - 调整 MM 子类接口 buyNotify、sellNotify 为_buyNotify、_sellNotify, 增加连续交易计数
     - 改进 HSL, COST, LIUTONGPAN 指标计算
     - 优化 INDEXC/INDEXO 等为使用对应的大盘指数
@@ -247,7 +247,7 @@ fixed python 3.12 版本以下地域板块导入失败
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. 新增特性
-    - HikyuuTdx 新增添加部分 tdx 880指数导入: 880001/880002 等
+    - HayakuTdx 新增添加部分 tdx 880指数导入: 880001/880002 等
     - 新增 INDEXO/INDEXH/INDEXL/INDEXC/INDEXA/INDEXV 大盘指标
     - 新增 REPLACE/ISNA/ISINF/ISINFA 辅助数据处理指标
     - interactive 工具新增 select2 快捷方法，用于导出最后时刻指定证券的所有指定指标值为 DataFrame
@@ -287,7 +287,7 @@ fixed python 3.12 版本以下地域板块导入失败
     - 改进 Null, 以便 double/float 类型可以使用 val == Null<double>() 形式判断空值
     - KData 相等比较时补充 stock 为空但 query 不同的情况，此时认为相等
     - 消除 matplotlib 下指标绘制时出现的 "linestyle" 告警
-    - 更换项目 logo, 改进 HikyuuTdx 任务栏图标显示
+    - 更换项目 logo, 改进 HayakuTdx 任务栏图标显示
 
 
 2.2.4 - 2024年12月8日
@@ -296,7 +296,7 @@ fixed python 3.12 版本以下地域板块导入失败
 1. 支持 Macosx 及 mac arm 平台安装包
 2. HDF5/MySQL 存储支持自定义板块，参见 StockManager add_block/remove_block 方法
 3. 优化 MySQL 数据库重连
-4. HikyuuTdx 在交易时段导入数据时给出弹出确认警告
+4. HayakuTdx 在交易时段导入数据时给出弹出确认警告
 
 
 2.2.3 - 2024年11月3日
@@ -304,7 +304,7 @@ fixed python 3.12 版本以下地域板块导入失败
 
 1. fixed linux 下滚动寻优系统崩溃
 2. SYS_WalkForward 默认寻优算法调整为按账户年化收益率排序寻优
-3. 微调优化 HikyuuTDX 界面
+3. 微调优化 HayakuTDX 界面
 
 
 2.2.2 - 2024年11月1日
@@ -318,7 +318,7 @@ fixed python 3.12 版本以下地域板块导入失败
 6. 改进打包，多版本 python 支持同时包含于一个包中
 7. 增强 VALUE/PRICELIST 指标，可同时指定对应的参考日期
 8. 增加 df_to_ind 函数，通过指定 pandas.DataFrame 中的数据列及日期列名称，将相关列转为指标数据
-9. 初次使用 HikyuuTdx 导入数据时，根据配置路径尝试自动创建相关目录
+9. 初次使用 HayakuTdx 导入数据时，根据配置路径尝试自动创建相关目录
 
 
 2.2.1 - 2024年10月1日
@@ -327,7 +327,7 @@ fixed python 3.12 版本以下地域板块导入失败
 1. fixed strategy 实盘发出信号失败
 2. fixed c++ demo2 run failed
 3. 优化 python 中 strategy 无法 ctrl+C 终止
-4. 优化 HikyuuTdx GUI 布局, 支持缩放
+4. 优化 HayakuTdx GUI 布局, 支持缩放
 5. 优化 Strategy 上下文中 ktypelist 为空时, 认为使用全部K线类型
 
 
@@ -343,7 +343,7 @@ fixed python 3.12 版本以下地域板块导入失败
 2. 功能优化
     - 优化 SpotAgent
     - 解决 hub 中自定义继承类接口在另一个part中引用时丢失的问题
-    - 调整 HikyuuTDX 超时时长，避免 linux 超时时等待时间过长
+    - 调整 HayakuTDX 超时时长，避免 linux 超时时等待时间过长
 
 3. 缺陷修复
     - fixed etf 缩扩股，调整权息表以适应缩扩股
@@ -368,10 +368,10 @@ fixed python 3.12 版本以下地域板块导入失败
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. fixed 分钟级别行情数据更新错误
-2. 优化提速 HikyuuTdx 数据下载
+2. 优化提速 HayakuTdx 数据下载
 3. 优化数据加载策略，优先加载同一K线类型数据
 4. 优化内部使用线程数节省系统资源
-5. hikyuu.interactive 可以使用环境变量控制部分数据加载策略。可在使用 .py 文件进行策略分析时，节省首次执行时间。
+5. hayaku.interactive 可以使用环境变量控制部分数据加载策略。可在使用 .py 文件进行策略分析时，节省首次执行时间。
 6. 完善 Strategy 和 StrategyContext
 7. fixed OperatorSelector 序列化时内存泄漏
 
@@ -379,7 +379,7 @@ fixed python 3.12 版本以下地域板块导入失败
 2.1.3 - 2024年8月27日
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. fixed 未安装 xtquant 时无法使用 HikyuuTdx
+1. fixed 未安装 xtquant 时无法使用 HayakuTdx
 2. 调整 codepre 配置，补充上证ETF基金
 
 
@@ -398,7 +398,7 @@ fixed python 3.12 版本以下地域板块导入失败
 
 1. 预加载历史财务信息
 2. fixed windows下 MySQL blob 数据读取错误导致读取历史财务信息时消耗巨大内存
-3. HikyuuTdx 读取配置文件放在 output 重定向之前，防止配置文件读取失败没有提示
+3. HayakuTdx 读取配置文件放在 output 重定向之前，防止配置文件读取失败没有提示
 
 
 2.1.0 - 2024年6月18日
@@ -419,7 +419,7 @@ fixed python 3.12 版本以下地域板块导入失败
 
 3. 功能优化
     - 优化 INSUM, BLOCKSETNUM 可直接输入 stock list, 可以忽略 query 参数
-    - 优化 HikyuuTDX，避免目录不存在时导入
+    - 优化 HayakuTDX，避免目录不存在时导入
     - 优化 SE_MultiFactor 以更好的适应 PF
     - 优化 performance 绘图，参考标的累积收益率使用等比后复权计算
     - 优化程序退出：非内存泄漏检测模式下由OS系统快速释放内存资源
@@ -457,7 +457,7 @@ fixed python 3.12 版本以下地域板块导入失败
 2.0.6 - 2024年5月13日
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. 安装包HikyuuTDX不采用gui模式，win11下GUI模式会造成直接timeout
+1. 安装包HayakuTDX不采用gui模式，win11下GUI模式会造成直接timeout
 2. 策略部件 python 导出时，支持 python 的动态属性，在 hub 中支持
 3. fixed _Selector 缺失赋值构造函数，导致 clone 失败
 
@@ -482,7 +482,7 @@ fixed python 3.12 版本以下地域板块导入失败
     - fixed ETF 权息缺少扩缩股
     - fixed Portfolio 在非延迟买入、延迟卖出的场景下对账错误
     - fixed matplotlib performance 绘制时，当前收益率显示显示错误
-    - fixed requirements.txt 增加tdqm, 缺失可能导致 windows HikyuuTdx 无法直接命令启动
+    - fixed requirements.txt 增加tdqm, 缺失可能导致 windows HayakuTdx 无法直接命令启动
 
 2. 其他改进
     - Stock 添加获取所属板块列表方法 get_belong_to_block_list
@@ -527,9 +527,9 @@ fixed python 3.12 版本以下地域板块导入失败
 4. hub 中的 prtflo 未 pf, 和内部叫法统一
 5. 调整 MF_MultiFactor getScores 方法命名(原为 getScore )，并调整为在指定日期不存在数据时返回空列表（原为抛出异常）
 6. fixed python 中 TradeRecordList/PositionRecordList 中 to_df 方法失效
-7. hku_catch 中忽略对 KeyboardInterrupt 的捕获，避免 python 中 Ctrl-C 无法终止
+7. hayaku_catch 中忽略对 KeyboardInterrupt 的捕获，避免 python 中 Ctrl-C 无法终止
 8. crtSL 更名为 crtSP (移滑价差算法)，和内部其他叫法统一
-9. fixed 缺失 hku_save / hku_load 函数，导致示例运行失败
+9. fixed 缺失 hayaku_save / hayaku_load 函数，导致示例运行失败
 10. fixed crtMM 补充缺失的接口
 11. 更新其他运行失败示例，如 OrderBroker (pybind需要先创建对象再传入方法)
 12. python 中缺失 CAPITAL (流通盘), 原可使用 LIUTONGPAN, 但缺失对 CAPITAL 的同名指定
@@ -583,7 +583,7 @@ SpendTimer 改输出到 std::cout ，以便 jupyter 可以捕获输出
     - 系统有效条件组件 Condition 支持逻辑操作（+,-,*,/,&,|），及支持 _addValid 时附带额外数值（后续版本会在其他系统部件中增加此功能）
     - 增加 EV_bool 系统环境组件，python 中增加 ev.plot 绘制 ev
     - ev 增加线程保护，ev 通常作为公用组件，只计算一次，需要增加线程保护
-    - hikyuutdx 导入工具过滤长度非 6 位的证券代码，防止导入速度严重变慢
+    - hayakutdx 导入工具过滤长度非 6 位的证券代码，防止导入速度严重变慢
 
 3. 缺陷修复
     - fixed 相关系数指标 CORR
@@ -596,7 +596,7 @@ SpendTimer 改输出到 std::cout ，以便 jupyter 可以捕获输出
 1.3.4 - 2024年2月1日
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. fixed windows 下第三方依赖 hikyuu 的 C++ 代码中无法使用 KData
+1. fixed windows 下第三方依赖 hayaku 的 C++ 代码中无法使用 KData
 2. 调整 matplotlib font manager 日志级别
 
 
@@ -616,7 +616,7 @@ SpendTimer 改输出到 std::cout ，以便 jupyter 可以捕获输出
     - 整体从 boost.python 切换至 pybind11，以便在 C++ 部分中可以方便的进行 GIL 解锁，并行调用 python 代码
     - 优化权息数据加载速度，尤其是使用 MYSQL 引擎时，缩短初始化加载周期从 6s 至 1s
     - Block信息改为使用 MySQL/SQLite 方式，原有钱龙ini格式支持保留，但需要自行修改配置文件，
-      且使用 HikyuuTdx 进行配置时，使用 hdf5 存储时，配置文件会被自动更新为使用 SQLite 方式。
+      且使用 HayakuTdx 进行配置时，使用 hdf5 存储时，配置文件会被自动更新为使用 SQLite 方式。
       如果想继续使用钱龙格式，需使用 importdata 进行导入，且需自行调用 tools/update_block_info.py 更新板块信息。
 
 2. 功能增强
@@ -627,7 +627,7 @@ SpendTimer 改输出到 std::cout ，以便 jupyter 可以捕获输出
     - Performance 增加单笔最大盈利/亏损比例统计
     - add CN_Bool 布尔信号指标系统有效条件
     - 增强Condiciton, 增加get_datetime_list, get_valuse方法
-    - hikyuutdx未选择数据时添加提示
+    - hayakutdx未选择数据时添加提示
     - add Performance.to_df in python
     - Datetime 增加 ticks 方法，获取距最小日期过去的微秒数
 
@@ -687,7 +687,7 @@ SpendTimer 改输出到 std::cout ，以便 jupyter 可以捕获输出
 
 1. 稳定性与兼容性
     - 修复了 setup.py 更新编译模式时的问题，确保并行编译参数能够正常生效
-    - 对 HikyuuTdx 数据下载进行了优化，增加了超时处理，以防止网络连接问题导致进度停滞
+    - 对 HayakuTdx 数据下载进行了优化，增加了超时处理，以防止网络连接问题导致进度停滞
     - 增加了对 pytdx 连接失败的检测，以便记录相关日志
 
 2. 算法优化
@@ -740,7 +740,7 @@ fixed MySQL引擎只能导入数据，但实际无法使用
 1.2.6 - 2022年11月18日
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. 新增发布 linux 下 pypi 包，linux 下也可以通过 pip install hikyuu 进行安装
+1. 新增发布 linux 下 pypi 包，linux 下也可以通过 pip install hayaku 进行安装
 2. 获取股票代码表失败时增加保护
 3. 增加GUI异常保护
 4. fixed linux 下 mysql 数据库引擎报错（数据表名称都改为小写）
@@ -755,8 +755,8 @@ fixed MySQL引擎只能导入数据，但实际无法使用
 2. 改进数据下载，修复 pytdx 数据下载缺失部分数据
 3. 恢复财务数据下载
 4. 增加 start_insight_sdk.py, 从华泰 insight 获取实时数据
-5. 完善 hikyuuTdx 中 nng 消息的启停与释放
-6. hku_catch 增加指示重新抛出异常的参数
+5. 完善 hayakuTdx 中 nng 消息的启停与释放
+6. hayaku_catch 增加指示重新抛出异常的参数
 7. 修正 demo
 
 
@@ -778,7 +778,7 @@ fixed MySQL引擎只能导入数据，但实际无法使用
         T1:=HHVBARS(H,120); {120内的最高点距今天的天数}
         L120:=LLV(L,T1+1); {120内的最高点至今，这个区间的最低点}
 
-    现在，在 Hikyuu 中，也可以使用指标作为参数::
+    现在，在 Hayaku 中，也可以使用指标作为参数::
         
         T1 = HHVBARS(H, 120)
         L120 = LLV(L, T1+1)
@@ -851,16 +851,16 @@ fixed MySQL引擎只能导入数据，但实际无法使用
 1.2.0 - 2022年1月11日
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. HikyuuTdx 执行导入时自动保存配置，避免第一次使用 hikyuu 必须退出先退出 Hikyuutdx 的问题
+1. HayakuTdx 执行导入时自动保存配置，避免第一次使用 hayaku 必须退出先退出 Hayakutdx 的问题
 2. 增加创业板 301 开头股票代码
-3. 修复 window 显示缩放时 Hikyuutdx 显示不全的问题
+3. 修复 window 显示缩放时 Hayakutdx 显示不全的问题
 4. 修复 HHVLLV/LLVBARS/HHVBARS 计算错误
 5. 优化指标重设上下文时的计算，上下文未变化的情况下由指标本身计算标识判断是否重计算
 6. 修复分笔、分时数据转换 to_df 函数无效的问题
-7. HikyuuTdx 导入至 hdf5 时增加数据保护，遇到出错的表直接删除，下次可自动恢复导入
+7. HayakuTdx 导入至 hdf5 时增加数据保护，遇到出错的表直接删除，下次可自动恢复导入
 8. 修复使用通达信的权息数据后复权失效的问题
-9. remove hikyuu_extern_libs submodule, windows下HDF5, mysql改用下载依赖包的方式
-10. 优化 HikyuuTDX GUI控制台日志，捕获子进程日志输出
+9. remove hayaku_extern_libs submodule, windows下HDF5, mysql改用下载依赖包的方式
+10. 优化 HayakuTDX GUI控制台日志，捕获子进程日志输出
 
 
 1.1.9 - 2021年11月11日
@@ -879,7 +879,7 @@ fixed MySQL引擎只能导入数据，但实际无法使用
 
 1.1.8 - 2021年2月27日
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-1. HikyuuTDX 切换mysql导入时错误提示目录不存在
+1. HayakuTDX 切换mysql导入时错误提示目录不存在
 2. tdx本地导入修复，并支持导入MySQL
 
 
@@ -893,11 +893,11 @@ fixed MySQL引擎只能导入数据，但实际无法使用
 1.1.6 - 2020年2月5日
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. 优化 hikyuu.interactive 启动加载速度
-2. 完善 HikyuuTDX 预加载设置参数，可根据机器内存大小自行设置需加载至内存的K线数据，加快 hikyuu 运行速度
-3. HikyuuTDX 支持定时行情采集，定时采集服务运行时，hikyuu.interactive 自动连接采集服务获取最新的 K 线数据
-4. HikyuuTDX 支持定时导入，避免每日手工导入数据的繁琐
-5. hikyuu.interactive 每日0:00定时重新加载内存数据，可24小时运行无需终止
+1. 优化 hayaku.interactive 启动加载速度
+2. 完善 HayakuTDX 预加载设置参数，可根据机器内存大小自行设置需加载至内存的K线数据，加快 hayaku 运行速度
+3. HayakuTDX 支持定时行情采集，定时采集服务运行时，hayaku.interactive 自动连接采集服务获取最新的 K 线数据
+4. HayakuTDX 支持定时导入，避免每日手工导入数据的繁琐
+5. hayaku.interactive 每日0:00定时重新加载内存数据，可24小时运行无需终止
 6. fixed 使用MySQL时无法按日期查询获取K线数据
 
 
@@ -957,7 +957,7 @@ fixed MySQL引擎只能导入数据，但实际无法使用
 1.1.1 - 2019年4月8日
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. HikyuuTDX 新增当前财务信息及历史财务信息下载
+1. HayakuTDX 新增当前财务信息及历史财务信息下载
 2. Stock 新增 getFinanceInfo、getHistoryFinanceInfo 支持当前及历史财务信息
 3. 新增 LIUTONGPAN（流通盘）、HSL（换手率）、COUNT、IF、SUM、NOT、EXP、SGN、ABS、MAX、MIN指标
 4. Kdata添加便捷方法获取OPEN/CLOSE等基本行情数据，如::
@@ -1030,7 +1030,7 @@ fixed MySQL引擎只能导入数据，但实际无法使用
 4. TradeManager增加直接加入交易记录的方法（addTradeRecord）。
 5. 升级使用的依赖库 boost、libmysql、hdf5
 6. 使用xmake重构编译工程并调整代码结构
-7. 试验linux下pip打包安装。linux下可使用 pip install hikyuu 命令完成安装，安装前需安装依赖的软件包（sudo apt-get install -y libhdf5-dev libhdf5-serial-dev libmysqlclient-dev）
+7. 试验linux下pip打包安装。linux下可使用 pip install hayaku 命令完成安装，安装前需安装依赖的软件包（sudo apt-get install -y libhdf5-dev libhdf5-serial-dev libmysqlclient-dev）
 8. 支持MacOSX下源码编译
 
 
@@ -1073,7 +1073,7 @@ fixed MySQL引擎只能导入数据，但实际无法使用
 1. 完善Python帮助，以便在Shell中直接使用 help(cmd) 查询
 2. 修改数据驱动，支持直接使用Python编写数据驱动。实现使用 pytdx 作为K线数据驱动的示例，详见安装目录下“data_driver\pytdx_data_driver.py”。如有需要使用MySQL、CSV等存储K线数据的，可参考该示例自行实现。
 3. 优化了初始化过程，可不使用ini文件进行初始化，如实现自己的客户端，可参考“interactive.py”中初始化过程。
-4. 简化了数据配置文件， **如安装了1.0.5及其之前的版本，需要重新运行 python hku_config.py 进行配置，或手工修改配置文件** 。 
+4. 简化了数据配置文件， **如安装了1.0.5及其之前的版本，需要重新运行 python hayaku_config.py 进行配置，或手工修改配置文件** 。
 5. 修复Bug，TradeManager::getProfitCurve未对长度为0的dates进行保护
 6. 修正系统止损策略部件的缩写不一致问题
 
@@ -1124,11 +1124,11 @@ fixed MySQL引擎只能导入数据，但实际无法使用
     td = my_tm.buy(Datetime('2017-Jan-03 00:00:00'), sm['SZ000001'], 9.11, 100, 0, 0, 0, 8)
     td = my_tm.sell(Datetime('2017-Feb-21 00:00:00'),sm['SZ000001'], 9.6, 100, 0, 0, 0, 8)
     
-4、修正hku_config.py在指定的数据目录已经存在的情况下出现的错误。
+4、修正hayaku_config.py在指定的数据目录已经存在的情况下出现的错误。
 
 5、上传并修改直接从网络下载权息文件的importdata.py（代替使用钱龙下载权限数据），方便用户使用。使用前提，需要在系统PATH中能够找到unrar.exe文件（通常在winrar安装路径下）。通过在cmd中执行 python importdata.py 命令，代替直接执行importdata.exe。
 
-6、解决Ubuntu下的编译问题，配合网友 pchaos 生成 docker 解决方案，如希望在Linux环境下运行hikyuu，可使用pchaos提供的docker解决方案，地址：`<https://gitee.com/pchaos/Docker-hikyuu>`_
+6、解决Ubuntu下的编译问题，配合网友 pchaos 生成 docker 解决方案，如希望在Linux环境下运行hayaku，可使用pchaos提供的docker解决方案，地址：`<https://gitee.com/pchaos/Docker-hayaku>`_
 
 
 1.0.3 - 2017年7月3日
@@ -1189,8 +1189,8 @@ fixed MySQL引擎只能导入数据，但实际无法使用
 1.0.1 - 2017年5月30日
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. 改变安装方式，支持 pip install hikyuu
-2. 完善快速配置脚本 hku_config.py
+1. 改变安装方式，支持 pip install hayaku
+2. 完善快速配置脚本 hayaku_config.py
 3. 增加特殊的资金管理策略 MM_Nothing（不做资金管理，方便对比测试）
 4. 修复 tushare 升级后，无法从 tushare 获取实时日线更新的问题
 5. 修改 realtimeUpdate，将允许的更新间隔作为函数参数，防止被sina或qq设为黑名单

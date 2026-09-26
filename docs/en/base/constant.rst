@@ -1,4 +1,4 @@
-.. py:currentmodule:: hikyuu
+.. py:currentmodule:: hayaku
 .. highlight:: python
 
 Global Variables and Constants
@@ -7,7 +7,7 @@ Global Variables and Constants
 Global Variables
 ----------------
 
-.. note:: The following global variables exist only in the hikyuu interactive tools; they are not defined in the hikyuu library.
+.. note:: The following global variables exist only in the hayaku interactive tools; they are not defined in the hayaku library.
 
 .. py:data:: sm
 

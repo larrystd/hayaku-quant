@@ -1,6 +1,6 @@
-# Hikyuu 接口收敛与边界重构方案
+# Hayaku 接口收敛与边界重构方案
 
-本文档针对 Hikyuu 当前“公开接口过多、层次边界不清晰、C++ 内部能力几乎原样暴露到 Python”的问题，给出一套可分步实施、可回滚、可验证的重构方案。
+本文档针对 Hayaku 当前“公开接口过多、层次边界不清晰、C++ 内部能力几乎原样暴露到 Python”的问题，给出一套可分步实施、可回滚、可验证的重构方案。
 
 目标不是重写算法，也不是减少策略组件的组合能力，而是：
 
@@ -86,7 +86,7 @@
 | --- | --- | --- | --- |
 | Public API | 普通 C++/Python 用户 | 保持兼容、版本化弃用 | `get_stock`、指标工厂、运行回测 |
 | Extension SPI | 自定义指标、策略部件、数据源、券商插件作者 | 文档化协议，允许少量纯虚方法 | `_calculate` 对应的受控扩展协议 |
-| Internal API | Hikyuu 自身模块 | 不保证兼容，不直接绑定到 Python | 预加载任务、延迟订单处理、PF 内部强平 |
+| Internal API | Hayaku 自身模块 | 不保证兼容，不直接绑定到 Python | 预加载任务、延迟订单处理、PF 内部强平 |
 
 新增抽象接口必须满足至少一个条件：
 
@@ -113,8 +113,8 @@
 ## 4. 分阶段实施步骤
 
 > 执行状态更新：第 0～3 步已完成。旧 `StockManager/TradeManager/System` 体系、
-> 兼容转发和旧目录已删除，生产代码和测试已迁移到 `hikyuu_cpp/src`和
-> `hikyuu_cpp/test`。最终结果、验收数据和目录树以
+> 兼容转发和旧目录已删除，生产代码和测试已迁移到 `hayaku_cpp/src`和
+> `hayaku_cpp/test`。最终结果、验收数据和目录树以
 > [第 3 步：最终架构冻结与旧体系退役](refactor/step-3-progress.md)为准。
 > 下述原第 1～8 步保留为技术拆分参考，不再作为最终交付定义。
 
@@ -127,22 +127,22 @@
 | 文件 | 动作 |
 | --- | --- |
 | `docs/arch/api-inventory.md` | 新增；记录 C++ Public API、Python Public API、SPI、Internal 的分类 |
-| `hikyuu_cpp/unit_test/hikyuu/hikyuu/test_StockManager.cpp` | 补充初始化、查询、临时证券和生命周期基线测试 |
-| `hikyuu_cpp/unit_test/hikyuu/trade_manage/test_TradeManager.cpp` | 补充订单后资金、持仓、费用、交易记录的金标测试 |
-| `hikyuu_cpp/unit_test/hikyuu/trade_sys/system/test_System.cpp` | 新增；固定简单策略逐 Bar 的交易结果和延迟请求行为 |
-| `hikyuu_cpp/unit_test/hikyuu/strategy/test_Strategy.cpp` | 新增；固定 `order/orderValue/buy/sell` 的路由行为 |
-| `hikyuu/test/test_public_api.py` | 新增；记录稳定顶层符号和弃用符号 |
-| `hikyuu/test/test_backtest_golden.py` | 新增；固定关键回测的成交、资金和持仓结果 |
-| `hikyuu/test/test.py` | 将新增 Python 测试加入统一入口 |
+| `hayaku_cpp/unit_test/hayaku/hayaku/test_StockManager.cpp` | 补充初始化、查询、临时证券和生命周期基线测试 |
+| `hayaku_cpp/unit_test/hayaku/trade_manage/test_TradeManager.cpp` | 补充订单后资金、持仓、费用、交易记录的金标测试 |
+| `hayaku_cpp/unit_test/hayaku/trade_sys/system/test_System.cpp` | 新增；固定简单策略逐 Bar 的交易结果和延迟请求行为 |
+| `hayaku_cpp/unit_test/hayaku/strategy/test_Strategy.cpp` | 新增；固定 `order/orderValue/buy/sell` 的路由行为 |
+| `hayaku/test/test_public_api.py` | 新增；记录稳定顶层符号和弃用符号 |
+| `hayaku/test/test_backtest_golden.py` | 新增；固定关键回测的成交、资金和持仓结果 |
+| `hayaku/test/test.py` | 将新增 Python 测试加入统一入口 |
 
 ### 需要盘点的接口
 
-- `hikyuu_cpp/hikyuu/StockManager.h` 的全部 `public` 方法；
-- `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h` 的全部虚方法；
-- `hikyuu_cpp/hikyuu/trade_sys/system/System.h` 的公开方法和 “For internal use by PF/AF only” 方法；
-- `hikyuu_cpp/hikyuu/strategy/Strategy.h` 的行情查询及下单方法；
-- `hikyuu_pywrap/**/*.cpp` 中所有 `m.def`、`.def` 和 `.def_property`；
-- `hikyuu/__init__.py`、`hikyuu/core.py`、`hikyuu/extend.py` 的隐式导出符号。
+- `hayaku_cpp/hayaku/StockManager.h` 的全部 `public` 方法；
+- `hayaku_cpp/hayaku/trade_manage/TradeManagerBase.h` 的全部虚方法；
+- `hayaku_cpp/hayaku/trade_sys/system/System.h` 的公开方法和 “For internal use by PF/AF only” 方法；
+- `hayaku_cpp/hayaku/strategy/Strategy.h` 的行情查询及下单方法；
+- `hayaku_pywrap/**/*.cpp` 中所有 `m.def`、`.def` 和 `.def_property`；
+- `hayaku/__init__.py`、`hayaku/core.py`、`hayaku/extend.py` 的隐式导出符号。
 
 ### 这一阶段先不动
 
@@ -167,20 +167,20 @@
 
 | 文件 | 职责 |
 | --- | --- |
-| `hikyuu_cpp/hikyuu/application/HikyuuSession.h` | 进程级运行会话；负责初始化、关闭和服务访问 |
-| `hikyuu_cpp/hikyuu/application/HikyuuSession.cpp` | 把配置解析和 `StockManager` 生命周期包装起来 |
-| `hikyuu_cpp/hikyuu/application/SessionOptions.h` | 强类型初始化配置，替代五个无结构 `Parameter` 参数 |
-| `hikyuu_pywrap/application/_HikyuuSession.cpp` | 只绑定用户需要的 Session 方法 |
-| `hikyuu_pywrap/application/application_main.cpp` | 应用层绑定入口 |
-| `hikyuu/session.py` | Python 上下文管理器和默认 Session 兼容入口 |
-| `hikyuu_cpp/unit_test/hikyuu/application/test_HikyuuSession.cpp` | Session 生命周期测试 |
+| `hayaku_cpp/hayaku/application/HayakuSession.h` | 进程级运行会话；负责初始化、关闭和服务访问 |
+| `hayaku_cpp/hayaku/application/HayakuSession.cpp` | 把配置解析和 `StockManager` 生命周期包装起来 |
+| `hayaku_cpp/hayaku/application/SessionOptions.h` | 强类型初始化配置，替代五个无结构 `Parameter` 参数 |
+| `hayaku_pywrap/application/_HayakuSession.cpp` | 只绑定用户需要的 Session 方法 |
+| `hayaku_pywrap/application/application_main.cpp` | 应用层绑定入口 |
+| `hayaku/session.py` | Python 上下文管理器和默认 Session 兼容入口 |
+| `hayaku_cpp/unit_test/hayaku/application/test_HayakuSession.cpp` | Session 生命周期测试 |
 
 建议的窄接口：
 
 ```cpp
-class HikyuuSession {
+class HayakuSession {
 public:
-    static HikyuuSession open(const SessionOptions&);
+    static HayakuSession open(const SessionOptions&);
     void close();
     bool ready() const;
     void waitReady() const;
@@ -194,13 +194,13 @@ public:
 
 | 文件 | 当前接口 | 处理方式 |
 | --- | --- | --- |
-| `hikyuu_cpp/hikyuu/hikyuu.h/.cpp` | 两组 `hikyuu_init`、`getConfigFromIni` | 实现改为委托 Session；旧函数保留并标记弃用 |
-| `hikyuu_cpp/hikyuu/StockManager.h/.cpp` | `init/reload/reloadWith/quit` | 生命周期最终移到 Session；迁移期保留转发 |
-| `hikyuu_cpp/hikyuu/StockManager.h` | `waitDataReady/cancelLoad/initializing/joinPreloadThread` | 降为 Session 内部生命周期接口，不再新增 Python 暴露 |
-| `hikyuu_cpp/hikyuu/StockManager.h` | `getLoadTaskGroup/thread_id/clearPlugin/releaseShmServerBaseInfoCache` | 标为 Internal；移出公开段或放入内部协作者 |
-| `hikyuu_pywrap/main.cpp` | `hikyuu_init` | 绑定到默认 Session 兼容函数，并发出弃用提示 |
-| `hikyuu_pywrap/_StockManager.cpp` | `init/reload/reload_with/wait_data_ready/cancel_load` | 新代码转向 Session；旧绑定暂时保留 |
-| `hikyuu/__init__.py` | import 时创建全局 `sm`、注册 cleanup、设置插件路径 | 改为惰性默认 Session；import 不应启动或操作数据加载 |
+| `hayaku_cpp/hayaku/hayaku.h/.cpp` | 两组 `hayaku_init`、`getConfigFromIni` | 实现改为委托 Session；旧函数保留并标记弃用 |
+| `hayaku_cpp/hayaku/StockManager.h/.cpp` | `init/reload/reloadWith/quit` | 生命周期最终移到 Session；迁移期保留转发 |
+| `hayaku_cpp/hayaku/StockManager.h` | `waitDataReady/cancelLoad/initializing/joinPreloadThread` | 降为 Session 内部生命周期接口，不再新增 Python 暴露 |
+| `hayaku_cpp/hayaku/StockManager.h` | `getLoadTaskGroup/thread_id/clearPlugin/releaseShmServerBaseInfoCache` | 标为 Internal；移出公开段或放入内部协作者 |
+| `hayaku_pywrap/main.cpp` | `hayaku_init` | 绑定到默认 Session 兼容函数，并发出弃用提示 |
+| `hayaku_pywrap/_StockManager.cpp` | `init/reload/reload_with/wait_data_ready/cancel_load` | 新代码转向 Session；旧绑定暂时保留 |
+| `hayaku/__init__.py` | import 时创建全局 `sm`、注册 cleanup、设置插件路径 | 改为惰性默认 Session；import 不应启动或操作数据加载 |
 
 ### 这一阶段保留不动
 
@@ -211,9 +211,9 @@ public:
 
 ### 验收标准
 
-- `import hikyuu` 不初始化数据、不启动预加载线程；
-- `with HikyuuSession.open(options) as session:` 可完整初始化和释放资源；
-- 旧的 `hikyuu_init()` 和 `sm` 仍可运行现有示例；
+- `import hayaku` 不初始化数据、不启动预加载线程；
+- `with HayakuSession.open(options) as session:` 可完整初始化和释放资源；
+- 旧的 `hayaku_init()` 和 `sm` 仍可运行现有示例；
 - 同一进程重复 open/close 行为有明确测试；第一阶段不承诺多 Session 并行。
 
 ## 第 2 步：拆分 `StockManager`，建立数据域边界
@@ -224,16 +224,16 @@ public:
 
 | 文件 | 新职责 |
 | --- | --- |
-| `hikyuu_cpp/hikyuu/data/InstrumentRepository.h/.cpp` | 证券、市场、证券类型的只读查询 |
-| `hikyuu_cpp/hikyuu/data/MarketDataService.h/.cpp` | K 线、交易日历、复权权重和行情查询 |
-| `hikyuu_cpp/hikyuu/data/BlockRepository.h/.cpp` | 板块查询及显式的板块写入操作 |
-| `hikyuu_cpp/hikyuu/data/FinanceDataService.h/.cpp` | 历史财务字段和财务记录查询 |
-| `hikyuu_cpp/hikyuu/data/internal/DataRuntime.h/.cpp` | 驱动、缓存、预加载、IPC/SHM 的内部编排 |
+| `hayaku_cpp/hayaku/data/InstrumentRepository.h/.cpp` | 证券、市场、证券类型的只读查询 |
+| `hayaku_cpp/hayaku/data/MarketDataService.h/.cpp` | K 线、交易日历、复权权重和行情查询 |
+| `hayaku_cpp/hayaku/data/BlockRepository.h/.cpp` | 板块查询及显式的板块写入操作 |
+| `hayaku_cpp/hayaku/data/FinanceDataService.h/.cpp` | 历史财务字段和财务记录查询 |
+| `hayaku_cpp/hayaku/data/internal/DataRuntime.h/.cpp` | 驱动、缓存、预加载、IPC/SHM 的内部编排 |
 
 服务边界建议：
 
 ```text
-HikyuuSession
+HayakuSession
     │
     ├── InstrumentRepository  证券和市场元数据
     ├── MarketDataService     K线、日历、权重
@@ -262,13 +262,13 @@ HikyuuSession
 
 ### 需要修改的文件
 
-- `hikyuu_cpp/hikyuu/StockManager.h/.cpp`：逐步改成旧接口转发门面；
-- `hikyuu_cpp/hikyuu/Stock.cpp`：不再直接知道 StockManager 的生命周期和 IPC 细节，通过 MarketDataService/DataRuntime 内部端口取数；
-- `hikyuu_cpp/hikyuu/KData*.h/.cpp`：只在确有直接单例依赖的位置改为数据服务依赖，不改值对象语义；
-- `hikyuu_cpp/hikyuu/data_driver/DataDriverFactory.h/.cpp`：从全局静态工厂改成 `DataRuntime` 持有的驱动注册表；
-- `hikyuu_pywrap/_StockManager.cpp`：只保留兼容绑定；
-- `hikyuu_pywrap/data_driver/_DataDriverFactory.cpp`：移出普通用户 API，放入 advanced/plugin 命名空间；
-- `hikyuu_pywrap/data_driver/_BaseInfoDriver.cpp`、`_BlockInfoDriver.cpp`、`_KDataDriver.cpp`：只保留实现自定义驱动所需的 SPI，不绑定内部便捷方法。
+- `hayaku_cpp/hayaku/StockManager.h/.cpp`：逐步改成旧接口转发门面；
+- `hayaku_cpp/hayaku/Stock.cpp`：不再直接知道 StockManager 的生命周期和 IPC 细节，通过 MarketDataService/DataRuntime 内部端口取数；
+- `hayaku_cpp/hayaku/KData*.h/.cpp`：只在确有直接单例依赖的位置改为数据服务依赖，不改值对象语义；
+- `hayaku_cpp/hayaku/data_driver/DataDriverFactory.h/.cpp`：从全局静态工厂改成 `DataRuntime` 持有的驱动注册表；
+- `hayaku_pywrap/_StockManager.cpp`：只保留兼容绑定；
+- `hayaku_pywrap/data_driver/_DataDriverFactory.cpp`：移出普通用户 API，放入 advanced/plugin 命名空间；
+- `hayaku_pywrap/data_driver/_BaseInfoDriver.cpp`、`_BlockInfoDriver.cpp`、`_KDataDriver.cpp`：只保留实现自定义驱动所需的 SPI，不绑定内部便捷方法。
 
 ### 这一阶段先不动
 
@@ -316,31 +316,31 @@ HikyuuSession
 
 | 文件 | 职责 |
 | --- | --- |
-| `hikyuu_cpp/hikyuu/trade/OrderRequest.h` | 不可变下单请求 |
-| `hikyuu_cpp/hikyuu/trade/ExecutionReport.h` | 执行结果；支持拒绝和部分成交语义 |
-| `hikyuu_cpp/hikyuu/trade/ExecutionPort.h` | 回测撮合与实盘券商共同的最小端口 |
-| `hikyuu_cpp/hikyuu/trade/BacktestExecution.h/.cpp` | 回测价格、滑点、费用和成交生成 |
-| `hikyuu_cpp/hikyuu/trade/BrokerExecutionAdapter.h/.cpp` | 将新端口适配到现有 Broker |
-| `hikyuu_cpp/hikyuu/trade/Account.h/.cpp` | 面向应用层的账户命令入口 |
-| `hikyuu_cpp/hikyuu/trade/AccountSnapshot.h` | 只读资金、持仓、负债快照 |
-| `hikyuu_cpp/hikyuu/trade/Ledger.h/.cpp` | 交易记录和资金/持仓变更的唯一写入者 |
+| `hayaku_cpp/hayaku/trade/OrderRequest.h` | 不可变下单请求 |
+| `hayaku_cpp/hayaku/trade/ExecutionReport.h` | 执行结果；支持拒绝和部分成交语义 |
+| `hayaku_cpp/hayaku/trade/ExecutionPort.h` | 回测撮合与实盘券商共同的最小端口 |
+| `hayaku_cpp/hayaku/trade/BacktestExecution.h/.cpp` | 回测价格、滑点、费用和成交生成 |
+| `hayaku_cpp/hayaku/trade/BrokerExecutionAdapter.h/.cpp` | 将新端口适配到现有 Broker |
+| `hayaku_cpp/hayaku/trade/Account.h/.cpp` | 面向应用层的账户命令入口 |
+| `hayaku_cpp/hayaku/trade/AccountSnapshot.h` | 只读资金、持仓、负债快照 |
+| `hayaku_cpp/hayaku/trade/Ledger.h/.cpp` | 交易记录和资金/持仓变更的唯一写入者 |
 
 ### 需要重构的现有文件和接口
 
 | 文件 | 当前接口 | 处理方式 |
 | --- | --- | --- |
-| `hikyuu_cpp/hikyuu/strategy/Strategy.h/.cpp` | `order/orderValue/buy/sell` | 用户保留 `order/orderValue`；`buy/sell` 下沉为 Execution 适配细节或 Advanced API |
-| `hikyuu_cpp/hikyuu/trade_sys/system/TradeRequest.h/.cpp` | 延迟操作内部记录 | 与公开 `OrderRequest` 分开命名和职责；不直接作为成交订单 |
-| `hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h/.cpp` | `_buy/_sell/_getAssetInfo` 和 JSON 资产字符串 | 迁移为 `ExecutionPort::submit/cancel/query` 与强类型快照；旧 Broker 用 adapter 保留 |
-| `hikyuu_cpp/hikyuu/strategy/BrokerTradeManager.h/.cpp` | 同步券商资产与本地 TM | 改成 Broker adapter 和账户对账服务，避免继承扩大接口 |
-| `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h/.cpp` | 交易和账户写入 | 实现改为调用 Ledger；旧签名先转发 |
-| `hikyuu_cpp/hikyuu/trade_sys/system/System.cpp` | `_buyNow/_sellNow/...` | 只构造 OrderRequest，不直接同时修改账户和通知 Broker |
-| `hikyuu_pywrap/strategy/_Strategy.cpp` | 绑定多套下单入口 | 顶层只暴露 `order/order_value` |
-| `hikyuu_pywrap/trade_manage/_OrderBroker.cpp` | 暴露 `_buy/_sell/_get_asset_info` | 移到明确的 Python Broker SPI 类，不放普通 Broker 对象上 |
+| `hayaku_cpp/hayaku/strategy/Strategy.h/.cpp` | `order/orderValue/buy/sell` | 用户保留 `order/orderValue`；`buy/sell` 下沉为 Execution 适配细节或 Advanced API |
+| `hayaku_cpp/hayaku/trade_sys/system/TradeRequest.h/.cpp` | 延迟操作内部记录 | 与公开 `OrderRequest` 分开命名和职责；不直接作为成交订单 |
+| `hayaku_cpp/hayaku/trade_manage/OrderBrokerBase.h/.cpp` | `_buy/_sell/_getAssetInfo` 和 JSON 资产字符串 | 迁移为 `ExecutionPort::submit/cancel/query` 与强类型快照；旧 Broker 用 adapter 保留 |
+| `hayaku_cpp/hayaku/strategy/BrokerTradeManager.h/.cpp` | 同步券商资产与本地 TM | 改成 Broker adapter 和账户对账服务，避免继承扩大接口 |
+| `hayaku_cpp/hayaku/trade_manage/TradeManagerBase.h/.cpp` | 交易和账户写入 | 实现改为调用 Ledger；旧签名先转发 |
+| `hayaku_cpp/hayaku/trade_sys/system/System.cpp` | `_buyNow/_sellNow/...` | 只构造 OrderRequest，不直接同时修改账户和通知 Broker |
+| `hayaku_pywrap/strategy/_Strategy.cpp` | 绑定多套下单入口 | 顶层只暴露 `order/order_value` |
+| `hayaku_pywrap/trade_manage/_OrderBroker.cpp` | 暴露 `_buy/_sell/_get_asset_info` | 移到明确的 Python Broker SPI 类，不放普通 Broker 对象上 |
 
 ### 需要立即修正并锁定测试的问题
 
-- `hikyuu_cpp/hikyuu/strategy/Strategy.cpp` 中 `order()` 对买入数量做了取整，但后续买入调用仍传原始 `num`；应先用测试固定期望，再在本阶段修复；
+- `hayaku_cpp/hayaku/strategy/Strategy.cpp` 中 `order()` 对买入数量做了取整，但后续买入调用仍传原始 `num`；应先用测试固定期望，再在本阶段修复；
 - 新增拒单、零数量、最小交易单位、部分成交、手续费、资金不足和重复回报测试；
 - 回测执行和实盘执行必须返回同一种 `ExecutionReport`，但允许能力不同。
 
@@ -392,15 +392,15 @@ HikyuuSession
 
 ### 需要修改的文件
 
-- `hikyuu_cpp/hikyuu/trade_manage/TradeManagerBase.h/.cpp`；
-- `hikyuu_cpp/hikyuu/trade_manage/TradeManager.h/.cpp`；
-- `hikyuu_cpp/hikyuu/trade_manage/Performance.h/.cpp`；
-- `hikyuu_cpp/hikyuu/trade_manage/OrderBrokerBase.h/.cpp`；
-- `hikyuu_cpp/hikyuu/trade_manage/TradeCostBase.h/.cpp`；
-- `hikyuu_pywrap/trade_manage/_TradeManager.cpp`；
-- `hikyuu_pywrap/trade_manage/_Performance.cpp`；
-- `hikyuu_pywrap/trade_manage/_OrderBroker.cpp`；
-- `hikyuu/trade_manage/trade.py`。
+- `hayaku_cpp/hayaku/trade_manage/TradeManagerBase.h/.cpp`；
+- `hayaku_cpp/hayaku/trade_manage/TradeManager.h/.cpp`；
+- `hayaku_cpp/hayaku/trade_manage/Performance.h/.cpp`；
+- `hayaku_cpp/hayaku/trade_manage/OrderBrokerBase.h/.cpp`；
+- `hayaku_cpp/hayaku/trade_manage/TradeCostBase.h/.cpp`；
+- `hayaku_pywrap/trade_manage/_TradeManager.cpp`；
+- `hayaku_pywrap/trade_manage/_Performance.cpp`；
+- `hayaku_pywrap/trade_manage/_OrderBroker.cpp`；
+- `hayaku/trade_manage/trade.py`。
 
 ### 这一阶段先不动
 
@@ -417,17 +417,17 @@ HikyuuSession
 
 ## 第 5 步：收窄 `System`，统一策略部件 SPI
 
-EV、CN、SG、MM、ST、TP、PG、SP 是 Hikyuu 的核心组合能力，应保留；需要减少的是重复的生命周期接口和外泄的内部调度接口。
+EV、CN、SG、MM、ST、TP、PG、SP 是 Hayaku 的核心组合能力，应保留；需要减少的是重复的生命周期接口和外泄的内部调度接口。
 
 ### 新增文件
 
 | 文件 | 职责 |
 | --- | --- |
-| `hikyuu_cpp/hikyuu/trade_sys/component/ComponentContext.h` | 向组件提供只读 Stock/KData/AccountView/时间上下文 |
-| `hikyuu_cpp/hikyuu/trade_sys/component/ComponentLifecycle.h` | 统一 `reset/prepare/clone` 的最小约定 |
-| `hikyuu_cpp/hikyuu/trade_sys/system/SystemConfig.h` | 组件装配和运行参数，替代大量 setter |
-| `hikyuu_cpp/hikyuu/trade_sys/system/BacktestRunner.h/.cpp` | 对外提供稳定的回测运行入口 |
-| `hikyuu_cpp/hikyuu/trade_sys/system/internal/SystemEngine.h/.cpp` | 逐 Bar 状态机、延迟请求和通知编排 |
+| `hayaku_cpp/hayaku/trade_sys/component/ComponentContext.h` | 向组件提供只读 Stock/KData/AccountView/时间上下文 |
+| `hayaku_cpp/hayaku/trade_sys/component/ComponentLifecycle.h` | 统一 `reset/prepare/clone` 的最小约定 |
+| `hayaku_cpp/hayaku/trade_sys/system/SystemConfig.h` | 组件装配和运行参数，替代大量 setter |
+| `hayaku_cpp/hayaku/trade_sys/system/BacktestRunner.h/.cpp` | 对外提供稳定的回测运行入口 |
+| `hayaku_cpp/hayaku/trade_sys/system/internal/SystemEngine.h/.cpp` | 逐 Bar 状态机、延迟请求和通知编排 |
 
 ### 需要重构的文件和接口
 
@@ -439,8 +439,8 @@ EV、CN、SG、MM、ST、TP、PG、SP 是 Hikyuu 的核心组合能力，应保�
 | `trade_sys/system/System.h/.cpp` | `get*TradeRequest/haveDelay*` | 对用户暴露只读 suggestion/snapshot，不暴露可变状态机细节 |
 | `trade_sys/system/System.h` | `_reset/_forceResetAll/_clone/isPythonObject` | 归入 SPI 或内部桥接，不作为普通用户 API |
 | 各 `*Base.h/.cpp` | 重复 `name/param/reset/clone/_calculate` | 统一公共生命周期协议，但保留每类算法的最小专有 SPI |
-| `hikyuu_pywrap/trade_sys/_System.cpp` | `ready`、多重 run、全部可写组件属性 | 顶层收窄为 config + run + result；旧属性暂时兼容 |
-| `hikyuu_pywrap/trade_sys/_Signal.cpp` 等 | 同时暴露普通方法和 `_calculate/_reset/_add_*` | 拆成用户类与 `hikyuu.spi` 扩展类 |
+| `hayaku_pywrap/trade_sys/_System.cpp` | `ready`、多重 run、全部可写组件属性 | 顶层收窄为 config + run + result；旧属性暂时兼容 |
+| `hayaku_pywrap/trade_sys/_Signal.cpp` 等 | 同时暴露普通方法和 `_calculate/_reset/_add_*` | 拆成用户类与 `hayaku.spi` 扩展类 |
 
 涉及的组件基类文件：
 
@@ -464,7 +464,7 @@ EV、CN、SG、MM、ST、TP、PG、SP 是 Hikyuu 的核心组合能力，应保�
 ### 验收标准
 
 - 普通用户不能直接调用逐 Bar 内部调度和 PF 强制卖出接口；
-- Python 子类扩展仍然可用，但扩展入口集中在 `hikyuu.spi`；
+- Python 子类扩展仍然可用，但扩展入口集中在 `hayaku.spi`；
 - System 装配完成后关键依赖不可随意改动；
 - 所有现有内置策略组件在金标回测中结果一致。
 
@@ -476,21 +476,21 @@ Python 接口是用户最直观的边界。C++ 类有一个 public 方法，不�
 
 | 文件 | 修改方向 |
 | --- | --- |
-| `hikyuu/__init__.py` | 去除层层 `import *`；显式导出最常用稳定 API |
-| `hikyuu/core.py` | 仅负责加载对应 Python 版本的二进制模块，不再作为所有符号的公共门面 |
-| `hikyuu/extend.py` | 去除 `from .core import *`，改为显式导入 |
-| `hikyuu/indicator/__init__.py` | 明确指标用户 API；生成器和实现细节分包 |
-| `hikyuu/trade_manage/__init__.py` | 只导出账户视图、记录类型和常用费用工厂 |
-| `hikyuu/trade_sys/__init__.py` | 只导出 System 配置、Runner 和内置组件工厂 |
-| `hikyuu_pywrap/main.cpp` | 只注册基础类型及应用入口；修复错误的 `open_spend_time` 绑定 |
-| `hikyuu_pywrap/*` | 按 Public/SPI/Internal 清单删减绑定 |
+| `hayaku/__init__.py` | 去除层层 `import *`；显式导出最常用稳定 API |
+| `hayaku/core.py` | 仅负责加载对应 Python 版本的二进制模块，不再作为所有符号的公共门面 |
+| `hayaku/extend.py` | 去除 `from .core import *`，改为显式导入 |
+| `hayaku/indicator/__init__.py` | 明确指标用户 API；生成器和实现细节分包 |
+| `hayaku/trade_manage/__init__.py` | 只导出账户视图、记录类型和常用费用工厂 |
+| `hayaku/trade_sys/__init__.py` | 只导出 System 配置、Runner 和内置组件工厂 |
+| `hayaku_pywrap/main.cpp` | 只注册基础类型及应用入口；修复错误的 `open_spend_time` 绑定 |
+| `hayaku_pywrap/*` | 按 Public/SPI/Internal 清单删减绑定 |
 | Python `.pyi` 类型存根（当前工作树未包含） | 若恢复发布类型存根，则按新的稳定 API 生成，不提前手写不存在的文件 |
-| `hikyuu/cpp/core3xx.pyi`（发布生成物） | 发布时通过 pybind11-stubgen 重新生成，不手改 |
+| `hayaku/cpp/core3xx.pyi`（发布生成物） | 发布时通过 pybind11-stubgen 重新生成，不手改 |
 
 ### 建议的 Python 命名空间
 
 ```text
-hikyuu                 最常用稳定 API
+hayaku                 最常用稳定 API
 ├── data               数据查询和导入工具
 ├── indicator          指标及内置指标工厂
 ├── backtest           SystemConfig、Runner、Result
@@ -506,7 +506,7 @@ hikyuu                 最常用稳定 API
 - `Stock`、`KData`、`KQuery`、`Datetime`、`Indicator` 等高频领域类型；
 - 常用指标工厂；
 - 常用策略组件工厂，如 `SG_*`、`MM_*`；
-- `open_session/load_hikyuu` 的兼容入口；
+- `open_session/load_hayaku` 的兼容入口；
 - 回测的单一入口。
 
 ### 移出顶层但不立即删除
@@ -517,7 +517,7 @@ hikyuu                 最常用稳定 API
 - `runMoment*`、`pfProcessDelay*`、强制卖出等内部调度；
 - 数据转换和调试辅助函数中的低频接口。
 
-这些符号先迁移到 `hikyuu.advanced` 或 `hikyuu.spi`，旧路径至少保留一个小版本周期并发出 `DeprecationWarning`。
+这些符号先迁移到 `hayaku.advanced` 或 `hayaku.spi`，旧路径至少保留一个小版本周期并发出 `DeprecationWarning`。
 
 ### 这一阶段先不动
 
@@ -528,7 +528,7 @@ hikyuu                 最常用稳定 API
 
 ### 验收标准
 
-- `dir(hikyuu)` 中只包含明确列入 `__all__` 的稳定符号；
+- `dir(hayaku)` 中只包含明确列入 `__all__` 的稳定符号；
 - SPI 方法不出现在普通用户类的自动补全中；
 - 所有被移动的接口有明确的新路径和警告；
 - 文档示例、notebook 冒烟测试和 Python 单元测试通过。
@@ -541,16 +541,16 @@ hikyuu                 最常用稳定 API
 
 | 文件 | 处理 |
 | --- | --- |
-| `hikyuu_cpp/hikyuu/hikyuu.h` | 只包含稳定用户 API，不再包含所有 trade/manage/strategy 实现 |
-| `hikyuu_cpp/hikyuu/trade_sys/all.h` | 标为 legacy 聚合头；拆成 `public.h` 与内部 include |
+| `hayaku_cpp/hayaku/hayaku.h` | 只包含稳定用户 API，不再包含所有 trade/manage/strategy 实现 |
+| `hayaku_cpp/hayaku/trade_sys/all.h` | 标为 legacy 聚合头；拆成 `public.h` 与内部 include |
 | 各模块 `build_in.h` | 只聚合内置工厂，不聚合 Base 实现细节 |
-| `hikyuu_cpp/hikyuu/xmake.lua` | 增加 application/data/trade 新目录；明确 public/private headers |
-| `hikyuu_pywrap/xmake.lua` | 加入新绑定入口，内部头不对外安装 |
+| `hayaku_cpp/hayaku/xmake.lua` | 增加 application/data/trade 新目录；明确 public/private headers |
+| `hayaku_pywrap/xmake.lua` | 加入新绑定入口，内部头不对外安装 |
 
 建议最终头文件布局：
 
 ```text
-hikyuu/
+hayaku/
 ├── api/                 稳定 Public API
 ├── spi/                 扩展协议
 ├── domain/              领域实现，不保证全部公开
@@ -570,7 +570,7 @@ hikyuu/
 
 - 只包含稳定 API 的最小 C++ 示例可以编译；
 - Public 头不 include pybind11、数据库具体实现、IPC 或线程池头；
-- include-what-you-use 或等价检查不再依赖 `hikyuu.h` 的传递包含；
+- include-what-you-use 或等价检查不再依赖 `hayaku.h` 的传递包含；
 - clean build、shared build 和 Python extension build 全部通过。
 
 ## 第 8 步：弃用、删除和物理清理
@@ -594,7 +594,7 @@ hikyuu/
 - `TradeManagerBase` 上的 Broker、Performance、CSV 和直接写账接口；
 - `System` 上标注为 PF/AF internal 的公开方法；
 - Python 普通类上的 `_calculate/_reset/_clone/_add_*` SPI 方法；
-- `hikyuu/__init__.py` 的隐式星号导出；
+- `hayaku/__init__.py` 的隐式星号导出；
 - `DataDriverFactory` 的普通用户级 Python 入口。
 
 ## 5. 明确暂时不重构的区域
@@ -609,8 +609,8 @@ hikyuu/
 | 工厂函数 | `trade_sys/*/crt/` | 是用户高频 DSL，先保持兼容 |
 | 记录值对象 | `TradeRecord`、`PositionRecord`、`FundsRecord` 等 | 涉及序列化和 Python pickle 兼容 |
 | 序列化 | `serialization/` | 应在边界稳定后单独版本化 |
-| 绘图与 GUI | `hikyuu/draw/`、`hikyuu/gui/` | 不是当前接口膨胀根因 |
-| 数据导入脚本 | `hikyuu/data/`、`hikyuu/fetcher/` | 可作为数据层调用方逐步迁移 |
+| 绘图与 GUI | `hayaku/draw/`、`hayaku/gui/` | 不是当前接口膨胀根因 |
+| 数据导入脚本 | `hayaku/data/`、`hayaku/fetcher/` | 可作为数据层调用方逐步迁移 |
 | 具体数据驱动 | driver 的 HDF5/MySQL/SQLite/TDX 实现 | 先改注册和访问边界，不改实现 |
 
 ## 6. 推荐提交顺序
@@ -618,7 +618,7 @@ hikyuu/
 每个提交只做一种变化，便于 review 和二分回归。
 
 1. `test: add public API inventory and backtest golden baselines`
-2. `refactor: add explicit hikyuu session facade`
+2. `refactor: add explicit hayaku session facade`
 3. `refactor: split stock manager query services`
 4. `refactor: introduce order and execution contracts`
 5. `refactor: isolate account ledger from trade manager`
@@ -644,7 +644,7 @@ hikyuu/
 涉及 Python 导出时额外检查：
 
 ```bash
-/opt/homebrew/bin/python3.10 -c "import hikyuu; print(sorted(hikyuu.__all__))"
+/opt/homebrew/bin/python3.10 -c "import hayaku; print(sorted(hayaku.__all__))"
 ```
 
 涉及绑定修改后，在发布准备阶段重新生成并检查 `.pyi`；不要手工维护生成的 `core3xx.pyi`。
@@ -661,9 +661,9 @@ hikyuu/
 
 ### 里程碑 B：有唯一应用入口
 
-- 引入 `HikyuuSession`；
+- 引入 `HayakuSession`；
 - Python import 去掉数据加载副作用；
-- 旧 `hikyuu_init/sm` 通过兼容层工作。
+- 旧 `hayaku_init/sm` 通过兼容层工作。
 
 ### 里程碑 C：跑通一条新的交易纵切面
 

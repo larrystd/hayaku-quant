@@ -50,4 +50,4 @@ jobs:
       shell: cmd
       run: |
         set PYTHONPATH=.
-        python hikyuu/test/test.py        
+        python hayaku/test/test.py

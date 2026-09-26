@@ -1,0 +1,47 @@
+/*
+ * TransRecord.cpp
+ *
+ *  Created on: 2019-2-10
+ *      Author: fasiondog
+ */
+
+#include "TransRecord.h"
+
+namespace hayaku {
+
+HAYAKU_API std::ostream& operator<<(std::ostream& os, const TransRecord& record) {
+    string strip(", ");
+    os << std::fixed;
+    (void)os.precision(4);
+    os << "TransRecord(Datetime(\"" << record.datetime.ymdhms() << "\")" << strip << record.price
+       << strip << record.vol << strip << record.direct << ")";
+    os.unsetf(std::ostream::floatfield);
+    (void)os.precision();
+    return os;
+}
+
+HAYAKU_API std::ostream& operator<<(std::ostream& os, const TransList& data) {
+    if (data.size() > 0) {
+        os << "TransList{\n  size : " << data.size() << "\n  start: " << data.front().datetime
+           << "\n  last : " << data.back().datetime << "\n }";
+    } else {
+        os << "TransList{\n  size : " << data.size() << "\n }";
+    }
+    return os;
+}
+
+bool HAYAKU_API operator==(const TransRecord& d1, const TransRecord& d2) {
+    return (d1.datetime == d2.datetime && (std::fabs(d1.price - d2.price) < 0.0001) &&
+            (std::fabs(d1.vol - d2.vol) < 0.0001) && (d1.direct == d2.direct));
+}
+
+TransRecord::TransRecord() : datetime(Datetime()), price(0.0), vol(0.0), direct(0) {}
+
+TransRecord::TransRecord(const Datetime& datetime, price_t price, price_t vol, int direct)
+: datetime(datetime), price(price), vol(vol), direct(direct) {}
+
+bool TransRecord::isValid() const noexcept {
+    return datetime == Null<Datetime>() ? false : true;
+}
+
+} /* namespace hayaku */

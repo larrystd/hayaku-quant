@@ -44,7 +44,7 @@ Test commands:
   all [shared|static]        Configure, build, and run all tests
 
 Other commands:
-  import-test                Import hikyuu with Python 3.10 and print its version
+  import-test                Import hayaku with Python 3.10 and print its version
   run-small-binary           Run the built small-test binary with its dylib path
   run-unit-binary            Run the built unit-test binary with its dylib path
   doctor                     Print the selected toolchain and artifact information
@@ -100,11 +100,11 @@ unit_test() {
 }
 
 python_test() {
-    "${PYTHON_BIN}" hikyuu/test/test.py
+    "${PYTHON_BIN}" hayaku/test/test.py
 }
 
 import_test() {
-    "${PYTHON_BIN}" -c 'import sys, hikyuu; print("python", sys.version.split()[0]); print("hikyuu", hikyuu.__version__); print("core", hikyuu.Datetime(20240101))'
+    "${PYTHON_BIN}" -c 'import sys, hayaku; print("python", sys.version.split()[0]); print("hayaku", hayaku.__version__); print("core", hayaku.Datetime(20240101))'
 }
 
 run_binary() {
@@ -130,8 +130,8 @@ doctor() {
     "${XMAKE_BIN}" --version | head -n 1
     echo "Build kind:    ${BUILD_KIND}"
     echo "Build output:  ${BUILD_LIB}"
-    if [[ -f "${PROJECT_DIR}/hikyuu/cpp/core310.so" ]]; then
-        ls -lh "${PROJECT_DIR}/hikyuu/cpp/core310.so"
+    if [[ -f "${PROJECT_DIR}/hayaku/cpp/core310.so" ]]; then
+        ls -lh "${PROJECT_DIR}/hayaku/cpp/core310.so"
     else
         echo "Python core:   not built"
     fi

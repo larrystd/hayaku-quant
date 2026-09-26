@@ -3,8 +3,8 @@
 shm 数据服务（单机共享内存）
 ============================
 
-同一台机器上同时运行多个 hikyuu 进程（如 Jupyter 研究、策略回测、数据采集），且它们使用
-**相同的数据目录**（``hikyuu.ini`` 中 ``[hikyuu]`` 节的 ``datadir``）时，可让其中一个进程
+同一台机器上同时运行多个 hayaku 进程（如 Jupyter 研究、策略回测、数据采集），且它们使用
+**相同的数据目录**（``hayaku.ini`` 中 ``[hayaku]`` 节的 ``datadir``）时，可让其中一个进程
 作为 **服务端**，把已加载的数据发布为共享内存快照，其余进程作为 **客户端** 零拷贝读取，
 避免每个进程重复预加载、重复占用内存。
 
@@ -14,7 +14,7 @@ shm 数据服务（单机共享内存）
 .. important::
 
     与旧版"进程启动时自动协商主从"不同，服务端 **不会自动产生**：必须在某个进程内 **显式调用**
-    :func:`start_shm_server` 才会启动服务。任何 hikyuu 进程（包括调用者自身）都 **永远不会**
+    :func:`start_shm_server` 才会启动服务。任何 hayaku 进程（包括调用者自身）都 **永远不会**
     因为连接不到服务而自动变成服务端——连接不上时只会降级为独立模式，自行加载全部数据（行为与
     未启用本特性时完全一致）。
 
@@ -42,8 +42,8 @@ shm 数据服务（单机共享内存）
 
 .. py:function:: start_shm_server(datadir: str = '', publish_shm: bool = True, recv_spot: bool = True) -> bool
 
-    在当前进程内启动 shm 数据服务，供其他 hikyuu 进程作为客户端零拷贝读取。须在 hikyuu
-    初始化之后调用（``import hikyuu`` 默认完成初始化）；早于初始化调用会因数据未就绪而返回
+    在当前进程内启动 shm 数据服务，供其他 hayaku 进程作为客户端零拷贝读取。须在 hayaku
+    初始化之后调用（``import hayaku`` 默认完成初始化）；早于初始化调用会因数据未就绪而返回
     ``False``。
 
     :param str datadir: 数据目录，为空时使用当前 StockManager 数据目录
@@ -65,13 +65,13 @@ shm 数据服务（单机共享内存）
 ::
 
     # 进程 A —— 服务端（常驻）
-    import hikyuu as hku
-    if not hku.start_shm_server():
+    import hayaku as hayaku
+    if not hayaku.start_shm_server():
         ...  # 插件缺失 / 授权无效，本进程将以独立模式运行
 
     # 进程 B / C / … —— 客户端
-    import hikyuu as hku
-    hku.load_hikyuu(use_shm_server=True)  # 显式接入进程 A 的服务，本进程进入客户端模式
+    import hayaku as hayaku
+    hayaku.load_hayaku(use_shm_server=True)  # 显式接入进程 A 的服务，本进程进入客户端模式
 
 .. note::
 
@@ -83,9 +83,9 @@ shm 数据服务（单机共享内存）
 
     服务端进程只作快照发布者，并不需要接入其他 shm 服务。``use_shm_server`` 默认关闭，服务端
     进程按独立模式完成初始化与发布，无需额外处理；仅当配置文件中显式置 ``use_shm_server=True``
-    时，才需在服务端进程内以 ``load_hikyuu(use_shm_server=False)`` 跳过客户端探测——否则该进程
+    时，才需在服务端进程内以 ``load_hayaku(use_shm_server=False)`` 跳过客户端探测——否则该进程
     会先当作客户端去连接既有服务，在重试约 10 秒后打印
-    ``Failed connect to hikyuu shm server, fallback to standalone mode!`` 告警再降级为独立模式
+    ``Failed connect to hayaku shm server, fallback to standalone mode!`` 告警再降级为独立模式
     （数据仍能正常加载与发布，仅多出启动等待与一条无害告警）。命令行工具 ``shmserver`` 已显式
     关闭客户端探测。
 
@@ -97,17 +97,17 @@ shm 数据服务（单机共享内存）
 
 ::
 
-    # pip 安装后可直接执行；尚未安装为命令时等价：python -m hikyuu.gui.shmserver
+    # pip 安装后可直接执行；尚未安装为命令时等价：python -m hayaku.gui.shmserver
     shmserver [选项]
 
     Options:
-    --datadir TEXT         数据目录，为空时使用 hikyuu.ini 中 [hikyuu] datadir
+    --datadir TEXT         数据目录，为空时使用 hayaku.ini 中 [hayaku] datadir
     --publish_shm BOOLEAN  是否发布共享内存快照（K 线热数据 + 基础信息），默认 True
     --recv_spot BOOLEAN    本进程是否接收实时行情并镜像写入快照尾部，默认 True
-    --config TEXT          指定 hikyuu 配置文件路径，为空则使用默认 ~/.hikyuu/hikyuu.ini
+    --config TEXT          指定 hayaku 配置文件路径，为空则使用默认 ~/.hayaku/hayaku.ini
 
 服务端进程启动后，其余研究 / 回测进程若要以客户端身份接入（而非独立加载全部数据），需在配置
-或 ``load_hikyuu`` 参数中显式开启 ``use_shm_server=True``，并与服务端使用相同 ``datadir``。
+或 ``load_hayaku`` 参数中显式开启 ``use_shm_server=True``，并与服务端使用相同 ``datadir``。
 
 工作原理
 --------
@@ -136,12 +136,12 @@ shm 数据服务（单机共享内存）
 配置项
 ------
 
-均位于 ``hikyuu.ini`` 的 ``[hikyuu]`` 节，作用于 **客户端** （服务端由 :func:`start_shm_server`
+均位于 ``hayaku.ini`` 的 ``[hayaku]`` 节，作用于 **客户端** （服务端由 :func:`start_shm_server`
 的参数控制）。``use_shm_server`` 默认为 ``False``，仅当需要接入既有服务时才需显式开启：
 
 ::
 
-    [hikyuu]
+    [hayaku]
     tmpdir = /home/user/stock/tmp
     datadir = /home/user/stock
     ; 本进程是否作为客户端连接既有 shm 服务；默认为 False（始终以独立模式运行），需要接入时置 True
@@ -260,23 +260,23 @@ shm 数据服务（单机共享内存）
 
 **如何完全关闭该功能？**
 
-``use_shm_server`` 默认为 ``False``：不启动服务端、也不在任何进程的配置或 ``load_hikyuu``
+``use_shm_server`` 默认为 ``False``：不启动服务端、也不在任何进程的配置或 ``load_hayaku``
 参数中开启该选项，所有进程即完全按独立模式运行，行为与未启用本特性时一致。
 
 **临时目录下会残留哪些文件？**
 
 服务地址位于系统临时目录（unix 取环境变量 ``TMPDIR``，缺省 ``/tmp``；Windows 取系统临时目录），
-socket / 命名管道文件名形如 ``hikyuu_shm_server_{hash}.ipc``（Windows 下为同名命名管道），
-另有配套的 ``.lock`` 文件；服务端还会用 ``hikyuu_ks.last`` / ``hikyuu_bi.last`` 记录当前共享内存
+socket / 命名管道文件名形如 ``hayaku_shm_server_{hash}.ipc``（Windows 下为同名命名管道），
+另有配套的 ``.lock`` 文件；服务端还会用 ``hayaku_ks.last`` / ``hayaku_bi.last`` 记录当前共享内存
 段名，用于清理上一个异常退出的服务端残留段。服务端正常退出时会删除共享内存段，锁文件与记录文件
 本身为空文件，残留后可安全手工删除。
 
 .. warning::
 
-    共享内存段名与其记录文件（``hikyuu_ks.last`` / ``hikyuu_bi.last``）为全局固定，未按
+    共享内存段名与其记录文件（``hayaku_ks.last`` / ``hayaku_bi.last``）为全局固定，未按
     ``datadir`` 隔离。因此修改配置中的 ``datadir`` 后，若之前以旧 ``datadir`` 启动的服务端
     **仍在运行**，新旧两个服务端会共用同一份段记录文件：后启动者发布快照时会依记录清理掉先前
     服务端正在使用的共享内存段，导致其之后新接入的客户端无法命中快照、退化为 IPC 请求（数据仍然
     正确、已有客户端不受影响，仅新客户端延迟升高）。实际使用中 ``datadir`` 一般固定不变，故影响
-    有限；如需切换 ``datadir``，建议先关闭所有以旧 ``datadir`` 运行的 hikyuu 进程，再启动新配置
+    有限；如需切换 ``datadir``，建议先关闭所有以旧 ``datadir`` 运行的 hayaku 进程，再启动新配置
     的进程。

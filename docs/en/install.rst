@@ -26,9 +26,9 @@ anything else, building from source is recommended.
 Install with pip
 ----------------
 
-Install: python -m pip install hikyuu
+Install: python -m pip install hayaku
 
-Upgrade: python -m pip install hikyuu -U
+Upgrade: python -m pip install hayaku -U
 
 .. note::
 
@@ -39,7 +39,7 @@ Upgrade: python -m pip install hikyuu -U
 
 .. note::
 
-    If this is your first time using Hikyuu, please read :ref:`quickstart` carefully.
+    If this is your first time using Hayaku, please read :ref:`quickstart` carefully.
    
 
 Build from source

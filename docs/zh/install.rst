@@ -23,9 +23,9 @@
 pip 安装
 ----------
 
-安装：python -m pip install hikyuu
+安装：python -m pip install hayaku
 
-版本升级：python -m pip install hikyuu -U
+版本升级：python -m pip install hayaku -U
 
 .. note::
 

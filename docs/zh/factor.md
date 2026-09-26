@@ -1,14 +1,14 @@
 # 因子管理
 
-hikyuu提供了完善的因子管理体系，包括单个因子 Factor 和因子集合 FactorSet 的管理。因子是量化分析的基础构建块，通常由技术指标或其他计算公式构成。
+hayaku提供了完善的因子管理体系，包括单个因子 Factor 和因子集合 FactorSet 的管理。因子是量化分析的基础构建块，通常由技术指标或其他计算公式构成。
 
 ## 最佳实践
 
 1. **命名规范**: 因子名称应具有描述性且不区分大小写
 2. **因子集组织**: 将相关的因子组织到同一个FactorSet中便于管理
 3. **数据验证**: 使用 `check=True` 参数验证股票列表是否属于指定板块
-4. **因子更新**: 每日行情数据下载完成后，应及时调用 `update_all_factors_values()` 更新所有存储的因子值，确保因子数据与行情数据同步。该方法未集成到 HikyuuTdx 和 importdata 中，需要自行手工调用，原因是有时需要进行数据检查，确认数据无误后再进行因子值保存。
-5. **因子值保存**: 对于高频聚合的因子值或高频因子值，建议设置 `need_save_value=True` 并保存到数据库。由于 Hikyuu的超高计算速度，普通的日频因子值(如MA5)，通常不建议保存到数据库，因为从存储中读取因子值速度更更慢，**这和其他的量化框架依赖因子存储来提升速度的习惯有所不同**。建议自行根据需要测试决定。通常直接保存原始因子值，不需要进行截面、标准化等处理，可以由 MF 完成。对需要截面值的因子，通常需要指定对应的证券集，Factor和FactorSet直接指定。
+4. **因子更新**: 每日行情数据下载完成后，应及时调用 `update_all_factors_values()` 更新所有存储的因子值，确保因子数据与行情数据同步。该方法未集成到 HayakuTdx 和 importdata 中，需要自行手工调用，原因是有时需要进行数据检查，确认数据无误后再进行因子值保存。
+5. **因子值保存**: 对于高频聚合的因子值或高频因子值，建议设置 `need_save_value=True` 并保存到数据库。由于 Hayaku的超高计算速度，普通的日频因子值(如MA5)，通常不建议保存到数据库，因为从存储中读取因子值速度更更慢，**这和其他的量化框架依赖因子存储来提升速度的习惯有所不同**。建议自行根据需要测试决定。通常直接保存原始因子值，不需要进行截面、标准化等处理，可以由 MF 完成。对需要截面值的因子，通常需要指定对应的证券集，Factor和FactorSet直接指定。
 
 6. **特殊因子值保存**: 对于不通过指标计算的特殊因子值（如PRICELIST或Indicator()），可以使用 `save_special_values_to_db()` 方法直接保存预计算的因子值
 7. **捐赠用户功能使用**: ⚠️ 因子相关的数据库存储和读取操作均为捐赠用户功能，数据库引擎仅支持ClickHouse。使用前请确认已获得相应权限。包括但不限于：`save_to_db()`、`remove_from_db()`、`save_values()`、`get_all_values()`、`get_values()` 等涉及数据库的操作方法。
@@ -46,7 +46,7 @@ Factor(name, formula, ktype=KQuery.DAY, brief="", details="", need_save_value=Fa
 - `ktype` (KQuery.KType): K线类型，默认为日线
 - `brief` (str): 简要描述，默认为空
 - `details` (str): 详细描述，默认为空
-- `need_save_value` (bool): 是否需要持久化保存因子值数据，默认为False。设置为True时，将因子指定股票集合从start_date开始的计算值保存到数据库中。由于Hikyuu的计算速度远快于数据库存储，通常日频因子计算的各证券值不建议保存到数据库，需要保存到数据库的通常为高频聚合到日频的因子值或高频因子值
+- `need_save_value` (bool): 是否需要持久化保存因子值数据，默认为False。设置为True时，将因子指定股票集合从start_date开始的计算值保存到数据库中。由于Hayaku的计算速度远快于数据库存储，通常日频因子计算的各证券值不建议保存到数据库，需要保存到数据库的通常为高频聚合到日频的因子值或高频因子值
 
 - `start_date` (Datetime): 开始日期，数据存储时的起始日期，默认为最小日期
 - `block` (Block): 板块信息，证券集合，如果为空则为全部，默认为空
@@ -187,7 +187,7 @@ factor.save_special_values_to_db(stock, dates, values, replace=False)
 ### Factor使用示例
 
 ```
-from hikyuu import *
+from hayaku import *
 
 # 创建因子对象
 special_factor = Factor("SPECIAL_FACTOR", PRICELIST(), KQuery.DAY, "特殊因子", "预计算因子值")
@@ -327,7 +327,7 @@ named_factor = factor_set["MA5"]
 ### FactorSet使用示例
 
 ```
-from hikyuu import *
+from hayaku import *
 
 # 创建多个技术指标因子
 ma5 = MA(CLOSE(), 5)
@@ -373,7 +373,7 @@ if factor_set.has_factor("MA5"):
 因子和因子集可以与多因子合成算法配合使用：
 
 ```
-from hikyuu import *
+from hayaku import *
 
 # 方法1: 使用Indicator列表
 indicators = [MA(CLOSE(), 5), MA(CLOSE(), 10)]
@@ -395,7 +395,7 @@ mf_equal = MF_EqualWeight(factor_set, stocks, query)
 <p>以下所有全局因子管理函数均为捐赠用户功能，数据库引擎仅支持ClickHouse。</p>
 </div>
 
-除了Factor和FactorSet类的方法外，hikyuu还提供了一系列全局函数用于因子的数据库管理和批量操作。
+除了Factor和FactorSet类的方法外，hayaku还提供了一系列全局函数用于因子的数据库管理和批量操作。
 
 ### 因子数据库操作 ⚠️ 捐赠用户功能
 
@@ -404,7 +404,7 @@ mf_equal = MF_EqualWeight(factor_set, stocks, query)
 检查指定名称和类型的因子是否存在于数据库中
 
 ```python
-from hikyuu import *
+from hayaku import *
 
 # 检查日线因子是否存在 ⚠️ 捐赠用户功能
 exists = has_factor("MA5")
@@ -424,7 +424,7 @@ weekly_exists = has_factor("MA5", KQuery.WEEK)
 获取指定名称和类型的因子元数据
 
 ```python
-from hikyuu import *
+from hayaku import *
 
 # 获取日线因子 ⚠️ 捐赠用户功能
 factor = get_factor("MA5")
@@ -513,7 +513,7 @@ update_all_factors_values(KQuery.WEEK)
 验证因子名称是否合法
 
 ```python
-from hikyuu import *
+from hayaku import *
 
 # 验证因子名称是否合法
 is_valid = is_valid_factor_name("MA5")
@@ -601,7 +601,7 @@ for factor_set in all_sets:
 ### 全局因子管理使用示例
 
 ```
-from hikyuu import *
+from hayaku import *
 
 # 1. 创建并管理因子
 ma5 = MA(CLOSE(), 5)
@@ -654,7 +654,7 @@ if not loaded_set.is_null():
 ### Q: 对于高频因子值有什么特殊考虑吗？
 
 **A:** 高频因子值的处理建议：
-- 考虑是否真的需要保存到数据库（Hikyuu计算速度很快）
+- 考虑是否真的需要保存到数据库（Hayaku计算速度很快）
 - 根据实际需求测试决定存储策略
 
 ### Q: 当我修改了因子的证券集合（block）后，之前保存的因子值如何更新？

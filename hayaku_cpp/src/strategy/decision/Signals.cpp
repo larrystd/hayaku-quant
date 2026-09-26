@@ -1,0 +1,20 @@
+#include "Signals.h"
+
+/*
+ * SG_Flex.cpp
+ *
+ *  Created on: 2016-4-11
+ *      Author: fasiondog
+ */
+
+#include "operators/WindowOperators.h"
+
+namespace hayaku {
+
+SignalPtr HAYAKU_API SG_Flex(const Indicator& op, int slow_n) {
+    SignalPtr sg = SG_Cross(op, EMA(slow_n)(op));
+    sg->name("SG_Flex");
+    return sg;
+}
+
+} /* namespace hayaku */

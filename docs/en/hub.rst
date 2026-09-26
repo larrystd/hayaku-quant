@@ -1,4 +1,4 @@
-.. py:currentmodule:: hikyuu
+.. py:currentmodule:: hayaku
 .. highlight:: python
 
 Using the HUB
@@ -8,11 +8,11 @@ The HUB is a platform for quantitative trading strategy parts. It is used to:
 
 1. Store strategies: the strategy repository provides a centralized place to store and manage quantitative trading strategies, covering all kinds of investment logic, trading rules, risk-control measures, and so on.
 2. Share and learn: anyone can publish strategies to the repository so that other users can study and reuse them.
-3. Build and manage a personal strategy library: in addition to the public hikyuu_hub, you can create your own strategy repositories. Registering a local directory as a repository lets you organize and maintain your own strategy library more flexibly — for example, keeping different factor libraries such as alpha_101 and alpha_36 in separate repositories.
-4. Version repositories: a local strategy library is just a directory on disk, and you can version it with git if you wish. The public hikyuu_hub repository, for example, is managed with git.
-5. Write strategy parts in either Python or C++, so new features can be added without modifying the Hikyuu source code.
+3. Build and manage a personal strategy library: in addition to the public hayaku_hub, you can create your own strategy repositories. Registering a local directory as a repository lets you organize and maintain your own strategy library more flexibly — for example, keeping different factor libraries such as alpha_101 and alpha_36 in separate repositories.
+4. Version repositories: a local strategy library is just a directory on disk, and you can version it with git if you wish. The public hayaku_hub repository, for example, is managed with git.
+5. Write strategy parts in either Python or C++, so new features can be added without modifying the Hayaku source code.
 
-For details on how to use the HUB, see the article `Hikyuu Hub: user guide for the quantitative trading strategy parts repository <https://mp.weixin.qq.com/s/4oh9DEEUkv1gk4KoCcGhtQ>`_ (in Chinese).
+For details on how to use the HUB, see the article `Hayaku Hub: user guide for the quantitative trading strategy parts repository <https://mp.weixin.qq.com/s/4oh9DEEUkv1gk4KoCcGhtQ>`_ (in Chinese).
 
 
 .. py:function:: add_remote_hub(name, url, branch='main')
@@ -103,7 +103,7 @@ For details on how to use the HUB, see the article `Hikyuu Hub: user guide for t
 
     Search for strategy parts
 
-    Example: search_part('MA')  # part names in the public hikyuu_hub repository are in Chinese, so Chinese keywords such as '趋势' (trend) also work
+    Example: search_part('MA')  # part names in the public hayaku_hub repository are in Chinese, so Chinese keywords such as '趋势' (trend) also work
 
     :param str name: part name
     :param str hub: repository name

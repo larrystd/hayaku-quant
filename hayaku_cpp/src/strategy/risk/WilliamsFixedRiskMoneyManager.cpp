@@ -1,0 +1,48 @@
+/*
+ * WilliamsFixedRiskMoneyManager.cpp
+ *
+ *  Created on: 2016-5-3
+ *      Author: Administrator
+ */
+
+#include "WilliamsFixedRiskMoneyManager.h"
+
+#if HAYAKU_SUPPORT_SERIALIZATION
+BOOST_CLASS_EXPORT(hayaku::WilliamsFixedRiskMoneyManager)
+#endif
+
+namespace hayaku {
+
+WilliamsFixedRiskMoneyManager::WilliamsFixedRiskMoneyManager()
+: MoneyManagerBase("MM_WilliamsFixedRisk") {
+    setParam<double>("p", 0.1);
+    setParam<price_t>("max_loss", 1000.00);
+}
+
+WilliamsFixedRiskMoneyManager::~WilliamsFixedRiskMoneyManager() {}
+
+void WilliamsFixedRiskMoneyManager::_checkParam(const string& name) const {
+    if ("p" == name) {
+        double p = getParam<double>("p");
+        HAYAKU_ASSERT(p > 0.0);
+    } else if ("max_loss" == name) {
+        price_t max_loss = getParam<price_t>("max_loss");
+        HAYAKU_ASSERT(max_loss > 0.0);
+    }
+}
+
+double WilliamsFixedRiskMoneyManager::_getBuyNumber(const Datetime& datetime, const Stock& stock,
+                                                    price_t price, price_t risk, OrderOrigin origin) {
+    price_t max_loss = getParam<price_t>("max_loss");
+    HAYAKU_WARN_IF_RETURN(max_loss <= 0.0, 0.0, "max_loss is zero!");
+    return m_account->cash(datetime, m_query.kType()) * getParam<double>("p") / max_loss;
+}
+
+MoneyManagerPtr HAYAKU_API MM_WilliamsFixedRisk(double p, price_t max_loss) {
+    MoneyManagerPtr ptr = make_shared<WilliamsFixedRiskMoneyManager>();
+    ptr->setParam<double>("p", p);
+    ptr->setParam<price_t>("max_loss", max_loss);
+    return ptr;
+}
+
+} /* namespace hayaku */

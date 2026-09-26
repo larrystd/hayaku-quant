@@ -24,11 +24,11 @@ RUN ln -snf /usr/share/zoneinfo/$TimeZone /etc/localtime && echo $TimeZone > /et
     && echo ". /root/.xmake/profile" >> /root/.bashrc \
     && echo "export XMAKE_ROOT=y" >> /root/.bashrc \
     # && echo "export XMAKE_MAIN_REPO=https://gitee.com/tboox/xmake-repo.git" >> /root/.bashrc \
-    # clone hikyuu 源码（使用国内镜像源）
-    && git clone https://github.com/fasiondog/hikyuu.git \
+    # clone hayaku 源码（使用国内镜像源）
+    && git clone https://github.com/larrystd/hayaku-quant.git hayaku \
     # 安装Miniconda
     # 关键修复：接受Anaconda服务条款（必须在conda install前执行）
-    # 配置pip镜像 + 安装hikyuu（pip包）
+    # 配置pip镜像 + 安装hayaku（pip包）
     # 明确安装ipython
     # 进一步清理冗余文件（减小体积）
     && if [ "$TARGETARCH" = "amd64" ]; then \
@@ -47,7 +47,7 @@ RUN ln -snf /usr/share/zoneinfo/$TimeZone /etc/localtime && echo $TimeZone > /et
         ${MINICONDA_PATH}/bin/pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn && \
         ${MINICONDA_PATH}/bin/pip install --no-cache-dir --upgrade pip && \
         ${MINICONDA_PATH}/bin/conda install -y ipython && \
-        ${MINICONDA_PATH}/bin/python -m pip install --no-cache-dir -r hikyuu/requirements.txt && \
+        ${MINICONDA_PATH}/bin/python -m pip install --no-cache-dir -r hayaku/requirements.txt && \
         ${MINICONDA_PATH}/bin/conda clean -afy && \
         rm -rf ${MINICONDA_PATH}/pkgs/*/info \
             ${MINICONDA_PATH}/doc \
@@ -59,7 +59,7 @@ RUN ln -snf /usr/share/zoneinfo/$TimeZone /etc/localtime && echo $TimeZone > /et
     && bash -c "$MINICONDA_PATH/bin/conda init bash" && \  
     echo "conda activate base" >> /root/.bashrc && \
     echo "export LD_LIBRARY_PATH=/usr/lib64:/opt/miniconda3/lib" >> /root/.bashrc && \
-    echo "export PYTHONPATH=/app/hikyuu" >> /root/.bashrc && \
+    echo "export PYTHONPATH=/app/hayaku" >> /root/.bashrc && \
     SYSTEM_LIB_PATH=$(find /usr/lib64 -name "libstdc++.so.6" | head -n 1) && \
     mv $MINICONDA_PATH/lib/libstdc++.so.6 $MINICONDA_PATH/lib/libstdc++.so.6.bak && \
     ln -s $SYSTEM_LIB_PATH $MINICONDA_PATH/lib/libstdc++.so.6 
@@ -67,4 +67,4 @@ RUN ln -snf /usr/share/zoneinfo/$TimeZone /etc/localtime && echo $TimeZone > /et
     # strings $MINICONDA_PATH/lib/libstdc++.so.6 | grep GLIBCXX_3.4.30
 
 # -l表示登录shell，会加载.bashrc中的conda配置
-CMD ["bash", "-c", "cd hikyuu && exec bash -l"]
+CMD ["bash", "-c", "cd hayaku && exec bash -l"]

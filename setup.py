@@ -78,22 +78,22 @@ def clear_with_python_changed(mode):
     current_plat = sys.platform
     current_bits = 64 if sys.maxsize > 2**32 else 32
     if current_plat == 'win32' and current_bits == 64:
-        build_pywrap_dir = 'build\\{mode}\\windows\\x64\\.objs\\windows\\x64\\{mode}\\hikyuu_pywrap'.format(
+        build_pywrap_dir = 'build\\{mode}\\windows\\x64\\.objs\\windows\\x64\\{mode}\\hayaku_pywrap'.format(
             mode=mode)
     elif current_plat == 'win32' and current_bits == 32:
-        build_pywrap_dir = 'build\\{mode}\\windows\\x86\\.objs\\windows\\x86\\{mode}\\hikyuu_pywrap'.format(
+        build_pywrap_dir = 'build\\{mode}\\windows\\x86\\.objs\\windows\\x86\\{mode}\\hayaku_pywrap'.format(
             mode=mode)
     elif current_plat == 'linux' and current_bits == 64:
-        build_pywrap_dir = 'build/{mode}/linux/x86_64/.objs/linux/x86_64/{mode}/hikyuu_pywrap'.format(
+        build_pywrap_dir = 'build/{mode}/linux/x86_64/.objs/linux/x86_64/{mode}/hayaku_pywrap'.format(
             mode=mode)
     elif current_plat == 'linux' and current_bits == 32:
-        build_pywrap_dir = 'build/{mode}/linux/i386/.objs/linux/i386/{mode}/hikyuu_pywrap'.format(
+        build_pywrap_dir = 'build/{mode}/linux/i386/.objs/linux/i386/{mode}/hayaku_pywrap'.format(
             mode=mode)
     elif current_plat == "darwin" and current_bits == 64:
-        build_pywrap_dir = 'build/{mode}/macosx/x86_64/.objs/macosx/x86_64/{mode}/hikyuu_pywrap'.format(
+        build_pywrap_dir = 'build/{mode}/macosx/x86_64/.objs/macosx/x86_64/{mode}/hayaku_pywrap'.format(
             mode=mode)
     elif current_plat == "darwin" and current_bits == 32:
-        build_pywrap_dir = 'build/{mode}/macosx/i386/.objs/macosx/i386/{mode}/hikyuu_pywrap'.format(
+        build_pywrap_dir = 'build/{mode}/macosx/i386/.objs/macosx/i386/{mode}/hayaku_pywrap'.format(
             mode=mode)
     else:
         print("************Unsupported platform**************")
@@ -235,20 +235,20 @@ def clear_build():
     if os.path.lexists('build'):
         print('delete build')
         shutil.rmtree('build')
-    if os.path.lexists('Hikyuu.egg-info'):
-        print('delete Hikyuu.egg-info')
-        shutil.rmtree('Hikyuu.egg-info')
+    if os.path.lexists('Hayaku.egg-info'):
+        print('delete Hayaku.egg-info')
+        shutil.rmtree('Hayaku.egg-info')
     if os.path.exists('compile_info'):
         print('delete compile_info')
         os.remove('compile_info')
-    lib_files = os.listdir('hikyuu/cpp')
+    lib_files = os.listdir('hayaku/cpp')
     for file in lib_files:
         if file not in ("__init__.py", "__pycache__", "i18n"):
-            os.remove(f'hikyuu/cpp/{file}')
-    plugin_files = os.listdir('hikyuu/plugin')
+            os.remove(f'hayaku/cpp/{file}')
+    plugin_files = os.listdir('hayaku/plugin')
     for file in plugin_files:
         if file not in ("__init__.py", "__pycache__"):
-            os.remove(f'hikyuu/plugin/{file}')
+            os.remove(f'hayaku/plugin/{file}')
     print('clear finished!')
 
 
@@ -268,17 +268,17 @@ def uninstall():
         site_lib_dir = '{}/.local/lib/python{}/site-packages'.format(
             usr_dir, py_version)
     for dir in os.listdir(site_lib_dir):
-        if dir == 'hikyuu' or (len(dir) > 6 and dir[:6] == 'Hikyuu'):
+        if dir == 'hayaku' or (len(dir) > 6 and dir[:6] == 'Hayaku'):
             print('delete', site_lib_dir + '/' + dir)
             shutil.rmtree(site_lib_dir + '/' + dir)
-    if os.path.exists("./hikyuu.egg-info"):
-        shutil.rmtree("./hikyuu.egg-info")
+    if os.path.exists("./hayaku.egg-info"):
+        shutil.rmtree("./hayaku.egg-info")
     print("Uninstall finished!")
 
 
 def copy_include(install_dir):
-    src_path = 'hikyuu_cpp/src'
-    dst_path = f'{install_dir}/include/hikyuu'
+    src_path = 'hayaku_cpp/src'
+    dst_path = f'{install_dir}/include/hayaku'
 
     for root, dirs, files in os.walk(src_path):
         rel_root = os.path.relpath(root, src_path)
@@ -287,7 +287,7 @@ def copy_include(install_dir):
             dst_p = os.path.join(dst_root, p)
             if not os.path.lexists(dst_p):
                 os.makedirs(dst_p)
-            shutil.copy('hikyuu/cpp/__init__.py', dst_p)
+            shutil.copy('hayaku/cpp/__init__.py', dst_p)
 
         for fname in files:
             if len(fname) > 2 and fname[-2:] == ".h":
@@ -295,15 +295,15 @@ def copy_include(install_dir):
                     os.makedirs(dst_root)
                 shutil.copy(os.path.join(root, fname), dst_root)
 
-    dst_path = f'{install_dir}/include/hikyuu/python'
+    dst_path = f'{install_dir}/include/hayaku/python'
     if not os.path.lexists(dst_path):
         os.makedirs(dst_path)
-    shutil.copy('hikyuu_pywrap/common/pybind_utils.h', dst_path)
-    shutil.copy('hikyuu_pywrap/common/pickle_support.h', dst_path)
-    shutil.copy('hikyuu_pywrap/common/convert_any.h', dst_path)
-    shutil.copy('hikyuu/cpp/__init__.py', dst_path)
-    shutil.copy('hikyuu/cpp/__init__.py', f'{install_dir}/include')
-    shutil.copy('hikyuu/cpp/__init__.py', f'{install_dir}/include/hikyuu')
+    shutil.copy('hayaku_pywrap/common/pybind_utils.h', dst_path)
+    shutil.copy('hayaku_pywrap/common/pickle_support.h', dst_path)
+    shutil.copy('hayaku_pywrap/common/convert_any.h', dst_path)
+    shutil.copy('hayaku/cpp/__init__.py', dst_path)
+    shutil.copy('hayaku/cpp/__init__.py', f'{install_dir}/include')
+    shutil.copy('hayaku/cpp/__init__.py', f'{install_dir}/include/hayaku')
 
 
 @click.command()
@@ -320,14 +320,14 @@ def copy_include(install_dir):
               type=bool,
               help='arrow support')
 def install(j, o, low_precision, arrow):
-    """ Build and install the Hikyuu python library """
+    """ Build and install the Hayaku python library """
     install_dir = o
     if install_dir is None:
         if sys.platform == 'win32':
-            install_dir = sys.base_prefix + "\\Lib\\site-packages\\hikyuu"
+            install_dir = sys.base_prefix + "\\Lib\\site-packages\\hayaku"
         else:
             usr_dir = os.path.expanduser('~')
-            install_dir = '{}/.local/lib/python{}/site-packages/hikyuu'.format(
+            install_dir = '{}/.local/lib/python{}/site-packages/hayaku'.format(
                 usr_dir, get_python_version())
             try:
                 shutil.rmtree(install_dir)
@@ -336,7 +336,7 @@ def install(j, o, low_precision, arrow):
 
     start_build(False, 'release', True, j, low_precision, arrow)
 
-    shutil.copytree("./hikyuu", install_dir)
+    shutil.copytree("./hayaku", install_dir)
 
     copy_include(install_dir)
 
@@ -368,7 +368,7 @@ def wheel(feedback, j, low_precision, clear, arrow):
     # Try to build
     start_build(False, 'release', feedback, j, low_precision, arrow)
 
-    copy_include('hikyuu')
+    copy_include('hayaku')
 
     # Build the packaging command
     print("start pacakaging bdist_wheel ...")
@@ -399,7 +399,7 @@ def wheel(feedback, j, low_precision, clear, arrow):
     print(cmd)
     os.system(cmd)
 
-    shutil.rmtree('hikyuu/include', True)
+    shutil.rmtree('hayaku/include', True)
 
 
 @click.command()

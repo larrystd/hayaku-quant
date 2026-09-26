@@ -1,4 +1,4 @@
-.. py:currentmodule:: hikyuu
+.. py:currentmodule:: hayaku
 .. highlight:: python
 
 Security Management
@@ -10,7 +10,7 @@ Building Bar (Candlestick) Query Conditions
 .. py:class:: Query
 
     Query criteria for bar (candlestick) data. In Python, ``Query`` is readily available in the
-    hikyuu namespace and can be used directly.
+    hayaku namespace and can be used directly.
 
     Shortcut aliases for the :py:data:`Query.KType` enumeration values
 
@@ -155,18 +155,18 @@ Building Bar (Candlestick) Query Conditions
         :rtype: int
 
 
-HikyuuSession/DataEngine
+HayakuSession/DataEngine
 ------------------------
 
-``HikyuuSession`` is the explicit runtime session responsible for initialization and scoped access
-to the data engine. The legacy ``hikyuu_init`` function, ``StockManager`` class, and global ``sm``
+``HayakuSession`` is the explicit runtime session responsible for initialization and scoped access
+to the data engine. The legacy ``hayaku_init`` function, ``StockManager`` class, and global ``sm``
 object have been removed. Closing a session immediately invalidates its DataEngine handle. Closing
 the final session stops data loading and releases the internal data runtime. Do not call ``close``
 concurrently with a query on the same session.
 
 .. code-block:: python
 
-    from hikyuu import Query, open_session
+    from hayaku import Query, open_session
 
     with open_session() as session:
         stock = session.data.get_stock("sh000001")
@@ -177,12 +177,12 @@ concurrently with a query on the same session.
     Open a runtime session. The returned object implements the Python context-manager protocol and
     closes the session when leaving the ``with`` block.
 
-    :param str filename: configuration file path; defaults to ``~/.hikyuu/hikyuu.ini``
+    :param str filename: configuration file path; defaults to ``~/.hayaku/hayaku.ini``
     :param bool ignore_preload: whether to ignore preloading configuration
     :param StrategyContext context: data loading scope
-    :rtype: HikyuuSession
+    :rtype: HayakuSession
 
-.. py:class:: HikyuuSession
+.. py:class:: HayakuSession
 
     .. py:attribute:: opened
 
@@ -207,7 +207,7 @@ concurrently with a query on the same session.
     The read-only data entry point for ordinary users. It provides security, bar-data, market,
     trading-calendar, sector, weight and financial-data queries. Driver, plugin, preload-thread and
     IPC controls are not part of this public interface. It talks directly to the internal data
-    runtime owned by its :py:class:`HikyuuSession`; it does not route queries through
+    runtime owned by its :py:class:`HayakuSession`; it does not route queries through
     ``StockManager``.
 
     Common methods include ``get_stock``, ``get_stock_list``, ``get_kdata``, ``get_market_info``,
@@ -231,7 +231,7 @@ StockManager/Block/Stock (compatibility API)
 
         Return the StockManager singleton instance
 
-    .. py:method:: init(self, base_info_param, block_param, kdata_param, preload_param, hikyuu_param[, context])
+    .. py:method:: init(self, base_info_param, block_param, kdata_param, preload_param, hayaku_param[, context])
 
         Initialize the manager. This method must be called once at program startup
 
@@ -239,7 +239,7 @@ StockManager/Block/Stock (compatibility API)
         :param Parameter block_param: parameters for the sector-information data driver
         :param Parameter kdata_param: parameters for the bar-data driver
         :param Parameter preload_param: preloading parameters
-        :param Parameter hikyuu_param: other hikyuu parameters
+        :param Parameter hayaku_param: other hayaku parameters
         :param StrategyContext context: strategy context; all securities are loaded by default
 
     .. py:method:: wait_data_ready(self)
@@ -270,9 +270,9 @@ StockManager/Block/Stock (compatibility API)
         :return: preloading parameters
         :rtype: Parameter
 
-    .. py:method:: get_hikyuu_parameter(self)
+    .. py:method:: get_hayaku_parameter(self)
 
-        :return: other hikyuu parameters
+        :return: other hayaku parameters
         :rtype: Parameter
 
     .. py:method:: get_context(self)

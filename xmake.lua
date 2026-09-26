@@ -1,7 +1,7 @@
 set_xmakever("3.0.0")
 
 -- project
-set_project("hikyuu")
+set_project("hayaku")
 
 add_rules("mode.debug", "mode.release", "mode.coverage")
 
@@ -18,10 +18,10 @@ if is_plat("windows") then
 end
 
 option("mysql")
-    set_default(true)
+    set_default(false)
     set_showmenu(true)
-    set_category("hikyuu")
-    set_description("Enable mysql kdata engine.")
+    set_category("hayaku")
+    set_description("Enable the optional MySQL storage adapter.")
     if is_plat("windows") then
         add_defines("NOMINMAX")
     end        
@@ -65,7 +65,7 @@ option("ta_lib")
     add_deps("low_precision")
     set_default(true)
     set_showmenu(true)
-    set_category("hikyuu")
+    set_category("hayaku")
     set_description("Enable ta-lib support.")
     -- low_precision 时，需禁用，ta-lib不支持输出为 float
     after_check(function (option)
@@ -87,45 +87,45 @@ end
 add_defines("SPDLOG_ACTIVE_LEVEL=" .. log_level)
 
 if is_mode("debug") then
-    set_configvar("HKU_DEBUG_MODE", 1)
+    set_configvar("HAYAKU_DEBUG_MODE", 1)
 else
-    set_configvar("HKU_DEBUG_MODE", 0)
+    set_configvar("HAYAKU_DEBUG_MODE", 0)
 end
-set_configvar("HKU_LOCAL_VECTORIZE", get_config("local") and 1 or 0)
+set_configvar("HAYAKU_LOCAL_VECTORIZE", get_config("local") and 1 or 0)
 set_configvar("CHECK_ACCESS_BOUND", 1)
 set_configvar("SUPPORT_SERIALIZATION", get_config("serialize") and 1 or 0)
 set_configvar("SUPPORT_TEXT_ARCHIVE", 1)
 set_configvar("SUPPORT_XML_ARCHIVE", 1)
 set_configvar("SUPPORT_BINARY_ARCHIVE", 1)
 set_configvar("ENABLE_MSVC_LEAK_DETECT", 0)
-set_configvar("HKU_ENABLE_LEAK_DETECT", get_config("leak_check") and 1 or 0)
-set_configvar("HKU_ENABLE_SEND_FEEDBACK", get_config("feedback") and 1 or 0)
+set_configvar("HAYAKU_ENABLE_LEAK_DETECT", get_config("leak_check") and 1 or 0)
+set_configvar("HAYAKU_ENABLE_SEND_FEEDBACK", get_config("feedback") and 1 or 0)
 
-set_configvar("HKU_ENABLE_HDF5_KDATA", get_config("hdf5") and 1 or 0)
-set_configvar("HKU_ENABLE_MYSQL", get_config("mysql") and 1 or 0)
-set_configvar("HKU_DISABLE_LIBMYSQLCLIENT", has_config("disable_libmysqlclient") and 1 or 0)
-set_configvar("HKU_ENABLE_MYSQL_KDATA", get_config("mysql") and 1 or 0)
-set_configvar("HKU_ENABLE_SQLITE", (get_config("sqlite") or get_config("hdf5")) and 1 or 0)
-set_configvar("HKU_ENABLE_SQLITE_KDATA", get_config("sqlite") and 1 or 0)
-set_configvar("HKU_ENABLE_TDX_KDATA", get_config("tdx") and 1 or 0)
+set_configvar("HAYAKU_ENABLE_HDF5_KDATA", get_config("hdf5") and 1 or 0)
+set_configvar("HAYAKU_ENABLE_MYSQL", get_config("mysql") and 1 or 0)
+set_configvar("HAYAKU_DISABLE_LIBMYSQLCLIENT", has_config("disable_libmysqlclient") and 1 or 0)
+set_configvar("HAYAKU_ENABLE_MYSQL_KDATA", get_config("mysql") and 1 or 0)
+set_configvar("HAYAKU_ENABLE_SQLITE", (get_config("sqlite") or get_config("hdf5")) and 1 or 0)
+set_configvar("HAYAKU_ENABLE_SQLITE_KDATA", get_config("sqlite") and 1 or 0)
+set_configvar("HAYAKU_ENABLE_TDX_KDATA", get_config("tdx") and 1 or 0)
 
-set_configvar("HKU_USE_LOW_PRECISION", get_config("low_precision") and 1 or 0)
-set_configvar("HKU_ENABLE_TA_LIB", get_config("ta_lib") and 1 or 0)
+set_configvar("HAYAKU_USE_LOW_PRECISION", get_config("low_precision") and 1 or 0)
+set_configvar("HAYAKU_ENABLE_TA_LIB", get_config("ta_lib") and 1 or 0)
 
-set_configvar("HKU_ENABLE_MIMALLOC", (not get_config("leak_check")) and is_plat("windows", "linux", "cross") and 1 or 0)
+set_configvar("HAYAKU_ENABLE_MIMALLOC", (not get_config("leak_check")) and is_plat("windows", "linux", "cross") and 1 or 0)
 
-set_configvar("HKU_SUPPORT_DATETIME", 1)
-set_configvar("HKU_ENABLE_SQLCIPHER", 0)
-set_configvar("HKU_SQL_TRACE", get_config("sql_trace"))
-set_configvar("HKU_ENABLE_INI_PARSER", 1)
-set_configvar("HKU_ENABLE_STACK_TRACE", get_config("stacktrace") and 1 or 0)
-set_configvar("HKU_CLOSE_SPEND_TIME", get_config("spend_time") and 0 or 1)
-set_configvar("HKU_USE_SPDLOG_ASYNC_LOGGER", get_config("async_log") and 1 or 0)
-set_configvar("HKU_LOG_ACTIVE_LEVEL", log_level)
-set_configvar("HKU_ENABLE_HTTP_CLIENT", 1)
-set_configvar("HKU_ENABLE_HTTP_CLIENT_SSL", get_config("http_client_ssl") and 1 or 0)
-set_configvar("HKU_ENABLE_HTTP_CLIENT_ZIP", get_config("http_client_zip") and 1 or 0)
-set_configvar("HKU_ENABLE_NODE", 1)
+set_configvar("HAYAKU_SUPPORT_DATETIME", 1)
+set_configvar("HAYAKU_ENABLE_SQLCIPHER", 0)
+set_configvar("HAYAKU_SQL_TRACE", get_config("sql_trace"))
+set_configvar("HAYAKU_ENABLE_INI_PARSER", 1)
+set_configvar("HAYAKU_ENABLE_STACK_TRACE", get_config("stacktrace") and 1 or 0)
+set_configvar("HAYAKU_CLOSE_SPEND_TIME", get_config("spend_time") and 0 or 1)
+set_configvar("HAYAKU_USE_SPDLOG_ASYNC_LOGGER", get_config("async_log") and 1 or 0)
+set_configvar("HAYAKU_LOG_ACTIVE_LEVEL", log_level)
+set_configvar("HAYAKU_ENABLE_HTTP_CLIENT", 1)
+set_configvar("HAYAKU_ENABLE_HTTP_CLIENT_SSL", get_config("http_client_ssl") and 1 or 0)
+set_configvar("HAYAKU_ENABLE_HTTP_CLIENT_ZIP", get_config("http_client_zip") and 1 or 0)
+set_configvar("HAYAKU_ENABLE_NODE", 1)
 
 
 local hdf5_version = "1.12.2"
@@ -134,8 +134,8 @@ if is_plat("windows") then
 end
 local flatbuffers_version = "25.2.10"
 
-add_repositories("hikyuu-repo https://github.com/fasiondog/hikyuu_extern_libs.git")
--- add_repositories("hikyuu-repo https://gitee.com/fasiondog/hikyuu_extern_libs.git")
+add_repositories("hayaku-repo https://github.com/fasiondog/hikyuu_extern_libs.git")
+-- add_repositories("hayaku-repo https://gitee.com/fasiondog/hikyuu_extern_libs.git")
 if get_config("hdf5") then
     add_requires("hdf5 " .. hdf5_version, { system = false })
 end
@@ -274,9 +274,9 @@ if has_config("local") then
 end
 
 includes("./copy_dependents.lua")
-includes("./hikyuu_cpp/src")
-includes("./hikyuu_cpp/demo")
+includes("./hayaku_cpp/src")
+includes("./hayaku_cpp/demo")
 if not is_plat("cross") then
-  includes("./hikyuu_pywrap")
-  includes("./hikyuu_cpp/test")
+  includes("./hayaku_pywrap")
+  includes("./hayaku_cpp/test")
 end

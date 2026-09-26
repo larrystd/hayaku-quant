@@ -1,0 +1,55 @@
+#pragma once
+
+/*
+ * MySQLConnect.h
+ *
+ *  Copyright (c) 2019, hikyuu.org
+ *
+ *  Created on: 2019-8-17
+ *      Author: fasiondog
+ */
+
+
+#include "common/database/DBConnectBase.h"
+#include "MySQLStatement.h"
+
+#include <memory>
+
+namespace hayaku {
+
+class HAYAKU_UTILS_API MySQLConnect : public DBConnectBase {
+public:
+    explicit MySQLConnect(const Parameter &param);
+    virtual ~MySQLConnect() override;
+
+    MySQLConnect(const MySQLConnect &) = delete;
+    MySQLConnect &operator=(const MySQLConnect &) = delete;
+
+    virtual bool ping() override;
+
+    virtual int64_t exec(const std::string &sql_string) override;
+    virtual SQLStatementPtr getStatement(const std::string &sql_statement) override;
+    virtual bool tableExist(const std::string &tablename) override;
+    virtual void resetAutoIncrement(const std::string &tablename) override;
+
+    virtual void transaction() override;
+    virtual void commit() override;
+    virtual void rollback() noexcept override;
+
+private:
+    friend class MySQLStatement;
+
+    // The method provided to MySQLStatement to access the original connection
+    void *getRawConnection() const noexcept;
+
+    // Internal helper methods
+    bool tryConnect() noexcept;
+    void connect();
+    void close();
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
+};
+
+}  // namespace hayaku

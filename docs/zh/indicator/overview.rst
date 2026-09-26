@@ -1,4 +1,4 @@
-.. py:currentmodule:: hikyuu.indicator
+.. py:currentmodule:: hayaku.indicator
 .. highlight:: python
 
 技术指标总览

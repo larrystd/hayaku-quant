@@ -8,7 +8,7 @@ To build the C++ API reference, generate the Doxygen documentation with the foll
 
 .. code-block:: shell
 
-    xmake doxygen -F hikyuu_cpp/Doxygen
+    xmake doxygen -F hayaku_cpp/Doxygen
 
 .. _developer:
 
@@ -33,18 +33,18 @@ xmake >= 2.8.2. Website: `<https://github.com/xmake-io/xmake>`_
 See: `<https://xmake.io/#/zh-cn/guide/installation>`_
 
 
-3. Clone the Hikyuu source code
+3. Clone the Hayaku source code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Run the following command to clone the Hikyuu source code (do not clone into a directory whose path contains Chinese characters):
+Run the following command to clone the Hayaku source code (do not clone into a directory whose path contains Chinese characters):
 
 .. code-block:: shell
 
-    git clone https://github.com/fasiondog/hikyuu.git
+    git clone https://github.com/larrystd/hayaku-quant.git
 
 .. note::
 
-    **Donor users who need the plugin should install the hikyuu_plugin package: pip install hikyuu_plugin**
+    **Donor users who need the plugin should install the hayaku_plugin package: pip install hayaku_plugin**
 
     If the plugin crashes when used with the latest code, check out the release branch or the corresponding version branch and build from that.
 
@@ -89,7 +89,7 @@ From the source directory, run python setup.py build -j 10. Other supported comm
 - python setup.py help        -- show the help
 - python setup.py build       -- run the build
 - python setup.py install     -- build and install (into Python's site-packages directory)
-- python setup.py uninstall   -- remove the installed Hikyuu
+- python setup.py uninstall   -- remove the installed Hayaku
 - python setup.py test        -- run the unit tests (optionally pass --compile=1 to build first)
 - python setup.py clear       -- clear the local build artifacts
 - python setup.py wheel       -- generate a wheel package
@@ -106,7 +106,7 @@ On Linux, for example, add the following line to the end of ~/.bashrc (pointing 
 
 .. code-block:: shell
 
-    export PYTHONPATH=/path/to/hikyuu:$PYTHONPATH
+    export PYTHONPATH=/path/to/hayaku:$PYTHONPATH
 
 
 4. Generate a Visual Studio project on Windows
@@ -123,13 +123,13 @@ In Visual Studio, you can set the demo as the startup project for debugging.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. Install pybind11-stubgen with pip install pybind11-stubgen
-2. Run pybind11-stubgen hikyuu -o .; code hints and help information will then work correctly.
+2. Run pybind11-stubgen hayaku -o .; code hints and help information will then work correctly.
 
 
 6. Using the plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you build from source and want to use the Hikyuu plugin, install the standalone plugin package: pip install hikyuu-plugin
+If you build from source and want to use the Hayaku plugin, install the standalone plugin package: pip install hayaku-plugin
 
 Note that the plugin version must match your build: it is best to build from the release branch (or a release tag), so that a version mismatch does not render the plugin unusable.
 
@@ -137,19 +137,19 @@ Note that the plugin version must match your build: it is best to build from the
 Docker Build
 ------------
 
-The docker directory in the source tree contains Dockerfile_dev files based on Ubuntu, Debian and Fedora, which can be used to quickly set up a Hikyuu build environment.
+The docker directory in the source tree contains Dockerfile_dev files based on Ubuntu, Debian and Fedora, which can be used to quickly set up a Hayaku build environment.
 
 .. code-block:: shell
 
     cd docker
-    docker build -t hikyuu_dev -f Dockerfile_dev .
+    docker build -t hayaku_dev -f Dockerfile_dev .
 
-    docker run -it hikyuu_dev /bin/bash
+    docker run -it hayaku_dev /bin/bash
 
-Enter the hikyuu directory; the remaining steps are the same as the source build instructions above.
+Enter the hayaku directory; the remaining steps are the same as the source build instructions above.
 
-There is also a Dockerfile that installs Hikyuu via pip; see /docker/Dockerfile_miniconda .
+There is also a Dockerfile that installs Hayaku via pip; see /docker/Dockerfile_miniconda .
 
-Hikyuu requires data to be imported before use. The Docker image does not include the GUI; run python hikyuu/gui/importdata.py directly to import the data.
+Hayaku requires data to be imported before use. The Docker image does not include the GUI; run python hayaku/gui/importdata.py directly to import the data.
 
-The Hikyuu configuration file is located in /root/.hikyuu, and the data files (HDF5) are stored in /root/stocks; you can specify your own mount directories when creating the Docker container.
+The Hayaku configuration file is located in /root/.hayaku, and the data files (HDF5) are stored in /root/stocks; you can specify your own mount directories when creating the Docker container.
