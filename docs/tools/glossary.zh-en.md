@@ -237,9 +237,9 @@
 | 52 | 最大连续赢利R乘数 | Max Consecutive Win R-Multiple |
 | 53 | 最大连续亏损R乘数 | Max Consecutive Loss R-Multiple |
 
-## 9. 绘图文案（hayaku/draw，计划译名，阶段 6 落地）
+## 9. 绘图文案（hayaku/extensions/visualization，计划译名，阶段 6 落地）
 
-> 用途：`hayaku/draw/**` 的**图上显示文案**改为英文 msgid + `htr()` 时，按下表取词
+> 用途：`hayaku/extensions/visualization/**` 的**图上显示文案**改为英文 msgid + `htr()` 时，按下表取词
 > （方案见 `design_英文化双语文档_代码注释.md` §5.1；**当前实现仍为中文硬编码，本表为落地基准**）。
 > **业绩类文案必须直接引用 §8 的既有键名**，不得自造同义写法
 > （v7 曾因 `Account average annual return %` 与 §8 的 `Account Avg Annual Return %` 不一致导致单测失败）。

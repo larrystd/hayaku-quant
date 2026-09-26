@@ -11,6 +11,7 @@
 
 
 #include "common/time/TimeDelta.h"
+#include "config.h"
 #include "common/Config.h"
 
 #if HAYAKU_SUPPORT_SERIALIZATION

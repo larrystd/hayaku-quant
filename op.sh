@@ -100,7 +100,7 @@ unit_test() {
 }
 
 python_test() {
-    "${PYTHON_BIN}" hayaku/test/test.py
+    "${PYTHON_BIN}" tests/python/test.py
 }
 
 import_test() {

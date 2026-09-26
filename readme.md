@@ -68,7 +68,7 @@ combine into your own strategy library and validate through backtesting.
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🏠 **Project repository**    | [github.com/larrystd/hayaku-quant](https://github.com/larrystd/hayaku-quant)                                                                    |
 | 📚 **Documentation source**  | [`docs/`](docs/)                                                                                                                                |
-| 🚀 **Getting started**       | [Jupyter Notebook tutorial series](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/en/000-Index.ipynb?flush_cache=True) |
+| 🚀 **Getting started**       | [Jupyter Notebook tutorial series](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True) |
 | 🧰 **Strategy part library** | [https://gitee.com/fasiondog/hikyuu_hub](https://gitee.com/fasiondog/hikyuu_hub)                                                              |
 
 ---
@@ -126,7 +126,7 @@ with open_session(account_config=account) as session:
   <img src="docs/en/_static/10000-overview.png" alt="Backtest result" width="900">
 </p>
 
-> 📖 See the [Jupyter Notebook tutorial series](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/en/000-Index.ipynb?flush_cache=True)
+> 📖 See the [Jupyter Notebook tutorial series](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True)
 > for the complete example.
 
 ### ❓ FAQ
@@ -175,7 +175,7 @@ layer (hayaku)**, and the **interactive exploration tool**.
 - **Python interface layer (hayaku)**: a lightweight wrapper around the C++ core with TA-Lib integrated;
   converts seamlessly to and from numpy and pandas, so it plugs into the mainstream Python data analysis
   ecosystem.
-- **hayaku.interactive**: the interactive exploration tool, with built-in visualization of candlesticks,
+- **hayaku.application.interactive**: the interactive exploration tool, with built-in visualization of candlesticks,
   indicators and signals, suitable for rapid strategy validation and backtest analysis.
 
 ### 🍳 Concise syntax: explore strategies faster and more freely
@@ -217,13 +217,14 @@ client tools without worrying about third-party platform restrictions.
 
 | Domain                  | Main API                                      | Responsibility                              |
 | :---------------------- | :-------------------------------------------- | :------------------------------------------ |
-| **Data**                | `open_session / DataEngine`                   | Explicit data lifetime and market queries   |
-| **Execution**           | `AccountConfig / ExecutionEngine`            | Orders, cash, positions and trade history   |
-|                         | `AccountSnapshot / AccountView`               | Immutable account inspection                |
-| **Strategy**            | `StrategyDefinition / StrategyEngine`        | Component composition and orchestration     |
-|                         | `BacktestRequest / BacktestResult`            | Stable backtest input and output values     |
-| **Analysis**            | `hayaku.analysis`                             | Explicit result conversion and analysis     |
-| **Extensions**          | `hayaku.spi / hayaku.advanced`               | Custom protocols and low-level controls     |
+| **Common**              | `hayaku.common`                               | Shared value helpers                        |
+| **Data**                | `hayaku.data`                                 | Market data queries and values              |
+| **Operators**           | `hayaku.operators`                            | Indicator formulas and transformations      |
+| **Execution**           | `hayaku.execution`                            | Orders, cash, positions and trade history   |
+| **Metrics**             | `hayaku.metrics`                              | Result conversion and analysis              |
+| **Strategy**            | `hayaku.strategy`                             | Component composition and backtesting       |
+| **Application**         | `hayaku.application`                          | Sessions, interactive tools, GUI and CLI    |
+| **Extensions**          | `hayaku.extensions`                           | Ingest, realtime, visualization and SPI     |
 
 ---
 

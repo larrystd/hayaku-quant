@@ -1,6 +1,6 @@
 """Native binaries for the optional Hayaku realtime extension.
 
-Use :mod:`hayaku.advanced` for the supported Python API. Importing this
+Use :mod:`hayaku.extensions.realtime` for the supported Python API. Importing this
 package explicitly loads the live extension; importing :mod:`hayaku` does not.
 """
 

@@ -56,7 +56,7 @@ Hayaku Quant Framework 依托成熟的系统化交易与投资组合理念，核
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🏠**项目仓库**   | [github.com/larrystd/hayaku-quant](https://github.com/larrystd/hayaku-quant)                                                                         |
 | 📚**文档源码**   | [`docs/`](docs/)                                                                                                                                     |
-| 🚀**入门示例**   | [Jupyter Notebook 系列教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/zh/000-Index.ipynb?flush_cache=True) |
+| 🚀**入门示例**   | [Jupyter Notebook 系列教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True) |
 | 🧰**策略部件库** | [https://gitee.com/fasiondog/hikyuu_hub](https://gitee.com/fasiondog/hikyuu_hub)                                                                   |
 
 ---
@@ -113,7 +113,7 @@ with open_session(account_config=account) as session:
   <img src="docs/zh/_static/10000-overview.png" alt="回测结果示意" width="900">
 </p>
 
-> 📖 完整示例参见 [Jupyter Notebook 系列教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/zh/000-Index.ipynb?flush_cache=True)
+> 📖 完整示例参见 [Jupyter Notebook 系列教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True)
 
 ### ❓ 上手常见问题
 
@@ -148,7 +148,7 @@ with open_session(account_config=account) as session:
 - **AMD 7950x 实测**：A 股全市场 1913 万日 K 线，首次加载并计算 20 日均线求和仅需 **6 秒**，数据预热后同操作仅需 **166 毫秒**（[📊 性能实测详情](https://mp.weixin.qq.com/s?__biz=MzkwMzY1NzYxMA==&mid=2247483768&idx=1&sn=33e40aa9633857fa7b4c7ded51c95ae7)）。
 - **C++ 核心库**：内置完整策略框架，原生支持多线程与多核加速，为超高算力场景预留扩展空间；核心库可独立剥离使用，帮助开发者快速构建自定义量化工具。
 - **Python 接口层（hayaku）**：对 C++ 核心进行轻量化封装，集成 TA-Lib，支持与 numpy、pandas 无缝互转，轻松对接主流 Python 数据分析生态。
-- **hayaku.interactive**：交互式探索工具，内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
+- **hayaku.application.interactive**：交互式探索工具，内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
 
 ### 🍳 语法简洁，策略探索更高效自由
 
@@ -178,13 +178,14 @@ with open_session(account_config=account) as session:
 
 | 领域                   | 主接口                                        | 职责                               |
 | :--------------------- | :-------------------------------------------- | :--------------------------------- |
-| **数据**               | `open_session / DataEngine`                   | 显式数据生命周期与行情查询         |
-| **执行**               | `AccountConfig / ExecutionEngine`            | 订单、现金、持仓与成交历史         |
-|                        | `AccountSnapshot / AccountView`               | 不可变账户视图                     |
-| **策略**               | `StrategyDefinition / StrategyEngine`        | 组件组合与策略编排                 |
-|                        | `BacktestRequest / BacktestResult`            | 稳定的回测输入与结果值             |
-| **分析**               | `hayaku.analysis`                             | 显式结果转换与分析                 |
-| **扩展**               | `hayaku.spi / hayaku.advanced`               | 自定义协议与低层控制               |
+| **通用**               | `hayaku.common`                               | 共享值类型辅助功能                 |
+| **数据**               | `hayaku.data`                                 | 行情查询与数据值类型               |
+| **算子**               | `hayaku.operators`                            | 指标公式与变换                     |
+| **执行**               | `hayaku.execution`                            | 订单、现金、持仓与成交历史         |
+| **度量**               | `hayaku.metrics`                              | 结果转换与分析                     |
+| **策略**               | `hayaku.strategy`                             | 组件组合与回测                     |
+| **应用**               | `hayaku.application`                          | 会话、交互工具、GUI 与命令行       |
+| **扩展**               | `hayaku.extensions`                           | 导入、实时、绘图与 SPI             |
 
 ---
 

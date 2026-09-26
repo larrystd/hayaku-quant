@@ -4,11 +4,43 @@
 
     For a successful build, do not compile from a source package downloaded directly from GitHub: when files are uploaded to git, some line endings are converted to Linux-style line endings, so parts of a directly downloaded source package may fail to compile on Windows.
 
-To build the C++ API reference, generate the Doxygen documentation with the following command:
+The C++ source is built with Xmake. From the repository root, use
+``./op.sh configure`` followed by ``./op.sh build``. Run ``./op.sh test``
+for the C++ and Python regression suites. C++ formatting and static-analysis
+commands are documented in ``tools/cpp-style.md`` in the repository.
 
-.. code-block:: shell
+Python Package Layout
+---------------------
 
-    xmake doxygen -F hayaku_cpp/Doxygen
+The bindings under ``hayaku_pywrap`` follow the eight C++ domains. The
+``core``, ``ingest``, and ``realtime`` native modules have separate source
+lists. The Python domain roots are ``hayaku.common``, ``hayaku.data``,
+``hayaku.operators``, ``hayaku.execution``, ``hayaku.metrics``,
+``hayaku.strategy``, ``hayaku.application``, and ``hayaku.extensions``.
+``hayaku.data`` exposes market data queries and value types;
+``hayaku.operators`` provides indicator formulas; ``hayaku.metrics`` provides
+result conversion helpers. Data sources, storage backends, import jobs, and
+schema resources live in ``hayaku.extensions.ingest``. Importing ``hayaku``
+does not start a data session; use ``hayaku.application.session.open_session``
+for runtime work. Import realtime controls from ``hayaku.extensions.realtime``
+and drawing from ``hayaku.extensions.visualization``. GUI and command-line
+modules live in ``hayaku.application.gui`` and ``hayaku.application.cli``;
+interactive exploration uses ``hayaku.application.interactive``. Configuration
+and hub helpers live in ``hayaku.application.config`` and
+``hayaku.application.hub``.
+
+Python tests and examples are in ``tests/python`` and ``examples/python`` at
+the repository root, outside the installed package. Run the regression suite
+with ``python3 tests/python/test.py``. Tutorial notebooks are under
+``examples/python/notebook``. The old paths ``hayaku.advanced``,
+``hayaku.draw``, ``hayaku.gui``, ``hayaku.shell``, ``hayaku.interactive``,
+``hayaku.hub``, ``hayaku.config``, ``hayaku.test``, and
+``hayaku.examples`` have been removed. The previous internal paths
+``hayaku.fetcher``, ``hayaku.util``, ``hayaku.flat``, ``hayaku.extend``,
+and ``hayaku.gui.data`` are also removed.
+The former ``hayaku.indicator``, ``hayaku.analysis``, ``hayaku.apps``,
+``hayaku.session``, ``hayaku.ingest``, ``hayaku.realtime``,
+``hayaku.visualization``, and ``hayaku.spi`` paths were removed in Step 6C.
 
 .. _developer:
 
@@ -150,6 +182,6 @@ Enter the hayaku directory; the remaining steps are the same as the source build
 
 There is also a Dockerfile that installs Hayaku via pip; see /docker/Dockerfile_miniconda .
 
-Hayaku requires data to be imported before use. The Docker image does not include the GUI; run python hayaku/gui/importdata.py directly to import the data.
+Hayaku requires data to be imported before use. The Docker image does not include the GUI; run ``python -m hayaku.application.gui.importdata`` to import the data.
 
 The Hayaku configuration file is located in /root/.hayaku, and the data files (HDF5) are stored in /root/stocks; you can specify your own mount directories when creating the Docker container.

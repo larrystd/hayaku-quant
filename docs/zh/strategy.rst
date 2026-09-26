@@ -37,11 +37,11 @@ Python 策略边界由 ``hayaku.strategy`` 中的三个显式值类型/门面构
 
 组件基类以及 ``crtCN``、``crtEV``、``crtMM``、``crtPG``、``crtSG``、``crtSP``、
 ``crtST``、``crtMF``、``crtSCFilter`` 和 ``crtNorm`` 工厂位于
-``hayaku.strategy``，不会再注入包顶层。更底层的扩展协议位于 ``hayaku.spi``。
+``hayaku.strategy``，不会再注入包顶层。更底层的扩展协议位于 ``hayaku.extensions.spi``。
 
 已删除的运行时
 --------------
 
 Python 的 ``Strategy``/``System``/``Portfolio`` 运行时绑定以及 ``hayaku.trade_sys`` 包已经
-删除。数据服务和导入控制通过 ``hayaku.advanced`` 显式使用；账户执行属于
+删除。数据服务和导入控制通过 ``hayaku.extensions.realtime`` 显式使用；账户执行属于
 ``hayaku.execution``。新接口不再提供 ``TradeManager`` 属性，也不再隐式创建进程级账户。

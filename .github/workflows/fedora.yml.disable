@@ -43,6 +43,6 @@ jobs:
               xmake f -c -k shared --feedback=n -y;
               xmake -b core;
               export PYTHONPATH=.:$PYTHONPATH;
-              python hayaku/test/test.py;
+              python tests/python/test.py;
               xmake r small-test;
             "

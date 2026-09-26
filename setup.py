@@ -298,9 +298,9 @@ def copy_include(install_dir):
     dst_path = f'{install_dir}/include/hayaku/python'
     if not os.path.lexists(dst_path):
         os.makedirs(dst_path)
-    shutil.copy('hayaku_pywrap/common/pybind_utils.h', dst_path)
-    shutil.copy('hayaku_pywrap/common/pickle_support.h', dst_path)
-    shutil.copy('hayaku_pywrap/common/convert_any.h', dst_path)
+    shutil.copy('hayaku_pywrap/common/PybindSupport.h', dst_path)
+    shutil.copy('hayaku_pywrap/common/PickleSupport.h', dst_path)
+    shutil.copy('hayaku_pywrap/common/AnyConversion.h', dst_path)
     shutil.copy('hayaku/cpp/__init__.py', dst_path)
     shutil.copy('hayaku/cpp/__init__.py', f'{install_dir}/include')
     shutil.copy('hayaku/cpp/__init__.py', f'{install_dir}/include/hayaku')

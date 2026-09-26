@@ -2,7 +2,7 @@
 
 Importing :mod:`hayaku` only loads the native type definitions. It does not open market data,
 register shutdown hooks, import plotting/dataframe stacks, or create process-global managers.
-Use :func:`open_session` for runtime work and :mod:`hayaku.interactive` for the broad research API.
+Use :func:`open_session` for runtime work and :mod:`hayaku.application.interactive` for the broad research API.
 """
 
 import os as _os
@@ -21,7 +21,7 @@ from .core import (AccountSnapshot, BacktestRequest, BacktestResult, Block, Data
                    PositionRecord, Query, Stock, StockTypeInfo, StockWeight,
                    TradeRecord,
                    StrategyContext, StrategyEngine, TimeDelta)
-from .session import open_session
+from .application.session import open_session
 
 
 __version__ = _core.get_version()

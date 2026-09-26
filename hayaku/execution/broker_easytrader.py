@@ -5,7 +5,7 @@
 #    Author: fasiondog
 
 from hayaku.core import Datetime
-from hayaku.util import hayaku_info
+from hayaku._support import hayaku_info
 
 
 class EasyTraderOrderBroker:

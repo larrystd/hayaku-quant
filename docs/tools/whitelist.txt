@@ -5,22 +5,22 @@
 # 规则：只增不减，新增需评审（设计文档 01 §4）。
 
 # --- 领域数据：A 股行情 / 板块数据抓取（第三方接口字段名、板块名） ---
-hayaku/fetcher/stock/            # 东财/新浪/QQ 等 A 股数据源字段与板块名
+hayaku/extensions/ingest/sources/stock/  # 东财/新浪/QQ 等 A 股数据源字段与板块名
 
 # --- 领域数据：A 股数据导入 / 数据驱动脚本与 SQL ---
-hayaku/data/                     # A 股数据源相关脚本 + 71 个 sql 升级/建库脚本
+hayaku/extensions/ingest/       # A 股数据源相关脚本 + 71 个 sql 升级/建库脚本
 
 # --- 领域数据：国内用户 GUI（中文界面是有意设计） ---
-hayaku/gui/                      # 面向国内 A 股用户，中文界面有意保留
+hayaku/application/gui/         # 面向国内 A 股用户，中文界面有意保留
 
 # --- 领域数据：板块定义（板块名是公开契约，代码以 sm.get_block("指数板块", ...) 引用） ---
-hayaku/config/block/             # dybk/gnbk/hybk/zsbk/self 板块定义
+hayaku/application/config/block/ # dybk/gnbk/hybk/zsbk/self 板块定义
 
 # --- 领域数据：TDX（通达信）相关测试，面向国内用户 ---
-hayaku/test/test_tdx_import.py
-hayaku/test/test_tdx_real_data_import.py
-hayaku/test/test_real_tdx_import.py
-hayaku/test/test_init.py
+tests/python/test_tdx_import.py
+tests/python/test_tdx_real_data_import.py
+tests/python/test_real_tdx_import.py
+tests/python/test_init.py
 
 # --- 领域数据：板块测试数据 + 中文配置键（指数板块 = zsbk.ini 等） ---
 test_data/

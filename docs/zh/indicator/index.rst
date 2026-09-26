@@ -1,7 +1,7 @@
 技术指标
 ========
 
-.. py:module:: hayaku.indicator
+.. py:module:: hayaku.operators
     
 
 .. toctree::

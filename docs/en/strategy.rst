@@ -42,12 +42,12 @@ Component extensions
 The component base classes and the ``crtCN``, ``crtEV``, ``crtMM``, ``crtPG``, ``crtSG``,
 ``crtSP``, ``crtST``, ``crtMF``, ``crtSCFilter`` and ``crtNorm`` factories live in
 ``hayaku.strategy``. They are not injected into the package root. Lower-level extension protocols
-are also available through ``hayaku.spi``.
+are also available through ``hayaku.extensions.spi``.
 
 Removed runtime
 ---------------
 
 The Python ``Strategy``/``System``/``Portfolio`` runtime bindings and the
 ``hayaku.trade_sys`` package have been removed. Data services and importer controls are explicit
-opt-ins in ``hayaku.advanced``; account execution belongs to
+opt-ins in ``hayaku.extensions.realtime``; account execution belongs to
 ``hayaku.execution``. There is no ``TradeManager`` property or implicit process-global account.

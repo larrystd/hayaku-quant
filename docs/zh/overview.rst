@@ -19,7 +19,7 @@ POC，并非上游项目的即插即用替代品。
 
 👉 **项目首页：** `https://github.com/larrystd/hayaku-quant <https://github.com/larrystd/hayaku-quant>`_
 
-👉 **入门示例:** `https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/zh/000-Index.ipynb?flush_cache=True <https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/zh/000-Index.ipynb?flush_cache=True>`_
+👉 **入门示例:** `https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True <https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True>`_
 
 👉 **上游策略部件库：** `https://gitee.com/fasiondog/hikyuu_hub <https://gitee.com/fasiondog/hikyuu_hub>`_
 
@@ -45,7 +45,7 @@ POC，并非上游项目的即插即用替代品。
 .. figure:: _static/10000-overview.png
         :width: 600px
 
-完整示例参见：`入门示例 Notebook <https://nbviewer.jupyter.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/zh/000-Index.ipynb?flush_cache=True>`_
+完整示例参见：`入门示例 Notebook <https://nbviewer.jupyter.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True>`_
 
 
 🔥 为什么选择 Hayaku？
@@ -68,7 +68,7 @@ Hayaku 对系统化交易方法进行了轻量化抽象，涵盖市场环境判�
 
 * **Python接口层（hayaku）：** 对 C++ 核心进行轻量化封装，集成 TA-Lib，支持与 numpy、pandas 无缝互转，轻松对接主流 Python 数据分析生态。
 
-* **hayaku.interactive 交互式探索工具：** 内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
+* **hayaku.application.interactive 交互式探索工具：** 内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
 
 **🍳 语法简洁，策略探索更高效自由**
 

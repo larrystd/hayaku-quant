@@ -37,10 +37,10 @@ Domain modules
 --------------
 
 Use ``hayaku.data``, ``hayaku.execution`` and ``hayaku.strategy`` for engine-specific APIs.
-Extension protocols live in ``hayaku.spi``; data-service controls live in ``hayaku.advanced``.
-Historical data import is available through the optional ``hayaku.ingest`` module. The broad
+Extension protocols live in ``hayaku.extensions.spi``; data-service controls live in ``hayaku.extensions.realtime``.
+Historical data import is available through the optional ``hayaku.extensions.ingest`` module. The broad
 indicator, factory, drawing and dataframe research surface is an
-explicit opt-in through ``hayaku.interactive`` rather than a package-import side effect.
+explicit opt-in through ``hayaku.application.interactive`` rather than a package-import side effect.
 
 Internal runtime types such as ``SessionOptions``, ``DataRuntime``, ``ExecutionRuntime`` and
 ``StrategyRuntime`` are not Python APIs.
@@ -54,15 +54,15 @@ it; calling ingestion functionality then raises an actionable missing-extension 
 
 .. code-block:: python
 
-    from hayaku.ingest import open_kdata_importer
+    from hayaku.extensions.ingest import open_kdata_importer
 
     importer = open_kdata_importer("hdf5", datapath="/path/to/data", markets=["SH"])
     if importer is None:
         raise RuntimeError("The importer plugin or license is unavailable")
 
 Supported backends are ``hdf5``, ``mysql``, and ``clickhouse``. Legacy import names such as
-``hayaku.core.KDataToHdf5Importer`` and the ingestion aliases in ``hayaku.advanced`` have been
-removed; import explicitly from ``hayaku.ingest``. MySQL and ClickHouse are storage backends, not
+``hayaku.core.KDataToHdf5Importer`` and the former ingestion aliases have been
+removed; import explicitly from ``hayaku.extensions.ingest``. MySQL and ClickHouse are storage backends, not
 additional product capability groups.
 
 Real-time quotes
@@ -71,7 +71,7 @@ Real-time quotes
 The optional ``hayaku-realtime`` package provides real-time quote reception and data services.
 Build it from source with ``xmake realtime``. With only the core installed, ``import hayaku``
 and research/backtesting do not require the realtime extension. Import runtime controls such as
-``start_spot_agent`` and ``stop_spot_agent`` explicitly from ``hayaku.advanced`` when needed.
+``start_spot_agent`` and ``stop_spot_agent`` explicitly from ``hayaku.extensions.realtime`` when needed.
 Calling them without the optional extension gives an installation hint.
 
 Migration from the legacy surface

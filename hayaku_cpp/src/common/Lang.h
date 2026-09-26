@@ -9,6 +9,8 @@
 
 
 #include <string>
+#include <utility>
+#include <fmt/format.h>
 #include "common/CppDef.h"
 
 #ifndef HAYAKU_API

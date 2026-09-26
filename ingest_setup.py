@@ -1,7 +1,7 @@
 """Build the optional native ingestion wheel after `xmake ingest`.
 
 The wheel owns only ``hayaku_ingest_native``. The core wheel owns the public
-``hayaku.ingest`` shim, avoiding overlapping files between distributions.
+``hayaku.extensions.ingest`` entry module, avoiding overlapping files between distributions.
 """
 
 import re
@@ -35,6 +35,7 @@ setup(
     version=VERSION,
     description="Optional native historical-data ingestion for Hayaku",
     packages=["hayaku_ingest_native"],
+    options={"build": {"build_base": "build/package-ingest"}},
     package_data={
         "hayaku_ingest_native": [
             "ingest*.so", "ingest*.pyd", "libhayaku-ingest*.so",

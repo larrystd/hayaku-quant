@@ -56,20 +56,18 @@ target("core")
 
     -- set_policy("build.optimization.lto", true)
     add_rules("c++.unity_build", {batchsize = 0})
-    add_files("./main.cpp", "./common/**.cpp", "./data/factor/**.cpp", {unity_group="base"})
-    add_files("./analysis/**.cpp", {unity_group="analysis"})
-    add_files("./app/application_main.cpp", "./app/_HayakuSession.cpp",
-              "./app/runtime/agent_main.cpp", "./app/runtime/_SpotRecord.cpp",
-              {unity_group="app"})
-    add_files("./data/**.cpp", {unity_group="data"})
-    add_files("./data/driver/**.cpp", {unity_group="data_driver"})
-    add_files("./data/indicator/**.cpp", {unity_group="indicator"})
-    add_files("./advanced/_device.cpp",
-              "./advanced/_extind.cpp", "./advanced/_hayakuextra.cpp",
-              "./advanced/_plugin_main.cpp",
-              {unity_group="advanced"})
-    add_files("./execution/**.cpp", {unity_group="execution"})
-    add_files("./strategy/**.cpp", {unity_group="strategy"})
+    add_files("./main.cpp", {unity_group="module"})
+    add_files("./common/Bindings.cpp", "./common/PybindSupport.cpp", {unity_group="common"})
+    add_files("./data/Bindings.cpp", "./data/DataFrameConversion.cpp", {unity_group="data"})
+    add_files("./operators/Bindings.cpp", "./operators/BuiltinBindings.cpp", {unity_group="operators"})
+    add_files("./execution/Bindings.cpp", {unity_group="execution"})
+    add_files("./metrics/Bindings.cpp", {unity_group="metrics"})
+    add_files("./strategy/Bindings.cpp", {unity_group="strategy"})
+    add_files("./application/Bindings.cpp", {unity_group="application"})
+    -- SpotRecord belongs to realtime but must stay in core for type identity.
+    add_files("./extensions/realtime/CoreBindings.cpp", {unity_group="realtime_core"})
+    add_files("./extensions/talib/Bindings.cpp", {unity_group="talib"})
+    add_files("./extensions/Bindings.cpp", {unity_group="extensions"})
 
     on_load("windows", "linux", "macosx", function(target)
         import("lib.detect.find_tool")
@@ -234,8 +232,7 @@ target("realtime")
     add_packages("boost", "fmt", "spdlog", "flatbuffers", "pybind11", "utf8proc",
                  "nlohmann_json", "tl_expected", "nng")
     add_includedirs(".", "../hayaku_cpp/src")
-    add_files("./realtime_main.cpp", "./app/runtime/_SpotAgent.cpp",
-              "./advanced/_dataserver.cpp", "./advanced/_shmserver.cpp")
+    add_files("./extensions/realtime/Module.cpp", "./extensions/realtime/Bindings.cpp")
 
     if is_plat("windows") then
         set_filename("realtime.pyd")
@@ -309,9 +306,7 @@ target("ingest")
     add_packages("boost", "fmt", "spdlog", "flatbuffers", "pybind11", "utf8proc",
                  "nlohmann_json", "tl_expected", "nng")
     add_includedirs(".", "../hayaku_cpp/src")
-    add_files("./ingest_main.cpp", "./advanced/_KDataToHdf5Importer.cpp",
-              "./advanced/_KDataToClickHouseImporter.cpp",
-              "./advanced/_KDataToMySQLImporte.cpp", "./advanced/_checkdata.cpp")
+    add_files("./extensions/ingest/Module.cpp", "./extensions/ingest/Bindings.cpp")
 
     if is_plat("windows") then
         set_filename("ingest.pyd")

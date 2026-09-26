@@ -56,7 +56,7 @@ jobs:
       - name: test python
         run: |
           export PYTHONPATH=.
-          python3 hayaku/test/test.py
+          python3 tests/python/test.py
           
       - name: test
         run: |
@@ -94,4 +94,3 @@ jobs:
       - name: Check README parity
         run: |
           python3 docs/tools/check_readme_parity.py
-  

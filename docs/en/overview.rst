@@ -28,7 +28,7 @@ Repositories:
 
 Project home page: `https://github.com/larrystd/hayaku-quant <https://github.com/larrystd/hayaku-quant>`_
 
-Getting started: `https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/en/000-Index.ipynb?flush_cache=True <https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/en/000-Index.ipynb?flush_cache=True>`_
+Getting started: `https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True <https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True>`_
 
 Upstream strategy part library: `https://gitee.com/fasiondog/hikyuu_hub <https://gitee.com/fasiondog/hikyuu_hub>`_
 
@@ -55,7 +55,7 @@ Example code:
 .. figure:: _static/10000-overview.png
         :width: 600px
 
-The complete example is available in the `Getting Started Notebook <https://nbviewer.jupyter.org/github/larrystd/hayaku-quant/blob/poc/hayaku/examples/notebook/en/000-Index.ipynb?flush_cache=True>`_
+The complete example is available in the `Getting Started Notebook <https://nbviewer.jupyter.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True>`_
 
 
 Why Hayaku?
@@ -91,7 +91,7 @@ The project consists of three parts: a high-performance C++ core library, a Pyth
   integrated; converts seamlessly to and from numpy and pandas, so it plugs into the mainstream
   Python data analysis ecosystem.
 
-* **hayaku.interactive exploration tool:** built-in visualization of candlesticks, indicators and
+* **hayaku.application.interactive exploration tool:** built-in visualization of candlesticks, indicators and
   signals, suitable for rapid strategy validation and backtest analysis.
 
 **Concise syntax: explore strategies faster and more freely**

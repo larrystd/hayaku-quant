@@ -1,0 +1,1 @@
+"""GUI image resources."""

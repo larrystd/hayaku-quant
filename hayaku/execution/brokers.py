@@ -3,7 +3,7 @@
 import json
 
 from hayaku.core import OrderBrokerBase
-from hayaku.util import hayaku_error
+from hayaku._support import hayaku_error
 
 from .broker_easytrader import EasyTraderOrderBroker
 from .broker_mail import MailOrderBroker

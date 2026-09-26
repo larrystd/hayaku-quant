@@ -7,12 +7,24 @@
 > `hayaku_cpp/src` and `hayaku_cpp/test`. The physical layout uses the eight business modules
 > defined in `docs/arch/refactor/step-5-progress.md`; that document supersedes the historical
 > `crt/imp/internal` organization described by older code.
+> **Refactor note (Step 6, 2026-09-26):** Python bindings and packages follow
+> `docs/arch/refactor/step-6-progress.md`; old `hayaku.fetcher`, `hayaku.util`,
+> `hayaku.flat`, `hayaku.extend`, and `hayaku.gui.data` paths are removed.
+> **Refactor note (Step 6B, 2026-09-26):** Python tests and examples moved outside the
+> installable package to `tests/python` and `examples/python`.
+> **Refactor note (Step 6C, 2026-09-26):** the installable Python package follows the eight
+> C++ domains: `common`, `data`, `operators`, `execution`, `metrics`, `strategy`,
+> `application`, and `extensions`. Optional ingestion, realtime, visualization, and
+> SPI modules live under `hayaku.extensions`; GUI, CLI, and session entry points live
+> under `hayaku.application`. The former `hayaku.indicator`, `hayaku.analysis`,
+> `hayaku.apps`, `hayaku.session`, `hayaku.ingest`, `hayaku.realtime`,
+> `hayaku.visualization`, and `hayaku.spi` paths are removed.
 
 ## 1. Project Overview
 
 - **Hayaku** is an open-source ultra-high-speed quantitative trading research framework based on **C++/Python**, focusing on the strategy analysis, the backtesting and the live trading capability extensions (deeply adapted to the domestic China A-share market).
 - The core capabilities: the trading model development, the ultra-fast computing engine, the efficient backtesting system and the live trading extensions.
-- The project composition: the **high-performance C++ core library** (`hayaku_cpp`) + the **pybind11 binding layer** (`hayaku_pywrap`) + the **Python interface layer** (the `hayaku` package) + the **interactive exploration tools** (`hayaku.interactive`).
+- The project composition: the **high-performance C++ core library** (`hayaku_cpp`) + the **pybind11 binding layer** (`hayaku_pywrap`) + the **Python interface layer** (the `hayaku` package) + the **interactive exploration tools** (`hayaku.application.interactive`).
 - License: Apache License 2.0; the default branch is `master`, plus the `release`, `bugfix` and `feature/*` branches.
 - Project documentation source: `docs/` (Sphinx, mainly in Chinese); upstream history remains at [hikyuu.readthedocs.io](https://hikyuu.readthedocs.io/zh-cn/latest/index.html).
 
@@ -31,18 +43,20 @@ hayaku/
 │   └── demo/                 # The C++ demos
 ├── hayaku_pywrap/            # The pybind11 bindings (the target "core" → core.so / core.pyd)
 │   ├── main.cpp              # The binding registration entry
-│   ├── indicator/ trade_sys/ trade_manage/ data_driver/ ...   # The bindings of each module
+│   ├── common/ data/ operators/ execution/ metrics/ strategy/ application/ extensions/
+│   ├── Bindings.h            # Domain registration declarations
 │   └── xmake.lua
 ├── hayaku/                   # The Python interface package
 │   ├── __init__.py           # The package entry: loading the compiled core.so and the dependency libraries
-│   ├── core.py / extend.py   # The core object imports and extensions
-│   ├── indicator/            # The Python-side indicator extensions (the .pyi stubs and the implementations)
-│   ├── trade_sys/ trade_manage/ analysis/ data/ draw/ util/
-│   ├── fetcher/ gui/ strategy/ interactive.py / hub.py
+│   ├── core.py               # Native core imports; opt-in enhancements live in domain _extensions.py files
+│   ├── common/ data/ operators/ execution/ metrics/ strategy/
+│   ├── application/          # Sessions, interactive tools, GUI, CLI, and configuration
+│   ├── extensions/           # Optional ingest, realtime, visualization, and SPI modules
+│   ├── _support/             # Internal Python helpers
 │   ├── plugin/               # The runtime plugins (the data import, the market data, etc.)
 │   ├── cpp/                  # The compiled artifacts directory: core310~core313.so, lib*.dylib, etc. (gitignored)
-│   ├── test/                 # The Python tests (test.py is the entry)
-│   └── examples/             # The examples and the notebook tutorials
+├── tests/python/             # The Python tests (test.py is the entry)
+├── examples/python/          # The examples and notebook tutorials
 ├── docs/                     # The Sphinx documentation (dual-source: docs/zh Chinese + docs/en English; docs/make.sh builds)
 ├── test_data/                # The C++ test data (copied automatically when running the tests)
 ├── i18n/                     # The internationalization/language files
@@ -69,7 +83,7 @@ xmake -b core
 # Build and run the C++ unit tests (doctest; small-test does not depend on the real data)
 xmake r small-test
 
-# Run the full unit tests (covering most modules such as indicator/trade_sys)
+# Run the full unit tests (covering the strategy, indicator, data, and execution modules)
 xmake r unit-test
 
 # The real data test (requiring HAYAKU_USE_REAL_DATA_TEST and the real market data; usually run only in the CI or locally with the data)
@@ -98,15 +112,15 @@ xmake project -k compile_commands --lsp=clangd
 
 ## 4. Testing
 
-### Python Tests (hayaku/test/)
+### Python Tests (tests/python/)
 
 ```bash
 export PYTHONPATH=.
-python3 hayaku/test/test.py     # the entry used by the CI
+python3 tests/python/test.py     # the entry used by the CI
 ```
 
-- The independent test files of each module: `Indicator.py`, `KData.py`, `Signal.py`, `MoneyManager.py`, `Stoploss.py`, `AllocateFunds.py`, `Datetime.py`, `Parameter.py`, etc., which can be run individually (e.g. `python3 hayaku/test/Indicator.py`).
-- The new Python features should add the corresponding tests under `hayaku/test/`.
+- The independent test files of each module: `Indicator.py`, `KData.py`, `Signal.py`, `MoneyManager.py`, `Stoploss.py`, `AllocateFunds.py`, `Datetime.py`, `Parameter.py`, etc., which can be run individually (e.g. `python3 tests/python/Indicator.py`).
+- The new Python features should add the corresponding tests under `tests/python/`.
 
 ### C++ Tests (hayaku_cpp/test/)
 
@@ -155,7 +169,7 @@ TEST_CASE("test_IniParser_hasSection") {
 | Lua      | `.lua-format`                              | format the build scripts                                                                                                         |
 
 - Format the changed files with `clang-format` / `yapf` before committing, to avoid deviating from the existing style.
-- Adding a new public API requires maintaining the `.pyi` stubs (`hayaku/__init__.pyi`, `core.pyi`, `extend.pyi` and `hayaku/cpp/core3xx.pyi`) and the documentation (`docs/zh/` and `docs/en/`; the two trees must be updated in pairs with a consistent structure) synchronously.
+- Adding a new public API requires synchronizing generated `.pyi` stubs through the release workflow and the documentation (`docs/zh/` and `docs/en/`; the two trees must be updated in pairs with a consistent structure).
 
 ### Naming Conventions (C++)
 
@@ -185,11 +199,11 @@ The conventions below are distilled from the existing code of `hayaku_cpp/src/`;
 
 ### Naming Conventions (Python)
 
-The conventions below are distilled from the existing code of the `hayaku/` package (excluding the `cpp/` compiled artifacts and `test/`):
+The conventions below are distilled from the existing code of the `hayaku/` package (excluding the `cpp/` compiled artifacts):
 
 | The identifier category                 | The convention                                                                                                                      | The examples                                                                                                                |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Package / module file names             | `snake_case`                                                                                                                      | `indicator/`, `trade_manage/`, `trade_sys/`, `util/singleton.py`, `draw/drawplot/matplotlib_draw.py`              |
+| Package / module file names             | `snake_case`                                                                                                                      | `operators/`, `extensions/ingest/backends/`, `_support/singleton.py`, `extensions/visualization/backends/matplotlib_draw.py` |
 | Classes                                 | `PascalCase`                                                                                                                      | `class Spot`, `class OrderBrokerWrap`, `class SingletonType`, `class System`                                        |
 | Public functions / methods              | `snake_case`, starting with a verb                                                                                                | `concat_to_df()`, `df_to_ind()`, `run_in_strategy()`, `get_part()`                                                  |
 | Private / internal methods              | a single underscore prefix +`snake_case` (conventionally for internal use, not strictly enforced)                                 | `_buy()`, `_sell()`, `_get_asset_info()`, `_clone()`                                                                |
@@ -201,7 +215,7 @@ The conventions below are distilled from the existing code of the `hayaku/` pack
 | Local variables                         | `snake_case`                                                                                                                      | `df`, `ind_list`, `head_stock_code`, `params`, `cloned`                                                           |
 | Function parameters                     | `snake_case`; the annotated variable names are also `snake_case`                                                                | `head_stock_code`, `col_name`, `col_date`, `allocate_weight_func`, `get_real_buy_price`                           |
 | Custom decorators                       | the`hayaku_` prefix + `snake_case`                                                                                                 | `@hayaku_catch`, `@hayaku_check_ignore`                                                                                       |
-| property / accessors                    | `snake_case` (the `PascalCase` accessors in `flat/Spot.py` are the flatbuffers generated code, **not** this convention) | the accessor methods of the`hayaku/` code itself are mainly `snake_case`                                                |
+| property / accessors                    | `snake_case` (the `PascalCase` accessors in `application/gui/flat/Spot.py` are the flatbuffers generated code, **not** this convention) | the accessor methods of the`hayaku/` code itself are mainly `snake_case`                                                |
 
 > Note: the stubs generated by pybind11-stubgen, such as `hayaku/cpp/core3xx.pyi`, may contain the naming inconsistent with the above; they belong to the binding layer generated artifacts and are not regarded as the Python-side handwritten conventions.
 
@@ -241,13 +255,13 @@ The core components of the systematic trading framework are implemented under `h
 - The files are still a mix of `.rst` and `.md` (the new files prefer `.md`).
 - The local build: `cd docs && ./make.sh` (building both trees → `build/html/{en,zh}`); `./make.sh en` / `./make.sh zh` build only one tree.
 - **They must be maintained in pairs**: when changing the documentation of either language, synchronize the other tree within the same PR, keeping the file sets / the toctree / the heading levels / the labels / the images / the code blocks consistent.
-- When modifying the public interfaces/adding the parts, synchronize the corresponding sections under **both trees** (`indicator/`, `trade_sys/`, `trade_manage/`, `stock_manager.rst`, `factor.md`, etc.).
+- When modifying the public interfaces/adding the parts, synchronize the corresponding sections under **both trees** (`indicator/`, `data/`, `execution/`, `strategy/`, `factor.md`, etc.).
 - The RTD hosting configuration: `docs/en/.readthedocs.yaml`, `docs/zh/.readthedocs.yaml` (the configuration files are **not** placed at the repository root); the cross-language jumps are provided by the RTD Flyout, and hardcoding the `/en/`, `/zh-cn/` links in the sources is forbidden.
 - **When doing Chinese-English translation (covering the C++/Python comment anglicization, the docstrings, the bilingual docs, the README, etc.), the wording must refer to the glossary `docs/tools/glossary.zh-en.md`**; new terms must be registered in the glossary first (via PR review), and then be used — do not invent synonymous translations.
 
 ## 8. The AI Development Workflow and Caveats
 
-1. **Locate the code**: C++ logic → `hayaku_cpp/src/`; bindings → `hayaku_pywrap/`; Python layer → `hayaku/`; tests → `hayaku_cpp/test/` and `hayaku/test/`.
+1. **Locate the code**: C++ logic → `hayaku_cpp/src/`; bindings → `hayaku_pywrap/`; Python layer → `hayaku/`; tests → `hayaku_cpp/test/` and `tests/python/`.
 2. **After modifying the C++ code, you must recompile and let the Python package load the new artifacts**:
 
    ```bash
@@ -256,10 +270,10 @@ The core components of the systematic trading framework are implemented under `h
    ```
 
    The Python package entry `hayaku/__init__.py` loads `core.so` and the dependency libraries from `hayaku/cpp/` (mac/linux sets the `LD_LIBRARY_PATH`).
-3. **When only changing the Python layer, there is no need to recompile the C++**, but note that the `.pyi` stubs must stay in sync with the implementations, and `hayaku/core.py`/`extend.py` carry the core object exports.
+3. **When only changing the Python layer, there is no need to recompile the C++**, but note that the generated `.pyi` stubs must stay in sync with the implementations, and `hayaku/core.py` plus each domain's `_extensions.py` carry the Python enhancements.
 4. **Do not commit the compiled artifacts**: `*.so`, `*.pyd`, `*.dll`, `build/` are all in `.gitignore`; the `core3xx.so`, etc. under `hayaku/cpp/` are the local build artifacts.
 5. **Adding new dependencies**: the C++ dependencies go into `xmake.lua` with `add_requires` (note the platform differences and the versions, e.g. hdf5 is 1.13.3 on Windows, and mysql varies by platform); the Python dependencies go into `requirements.txt`.
-6. **Tests first**: when the change involves the C++ core, run at least `xmake r unit-test` + `python3 hayaku/test/test.py`; when a specific module is involved, run its corresponding test file.
+6. **Tests first**: when the change involves the C++ core, run at least `xmake r unit-test` + `python3 tests/python/test.py`; when a specific module is involved, run its corresponding test file.
 7. **The CI will verify**: the three pipelines of ubuntu (aarch64/x86_64), windows and macosx under `.github/workflows/`; the PRs must pass the builds and the tests before merging into `master`.
 8. **The git commit messages uniformly use English**: in the conventional commits style, e.g. `fix(data): fix cross-period aggregation of derived K-lines in the SQL backend`; the historical early commits have Chinese messages, but all the new commits use English, and the body text is also in English.
 9. **The AI must not commit proactively**: an AI coding agent is forbidden to execute `git commit`, and should also avoid `git add`; after completing each step, list "the list of the files to be committed + the suggested English commit message (a directly copyable `git commit -m "..."`)" and inform the user, letting the user decide the commit timing and the granularity.
@@ -269,5 +283,5 @@ The core components of the systematic trading framework are implemented under `h
 
 - [ ] The changed files have been formatted with `clang-format` / `yapf`
 - [ ] The C++ changes have compiled successfully and the Python side can `import hayaku` normally
-- [ ] The related unit tests have been run (C++: `xmake r small-test`; Python: `python3 hayaku/test/test.py`)
+- [ ] The related unit tests have been run (C++: `xmake r small-test`; Python: `python3 tests/python/test.py`)
 - [ ] No compiled artifacts/local data files have been committed

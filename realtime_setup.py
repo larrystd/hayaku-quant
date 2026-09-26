@@ -1,7 +1,7 @@
 """Build the optional realtime wheel after `xmake realtime`.
 
 The wheel owns only ``hayaku_realtime_native``. The core wheel retains the
-public ``hayaku.advanced`` entry module without the optional native binary.
+public ``hayaku.extensions.realtime`` entry module without the optional native binary.
 """
 
 import re
@@ -35,6 +35,7 @@ setup(
     version=VERSION,
     description="Optional native realtime market data for Hayaku",
     packages=["hayaku_realtime_native"],
+    options={"build": {"build_base": "build/package-realtime"}},
     package_data={
         "hayaku_realtime_native": [
             "realtime*.so", "realtime*.pyd", "libhayaku-realtime*.so",

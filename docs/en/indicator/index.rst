@@ -1,7 +1,7 @@
 Technical Indicators
 ====================
 
-.. py:module:: hayaku.indicator
+.. py:module:: hayaku.operators
 
 
 .. toctree::

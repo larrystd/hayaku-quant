@@ -3,12 +3,16 @@
 
 import platform
 import os
+from pathlib import Path
+import shutil
 import sys
 try:
     from setuptools import find_packages, setup
+    from setuptools.command.build_py import build_py
     from setuptools.dist import Distribution
 except ImportError:
     from distutils.core import find_packages, setup
+    from distutils.command.build_py import build_py
     from distutils.dist import Distribution
 
 
@@ -17,6 +21,17 @@ class BinaryDistribution(Distribution):
 
     def has_ext_modules(self):
         return True
+
+
+class CleanBuildPy(build_py):
+    """Discard stale modules after a package directory is moved or removed."""
+
+    def run(self):
+        build_root = Path("build/package-core").resolve()
+        build_lib = Path(self.build_lib).resolve()
+        if build_root in build_lib.parents and build_lib.is_dir():
+            shutil.rmtree(build_lib)
+        super().run()
 
 
 def parse_requirements(filename):
@@ -68,12 +83,7 @@ with open("./readme.md", encoding='utf-8') as f:
 
 hayaku_data_files = []
 
-packages = ['hayaku']
-for root, dirs, files in os.walk('hayaku'):
-    for p in dirs:
-        if p.find('__pycache__') < 0 and p.find('ipynb_checkpoints') < 0 \
-                and p.find('virtual_documents') < 0 and p.find('idea') < 0 and p.find('venv') < 0:
-            packages.append(f'{root}/{p}')
+packages = find_packages(include=['hayaku', 'hayaku.*'])
 
 excluded_native_data = [
     'ingest*.so', 'ingest*.pyd',
@@ -91,6 +101,7 @@ if os.environ.get('HAYAKU_PACKAGE_MYSQL_CLIENT') != '1':
 
 setup(
     distclass=BinaryDistribution,
+    cmdclass={'build_py': CleanBuildPy},
     name=hayaku_name,
     version=hayaku_version,
     description=hayaku_description,
@@ -100,16 +111,17 @@ setup(
     author=hayaku_author,
     author_email=hayaku_author_email,
     license=hayaku_license,
-    license_files=['LICENSE.txt'],
+    license_files=['LICENSE'],
     keywords=hayaku_keywords,
     platforms=hayaku_platforms,
     url=hayaku_url,
-    packages=packages,  # find_packages(),
+    packages=packages,
+    options={'build': {'build_base': 'build/package-core'}},
     zip_safe=False,
-    include_package_data=True,
+    include_package_data=False,
     package_data={
         '': [
-            '*.rst', '*.pyd', '*.png', '*.md', '*.ipynb', '*.ini', '*.sql', '*.properties', '*.xml',
+            '*.rst', '*.pyd', '*.png', '*.md', '*.ipynb', '*.ini', '*.sql', '*.ui', '*.properties', '*.xml',
             'LICENSE.txt', '*.dll', '*.exe', '*.ico', '*.so', '*.dylib', '*.h', '*.lib', '*.mo',
             '*.so.*', '*.qm', 'libboost_serialization*', 'libboost_python{}*'.format(py_version),
             '*.png'
@@ -153,13 +165,13 @@ setup(
     entry_points={
         # On win11, using the GUI mode times out immediately, so the download fails
         # 'gui_scripts': [
-        #     'HayakuTDX=hayaku.gui.HayakuTDX:start',
+        #     'HayakuTDX=hayaku.application.gui.HayakuTDX:start',
         # ],
         'console_scripts': [
-            'HayakuTDX=hayaku.gui.HayakuTDX:start',
-            'importdata=hayaku.gui.importdata:main',
-            'dataserver=hayaku.gui.dataserver:main',
-            'shmserver=hayaku.gui.shmserver:main',
+            'HayakuTDX=hayaku.application.gui.HayakuTDX:start',
+            'importdata=hayaku.application.gui.importdata:main',
+            'dataserver=hayaku.application.gui.dataserver:main',
+            'shmserver=hayaku.application.gui.shmserver:main',
         ]
     },
     install_requires=requirements,

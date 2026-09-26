@@ -1,6 +1,9 @@
 # 第 6 步：Python 绑定层与包结构收敛
 
-> 状态：目标结构与边界已确定，尚未开始代码迁移
+> 状态：已完成并通过结构、构建、API、测试与 wheel 验收（2026-09-26）
+>
+> 后续的 Python 顶层目录调整见 [Step 6B](step-6b-progress.md)；本文件第 5 节记录当时的结构基线。
+> 当前 Python 八域命名见 [Step 6C](step-6c-progress.md)。
 >
 > 前置条件：第 5 步完成并通过结构、构建、API 与测试验收
 >
@@ -53,7 +56,7 @@ GUI / CLI / draw / ingest  只作为显式使用的上层能力
 | 其中 `.py` / `.pyi` / `.sql` / 其他 | 159 / 1 / 71 / 87 |
 | `hayaku` 顶层公共 API | 30 项 |
 | 原生 Python 模块 | `core`、`ingest`、`realtime` |
-| Step 5 pybind 导出清单 | 888 项 |
+| Step 5 pybind 导出清单（旧扫描口径） | 888 项 |
 
 当前结构已经完成部分接口收敛，但物理归属仍停留在旧模型：
 
@@ -134,7 +137,8 @@ hayaku_pywrap/
 │
 ├── data/
 │   ├── Bindings.cpp                  DataEngine、值类型和 storage 协议
-│   └── DataFrameConversion.{h,cpp}   仅保留确实被多处调用的转换实现
+│   ├── DataFrameConversion.{h,cpp}   多处调用的转换实现
+│   └── storage/*Wrap.h               storage 的 pybind trampoline
 │
 ├── operators/
 │   ├── Bindings.cpp                  Indicator、IndParam、Factor 与 FactorSet
@@ -153,6 +157,7 @@ hayaku_pywrap/
 │   └── Bindings.cpp                  Session 与核心插件宿主
 │
 └── extensions/
+    ├── Bindings.cpp                   core 扩展域注册入口
     ├── talib/
     │   └── Bindings.cpp
     ├── ingest/
@@ -160,12 +165,13 @@ hayaku_pywrap/
     │   └── Bindings.cpp               CheckData 与全部 importer
     └── realtime/
         ├── Module.cpp
-        └── Bindings.cpp               Spot、data server 与 shm server
+        ├── CoreBindings.cpp           SpotRecord，编入 core 保持类型 identity
+        └── Bindings.cpp               SpotAgent、data server 与 shm server
 ```
 
-这棵树以约 15 个 `.cpp` 为正常目标，验收上限为 20 个；不是每个 C++ 类都对应一个
-binding 文件。每个 `Bindings.cpp` 内用匿名 namespace 或 `static` 叶级函数维持可读性，
-领域外只看见 `Bindings.h` 中的一个注册入口。只有以下情况才允许继续拆文件，并须在
+这棵树当前为 18 个 `.cpp`，验收上限为 20 个；不是每个 C++ 类都对应一个 binding 文件。
+叶级注册保留在所属领域实现中；跨文件调用限于领域内的 Builtin、TA-Lib 和 realtime core
+装配，`main.cpp` 只看见 `Bindings.h` 中的领域级入口。只有以下情况才允许继续拆文件，并须在
 xmake 清单旁写明原因：
 
 1. 同一份实现必须分别进入两个原生 target，且无法通过公共函数复用；
@@ -182,12 +188,12 @@ xmake 清单旁写明原因：
 |---|---|---|
 | `common/**` | `common/**` | 统一文件命名和注册入口 |
 | `data/*.cpp` | `data/**` | 数据值类型和 `DataEngine` |
-| `data/driver/**` | `data/storage/**` | 与 C++ `data/storage` 对齐 |
+| `data/driver/*.cpp`；`data/driver/*.h` | `data/Bindings.cpp`；`data/storage/*Wrap.h` | storage 注册聚合，trampoline 保持独立头 |
 | `data/indicator/**` | `operators/**` | 指标属于算子域，不属于数据存储 |
 | `data/factor/**` | `operators/**` | Factor 与 Indicator 同属算子域 |
 | `analysis/**` | `metrics/**` | 与 C++ `metrics` 对齐 |
 | `app/_HayakuSession.cpp` | `application/**` | Session 属于应用装配 |
-| `advanced/_device.cpp` 等核心插件绑定 | `application/plugins/**` | 与 C++ 插件宿主归属一致 |
+| `advanced/_device.cpp` 等核心插件绑定 | `application/Bindings.cpp` | 与 C++ 插件宿主归属一致，避免按插件拆薄文件 |
 | `_ta_lib.cpp` | `extensions/talib/**` | 可选算法扩展 |
 | 导入器、`_checkdata.cpp`、`ingest_main.cpp` | `extensions/ingest/**` | 一个完整的可选模块边界 |
 | Spot/data server/shm server、`realtime_main.cpp` | `extensions/realtime/**` | 一个完整的可选模块边界 |
@@ -276,7 +282,8 @@ hayaku/
 ├── draw/
 │   ├── __init__.py
 │   ├── backends/                   matplotlib、bokeh、echarts
-│   └── studies/                    elder、kaufman、volume
+│   ├── studies/                    elder、kaufman、volume
+│   └── resources/icons/            绘图图标
 │
 ├── gui/
 │   ├── __init__.py
@@ -404,35 +411,35 @@ hayaku/
 
 ### 8.1 `hayaku_pywrap`
 
-- [ ] 一级业务目录只有 `common`、`data`、`operators`、`execution`、`metrics`、
+- [x] 一级业务目录只有 `common`、`data`、`operators`、`execution`、`metrics`、
       `strategy`、`application`、`extensions`。
-- [ ] 不存在 `advanced`、`analysis`、`app`、`data/indicator`、`data/factor`。
-- [ ] `main.cpp` 不再直接声明叶级绑定注册函数。
-- [ ] 绑定 `.cpp` 从当前 82 个收敛到不超过 20 个；任何超出一域一个主文件的拆分都有明确构建理由。
-- [ ] `core`、`ingest`、`realtime` 文件清单显式、互斥且无重复编译源。
-- [ ] 每个绑定文件只有一个业务所有者和一个明确 target 归属。
-- [ ] 内部拼写错误文件名和注册函数名已经修正，Python 导出名称保持不变。
-- [ ] 新增或修改的绑定头只使用单一 `#pragma once`。
+- [x] 不存在 `advanced`、`analysis`、`app`、`data/indicator`、`data/factor`。
+- [x] `main.cpp` 不再直接声明叶级绑定注册函数。
+- [x] 绑定 `.cpp` 从当前 82 个收敛到不超过 20 个；任何超出一域一个主文件的拆分都有明确构建理由。
+- [x] `core`、`ingest`、`realtime` 文件清单显式、互斥且无重复编译源。
+- [x] 每个绑定文件只有一个业务所有者和一个明确 target 归属。
+- [x] 内部拼写错误文件名和注册函数名已经修正，Python 导出名称保持不变。
+- [x] 新增或修改的绑定头只使用单一 `#pragma once`。
 
 ### 8.2 `hayaku`
 
-- [ ] `hayaku/data` 只包含数据查询和值类型公共门面及其私有增强，不含导入作业、连接器或 SQL。
-- [ ] 数据源、后端、导入作业和 schema 全部归入 `hayaku/ingest`。
-- [ ] 不存在顶层 `fetcher`、`util`、`flat`、`extend.py` 和 `gui/data`。
-- [ ] `__init__.py` 仍只导出冻结的 30 项公共 API。
-- [ ] 公共领域包都有显式导出边界，私有支持代码不会泄漏到包顶层。
-- [ ] `cpp`、`plugin` 只作为构建/运行产物落点，不混入业务 Python 源码。
-- [ ] console scripts、SQL、ini、Qt、FlatBuffers、图片和 i18n 资源在安装包中可定位。
+- [x] `hayaku/data` 只包含数据查询和值类型公共门面及其私有增强，不含导入作业、连接器或 SQL。
+- [x] 数据源、后端、导入作业和 schema 全部归入 `hayaku/ingest`。
+- [x] 不存在顶层 `fetcher`、`util`、`flat`、`extend.py` 和 `gui/data`。
+- [x] `__init__.py` 仍只导出冻结的 30 项公共 API。
+- [x] 公共领域包都有显式导出边界，私有支持代码不会泄漏到包顶层。
+- [x] `cpp`、`plugin` 只作为构建/运行产物落点，不混入业务 Python 源码。
+- [x] console scripts、SQL、ini、Qt、FlatBuffers、图片和 i18n 资源在安装包中可定位。
 
 ### 8.3 行为
 
-- [ ] Step 5 API inventory 中的 pybind 导出集合完全一致。
-- [ ] 公共 Python 模块的 `__all__`、函数签名和对象 identity 与迁移前一致。
-- [ ] `import hayaku` 不加载 pandas、matplotlib、SQLAlchemy、PyQt、ingest 或 realtime 原生模块。
-- [ ] 缺少 ingest/realtime 可选包时，基础包可正常导入并给出既有错误语义。
-- [ ] Python 3.10 核心测试、边界测试、完整 Python 测试和三个原生模块构建通过。
-- [ ] 默认 wheel、ingest wheel 和 realtime wheel 的内容检查通过。
-- [ ] `git diff --check` 通过。
+- [x] Step 5 API inventory 中的 pybind 导出集合完全一致（见第 10 节的完整扫描口径）。
+- [x] 公共 Python 模块的 `__all__`、函数签名和对象 identity 与迁移前一致。
+- [x] `import hayaku` 不加载 pandas、matplotlib、SQLAlchemy、PyQt、ingest 或 realtime 原生模块。
+- [x] 缺少 ingest/realtime 可选包时，基础包可正常导入并给出既有错误语义。
+- [x] Python 3.10 核心测试、边界测试、完整 Python 测试和三个原生模块构建通过。
+- [x] 默认 wheel、ingest wheel 和 realtime wheel 的内容检查通过。
+- [x] `git diff --check` 通过。
 
 ## 9. 相邻步骤与品牌基线
 
@@ -456,7 +463,36 @@ target、CLI、配置目录、插件 ABI、测试和文档必须使用同一名�
 - 整理 `Stock/KData/KQuery` 等公共类型和 Python 原始绑定面。
 - 任何 Python 公共 API 变化都必须带迁移说明，而不是作为目录移动的副作用。
 
-## 10. 执行计划状态
+## 10. 执行与验收记录
 
-本文件当前冻结目标结构、聚合式 binding 粒度和变更边界。逐文件映射、批次顺序、回退点、
-构建矩阵和预计时间，在目标树评审通过后补入；在此之前不开始 Step 6 批量移动。
+### 10.1 迁移批次与回退边界
+
+| 批次 | 已完成内容 | 独立回退边界 |
+|---|---|---|
+| Python 目录 | `data` 导入实现迁至 `ingest`，`fetcher`、`util`、`flat`、GUI、绘图与增强代码迁至第 5 节的所有者目录；同步仓库内引用 | Python 移动与 import 更新应作为同一批回退 |
+| 绑定目录 | 82 个 `.cpp` 聚合为 18 个，建立八域注册入口、三个原生模块的显式源文件清单 | 绑定文件、`Bindings.h` 和 `hayaku_pywrap/xmake.lua` 应作为同一批回退 |
+| 发布资源 | 隔离三个 setuptools `build_base`，迁移 SQL、UI、FlatBuffers、图标和 i18n 资源路径 | setup 脚本与资源路径应作为同一批回退 |
+| 文档与验收 | 更新开发者文档、架构清单扫描器和边界测试 | 可独立回退 |
+
+执行期间未创建检查点提交，也未暂存或提交文件；工作区中已有的并行 C++ 格式化修改予以保留。
+两个必要的构建修复是 `Lang.h` 补齐使用到的 fmt/utility 头，以及
+`TimeDelta_serialization.h` 在条件编译前显式包含 `config.h`。这两处不改变公共接口。
+
+### 10.2 结果
+
+- 旧清单的 888 项来自有限路径扫描。改成递归扫描全部绑定 `.cpp` 后，迁移前后均为
+  **1526 个声明**，按 `(def 类型, Python 名称)` 比较的多重集合完全一致。
+  [当前 API 清单](../api-inventory.md) 已按完整口径重生成。受并行 C++ 整理影响，
+  扫描到的 C++ 公共方法数为 275；Step 5 文档保存的是 274。
+- 绑定目录实际有 18 个 `.cpp`、8 个 `.h`。xmake 清单列出 18 个不同源文件，与磁盘文件
+  一一对应；三个模块编译及导入通过。13 个原有可导入公共/原生模块的 `__all__` 和可见名称
+  快照无差异；原先无法导入的 `hayaku.draw` 已修复。
+- Python 3.10：pytest **43 passed**，unittest **39 OK**，API 边界测试单独运行 **14 OK**；
+  架构扫描器测试 **3 OK**，应用依赖检查通过。C++：small-test **51/51**、unit-test
+  **805/805**、plugin-abi-test **7/7**。unit-test 在允许 NNG 监听的环境复跑，回调测试
+  正常执行且 **208450/208450** 断言通过。
+- 三个 wheel 均已构建并在隔离目录验证安装与导入。核心 wheel 有 **71 个 SQL**、UI、
+  FlatBuffers、图标、ini、i18n 和 `core310.so`，不含两个可选原生模块；可选 wheel 各只拥有
+  自己的原生包。wheel 无旧 SQL 路径、`__pycache__` 或 `.pyc`。
+- 中英文 Sphinx 文档构建成功。中文 `python_api.rst` 的表格错误已修复；中文参考文献页尚有
+  两条未引用 citation 警告，与本步路径迁移无关。`git diff --check` 通过。

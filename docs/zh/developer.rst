@@ -3,11 +3,38 @@
 
     为了顺利编译代码， 请勿使用从 github 直接下载源码包的方式编译。 原因是 git 上传时部分文件的换行符被置换为Linux式的换行符，将导致直接下载的部分代码在Windows下无法顺利编译。
 
-C++ API参考, 使用下面的命令生成 Doxygen 文档:
+C++ 源码使用 Xmake 构建。在仓库根目录运行 ``./op.sh configure`` 和
+``./op.sh build``；使用 ``./op.sh test`` 执行 C++ 与 Python 回归测试。
+C++ 格式化和静态检查命令见仓库内的 ``tools/cpp-style.md``。
 
-.. code-block:: shell
+Python 包结构
+-------------
 
-    xmake doxygen -F hayaku_cpp/Doxygen
+``hayaku_pywrap`` 按八个 C++ 业务域组织绑定，``core``、``ingest`` 和
+``realtime`` 原生模块各有独立源码清单。Python 包对应八个顶层业务域：
+``hayaku.common``、``hayaku.data``、``hayaku.operators``、
+``hayaku.execution``、``hayaku.metrics``、``hayaku.strategy``、
+``hayaku.application`` 和 ``hayaku.extensions``。``hayaku.data`` 提供行情查询
+和值类型；``hayaku.operators`` 提供指标公式，``hayaku.metrics`` 提供结果转换。
+数据源、存储后端、导入作业及 schema 资源位于 ``hayaku.extensions.ingest``。
+普通 ``import hayaku`` 不启动数据会话；运行时通过
+``hayaku.application.session.open_session`` 显式打开。实时控制从
+``hayaku.extensions.realtime`` 导入，绘图从
+``hayaku.extensions.visualization`` 导入。GUI 与命令行模块分别位于
+``hayaku.application.gui`` 和 ``hayaku.application.cli``；交互探索位于
+``hayaku.application.interactive``，配置与 hub 辅助模块位于
+``hayaku.application.config`` 和 ``hayaku.application.hub``。
+
+Python 测试与示例位于仓库根目录的 ``tests/python`` 和 ``examples/python``，
+不随安装包分发。使用 ``python3 tests/python/test.py`` 执行回归测试；教程
+Notebook 位于 ``examples/python/notebook``。旧路径 ``hayaku.advanced``、
+``hayaku.draw``、``hayaku.gui``、``hayaku.shell``、``hayaku.interactive``、
+``hayaku.hub``、``hayaku.config``、``hayaku.test`` 和 ``hayaku.examples``
+已删除。之前的内部路径 ``hayaku.fetcher``、``hayaku.util``、
+``hayaku.flat``、``hayaku.extend`` 和 ``hayaku.gui.data`` 也已删除。
+Step 6C 又删除了旧路径 ``hayaku.indicator``、``hayaku.analysis``、
+``hayaku.apps``、``hayaku.session``、``hayaku.ingest``、
+``hayaku.realtime``、``hayaku.visualization`` 和 ``hayaku.spi``。
 
 .. _developer:
 
@@ -149,6 +176,6 @@ Docker 构建
 
 也可以使用基于 pip 安装 Hayaku 的 dockerfile, 见 /docker/Dockerfile_miniconda 。
 
-Hayaku 使用前需要导入数据，Docker镜像不包含界面，可以直接执行 python hayaku/gui/importdata.py 命令导入数据。
+Hayaku 使用前需要导入数据，Docker 镜像不包含界面，可以执行 ``python -m hayaku.application.gui.importdata`` 命令导入数据。
 
 hayaku 配置文件在 /root/.hayaku 目录下, 数据文件存储(HDF5)在 /root/stocks 目录下，可自行在创建docker容器时指定挂载目录。

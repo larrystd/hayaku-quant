@@ -1,4 +1,4 @@
-.. py:currentmodule:: hayaku.indicator
+.. py:currentmodule:: hayaku.operators
 .. highlight:: python
 
 Technical Indicator Overview
