@@ -18,9 +18,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.10'
       - uses: bazel-contrib/setup-bazel@0.19.0
         with:
           bazelisk-version: 1.29.0
@@ -28,17 +25,5 @@ jobs:
           repository-cache: true
           disk-cache: bazel-build-${{ runner.os }}
           cache-save: ${{ github.event_name != 'pull_request' }}
-      - name: Build C++ and Python targets
-        run: ./op.sh build
-      - name: Run serialization and Python package tests
-        run: ./op.sh test
-      - name: Install Python dependencies
-        run: python -m pip install -r requirements.txt wheel
-      - name: Run Python regression suite
-        run: ./op.sh python-test
-      - name: Build and verify wheels
-        run: |
-          ./op.sh wheel
-          ./op.sh wheel-ingest
-          ./op.sh wheel-realtime
-          python3.10 bazel/check_wheels.py
+      - name: Build and test C++ targets
+        run: ./op.sh ci

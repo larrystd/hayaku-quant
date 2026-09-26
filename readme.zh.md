@@ -101,6 +101,7 @@ hayaku_cpp/src/            C++ 数据、指标、策略与执行引擎
 ## 构建、测试与打包
 
 ~~~bash
+./op.sh ci            # 提交检查：编译并测试 C++ 目标
 ./op.sh test          # C++ 测试和原生包导入检查
 ./op.sh python-test   # Python 回归测试
 ./op.sh all           # 构建并运行上述两组测试

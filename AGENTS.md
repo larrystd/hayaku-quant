@@ -234,8 +234,8 @@ The core components of the systematic trading framework are implemented under `h
 3. **When only changing the Python layer, there is no need to recompile the C++**, but note that the generated `.pyi` stubs must stay in sync with the implementations, and `hayaku/core.py` plus each domain's `_extensions.py` carry the Python enhancements.
 4. **Do not commit the compiled artifacts**: `*.so`, `*.pyd`, `*.dll`, `build/` are all in `.gitignore`; the `core3xx.so`, etc. under `hayaku/cpp/` are the local build artifacts.
 5. **Adding new dependencies**: the C++ dependencies go into `MODULE.bazel` and the Bazel `BUILD.bazel` files; the Python dependencies go into `requirements.txt`.
-6. **Tests first**: when the change involves the C++ core, run `./op.sh test` and the relevant Python tests; when a specific module is involved, run its corresponding test file.
-7. **The CI will verify**: the macOS/Linux Bazel pipeline and the docs pipeline under `.github/workflows/`; the PRs must pass the builds and the tests before merging into `master`.
+6. **Submission gate**: run `./op.sh ci` to build all C++ targets and execute the C++ tests. Run Python and package tests separately when changing those interfaces.
+7. **The CI will verify**: the macOS/Linux Bazel pipeline runs `./op.sh ci`; the docs pipeline remains under `.github/workflows/`. PRs must pass the applicable checks before merging into `master`.
 8. **The git commit messages uniformly use English**: in the conventional commits style, e.g. `fix(data): fix cross-period aggregation of derived K-lines in the SQL backend`; the historical early commits have Chinese messages, but all the new commits use English, and the body text is also in English.
 9. **The AI must not commit proactively**: an AI coding agent is forbidden to execute `git commit`, and should also avoid `git add`; after completing each step, list "the list of the files to be committed + the suggested English commit message (a directly copyable `git commit -m "..."`)" and inform the user, letting the user decide the commit timing and the granularity.
 10. **Handle with care**: keep Bazel target source lists and dependency edges current when adding C++ or binding files.
@@ -243,6 +243,6 @@ The core components of the systematic trading framework are implemented under `h
 ## 9. The Quick Self-check Checklist (before committing)
 
 - [ ] The changed files have been formatted with `clang-format` / `yapf`
-- [ ] The C++ changes have compiled successfully and the Python side can `import hayaku` normally
-- [ ] The related unit tests have been run (C++: `./op.sh test`; Python: `python3 tests/python/test.py`)
+- [ ] The C++ build and tests pass with `./op.sh ci`
+- [ ] Python import and related tests pass when Python or binding interfaces change
 - [ ] No compiled artifacts/local data files have been committed

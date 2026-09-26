@@ -101,6 +101,7 @@ The core wheel contains `hayaku` and its native library. Ingest and real-time se
 ## Build, test, and package
 
 ~~~bash
+./op.sh ci            # submission gate: build and test C++ targets
 ./op.sh test          # C++ tests and native package smoke tests
 ./op.sh python-test   # Python regression suite
 ./op.sh all           # build, then both test suites

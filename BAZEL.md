@@ -7,6 +7,9 @@ the C++ standard library used here requires that version for floating point
 
 For a source-tree build and Python 3.10 import, run `./op.sh build`. The wrapper
 builds the targets below and stages their native outputs in the Python packages.
+Run `./op.sh ci` before submitting changes. It builds every target under
+`//hayaku_cpp/...` and runs the focused CVAL and full C++ unit tests; the
+macOS/Linux Bazel workflow uses the same command.
 Use `./op.sh test` for the full C++ suite and package smoke tests, or
 `./op.sh wheel` to build the core wheel.
 The optional wheels use `./op.sh wheel-ingest` and `./op.sh wheel-realtime`.

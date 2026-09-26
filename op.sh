@@ -6,6 +6,10 @@ BAZEL_BIN="${BAZEL_BIN:-$(command -v bazelisk || command -v bazel || true)}"
 PYTHON_BIN="${PYTHON_BIN:-$(command -v python3.10 || true)}"
 STAGE_PYTHON="${STAGE_PYTHON:-$(command -v python3 || true)}"
 STYLE_PYTHON="${STYLE_PYTHON:-${STAGE_PYTHON}}"
+CPP_TEST_TARGETS=(
+    //hayaku_cpp/test:cval_test
+    //hayaku_cpp/test:unit_test
+)
 
 cd "${PROJECT_DIR}"
 
@@ -21,6 +25,7 @@ Build and package:
   wheel-realtime    Build the optional realtime wheel
 
 Tests:
+  ci                Build all C++ targets and run the required C++ tests
   test              Run Bazel C++ and Python package smoke tests
   python-test       Run the source-tree Python regression suite
   all               Build, run Bazel tests, then run Python tests
@@ -76,10 +81,15 @@ build() {
 bazel_test() {
     require_bazel
     "${BAZEL_BIN}" test \
-        //hayaku_cpp/test:cval_test \
-        //hayaku_cpp/test:unit_test \
+        "${CPP_TEST_TARGETS[@]}" \
         //bazel:python_package_smoke_test \
         --test_output=errors
+}
+
+cpp_ci() {
+    require_bazel
+    "${BAZEL_BIN}" build //hayaku_cpp/...
+    "${BAZEL_BIN}" test "${CPP_TEST_TARGETS[@]}" --test_output=errors
 }
 
 python_test() {
@@ -97,6 +107,9 @@ style_python() {
 }
 
 case "${1:-help}" in
+    ci)
+        cpp_ci
+        ;;
     build)
         build
         ;;
