@@ -40,20 +40,17 @@ string BrokerPositionRecord::str() const {
                      stock.market_code(), number, money);
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const BrokerPositionRecord& pos) {
+std::ostream& operator<<(std::ostream& os, const BrokerPositionRecord& pos) {
   os << pos.str();
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const OrderBrokerBase& broker) {
+std::ostream& operator<<(std::ostream& os, const OrderBrokerBase& broker) {
   os << "OrderBroker(" << broker.name() << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const OrderBrokerPtr& broker) {
+std::ostream& operator<<(std::ostream& os, const OrderBrokerPtr& broker) {
   os << "OrderBroker(" << broker->name() << ")";
   return os;
 }

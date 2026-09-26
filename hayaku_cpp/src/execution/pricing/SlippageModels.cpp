@@ -38,7 +38,7 @@ price_t FixedPercentSlippage ::getRealSellPrice(const Datetime& datetime,
 
 void FixedPercentSlippage::_calculate() {}
 
-SlippagePtr HAYAKU_API SP_FixedPercent(double p) {
+SlippagePtr SP_FixedPercent(double p) {
   SlippagePtr ptr = make_shared<FixedPercentSlippage>();
   ptr->setParam("p", p);
   return ptr;
@@ -83,7 +83,7 @@ price_t FixedValueSlippage ::getRealSellPrice(const Datetime& datetime,
 
 void FixedValueSlippage::_calculate() {}
 
-SlippagePtr HAYAKU_API SP_FixedValue(double value) {
+SlippagePtr SP_FixedValue(double value) {
   SlippagePtr ptr = make_shared<FixedValueSlippage>();
   ptr->setParam("value", value);
   return ptr;
@@ -146,7 +146,7 @@ price_t NormalSlippage::getRealSellPrice(const Datetime& datetime,
 
 void NormalSlippage::_calculate() {}
 
-SlippagePtr HAYAKU_API SP_Normal(double mean, double stddev) {
+SlippagePtr SP_Normal(double mean, double stddev) {
   SlippagePtr ptr = make_shared<NormalSlippage>();
   ptr->setParam("mean", mean);
   ptr->setParam("stddev", stddev);
@@ -218,7 +218,7 @@ price_t LogNormalSlippage::getRealSellPrice(const Datetime& datetime,
 
 void LogNormalSlippage::_calculate() {}
 
-SlippagePtr HAYAKU_API SP_LogNormal(double mean, double stddev) {
+SlippagePtr SP_LogNormal(double mean, double stddev) {
   SlippagePtr ptr = make_shared<LogNormalSlippage>();
   ptr->setParam("mean", mean);
   ptr->setParam("stddev", stddev);
@@ -310,8 +310,8 @@ price_t TruncNormalSlippage::getRealSellPrice(const Datetime& datetime,
 
 void TruncNormalSlippage::_calculate() {}
 
-SlippagePtr HAYAKU_API SP_TruncNormal(double mean, double stddev,
-                                      double min_value, double max_value) {
+SlippagePtr SP_TruncNormal(double mean, double stddev, double min_value,
+                           double max_value) {
   SlippagePtr ptr = make_shared<TruncNormalSlippage>();
   ptr->setParam("mean", mean);
   ptr->setParam("stddev", stddev);
@@ -374,7 +374,7 @@ price_t UniformSlippage ::getRealSellPrice(const Datetime& datetime,
 
 void UniformSlippage::_calculate() {}
 
-SlippagePtr HAYAKU_API SP_Uniform(double min_value, double max_value) {
+SlippagePtr SP_Uniform(double min_value, double max_value) {
   SlippagePtr ptr = make_shared<UniformSlippage>();
   ptr->setParam("min_value", min_value);
   ptr->setParam("max_value", max_value);

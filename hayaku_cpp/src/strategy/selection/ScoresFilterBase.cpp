@@ -9,8 +9,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out,
-                                    const ScoresFilterBase& scfilter) {
+std::ostream& operator<<(std::ostream& out, const ScoresFilterBase& scfilter) {
   out << "SCFilter{";
   out << scfilter.name() << "(params:" << scfilter.getParameter() << ")";
   auto child = scfilter.child_;
@@ -23,8 +22,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out,
-                                    const ScoresFilterPtr& scfilter) {
+std::ostream& operator<<(std::ostream& out, const ScoresFilterPtr& scfilter) {
   if (scfilter) {
     out << *scfilter;
   } else {
@@ -59,8 +57,7 @@ ScoreRecordList ScoresFilterBase::filter(const ScoreRecordList& scores,
   return ret;
 }
 
-HAYAKU_API ScoresFilterPtr operator|(const ScoresFilterPtr& a,
-                                     const ScoresFilterPtr& b) {
+ScoresFilterPtr operator|(const ScoresFilterPtr& a, const ScoresFilterPtr& b) {
   ScoresFilterPtr ret;
   if (a && b) {
     auto node = a;

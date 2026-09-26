@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API PriceSCFilter : public ScoresFilterBase {
+class PriceSCFilter : public ScoresFilterBase {
   SCORESFILTER_IMP(PriceSCFilter)
   SCORESFILTER_NO_PRIVATE_MEMBER_SERIALIZATION
 

@@ -13,7 +13,7 @@
 namespace hayaku {
 
 /** Value-owned, read-only view of account state. */
-class HAYAKU_API AccountView {
+class AccountView {
  public:
   AccountView(AccountId id, Datetime initDatetime, Datetime lastDatetime,
               FundsRecord funds, PositionRecordList positions,

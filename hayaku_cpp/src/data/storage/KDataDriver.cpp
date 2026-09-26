@@ -9,14 +9,12 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const KDataDriver& driver) {
+std::ostream& operator<<(std::ostream& os, const KDataDriver& driver) {
   os << "KDataDriver(" << driver.name() << ", " << driver.getParameter() << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const KDataDriverPtr& driver) {
+std::ostream& operator<<(std::ostream& os, const KDataDriverPtr& driver) {
   if (driver) {
     os << *driver;
   } else {
@@ -30,9 +28,7 @@ KDataDriver::KDataDriver() : name_("") {}
 
 KDataDriver::KDataDriver(const Parameter& params) : params_(params) {}
 
-KDataDriver::KDataDriver(const string& name) : name_(name) {
-  to_upper(name_);
-}
+KDataDriver::KDataDriver(const string& name) : name_(name) { to_upper(name_); }
 
 shared_ptr<KDataDriver> KDataDriver::clone() {
   shared_ptr<KDataDriver> ptr = _clone();

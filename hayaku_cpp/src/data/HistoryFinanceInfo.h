@@ -15,7 +15,7 @@ namespace hayaku {
  * Historical financial information record
  * @ingroup StockManage
  */
-struct HAYAKU_API HistoryFinanceInfo {
+struct HistoryFinanceInfo {
   Datetime fileDate;  ///< Used to distinguish the Q1, half-year, Q3 and annual
                       ///< reports
   Datetime reportDate;  ///< Financial report date

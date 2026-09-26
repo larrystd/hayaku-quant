@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API IgnoreNanSCFilter : public ScoresFilterBase {
+class IgnoreNanSCFilter : public ScoresFilterBase {
   SCORESFILTER_IMP(IgnoreNanSCFilter)
   SCORESFILTER_NO_PRIVATE_MEMBER_SERIALIZATION
 

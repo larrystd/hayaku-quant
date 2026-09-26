@@ -41,8 +41,8 @@ using KDataExtensionResolver = std::function<KDataExtension*()>;
 
 /** Install/remove the application-provided extension resolver. No plugin is
  * loaded here. */
-HAYAKU_API void setKDataExtensionResolver(KDataExtensionResolver resolver);
-[[nodiscard]] HAYAKU_API KDataExtension* getKDataExtension() noexcept;
+void setKDataExtensionResolver(KDataExtensionResolver resolver);
+[[nodiscard]] KDataExtension* getKDataExtension() noexcept;
 
 // Internal data-domain helpers. They always have a safe no-extension fallback.
 [[nodiscard]] bool isExtraKType(const string& ktype);

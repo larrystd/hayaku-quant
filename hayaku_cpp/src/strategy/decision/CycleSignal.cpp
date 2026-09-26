@@ -32,6 +32,6 @@ void CycleSignal::_calculate(const KData& kdata) {
   _addBuySignal(getCycleStart());
 }
 
-SignalPtr HAYAKU_API SG_Cycle() { return make_shared<CycleSignal>(); }
+SignalPtr SG_Cycle() { return make_shared<CycleSignal>(); }
 
 }  // namespace hayaku

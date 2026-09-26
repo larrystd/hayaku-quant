@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API MinAmountPercentSCFilter : public ScoresFilterBase {
+class MinAmountPercentSCFilter : public ScoresFilterBase {
   SCORESFILTER_IMP(MinAmountPercentSCFilter)
   SCORESFILTER_NO_PRIVATE_MEMBER_SERIALIZATION
 

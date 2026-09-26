@@ -24,7 +24,7 @@ namespace hayaku {
  * @return SelectorPtr
  * @ingroup Selector
  */
-SelectorPtr HAYAKU_API SE_Fixed(double weight = 1.0);
+SelectorPtr SE_Fixed(double weight = 1.0);
 
 /**
  * @brief Fixed selector, it selects the given trading system every day
@@ -36,9 +36,9 @@ SelectorPtr HAYAKU_API SE_Fixed(double weight = 1.0);
  * @return SelectorPtr
  * @ingroup Selector
  */
-SelectorPtr HAYAKU_API SE_Fixed(const StockList& stock_list,
-                                const internal::StrategyRuntimePtr& sys,
-                                double weight = 1.0);
+SelectorPtr SE_Fixed(const StockList& stock_list,
+                     const internal::StrategyRuntimePtr& sys,
+                     double weight = 1.0);
 
 } /* namespace hayaku */
 
@@ -51,14 +51,10 @@ SelectorPtr HAYAKU_API SE_Fixed(const StockList& stock_list,
 
 namespace hayaku {
 
-HAYAKU_API SelectorPtr operator+(const SelectorPtr& se1,
-                                 const SelectorPtr& se2);
-HAYAKU_API SelectorPtr operator-(const SelectorPtr& se1,
-                                 const SelectorPtr& se2);
-HAYAKU_API SelectorPtr operator*(const SelectorPtr& se1,
-                                 const SelectorPtr& se2);
-HAYAKU_API SelectorPtr operator/(const SelectorPtr& se1,
-                                 const SelectorPtr& se2);
+SelectorPtr operator+(const SelectorPtr& se1, const SelectorPtr& se2);
+SelectorPtr operator-(const SelectorPtr& se1, const SelectorPtr& se2);
+SelectorPtr operator*(const SelectorPtr& se1, const SelectorPtr& se2);
+SelectorPtr operator/(const SelectorPtr& se1, const SelectorPtr& se2);
 
 inline SelectorPtr operator&(const SelectorPtr& se1, const SelectorPtr& se2) {
   return se1 * se2;
@@ -68,21 +64,21 @@ inline SelectorPtr operator|(const SelectorPtr& se1, const SelectorPtr& se2) {
   return se1 + se2;
 }
 
-HAYAKU_API SelectorPtr operator+(const SelectorPtr& se, double value);
+SelectorPtr operator+(const SelectorPtr& se, double value);
 inline SelectorPtr operator+(double value, const SelectorPtr& se) {
   return se + value;
 }
 
-HAYAKU_API SelectorPtr operator-(const SelectorPtr& se, double value);
-HAYAKU_API SelectorPtr operator-(double value, const SelectorPtr& se);
+SelectorPtr operator-(const SelectorPtr& se, double value);
+SelectorPtr operator-(double value, const SelectorPtr& se);
 
-HAYAKU_API SelectorPtr operator*(const SelectorPtr& se, double value);
+SelectorPtr operator*(const SelectorPtr& se, double value);
 inline SelectorPtr operator*(double value, const SelectorPtr& se) {
   return se * value;
 }
 
-HAYAKU_API SelectorPtr operator/(const SelectorPtr& se, double value);
-HAYAKU_API SelectorPtr operator/(double value, const SelectorPtr& se);
+SelectorPtr operator/(const SelectorPtr& se, double value);
+SelectorPtr operator/(double value, const SelectorPtr& se);
 
 }  // namespace hayaku
 
@@ -104,7 +100,7 @@ namespace hayaku {
  * @return SelectorPtr
  * @ingroup Selector
  */
-SelectorPtr HAYAKU_API SE_MultiFactor(const MFPtr& mf, int topn = 10);
+SelectorPtr SE_MultiFactor(const MFPtr& mf, int topn = 10);
 
 /**
  * @brief Stock selection algorithm based on MultiFactor, it supports multiple
@@ -132,11 +128,10 @@ SelectorPtr HAYAKU_API SE_MultiFactor(const MFPtr& mf, int topn = 10);
  * @return SelectorPtr
  * @ingroup Selector
  */
-SelectorPtr HAYAKU_API SE_MultiFactor(const FactorSet& src_inds, int topn = 10,
-                                      int ic_n = 5, int ic_rolling_n = 120,
-                                      const Stock& ref_stk = Stock(),
-                                      bool spearman = true,
-                                      const string& mode = "MF_ICIRWeight");
+SelectorPtr SE_MultiFactor(const FactorSet& src_inds, int topn = 10,
+                           int ic_n = 5, int ic_rolling_n = 120,
+                           const Stock& ref_stk = Stock(), bool spearman = true,
+                           const string& mode = "MF_ICIRWeight");
 
 /**
  * @brief Convenience interface for creating the MultiFactor stock selection
@@ -187,7 +182,7 @@ namespace hayaku {
  * @return SelectorPtr
  * @ingroup Selector
  */
-SelectorPtr HAYAKU_API SE_MultiFactor2(
+SelectorPtr SE_MultiFactor2(
     const MFPtr& mf, const ScoresFilterPtr& filter = SCFilter_IgnoreNan());
 
 /**
@@ -215,11 +210,11 @@ SelectorPtr HAYAKU_API SE_MultiFactor2(
  * @return SelectorPtr
  * @ingroup Selector
  */
-SelectorPtr HAYAKU_API
-SE_MultiFactor2(const FactorSet& factorset, int ic_n = 5,
-                int ic_rolling_n = 120, const Stock& ref_stk = Stock(),
-                bool spearman = true, const string& mode = "MF_ICIRWeight",
-                const ScoresFilterPtr& filter = SCFilter_IgnoreNan());
+SelectorPtr SE_MultiFactor2(
+    const FactorSet& factorset, int ic_n = 5, int ic_rolling_n = 120,
+    const Stock& ref_stk = Stock(), bool spearman = true,
+    const string& mode = "MF_ICIRWeight",
+    const ScoresFilterPtr& filter = SCFilter_IgnoreNan());
 
 /**
  * @brief Convenience interface for creating the MultiFactor2 stock selection
@@ -264,24 +259,24 @@ namespace hayaku {
  * Selector that optimizes the maximum account assets
  * @return SEPtr
  */
-SEPtr HAYAKU_API SE_MaxFundsOptimal();
+SEPtr SE_MaxFundsOptimal();
 
 /**
  * Selector that performs the optimization with the Performance statistics
  * results
  * @return SEPtr
  */
-SEPtr HAYAKU_API SE_PerformanceOptimal(
-    const string& key = "Account Avg Annual Return %", int mode = 0);
+SEPtr SE_PerformanceOptimal(const string& key = "Account Avg Annual Return %",
+                            int mode = 0);
 
 /**
  * Selector that performs the optimization with a custom evaluation function
  * @param evaluate
  * @return SEPtr
  */
-SEPtr HAYAKU_API
-SE_EvaluateOptimal(std::function<double(const internal::StrategyRuntimePtr&,
-                                        const Datetime&)>&& evaluate);
+SEPtr SE_EvaluateOptimal(
+    std::function<double(const internal::StrategyRuntimePtr&,
+                         const Datetime&)>&& evaluate);
 
 }  // namespace hayaku
 
@@ -299,7 +294,7 @@ namespace hayaku {
  * @return SEPtr
  * @ingroup Selector
  */
-SEPtr HAYAKU_API SE_Signal();
+SEPtr SE_Signal();
 
 /**
  * @brief Signal selector, it selects with the system buy signals only
@@ -308,7 +303,7 @@ SEPtr HAYAKU_API SE_Signal();
  * @return SEPtr
  * @ingroup Selector
  */
-SEPtr HAYAKU_API SE_Signal(const StockList& stock_list,
-                           const internal::StrategyRuntimePtr& sys);
+SEPtr SE_Signal(const StockList& stock_list,
+                const internal::StrategyRuntimePtr& sys);
 
 }  // namespace hayaku

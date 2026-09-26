@@ -5,11 +5,12 @@ Google C++ formatting style. On macOS, install `llvm@20` with Homebrew. The
 wrapper finds Homebrew's keg-only tools automatically; set `HAYAKU_LLVM_BIN`
 when they live elsewhere. `./op.sh doctor` prints the selected versions.
 
-Only tracked handwritten `.c`, `.cc`, `.cpp`, `.cxx`, `.h`, `.hh`, `.hpp`, and
+Only handwritten `.c`, `.cc`, `.cpp`, `.cxx`, `.h`, `.hh`, `.hpp`, and
 `.hxx` files under `hayaku_cpp/src`, `hayaku_cpp/test`, `hayaku_cpp/demo`,
-`hayaku_pywrap`, `hayaku_ingest_native`, and `hayaku_realtime_native` are in
+`python/hayaku_pywrap`, `python/hayaku_ingest_native`, and `python/hayaku_realtime_native` are in
 the whole-tree format list. Generated files, third-party sources, and `.h.in`
-templates are excluded. The list is regenerated from Git on every run.
+templates are excluded. The list includes new files and is regenerated from
+Git on every run.
 
 ```sh
 ./op.sh fmt-check

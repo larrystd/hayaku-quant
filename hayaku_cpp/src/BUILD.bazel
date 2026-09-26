@@ -38,7 +38,6 @@ cc_library(
     ],
     defines = [
         "BOOST_ASIO_DISABLE_DEPRECATED",
-        "HAYAKU_API=",
         "HAYAKU_UTILS_API=",
         "SPDLOG_DISABLE_DEFAULT_LOGGER",
         "SPDLOG_ACTIVE_LEVEL=2",
@@ -71,7 +70,7 @@ cc_library(
         "@xxhash//:xxhash",
     ],
     linkopts = select({
-        "@platforms//os:osx": ["-framework CoreFoundation", "-liconv"],
+        "@platforms//os:osx": ["-liconv"],
         "@platforms//os:linux": ["-ldl", "-pthread"],
         "//conditions:default": [],
     }),

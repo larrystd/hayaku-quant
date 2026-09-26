@@ -19,7 +19,7 @@ namespace detail {
 
 class FactorPlanExecutor;
 
-class HAYAKU_API CompiledFactorPlan {
+class CompiledFactorPlan {
  public:
   explicit CompiledFactorPlan(const IndicatorList& formulas);
 
@@ -53,7 +53,7 @@ class HAYAKU_API CompiledFactorPlan {
   bool reusable_{true};
 };
 
-class HAYAKU_API FactorPlanExecutor {
+class FactorPlanExecutor {
  public:
   FactorPlanExecutor(const FactorPlanExecutor&) = delete;
   FactorPlanExecutor& operator=(const FactorPlanExecutor&) = delete;
@@ -64,8 +64,7 @@ class HAYAKU_API FactorPlanExecutor {
 
  private:
   friend class CompiledFactorPlan;
-  explicit FactorPlanExecutor(IndicatorList roots)
-      : roots_(std::move(roots)) {}
+  explicit FactorPlanExecutor(IndicatorList roots) : roots_(std::move(roots)) {}
 
  private:
   IndicatorList roots_;

@@ -24,8 +24,7 @@ CostRecord::CostRecord(price_t commission, price_t stamptax,
       others(others),
       total(total) {}
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const CostRecord& record) {
+std::ostream& operator<<(std::ostream& os, const CostRecord& record) {
   os << record.toString();
   return os;
 }
@@ -42,7 +41,7 @@ std::string CostRecord::toString() const {
   return os.str();
 }
 
-bool HAYAKU_API operator==(const CostRecord& d1, const CostRecord& d2) {
+bool operator==(const CostRecord& d1, const CostRecord& d2) {
   return (std::fabs(d1.commission - d2.commission) < 0.0001 &&
           std::fabs(d1.stamptax - d2.stamptax) < 0.0001 &&
           std::fabs(d1.transferfee - d2.transferfee) < 0.0001 &&

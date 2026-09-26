@@ -12,7 +12,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API FactorSet {
+class FactorSet {
  public:
   FactorSet();
   explicit FactorSet(const string& name,
@@ -208,7 +208,7 @@ class HAYAKU_API FactorSet {
   const_iterator cend() const;
 
  private:
-  struct HAYAKU_API Data {
+  struct Data {
     string name;
     string ktype{KQuery::DAY};
     Block block;
@@ -280,13 +280,9 @@ inline const Block& FactorSet::block() const noexcept { return data_->block; }
 
 inline void FactorSet::block(const Block& blk) { data_->block = blk; }
 
-inline size_t FactorSet::size() const noexcept {
-  return data_->factors.size();
-}
+inline size_t FactorSet::size() const noexcept { return data_->factors.size(); }
 
-inline bool FactorSet::empty() const noexcept {
-  return data_->factors.empty();
-}
+inline bool FactorSet::empty() const noexcept { return data_->factors.empty(); }
 
 inline void FactorSet::clear() noexcept {
   data_->factors.clear();
@@ -329,6 +325,6 @@ inline FactorSet::const_iterator FactorSet::cend() const {
 
 typedef vector<FactorSet> FactorSetList;
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const FactorSet&);
+std::ostream& operator<<(std::ostream& os, const FactorSet&);
 
 }  // namespace hayaku

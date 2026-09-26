@@ -10,7 +10,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API BacktestRequest {
+class BacktestRequest {
  public:
   explicit BacktestRequest(const KData& kdata, bool reset = true,
                            bool resetAll = false);

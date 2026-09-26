@@ -30,6 +30,6 @@ void AllwaysBuySignal::_calculate(const KData& kdata) {
   }
 }
 
-SignalPtr HAYAKU_API SG_AllwaysBuy() { return make_shared<AllwaysBuySignal>(); }
+SignalPtr SG_AllwaysBuy() { return make_shared<AllwaysBuySignal>(); }
 
 }  // namespace hayaku

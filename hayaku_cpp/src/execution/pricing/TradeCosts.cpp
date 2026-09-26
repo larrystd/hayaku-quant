@@ -115,9 +115,9 @@ TradeCostPtr FixedATradeCost::_clone() {
   return make_shared<FixedATradeCost>();
 }
 
-TradeCostPtr HAYAKU_API TC_FixedA(price_t commission, price_t lowestCommission,
-                                  price_t stamptax, price_t transferfee,
-                                  price_t lowestTransferfee) {
+TradeCostPtr TC_FixedA(price_t commission, price_t lowestCommission,
+                       price_t stamptax, price_t transferfee,
+                       price_t lowestTransferfee) {
   return make_shared<FixedATradeCost>(commission, lowestCommission, stamptax,
                                       transferfee, lowestTransferfee);
 }
@@ -218,9 +218,8 @@ TradeCostPtr FixedA2015TradeCost::_clone() {
   return make_shared<FixedA2015TradeCost>();
 }
 
-TradeCostPtr HAYAKU_API TC_FixedA2015(price_t commission,
-                                      price_t lowestCommission,
-                                      price_t stamptax, price_t transferfee) {
+TradeCostPtr TC_FixedA2015(price_t commission, price_t lowestCommission,
+                           price_t stamptax, price_t transferfee) {
   TradeCostPtr p = make_shared<FixedA2015TradeCost>();
   p->setParam<price_t>("commission", commission);
   p->setParam<price_t>("lowest_commission", lowestCommission);
@@ -324,9 +323,8 @@ TradeCostPtr FixedA2017TradeCost::_clone() {
   return make_shared<FixedA2017TradeCost>();
 }
 
-TradeCostPtr HAYAKU_API TC_FixedA2017(price_t commission,
-                                      price_t lowestCommission,
-                                      price_t stamptax, price_t transferfee) {
+TradeCostPtr TC_FixedA2017(price_t commission, price_t lowestCommission,
+                           price_t stamptax, price_t transferfee) {
   TradeCostPtr p = make_shared<FixedA2017TradeCost>();
   p->setParam<price_t>("commission", commission);
   p->setParam<price_t>("lowest_commission", lowestCommission);
@@ -404,8 +402,7 @@ TradeCostPtr FixedETFTradeCost::_clone() {
   return make_shared<FixedETFTradeCost>();
 }
 
-TradeCostPtr HAYAKU_API TC_FixedETF(price_t commission,
-                                    price_t lowestCommission) {
+TradeCostPtr TC_FixedETF(price_t commission, price_t lowestCommission) {
   TradeCostPtr p = make_shared<FixedETFTradeCost>();
   p->setParam<price_t>("commission", commission);
   p->setParam<price_t>("lowest_commission", lowestCommission);
@@ -445,7 +442,7 @@ CostRecord ZeroTradeCost ::getSellCost(const Datetime& datetime,
 
 TradeCostPtr ZeroTradeCost::_clone() { return make_shared<ZeroTradeCost>(); }
 
-TradeCostPtr HAYAKU_API TC_Zero() { return make_shared<ZeroTradeCost>(); }
+TradeCostPtr TC_Zero() { return make_shared<ZeroTradeCost>(); }
 
 } /* namespace hayaku */
 
@@ -515,6 +512,6 @@ TradeCostPtr TradeCostStub::_clone() { return make_shared<TradeCostStub>(); }
 
 namespace hayaku {
 
-HAYAKU_API TradeCostPtr TC_TestStub() { return make_shared<TradeCostStub>(); }
+TradeCostPtr TC_TestStub() { return make_shared<TradeCostStub>(); }
 
 }  // namespace hayaku

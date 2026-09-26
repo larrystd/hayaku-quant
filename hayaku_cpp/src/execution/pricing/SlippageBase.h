@@ -16,7 +16,7 @@ namespace hayaku {
  * Base class of the slippage algorithm
  * @ingroup Slippage
  */
-class HAYAKU_API SlippageBase : public enable_shared_from_this<SlippageBase> {
+class SlippageBase : public enable_shared_from_this<SlippageBase> {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -149,8 +149,8 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(SlippageBase)
 typedef shared_ptr<SlippageBase> SlippagePtr;
 typedef shared_ptr<SlippageBase> SPPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const SlippageBase&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const SlippagePtr&);
+std::ostream& operator<<(std::ostream&, const SlippageBase&);
+std::ostream& operator<<(std::ostream&, const SlippagePtr&);
 
 inline const string& SlippageBase::name() const { return name_; }
 

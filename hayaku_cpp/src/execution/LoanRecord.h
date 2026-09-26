@@ -16,7 +16,7 @@ namespace hayaku {
  * Loan record (margin financing record)
  * @ingroup ExecutionAccount
  */
-class HAYAKU_API LoanRecord {
+class LoanRecord {
  public:
   LoanRecord() : datetime(Null<Datetime>()), value(0.0) {}
   LoanRecord(const Datetime& datetime, price_t value)
@@ -51,7 +51,7 @@ class HAYAKU_API LoanRecord {
 
 typedef vector<LoanRecord> LoanRecordList;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const LoanRecord&);
+std::ostream& operator<<(std::ostream&, const LoanRecord&);
 
 } /* namespace hayaku */
 

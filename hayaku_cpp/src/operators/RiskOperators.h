@@ -22,7 +22,7 @@ namespace hayaku {
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API MDD(int n = 0);
+Indicator MDD(int n = 0);
 
 /**
  * Maximum drawdown percentage (there is no time window limit when n=0); it is a
@@ -55,7 +55,7 @@ namespace hayaku {
  * nan is returned at those positions
  * @ingroup Indicator
  */
-Indicator HAYAKU_API MDD_CURRENT();
+Indicator MDD_CURRENT();
 
 /**
  * The drawdown percentage from the current point to the historical highest
@@ -103,8 +103,8 @@ namespace hayaku {
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API RSRS_BETA(int n = 20);
-Indicator HAYAKU_API RSRS_BETA(const KData& kdata, int n = 20);
+Indicator RSRS_BETA(int n = 20);
+Indicator RSRS_BETA(const KData& kdata, int n = 20);
 
 }  // namespace hayaku
 
@@ -117,8 +117,8 @@ Indicator HAYAKU_API RSRS_BETA(const KData& kdata, int n = 20);
 
 namespace hayaku {
 
-Indicator HAYAKU_API RSRS_BULL(int n = 20, int m = 60);
-Indicator HAYAKU_API RSRS_BULL(const KData& kdata, int n = 20, int m = 60);
+Indicator RSRS_BULL(int n = 20, int m = 60);
+Indicator RSRS_BULL(const KData& kdata, int n = 20, int m = 60);
 
 }  // namespace hayaku
 
@@ -155,11 +155,9 @@ namespace hayaku {
  * @param p the noise coefficient, 2 by default
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SAFTYLOSS(int n1 = 10, int n2 = 3, double p = 2.0);
-Indicator HAYAKU_API SAFTYLOSS(const IndParam& n1, const IndParam& n2,
-                               double p = 2.0);
-Indicator HAYAKU_API SAFTYLOSS(const IndParam& n1, const IndParam& n2,
-                               const IndParam& p);
+Indicator SAFTYLOSS(int n1 = 10, int n2 = 3, double p = 2.0);
+Indicator SAFTYLOSS(const IndParam& n1, const IndParam& n2, double p = 2.0);
+Indicator SAFTYLOSS(const IndParam& n1, const IndParam& n2, const IndParam& p);
 
 /**
  * Alexander Elder's safe zone stop-loss

@@ -80,7 +80,7 @@ void TaMa::_calculate(const Indicator& data) {
   HAYAKU_ASSERT(outBegIdx == discard_ && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_MA(int n, int matype) {
+Indicator TA_MA(int n, int matype) {
   auto p = make_shared<TaMa>();
   p->setParam<int>("n", n);
   p->setParam<int>("matype", matype);
@@ -164,11 +164,10 @@ void TaT3::_calculate(const Indicator& data) {
   int outNbElement;
   ::TA_T3(discard_, total - 1, src, n, vfactor, &outBegIdx, &outNbElement,
           dst + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_T3(int n, double vfactor) {
+Indicator TA_T3(int n, double vfactor) {
   auto p = make_shared<TaT3>();
   p->setParam<int>("n", n);
   p->setParam<double>("vfactor", vfactor);
@@ -252,11 +251,10 @@ void TaMama::_calculate(const Indicator& data) {
   int outNbElement;
   ::TA_MAMA(discard_, total - 1, src, fast_limit, slow_limit, &outBegIdx,
             &outNbElement, dst0 + discard_, dst1 + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_MAMA(double fast_limit, double slow_limit) {
+Indicator TA_MAMA(double fast_limit, double slow_limit) {
   auto p = make_shared<TaMama>();
   p->setParam<double>("fast_limit", fast_limit);
   p->setParam<double>("slow_limit", slow_limit);
@@ -361,12 +359,11 @@ void TaMavp::_calculate(const Indicator& ind) {
   int outNbElement;
   ::TA_MAVP(discard_, total - 1, src0, src1, min_n, max_n, matype, &outBegIdx,
             &outNbElement, dst + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_MAVP(const Indicator& ref_ind, int min_n, int max_n,
-                             int matype, bool fill_null) {
+Indicator TA_MAVP(const Indicator& ref_ind, int min_n, int max_n, int matype,
+                  bool fill_null) {
   return Indicator(
       make_shared<TaMavp>(ref_ind, min_n, max_n, matype, fill_null));
 }

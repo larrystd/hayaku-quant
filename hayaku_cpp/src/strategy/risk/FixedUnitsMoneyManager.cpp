@@ -40,7 +40,7 @@ double FixedUnitsMoneyManager ::_getBuyNumber(const Datetime& datetime,
   return fixed_risk / risk;
 }
 
-MoneyManagerPtr HAYAKU_API MM_FixedUnits(int n) {
+MoneyManagerPtr MM_FixedUnits(int n) {
   MoneyManagerPtr p = make_shared<FixedUnitsMoneyManager>();
   p->setParam<int>("n", n);
   return p;

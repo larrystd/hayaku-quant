@@ -13,12 +13,12 @@ BOOST_CLASS_EXPORT(hayaku::TradeCostBase)
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const TradeCostBase& tc) {
+std::ostream& operator<<(std::ostream& os, const TradeCostBase& tc) {
   os << "TradeCostFunc(" << tc.name() << ", " << tc.getParameter() << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const TradeCostPtr& tc) {
+std::ostream& operator<<(std::ostream& os, const TradeCostPtr& tc) {
   if (tc) {
     os << *tc;
   } else {

@@ -11,14 +11,12 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const EnvironmentBase& en) {
+std::ostream& operator<<(std::ostream& os, const EnvironmentBase& en) {
   os << "Environment(" << en.name() << " " << en.getParameter() << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const EnvironmentPtr& en) {
+std::ostream& operator<<(std::ostream& os, const EnvironmentPtr& en) {
   if (en) {
     os << *en;
   } else {

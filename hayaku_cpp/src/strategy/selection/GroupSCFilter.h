@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API GroupSCFilter : public ScoresFilterBase {
+class GroupSCFilter : public ScoresFilterBase {
   SCORESFILTER_IMP(GroupSCFilter)
   SCORESFILTER_NO_PRIVATE_MEMBER_SERIALIZATION
 

@@ -107,14 +107,11 @@ IndicatorList ICMultiFactor::_calculate(
       });
 }
 
-MultiFactorPtr HAYAKU_API MF_ICWeight() {
-  return std::make_shared<ICMultiFactor>();
-}
+MultiFactorPtr MF_ICWeight() { return std::make_shared<ICMultiFactor>(); }
 
-MultiFactorPtr HAYAKU_API MF_ICWeight(const StockList& stks,
-                                      const KQuery& query, const Stock& ref_stk,
-                                      int ic_n, int ic_rolling_n, bool spearman,
-                                      int mode, bool save_all_factors) {
+MultiFactorPtr MF_ICWeight(const StockList& stks, const KQuery& query,
+                           const Stock& ref_stk, int ic_n, int ic_rolling_n,
+                           bool spearman, int mode, bool save_all_factors) {
   return std::make_shared<ICMultiFactor>(stks, query, ref_stk, ic_n,
                                          ic_rolling_n, spearman, mode,
                                          save_all_factors);

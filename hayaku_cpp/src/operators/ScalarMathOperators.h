@@ -15,7 +15,7 @@ namespace hayaku {
  * Calculate the absolute value
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ABS();
+Indicator ABS();
 
 inline Indicator ABS(const Indicator& ind) { return ABS()(ind); }
 
@@ -41,7 +41,7 @@ namespace hayaku {
  * value of A For example: CEILING(12.3) gives 13; CEILING(-3.5) gives -3
  * @ingroup Indicator
  */
-Indicator HAYAKU_API CEILING();
+Indicator CEILING();
 
 inline Indicator CEILING(const Indicator& ind) { return CEILING()(ind); }
 
@@ -67,7 +67,7 @@ namespace hayaku {
  * value of A For example: FLOOR(12.3) gives 12
  * @ingroup Indicator
  */
-Indicator HAYAKU_API FLOOR();
+Indicator FLOOR();
 
 inline Indicator FLOOR(const Indicator& ind) { return FLOOR()(ind); }
 
@@ -93,7 +93,7 @@ namespace hayaku {
  * value of A For example: CEILING(12.3) gives 13; CEILING(-3.5) gives -3
  * @ingroup Indicator
  */
-Indicator HAYAKU_API INTPART();
+Indicator INTPART();
 
 inline Indicator INTPART(const Indicator& ind) { return INTPART()(ind); }
 
@@ -155,7 +155,7 @@ namespace hayaku {
  * Exponent, EXP(X) is e to the power of X
  * @ingroup Indicator
  */
-Indicator HAYAKU_API EXP();
+Indicator EXP();
 
 inline Indicator EXP(const Indicator& ind) { return EXP()(ind); }
 
@@ -179,7 +179,7 @@ namespace hayaku {
  * For example: LN(CLOSE) gives the logarithm of the close price
  * @ingroup Indicator
  */
-Indicator HAYAKU_API LN();
+Indicator LN();
 
 inline Indicator LN(const Indicator& ind) { return LN()(ind); }
 
@@ -202,7 +202,7 @@ namespace hayaku {
  * Usage: LOG(X) gets the logarithm of X
  * @ingroup Indicator
  */
-Indicator HAYAKU_API LOG();
+Indicator LOG();
 
 inline Indicator LOG(const Indicator& ind) { return LOG()(ind); }
 
@@ -231,8 +231,8 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API POW(int n);
-Indicator HAYAKU_API POW(const IndParam& n);
+Indicator POW(int n);
+Indicator POW(const IndParam& n);
 
 inline Indicator POW(const Indicator& ind, int n) { return POW(n)(ind); }
 
@@ -271,7 +271,7 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SQRT();
+Indicator SQRT();
 
 inline Indicator SQRT(const Indicator& ind) { return SQRT()(ind); }
 
@@ -294,7 +294,7 @@ namespace hayaku {
  * X=0 and X<0.
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SGN();
+Indicator SGN();
 
 inline Indicator SGN(const Indicator& ind) { return SGN()(ind); }
 
@@ -322,8 +322,8 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SIGNED_POWER(int n);
-Indicator HAYAKU_API SIGNED_POWER(const IndParam& n);
+Indicator SIGNED_POWER(int n);
+Indicator SIGNED_POWER(const IndParam& n);
 
 inline Indicator SIGNED_POWER(const Indicator& ind, int n) {
   return SIGNED_POWER(n)(ind);
@@ -359,7 +359,7 @@ namespace hayaku {
  * Rounding
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ROUND(int ndigits = 2);
+Indicator ROUND(int ndigits = 2);
 
 inline Indicator ROUND(const Indicator& ind, int n = 2) {
   return ROUND(n)(ind);
@@ -387,7 +387,7 @@ namespace hayaku {
  * Truncate upward, e.g. 10.1 is truncated to 11
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ROUNDDOWN(int ndigits = 2);
+Indicator ROUNDDOWN(int ndigits = 2);
 
 inline Indicator ROUNDDOWN(const Indicator& ind, int n = 2) {
   return ROUNDDOWN(n)(ind);
@@ -415,7 +415,7 @@ namespace hayaku {
  * Truncate upward, e.g. 10.1 is truncated to 11
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ROUNDUP(int ndigits = 2);
+Indicator ROUNDUP(int ndigits = 2);
 ;
 
 inline Indicator ROUNDUP(const Indicator& ind, int n = 2) {

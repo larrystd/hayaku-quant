@@ -19,8 +19,7 @@ namespace hayaku {
  * system to execute a sell when the price reaches the profit goal
  * @ingroup ProfitGoal
  */
-class HAYAKU_API ProfitGoalBase
-    : public enable_shared_from_this<ProfitGoalBase> {
+class ProfitGoalBase : public enable_shared_from_this<ProfitGoalBase> {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -155,8 +154,8 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(ProfitGoalBase)
 typedef shared_ptr<ProfitGoalBase> ProfitGoalPtr;
 typedef shared_ptr<ProfitGoalBase> PGPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const ProfitGoalBase& pg);
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const ProfitGoalPtr& pg);
+std::ostream& operator<<(std::ostream& os, const ProfitGoalBase& pg);
+std::ostream& operator<<(std::ostream& os, const ProfitGoalPtr& pg);
 
 inline void ProfitGoalBase::setAccount(
     const internal::ExecutionAccountPortPtr& account) {

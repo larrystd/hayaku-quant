@@ -17,7 +17,7 @@ namespace hayaku {
  *
  * It stays stable if the strategy runtime is reset or run again.
  */
-class HAYAKU_API BacktestResult {
+class BacktestResult {
  public:
   BacktestResult(Stock stock, KQuery query, TradeRecordList trades);
 

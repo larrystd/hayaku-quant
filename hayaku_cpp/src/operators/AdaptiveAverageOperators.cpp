@@ -273,7 +273,7 @@ void IAma::_dyn_calculate(const Indicator& ind) {
                          : CVAL(ind, getParam<int>("slow_n"));
   iter = ind_params_.find("n");
   Indicator n = iter != ind_params_.end() ? Indicator(iter->second)
-                                           : CVAL(ind, getParam<int>("n"));
+                                          : CVAL(ind, getParam<int>("n"));
 
   HAYAKU_CHECK(fast_n.size() == ind.size(),
                "ind_param(fast_n).size()={}, ind.size()={}!", fast_n.size(),
@@ -296,7 +296,7 @@ void IAma::_dyn_calculate(const Indicator& ind) {
   updateDiscard();
 }
 
-Indicator HAYAKU_API AMA(int n, int fast_n, int slow_n) {
+Indicator AMA(int n, int fast_n, int slow_n) {
   IndicatorImpPtr p = make_shared<IAma>();
   p->setParam<int>("n", n);
   p->setParam<int>("fast_n", fast_n);
@@ -304,7 +304,7 @@ Indicator HAYAKU_API AMA(int n, int fast_n, int slow_n) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API AMA(int n, const IndParam& fast_n, int slow_n) {
+Indicator AMA(int n, const IndParam& fast_n, int slow_n) {
   IndicatorImpPtr p = make_shared<IAma>();
   p->setParam<int>("n", n);
   p->setIndParam("fast_n", fast_n);
@@ -312,8 +312,7 @@ Indicator HAYAKU_API AMA(int n, const IndParam& fast_n, int slow_n) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API AMA(int n, const IndParam& fast_n,
-                         const IndParam& slow_n) {
+Indicator AMA(int n, const IndParam& fast_n, const IndParam& slow_n) {
   IndicatorImpPtr p = make_shared<IAma>();
   p->setParam<int>("n", n);
   p->setIndParam("fast_n", fast_n);
@@ -321,7 +320,7 @@ Indicator HAYAKU_API AMA(int n, const IndParam& fast_n,
   return Indicator(p);
 }
 
-Indicator HAYAKU_API AMA(int n, int fast_n, const IndParam& slow_n) {
+Indicator AMA(int n, int fast_n, const IndParam& slow_n) {
   IndicatorImpPtr p = make_shared<IAma>();
   p->setParam<int>("n", n);
   p->setParam<int>("fast_n", fast_n);
@@ -329,7 +328,7 @@ Indicator HAYAKU_API AMA(int n, int fast_n, const IndParam& slow_n) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API AMA(const IndParam& n, int fast_n, int slow_n) {
+Indicator AMA(const IndParam& n, int fast_n, int slow_n) {
   IndicatorImpPtr p = make_shared<IAma>();
   p->setIndParam("n", n);
   p->setParam<int>("fast_n", fast_n);
@@ -337,8 +336,7 @@ Indicator HAYAKU_API AMA(const IndParam& n, int fast_n, int slow_n) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API AMA(const IndParam& n, const IndParam& fast_n,
-                         int slow_n) {
+Indicator AMA(const IndParam& n, const IndParam& fast_n, int slow_n) {
   IndicatorImpPtr p = make_shared<IAma>();
   p->setIndParam("n", n);
   p->setIndParam("fast_n", fast_n);
@@ -346,8 +344,7 @@ Indicator HAYAKU_API AMA(const IndParam& n, const IndParam& fast_n,
   return Indicator(p);
 }
 
-Indicator HAYAKU_API AMA(const IndParam& n, int fast_n,
-                         const IndParam& slow_n) {
+Indicator AMA(const IndParam& n, int fast_n, const IndParam& slow_n) {
   IndicatorImpPtr p = make_shared<IAma>();
   p->setIndParam("n", n);
   p->setParam<int>("fast_n", fast_n);
@@ -355,8 +352,8 @@ Indicator HAYAKU_API AMA(const IndParam& n, int fast_n,
   return Indicator(p);
 }
 
-Indicator HAYAKU_API AMA(const IndParam& n, const IndParam& fast_n,
-                         const IndParam& slow_n) {
+Indicator AMA(const IndParam& n, const IndParam& fast_n,
+              const IndParam& slow_n) {
   IndicatorImpPtr p = make_shared<IAma>();
   p->setIndParam("n", n);
   p->setIndParam("fast_n", fast_n);
@@ -423,8 +420,7 @@ void IDma::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API DMA(const Indicator& x, const Indicator& a,
-                         bool fill_null) {
+Indicator DMA(const Indicator& x, const Indicator& a, bool fill_null) {
   auto p = make_shared<IDma>(a, fill_null);
   Indicator result(p);
   return result(x);
@@ -467,7 +463,7 @@ void IKalman::_calculate(const Indicator& data) {
   auto* dst = this->data();
 
   value_t x = src[discard_];  // State estimate
-  value_t p = 1.0;             // Estimation error covariance
+  value_t p = 1.0;            // Estimation error covariance
 
   dst[discard_] = x;
   for (size_t i = discard_ + 1; i < total; ++i) {
@@ -479,7 +475,7 @@ void IKalman::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API KALMAN(double q, double r) {
+Indicator KALMAN(double q, double r) {
   auto p = make_shared<IKalman>();
   p->setParam<double>("q", q);
   p->setParam<double>("r", r);

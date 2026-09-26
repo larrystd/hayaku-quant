@@ -12,7 +12,7 @@
 namespace hayaku {
 
 /** Stable, strongly typed identity for one execution account. */
-class HAYAKU_API AccountId {
+class AccountId {
  public:
   constexpr AccountId() noexcept = default;
   explicit constexpr AccountId(std::uint64_t value) noexcept : value_(value) {}

@@ -37,7 +37,7 @@ namespace hayaku {
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API CVAL(double value, size_t discard = 0);
+Indicator CVAL(double value, size_t discard = 0);
 
 /**
  * Create a constant indicator whose length is the same as the input ind and
@@ -52,8 +52,7 @@ Indicator HAYAKU_API CVAL(double value, size_t discard = 0);
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API CVAL(const Indicator& ind, double value = 0.0,
-                          int discard = 0);
+Indicator CVAL(const Indicator& ind, double value = 0.0, int discard = 0);
 
 }  // namespace hayaku
 
@@ -72,56 +71,56 @@ namespace hayaku {
  * indicators
  * @ingroup Indicator
  */
-Indicator HAYAKU_API KDATA();
-Indicator HAYAKU_API KDATA(const KData&);
+Indicator KDATA();
+Indicator KDATA(const KData&);
 
 /**
  * Wrap the open price of KData into an Indicator, used for the calculation of
  * the other indicators
  * @ingroup Indicator
  */
-Indicator HAYAKU_API OPEN();
-Indicator HAYAKU_API OPEN(const KData&);
+Indicator OPEN();
+Indicator OPEN(const KData&);
 
 /**
  * Wrap the high price of KData into an Indicator, used for the calculation of
  * the other indicators
  * @ingroup Indicator
  */
-Indicator HAYAKU_API HIGH();
-Indicator HAYAKU_API HIGH(const KData&);
+Indicator HIGH();
+Indicator HIGH(const KData&);
 
 /**
  * Wrap the low price of KData into an Indicator, used for the calculation of
  * the other indicators
  * @ingroup Indicator
  */
-Indicator HAYAKU_API LOW();
-Indicator HAYAKU_API LOW(const KData&);
+Indicator LOW();
+Indicator LOW(const KData&);
 
 /**
  * Wrap the close price of KData into an Indicator, used for the calculation of
  * the other indicators
  * @ingroup Indicator
  */
-Indicator HAYAKU_API CLOSE();
-Indicator HAYAKU_API CLOSE(const KData&);
+Indicator CLOSE();
+Indicator CLOSE(const KData&);
 
 /**
  * Wrap the turnover amount of KData into an Indicator, used for the calculation
  * of the other indicators
  * @ingroup Indicator
  */
-Indicator HAYAKU_API AMO();
-Indicator HAYAKU_API AMO(const KData&);
+Indicator AMO();
+Indicator AMO(const KData&);
 
 /**
  * Wrap the volume of KData into an Indicator, used for the calculation of the
  * other indicators
  * @ingroup Indicator
  */
-Indicator HAYAKU_API VOL();
-Indicator HAYAKU_API VOL(const KData&);
+Indicator VOL();
+Indicator VOL(const KData&);
 
 /**
  * Return KDATA/OPEN/HIGH/LOW/CLOSE/AMO/VOL according to the string
@@ -130,8 +129,8 @@ Indicator HAYAKU_API VOL(const KData&);
  * @see KDATA, OPEN, HIGH, LOW, CLOSE, AMO, VOL
  * @ingroup Indicator
  */
-Indicator HAYAKU_API KDATA_PART(const KData& kdata, const string& kpart);
-Indicator HAYAKU_API KDATA_PART(const string& kpart);
+Indicator KDATA_PART(const KData& kdata, const string& kpart);
+Indicator KDATA_PART(const string& kpart);
 
 }  // namespace hayaku
 
@@ -154,18 +153,15 @@ namespace hayaku {
  * discarded values are filled with Null<price_t>()
  * @ingroup Indicator
  */
-Indicator HAYAKU_API PRICELIST(const PriceList& data, int discard = 0);
-Indicator HAYAKU_API PRICELIST(PriceList&& data, int discard = 0);
-Indicator HAYAKU_API PRICELIST(const PriceList& data, const DatetimeList& ds,
-                               int discard = 0);
-Indicator HAYAKU_API PRICELIST(PriceList&& data, const DatetimeList&& ds,
-                               int discard = 0);
-Indicator HAYAKU_API PRICELIST(size_t size, double value, int discard = 0);
-Indicator HAYAKU_API PRICELIST(const DatetimeList& dates, double value,
-                               int discard = 0);
-Indicator HAYAKU_API PRICELIST(DatetimeList&& dates, double value,
-                               int discard = 0);
-Indicator HAYAKU_API PRICELIST();
+Indicator PRICELIST(const PriceList& data, int discard = 0);
+Indicator PRICELIST(PriceList&& data, int discard = 0);
+Indicator PRICELIST(const PriceList& data, const DatetimeList& ds,
+                    int discard = 0);
+Indicator PRICELIST(PriceList&& data, const DatetimeList&& ds, int discard = 0);
+Indicator PRICELIST(size_t size, double value, int discard = 0);
+Indicator PRICELIST(const DatetimeList& dates, double value, int discard = 0);
+Indicator PRICELIST(DatetimeList&& dates, double value, int discard = 0);
+Indicator PRICELIST();
 
 /**
  * Wrap an array into an Indicator, used to calculate the other indicators
@@ -173,7 +169,7 @@ Indicator HAYAKU_API PRICELIST();
  * @param total array size
  * @ingroup Indicator
  */
-// Indicator HAYAKU_API PRICELIST(double* data, size_t total);
+// Indicator PRICELIST(double* data, size_t total);
 template <typename ValueT>
 Indicator PRICELIST(ValueT* data, size_t total) {
   HAYAKU_IF_RETURN(!data || total == 0, PRICELIST(PriceList()));
@@ -204,12 +200,11 @@ namespace hayaku {
  * context, otherwise the adjustment type of the calculation context is used
  * @ingroup Indicator
  */
-Indicator HAYAKU_API CONTEXT(const Indicator& ind, bool fill_null = false,
-                             bool use_self_ktype = false,
-                             bool use_self_recover_type = false);
-Indicator HAYAKU_API CONTEXT(bool fill_null = false,
-                             bool use_self_ktype = false,
-                             bool use_self_recover_type = false);
+Indicator CONTEXT(const Indicator& ind, bool fill_null = false,
+                  bool use_self_ktype = false,
+                  bool use_self_recover_type = false);
+Indicator CONTEXT(bool fill_null = false, bool use_self_ktype = false,
+                  bool use_self_recover_type = false);
 
 /**
  * @brief Set an independent context for the indicator by the given stock
@@ -219,8 +214,8 @@ Indicator HAYAKU_API CONTEXT(bool fill_null = false,
  * @param fill_null whether to fill the null values, false by default
  * @return Indicator
  */
-Indicator HAYAKU_API CONTEXT(const Indicator& ind, const Stock& stk,
-                             bool fill_null = false);
+Indicator CONTEXT(const Indicator& ind, const Stock& stk,
+                  bool fill_null = false);
 
 /**
  * Get the indicator context
@@ -232,7 +227,7 @@ Indicator HAYAKU_API CONTEXT(const Indicator& ind, const Stock& stk,
  * @param ind
  * @return KData
  */
-KData HAYAKU_API CONTEXT_K(const Indicator& ind);
+KData CONTEXT_K(const Indicator& ind);
 
 /**
  * @brief Judge whether the indicator is an independent context indicator
@@ -240,7 +235,7 @@ KData HAYAKU_API CONTEXT_K(const Indicator& ind);
  * @return true
  * @return false
  */
-bool HAYAKU_API is_standalone_context(const Indicator& ind);
+bool is_standalone_context(const Indicator& ind);
 
 }  // namespace hayaku
 
@@ -254,7 +249,7 @@ bool HAYAKU_API is_standalone_context(const Indicator& ind);
 
 namespace hayaku {
 
-Indicator HAYAKU_API RESULT(int result_ix);
+Indicator RESULT(int result_ix);
 
 inline Indicator RESULT(const Indicator& ind, int result_ix) {
   return RESULT(result_ix)(ind);
@@ -278,15 +273,15 @@ namespace hayaku {
  * @return Indicator
  * @ingroup Indicator
  */
-Indicator HAYAKU_API RECOVER_FORWARD();
-Indicator HAYAKU_API RECOVER_BACKWARD();
-Indicator HAYAKU_API RECOVER_EQUAL_FORWARD();
-Indicator HAYAKU_API RECOVER_EQUAL_BACKWARD();
+Indicator RECOVER_FORWARD();
+Indicator RECOVER_BACKWARD();
+Indicator RECOVER_EQUAL_FORWARD();
+Indicator RECOVER_EQUAL_BACKWARD();
 
-Indicator HAYAKU_API RECOVER_FORWARD(const Indicator&);
-Indicator HAYAKU_API RECOVER_BACKWARD(const Indicator&);
-Indicator HAYAKU_API RECOVER_EQUAL_FORWARD(const Indicator&);
-Indicator HAYAKU_API RECOVER_EQUAL_BACKWARD(const Indicator&);
+Indicator RECOVER_FORWARD(const Indicator&);
+Indicator RECOVER_BACKWARD(const Indicator&);
+Indicator RECOVER_EQUAL_FORWARD(const Indicator&);
+Indicator RECOVER_EQUAL_BACKWARD(const Indicator&);
 
 inline Indicator RECOVER_FORWARD(const KData& kdata) {
   return RECOVER_FORWARD(kdata.close());
@@ -323,8 +318,8 @@ namespace hayaku {
  * @param n references the value n periods before, i.e. shifting right by n
  * @ingroup Indicator
  */
-Indicator HAYAKU_API REF(int n);
-Indicator HAYAKU_API REF(const IndParam& n);
+Indicator REF(int n);
+Indicator REF(const IndParam& n);
 
 /**
  * REF forward reference (i.e. shift right)
@@ -364,7 +359,7 @@ namespace hayaku {
  * @param n reference period
  * @ingroup Indicator
  */
-Indicator HAYAKU_API REFX(int n);
+Indicator REFX(int n);
 inline Indicator REFX(const Indicator& ind, int n) { return REFX(n)(ind); }
 
 }  // namespace hayaku
@@ -386,7 +381,7 @@ namespace hayaku {
  * because of the name conflict of CONST under Windows
  * @ingroup Indicator
  */
-Indicator HAYAKU_API LASTVALUE(bool ignore_discard = false);
+Indicator LASTVALUE(bool ignore_discard = false);
 
 inline Indicator LASTVALUE(const Indicator& ind, bool ignore_discard = false) {
   return LASTVALUE(ignore_discard)(ind);
@@ -414,9 +409,9 @@ namespace hayaku {
  * Align by the given dates
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ALIGN(bool fill_null = true);
-Indicator HAYAKU_API ALIGN(const DatetimeList&, bool fill_null = true);
-Indicator HAYAKU_API ALIGN(DatetimeList&&, bool fill_null = true);
+Indicator ALIGN(bool fill_null = true);
+Indicator ALIGN(const DatetimeList&, bool fill_null = true);
+Indicator ALIGN(DatetimeList&&, bool fill_null = true);
 
 inline Indicator ALIGN(const Indicator& ind, const DatetimeList& ref,
                        bool fill_null = true) {
@@ -464,8 +459,8 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API BACKSET(int n = 2);
-Indicator HAYAKU_API BACKSET(const IndParam& n);
+Indicator BACKSET(int n = 2);
+Indicator BACKSET(const IndParam& n);
 
 inline Indicator BACKSET(const Indicator& ind, int n = 2) {
   return BACKSET(n)(ind);
@@ -494,7 +489,7 @@ inline Indicator BACKSET(const Indicator& ind, const Indicator& n) {
 namespace hayaku {
 
 /** Set the discard value in the way of an indicator formula */
-Indicator HAYAKU_API DISCARD(int discard);
+Indicator DISCARD(int discard);
 
 inline Indicator DISCARD(const Indicator& ind, int discard) {
   return DISCARD(discard)(ind);
@@ -518,7 +513,7 @@ namespace hayaku {
  * Remove the nan values
  * @ingroup Indicator
  */
-Indicator HAYAKU_API DROPNA();
+Indicator DROPNA();
 
 inline Indicator DROPNA(const Indicator& ind) { return DROPNA()(ind); }
 
@@ -542,8 +537,8 @@ namespace hayaku {
  * discard is set to 0
  * @ingroup Indicator
  */
-Indicator HAYAKU_API REPLACE(double old_val = Null<double>(),
-                             double new_val = 0.0, bool ignore_discard = false);
+Indicator REPLACE(double old_val = Null<double>(), double new_val = 0.0,
+                  bool ignore_discard = false);
 
 inline Indicator REPLACE(const Indicator& ind, double old_val = Null<double>(),
                          double new_val = 0.0, bool ignore_discard = false) {
@@ -568,7 +563,7 @@ namespace hayaku {
  * Calculate the opposite number, REVERSE(X) returns -X
  * @ingroup Indicator
  */
-Indicator HAYAKU_API REVERSE();
+Indicator REVERSE();
 
 inline Indicator REVERSE(const Indicator& ind) { return REVERSE()(ind); }
 
@@ -593,7 +588,7 @@ namespace hayaku {
  * @param end the end range (excluded), it can be negative
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SLICE(const PriceList& data, int64_t start, int64_t end);
+Indicator SLICE(const PriceList& data, int64_t start, int64_t end);
 
 /**
  * Get the data of the given range in an indicator
@@ -603,7 +598,7 @@ Indicator HAYAKU_API SLICE(const PriceList& data, int64_t start, int64_t end);
  * means all
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SLICE(int64_t start, int64_t end, int result_index = -1);
+Indicator SLICE(int64_t start, int64_t end, int result_index = -1);
 
 /**
  * Get the data of the given range in an indicator

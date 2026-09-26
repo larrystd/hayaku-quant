@@ -19,7 +19,7 @@ namespace hayaku {
  * Base class of the signal generator
  * @ingroup Signal
  */
-class HAYAKU_API SignalBase : public enable_shared_from_this<SignalBase> {
+class SignalBase : public enable_shared_from_this<SignalBase> {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -240,8 +240,8 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(SignalBase)
 typedef shared_ptr<SignalBase> SignalPtr;
 typedef shared_ptr<SignalBase> SGPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const SignalBase&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const SignalPtr&);
+std::ostream& operator<<(std::ostream&, const SignalBase&);
+std::ostream& operator<<(std::ostream&, const SignalPtr&);
 
 inline const KData& SignalBase::getTO() const { return kdata_; }
 

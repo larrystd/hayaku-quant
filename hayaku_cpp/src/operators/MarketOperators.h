@@ -21,7 +21,7 @@ namespace hayaku {
  * @return the Indicator object
  * @ingroup Factor
  */
-Indicator HAYAKU_API FACTOR(const Factor& factor);
+Indicator FACTOR(const Factor& factor);
 
 /**
  * Factor to indicator conversion (convenience version)
@@ -63,11 +63,9 @@ namespace hayaku {
  * aligned.
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ADVANCE(const KQuery& query = KQueryByIndex(-100),
-                             const string& market = "SH",
-                             int stk_type = STOCKTYPE_A,
-                             bool ignore_context = false,
-                             bool fill_null = true);
+Indicator ADVANCE(const KQuery& query = KQueryByIndex(-100),
+                  const string& market = "SH", int stk_type = STOCKTYPE_A,
+                  bool ignore_context = false, bool fill_null = true);
 
 }  // namespace hayaku
 
@@ -95,11 +93,9 @@ namespace hayaku {
  * @param fill_null fill the missing data with nan when the dates are aligned
  * @ingroup Indicator
  */
-Indicator HAYAKU_API DECLINE(const KQuery& query = KQueryByIndex(-100),
-                             const string& market = "SH",
-                             int stk_type = STOCKTYPE_A,
-                             bool ignore_context = false,
-                             bool fill_null = true);
+Indicator DECLINE(const KQuery& query = KQueryByIndex(-100),
+                  const string& market = "SH", int stk_type = STOCKTYPE_A,
+                  bool ignore_context = false, bool fill_null = true);
 
 }  // namespace hayaku
 
@@ -118,8 +114,8 @@ namespace hayaku {
  * @param query the statistics range
  * @return Indicator
  */
-Indicator HAYAKU_API BLOCKSETNUM(const Block& blk, const KQuery& query);
-Indicator HAYAKU_API BLOCKSETNUM(const Block& blk);
+Indicator BLOCKSETNUM(const Block& blk, const KQuery& query);
+Indicator BLOCKSETNUM(const Block& blk);
 
 }  // namespace hayaku
 
@@ -141,7 +137,7 @@ namespace hayaku {
 
  * @return Indicator
  */
-Indicator HAYAKU_API INBLOCK(const string& category, const string& name);
+Indicator INBLOCK(const string& category, const string& name);
 
 /**
  * @brief Return whether the security belongs to a certain block
@@ -154,8 +150,8 @@ Indicator HAYAKU_API INBLOCK(const string& category, const string& name);
 
  * @return Indicator
  */
-Indicator HAYAKU_API INBLOCK(const KData& kdata, const string& category,
-                             const string& name);
+Indicator INBLOCK(const KData& kdata, const string& category,
+                  const string& name);
 
 }  // namespace hayaku
 
@@ -185,14 +181,13 @@ namespace hayaku {
  * @param fill_null fill the missing data with nan when the dates are aligned.
  * @return Indicator
  */
-Indicator HAYAKU_API INSUM(const Block& block, const KQuery& query,
-                           const Indicator& ind, int mode,
-                           bool fill_null = true);
+Indicator INSUM(const Block& block, const KQuery& query, const Indicator& ind,
+                int mode, bool fill_null = true);
 
-Indicator HAYAKU_API INSUM(const Block& block, const Indicator& ind, int mode,
-                           bool fill_null = true);
+Indicator INSUM(const Block& block, const Indicator& ind, int mode,
+                bool fill_null = true);
 
-Indicator HAYAKU_API INSUM(const Block& block, int mode, bool fill_null);
+Indicator INSUM(const Block& block, int mode, bool fill_null);
 
 }  // namespace hayaku
 
@@ -238,9 +233,9 @@ namespace hayaku {
  * @see ADJ_CLOSE adjusted close price
  * @see ADJ_VOL adjusted volume
  */
-Indicator HAYAKU_API ADJ_FACTOR();
+Indicator ADJ_FACTOR();
 
-Indicator HAYAKU_API ADJ_FACTOR(const KData& kdata);
+Indicator ADJ_FACTOR(const KData& kdata);
 
 /**
  * @brief Calculate the adjusted open price indicator
@@ -458,7 +453,7 @@ namespace hayaku {
  * @param pattern the match pattern, it supports the wildcards * and ?
  * @return Indicator
  */
-Indicator HAYAKU_API CODELIKE(const string& pattern);
+Indicator CODELIKE(const string& pattern);
 
 /**
  * @brief Return whether the security code matches the given pattern
@@ -466,7 +461,7 @@ Indicator HAYAKU_API CODELIKE(const string& pattern);
  * @param pattern the match pattern, it supports the wildcards * and ?
  * @return Indicator
  */
-Indicator HAYAKU_API CODELIKE(const KData& kdata, const string& pattern);
+Indicator CODELIKE(const KData& kdata, const string& pattern);
 
 }  // namespace hayaku
 
@@ -493,12 +488,11 @@ namespace hayaku {
  * as the rebalancing day
  * @ingroup Indicator
  */
-Indicator HAYAKU_API CYCLE(const KData& k, int adjust_cycle = 1,
-                           const string& adjust_mode = "query",
-                           bool delay_to_trading_day = true);
-Indicator HAYAKU_API CYCLE(int adjust_cycle = 1,
-                           const string& adjust_mode = "query",
-                           bool delay_to_trading_day = true);
+Indicator CYCLE(const KData& k, int adjust_cycle = 1,
+                const string& adjust_mode = "query",
+                bool delay_to_trading_day = true);
+Indicator CYCLE(int adjust_cycle = 1, const string& adjust_mode = "query",
+                bool delay_to_trading_day = true);
 
 }  // namespace hayaku
 
@@ -511,11 +505,11 @@ Indicator HAYAKU_API CYCLE(int adjust_cycle = 1,
 
 namespace hayaku {
 
-Indicator HAYAKU_API FINANCE(int field_ix);
-Indicator HAYAKU_API FINANCE(const KData& k, int field_ix);
+Indicator FINANCE(int field_ix);
+Indicator FINANCE(const KData& k, int field_ix);
 
-Indicator HAYAKU_API FINANCE(const string& field_name);
-Indicator HAYAKU_API FINANCE(const KData& k, const string& field_name);
+Indicator FINANCE(const string& field_name);
+Indicator FINANCE(const KData& k, const string& field_name);
 
 }  // namespace hayaku
 
@@ -531,8 +525,8 @@ Indicator HAYAKU_API FINANCE(const KData& k, const string& field_name);
 namespace hayaku {
 
 /** Outstanding shares, in units of 10 thousand shares */
-Indicator HAYAKU_API LIUTONGPAN();
-Indicator HAYAKU_API LIUTONGPAN(const KData&);
+Indicator LIUTONGPAN();
+Indicator LIUTONGPAN(const KData&);
 
 }  // namespace hayaku
 
@@ -550,7 +544,7 @@ namespace hayaku {
  * @param pattern the match pattern, it supports the wildcards * and ?
  * @return Indicator
  */
-Indicator HAYAKU_API NAMELIKE(const string& pattern);
+Indicator NAMELIKE(const string& pattern);
 
 /**
  * @brief Return whether the security name matches the given pattern
@@ -558,7 +552,7 @@ Indicator HAYAKU_API NAMELIKE(const string& pattern);
  * @param pattern the match pattern, it supports the wildcards * and ?
  * @return Indicator
  */
-Indicator HAYAKU_API NAMELIKE(const KData& kdata, const string& pattern);
+Indicator NAMELIKE(const KData& kdata, const string& pattern);
 
 }  // namespace hayaku
 
@@ -601,8 +595,8 @@ namespace hayaku {
  * auto stktype = STKTYPE(kdata);
  * @endcode
  */
-Indicator HAYAKU_API STKTYPE();
-Indicator HAYAKU_API STKTYPE(const KData& k);
+Indicator STKTYPE();
+Indicator STKTYPE(const KData& k);
 
 }  // namespace hayaku
 
@@ -622,10 +616,9 @@ namespace hayaku {
  * treasury bond data, this given default value is used
  * @return Indicator
  */
-Indicator HAYAKU_API ZHBOND10(double default_val = 4.0);
-Indicator HAYAKU_API ZHBOND10(const DatetimeList& dates,
-                              double default_val = 4.0);
-Indicator HAYAKU_API ZHBOND10(const KData& k, double default_val = 4.0);
+Indicator ZHBOND10(double default_val = 4.0);
+Indicator ZHBOND10(const DatetimeList& dates, double default_val = 4.0);
+Indicator ZHBOND10(const KData& k, double default_val = 4.0);
 inline Indicator ZHBOND10(const Indicator& ind, double default_val = 4.0) {
   return ZHBOND10(default_val)(ind);
 }
@@ -641,8 +634,8 @@ inline Indicator ZHBOND10(const Indicator& ind, double default_val = 4.0) {
 
 namespace hayaku {
 
-Indicator HAYAKU_API ZONGGUBEN();
-Indicator HAYAKU_API ZONGGUBEN(const KData&);
+Indicator ZONGGUBEN();
+Indicator ZONGGUBEN(const KData&);
 
 }  // namespace hayaku
 
@@ -662,8 +655,8 @@ namespace hayaku {
  * @param k the associated KData
  * @ingroup Indicator
  */
-Indicator HAYAKU_API AD(const KData& k);
-Indicator HAYAKU_API AD();
+Indicator AD(const KData& k);
+Indicator AD();
 
 }  // namespace hayaku
 
@@ -692,11 +685,11 @@ namespace hayaku {
  * @param x the X% profitable positions
  * @ingroup Indicator
  */
-Indicator HAYAKU_API COST(const KData& k, double x = 10.0);
-Indicator HAYAKU_API COST(double x = 10.0);
+Indicator COST(const KData& k, double x = 10.0);
+Indicator COST(double x = 10.0);
 
-Indicator HAYAKU_API COST2(const KData& k, double x = 10.0);
-Indicator HAYAKU_API COST2(double x = 10.0);
+Indicator COST2(const KData& k, double x = 10.0);
+Indicator COST2(double x = 10.0);
 
 }  // namespace hayaku
 
@@ -715,8 +708,8 @@ namespace hayaku {
  * @param k the associated K-line data
  * @ingroup Indicator
  */
-Indicator HAYAKU_API HSL(const KData& k);
-Indicator HAYAKU_API HSL();
+Indicator HSL(const KData& k);
+Indicator HSL();
 
 }  // namespace hayaku
 
@@ -733,55 +726,55 @@ namespace hayaku {
 
 /** The corresponding broad market open price: Shanghai Composite Index,
  * Shenzhen Component Index, STAR 50 and ChiNext Index */
-Indicator HAYAKU_API INDEXO(bool fill_null = true);
+Indicator INDEXO(bool fill_null = true);
 inline Indicator INDEXO(const KData& k, bool fill_null = true) {
   return INDEXO(fill_null)(k);
 }
 
 /** The corresponding broad market high price: Shanghai Composite Index,
  * Shenzhen Component Index, STAR 50 and ChiNext Index */
-Indicator HAYAKU_API INDEXH(bool fill_null = true);
+Indicator INDEXH(bool fill_null = true);
 inline Indicator INDEXH(const KData& k, bool fill_null = true) {
   return INDEXH(fill_null)(k);
 }
 
 /** The corresponding broad market low price: Shanghai Composite Index, Shenzhen
  * Component Index, STAR 50 and ChiNext Index */
-Indicator HAYAKU_API INDEXL(bool fill_null = true);
+Indicator INDEXL(bool fill_null = true);
 inline Indicator INDEXL(const KData& k, bool fill_null = true) {
   return INDEXL(fill_null)(k);
 }
 
 /** The corresponding broad market close price: Shanghai Composite Index,
  * Shenzhen Component Index, STAR 50 and ChiNext Index */
-Indicator HAYAKU_API INDEXC(bool fill_null = true);
+Indicator INDEXC(bool fill_null = true);
 inline Indicator INDEXC(const KData& k, bool fill_null = true) {
   return INDEXC(fill_null)(k);
 }
 
 /** The corresponding broad market turnover amount: Shanghai Composite Index,
  * Shenzhen Component Index, STAR 50 and ChiNext Index */
-Indicator HAYAKU_API INDEXA(bool fill_null = true);
+Indicator INDEXA(bool fill_null = true);
 inline Indicator INDEXA(const KData& k, bool fill_null = true) {
   return INDEXA(fill_null)(k);
 }
 
 /** The corresponding broad market volume: Shanghai Composite Index, Shenzhen
  * Component Index, STAR 50 and ChiNext Index */
-Indicator HAYAKU_API INDEXV(bool fill_null = true);
+Indicator INDEXV(bool fill_null = true);
 inline Indicator INDEXV(const KData& k, bool fill_null = true) {
   return INDEXV(fill_null)(k);
 }
 
 /** Number of the rising stocks in the broad market, using the TDX SH880005, it
  * may not be usable for live trading */
-Indicator HAYAKU_API INDEXADV();
-Indicator HAYAKU_API INDEXADV(const KQuery& query);
+Indicator INDEXADV();
+Indicator INDEXADV(const KQuery& query);
 
 /** Number of the falling stocks in the broad market, using the TDX SH880005, it
  * may not be usable for live trading */
-Indicator HAYAKU_API INDEXDEC();
-Indicator HAYAKU_API INDEXDEC(const KQuery& query);
+Indicator INDEXDEC();
+Indicator INDEXDEC(const KQuery& query);
 
 }  // namespace hayaku
 
@@ -801,8 +794,8 @@ namespace hayaku {
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API DATE();
-Indicator HAYAKU_API DATE(const KData&);
+Indicator DATE();
+Indicator DATE(const KData&);
 
 /**
  * Get the hour, minute and second of this period. Usage: TIME. The valid value
@@ -811,16 +804,16 @@ Indicator HAYAKU_API DATE(const KData&);
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API TIME();
-Indicator HAYAKU_API TIME(const KData&);
+Indicator TIME();
+Indicator TIME(const KData&);
 
 /**
  * Get the year of this period.
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API YEAR();
-Indicator HAYAKU_API YEAR(const KData&);
+Indicator YEAR();
+Indicator YEAR(const KData&);
 
 /**
  * Get the month of this period. Usage: MONTH. The valid value range of the
@@ -828,8 +821,8 @@ Indicator HAYAKU_API YEAR(const KData&);
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API MONTH();
-Indicator HAYAKU_API MONTH(const KData&);
+Indicator MONTH();
+Indicator MONTH(const KData&);
 
 /**
  * Get the day of the week of this period. Usage: WEEK. The valid value range of
@@ -838,8 +831,8 @@ Indicator HAYAKU_API MONTH(const KData&);
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API WEEK();
-Indicator HAYAKU_API WEEK(const KData&);
+Indicator WEEK();
+Indicator WEEK(const KData&);
 
 /**
  * Get the day of this period. Usage: DAY. The valid value range of the function
@@ -847,8 +840,8 @@ Indicator HAYAKU_API WEEK(const KData&);
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API DAY();
-Indicator HAYAKU_API DAY(const KData&);
+Indicator DAY();
+Indicator DAY(const KData&);
 
 /**
  * Get the hour of this period. Usage: HOUR. The valid value range of the
@@ -857,8 +850,8 @@ Indicator HAYAKU_API DAY(const KData&);
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API HOUR();
-Indicator HAYAKU_API HOUR(const KData&);
+Indicator HOUR();
+Indicator HOUR(const KData&);
 
 /**
  * Get the minute of this period. Usage: MINUTE. The valid value range of the
@@ -867,8 +860,8 @@ Indicator HAYAKU_API HOUR(const KData&);
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API MINUTE();
-Indicator HAYAKU_API MINUTE(const KData&);
+Indicator MINUTE();
+Indicator MINUTE(const KData&);
 
 }  // namespace hayaku
 
@@ -883,8 +876,8 @@ Indicator HAYAKU_API MINUTE(const KData&);
 
 namespace hayaku {
 
-Indicator HAYAKU_API TIMELINE();
-Indicator HAYAKU_API TIMELINE(const KData&);
+Indicator TIMELINE();
+Indicator TIMELINE(const KData&);
 
 }  // namespace hayaku
 
@@ -897,8 +890,8 @@ Indicator HAYAKU_API TIMELINE(const KData&);
 
 namespace hayaku {
 
-Indicator HAYAKU_API TIMELINEVOL();
-Indicator HAYAKU_API TIMELINEVOL(const KData&);
+Indicator TIMELINEVOL();
+Indicator TIMELINEVOL(const KData&);
 
 }  // namespace hayaku
 
@@ -916,9 +909,9 @@ namespace hayaku {
  * @param n window period
  * @return Indicator
  */
-Indicator HAYAKU_API TURNOVER(int n = 1);
+Indicator TURNOVER(int n = 1);
 
-Indicator HAYAKU_API TURNOVER(const KData& kdata, int n = 1);
+Indicator TURNOVER(const KData& kdata, int n = 1);
 
 }  // namespace hayaku
 
@@ -943,7 +936,7 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API WINNER();
+Indicator WINNER();
 
 inline Indicator WINNER(const Indicator& ind) { return WINNER()(ind); }
 

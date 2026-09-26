@@ -51,7 +51,7 @@ ScoreRecordList PriceSCFilter::_filter(const ScoreRecordList& scores,
   return ret;
 }
 
-ScoresFilterPtr HAYAKU_API SCFilter_Price(double min_price, double max_price) {
+ScoresFilterPtr SCFilter_Price(double min_price, double max_price) {
   HAYAKU_CHECK(max_price > min_price, "max_price must > min_price!");
   auto p = std::make_shared<PriceSCFilter>();
   p->setParam<double>("min_price", min_price);

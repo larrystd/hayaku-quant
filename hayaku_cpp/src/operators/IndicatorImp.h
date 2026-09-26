@@ -17,14 +17,14 @@ namespace hayaku {
 
 #define MAX_RESULT_NUM 6
 
-class HAYAKU_API Indicator;
-class HAYAKU_API IndParam;
+class Indicator;
+class IndParam;
 
 namespace detail {
 class CompiledFactorPlan;
 }
 
-vector<Indicator> HAYAKU_API combineCalculateIndicators(
+vector<Indicator> combineCalculateIndicators(
     const vector<Indicator>& indicators, const KData& kdata, bool tovalue);
 
 /**
@@ -32,14 +32,13 @@ vector<Indicator> HAYAKU_API combineCalculateIndicators(
  * should be inherited
  * @ingroup Indicator
  */
-class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
+class IndicatorImp : public enable_shared_from_this<IndicatorImp> {
   PARAMETER_SUPPORT_WITH_CHECK
-  friend HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                             const IndicatorImp& imp);
+  friend std::ostream& operator<<(std::ostream& os, const IndicatorImp& imp);
   friend class detail::CompiledFactorPlan;
 
   typedef vector<Indicator> IndicatorList;
-  friend IndicatorList HAYAKU_API combineCalculateIndicators(
+  friend IndicatorList combineCalculateIndicators(
       const IndicatorList& indicators, const KData& kdata, bool tovalue);
 
  public:
@@ -414,7 +413,8 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
     ar& boost::serialization::make_nvp("m_old_context", old_context_);
     ar& boost::serialization::make_nvp("m_need_context", need_context_);
     ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
-    ar& boost::serialization::make_nvp("m_need_self_alike_compare", need_self_alike_compare_);
+    ar& boost::serialization::make_nvp("m_need_self_alike_compare",
+                                       need_self_alike_compare_);
     ar& boost::serialization::make_nvp("m_is_serial", is_serial_);
     ar& boost::serialization::make_nvp("m_need_calculate", need_calculate_);
     ar& boost::serialization::make_nvp("m_param_changed", param_changed_);
@@ -463,7 +463,8 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
     ar& boost::serialization::make_nvp("m_old_context", old_context_);
     ar& boost::serialization::make_nvp("m_need_context", need_context_);
     ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
-    ar& boost::serialization::make_nvp("m_need_self_alike_compare", need_self_alike_compare_);
+    ar& boost::serialization::make_nvp("m_need_self_alike_compare",
+                                       need_self_alike_compare_);
     ar& boost::serialization::make_nvp("m_is_serial", is_serial_);
     ar& boost::serialization::make_nvp("m_need_calculate", need_calculate_);
     ar& boost::serialization::make_nvp("m_param_changed", param_changed_);
@@ -534,12 +535,12 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
   virtual bool supportIncrementCalculate() const override { return true; }
 
 /** Get the name string of OPType */
-string HAYAKU_API getOPTypeName(IndicatorImp::OPType);
+string getOPTypeName(IndicatorImp::OPType);
 
 typedef shared_ptr<IndicatorImp> IndicatorImpPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const IndicatorImp&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const IndicatorImpPtr&);
+std::ostream& operator<<(std::ostream&, const IndicatorImp&);
+std::ostream& operator<<(std::ostream&, const IndicatorImpPtr&);
 
 inline IndicatorImp::OPType IndicatorImp::getOPType() const noexcept {
   return optype_;

@@ -52,8 +52,7 @@ void CrossGoldSignal::_calculate(const KData& kdata) {
   }
 }
 
-SignalPtr HAYAKU_API SG_CrossGold(const Indicator& fast,
-                                  const Indicator& slow) {
+SignalPtr SG_CrossGold(const Indicator& fast, const Indicator& slow) {
   return make_shared<CrossGoldSignal>(fast, slow);
 }
 

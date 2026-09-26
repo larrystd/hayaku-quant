@@ -239,13 +239,13 @@ void IEvery::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(every, curPos);
 }
 
-Indicator HAYAKU_API EVERY(int n) {
+Indicator EVERY(int n) {
   IndicatorImpPtr p = make_shared<IEvery>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API EVERY(const IndParam& n) {
+Indicator EVERY(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IEvery>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -376,13 +376,13 @@ void IExist::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(exist, curPos);
 }
 
-Indicator HAYAKU_API EXIST(int n) {
+Indicator EXIST(int n) {
   IndicatorImpPtr p = make_shared<IExist>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API EXIST(const IndParam& n) {
+Indicator EXIST(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IExist>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -487,13 +487,13 @@ void IFilter::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   }
 }
 
-Indicator HAYAKU_API FILTER(int n) {
+Indicator FILTER(int n) {
   IndicatorImpPtr p = make_shared<IFilter>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API FILTER(const IndParam& n) {
+Indicator FILTER(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IFilter>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -537,6 +537,6 @@ void INot::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API NOT() { return Indicator(make_shared<INot>()); }
+Indicator NOT() { return Indicator(make_shared<INot>()); }
 
 } /* namespace hayaku */

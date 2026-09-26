@@ -23,10 +23,10 @@ RunSystemInStrategy::RunSystemInStrategy(
 
   if (query.queryType() == KQuery::INDEX) {
     query_ = KQueryByIndex(query.start(), Null<int64_t>(), query.kType(),
-                            query.recoverType());
+                           query.recoverType());
   } else if (query.queryType() == KQuery::DATE) {
     query_ = KQueryByDate(query.startDatetime(), Null<Datetime>(),
-                           query.kType(), query.recoverType());
+                          query.kType(), query.recoverType());
   } else {
     HAYAKU_THROW("Invalid query: {}", query);
   }
@@ -51,8 +51,8 @@ void RunSystemInStrategy::run(const Stock& stock) {
                                            query_.recoverType()));
     const auto& stock = strategy_->getStock();
     broker_->buy(buy_request_.datetime, stock.market(), stock.code(), 10.0,
-                  buy_request_.number, buy_request_.stoploss, buy_request_.goal,
-                  buy_request_.origin, buy_request_.remark);
+                 buy_request_.number, buy_request_.stoploss, buy_request_.goal,
+                 buy_request_.origin, buy_request_.remark);
   }
 
   if (strategy_->getParam<bool>("sell_delay") && sell_request_.valid) {
@@ -60,9 +60,9 @@ void RunSystemInStrategy::run(const Stock& stock) {
                                            query_.recoverType()));
     const auto& stock = strategy_->getStock();
     broker_->sell(sell_request_.datetime, stock.market(), stock.code(), 10.0,
-                   sell_request_.number, sell_request_.stoploss,
-                   sell_request_.goal, sell_request_.origin,
-                   sell_request_.remark);
+                  sell_request_.number, sell_request_.stoploss,
+                  sell_request_.goal, sell_request_.origin,
+                  sell_request_.remark);
   }
 
   broker_port_->fetchAssetInfoFromBroker(broker_);
@@ -92,12 +92,12 @@ void RunSystemInStrategy::runMomentOnClose(const Stock& stock) {
   static_cast<void>(strategy_->runMomentOnClose(k.back().datetime));
 }
 
-StrategyPtr HAYAKU_API crtSysStrategy(
-    const internal::StrategyRuntimePtr& strategy, const string& stk_market_code,
-    const KQuery& query, const OrderBrokerPtr& broker,
-    const TradeCostPtr& costfunc, const string& name,
-    const std::vector<OrderBrokerPtr>& other_brokers,
-    const string& config_file) {
+StrategyPtr crtSysStrategy(const internal::StrategyRuntimePtr& strategy,
+                           const string& stk_market_code, const KQuery& query,
+                           const OrderBrokerPtr& broker,
+                           const TradeCostPtr& costfunc, const string& name,
+                           const std::vector<OrderBrokerPtr>& other_brokers,
+                           const string& config_file) {
   std::shared_ptr<RunSystemInStrategy> runner =
       std::make_shared<RunSystemInStrategy>(strategy, broker, query, costfunc);
 
@@ -153,10 +153,10 @@ RunPortfolioInStrategy::RunPortfolioInStrategy(const PFPtr& pf,
 
   if (query.queryType() == KQuery::INDEX) {
     query_ = KQueryByIndex(query.start(), Null<int64_t>(), query.kType(),
-                            query.recoverType());
+                           query.recoverType());
   } else if (query.queryType() == KQuery::DATE) {
     query_ = KQueryByDate(query.startDatetime(), Null<Datetime>(),
-                           query.kType(), query.recoverType());
+                          query.kType(), query.recoverType());
   } else {
     HAYAKU_THROW("Invalid query: {}", query);
   }
@@ -253,11 +253,11 @@ void RunPortfolioInStrategy::run() {
   pf_->run(query_, true);
 }
 
-StrategyPtr HAYAKU_API crtPFStrategy(
-    const PFPtr& pf, const KQuery& query, const OrderBrokerPtr& broker,
-    const TradeCostPtr& costfunc, const string& name,
-    const std::vector<OrderBrokerPtr>& other_brokers,
-    const string& config_file) {
+StrategyPtr crtPFStrategy(const PFPtr& pf, const KQuery& query,
+                          const OrderBrokerPtr& broker,
+                          const TradeCostPtr& costfunc, const string& name,
+                          const std::vector<OrderBrokerPtr>& other_brokers,
+                          const string& config_file) {
   std::shared_ptr<RunPortfolioInStrategy> runner =
       std::make_shared<RunPortfolioInStrategy>(pf, query, broker, costfunc);
 

@@ -25,37 +25,37 @@ void uninstallHayakuExtraPluginBridge() noexcept {
   setKDataExtensionResolver({});
 }
 
-void HAYAKU_API
-registerExtraKType(const string& ktype, const string& basetype, int32_t minutes,
-                   std::function<Datetime(const Datetime&)> getPhaseEnd) {
+void registerExtraKType(const string& ktype, const string& basetype,
+                        int32_t minutes,
+                        std::function<Datetime(const Datetime&)> getPhaseEnd) {
   installHayakuExtraPluginBridge();
   auto* plugin =
       getPlugin<HayakuExtraPluginInterface>(HAYAKU_PLUGIN_HAYAKU_EXTRA);
   HAYAKU_ERROR_IF_RETURN(
       !plugin, void(),
-      htr("Can't find {} plugin!", HAYAKU_PLUGIN_HAYAKU_EXTRA));
+      fmt::format("Can't find {} plugin!", HAYAKU_PLUGIN_HAYAKU_EXTRA));
   plugin->registerKTypeExtra(ktype, basetype, minutes, getPhaseEnd);
 }
 
-void HAYAKU_API registerExtraKType(const string& ktype, const string& basetype,
-                                   int32_t nbars) {
+void registerExtraKType(const string& ktype, const string& basetype,
+                        int32_t nbars) {
   installHayakuExtraPluginBridge();
   auto* plugin =
       getPlugin<HayakuExtraPluginInterface>(HAYAKU_PLUGIN_HAYAKU_EXTRA);
   HAYAKU_ERROR_IF_RETURN(
       !plugin, void(),
-      htr("Can't find {} plugin!", HAYAKU_PLUGIN_HAYAKU_EXTRA));
+      fmt::format("Can't find {} plugin!", HAYAKU_PLUGIN_HAYAKU_EXTRA));
   plugin->registerKTypeExtra(ktype, basetype, nbars,
                              std::function<Datetime(const Datetime&)>());
 }
 
-void HAYAKU_API releaseExtraKType() {
+void releaseExtraKType() {
   auto* extension = getKDataExtension();
   HAYAKU_IF_RETURN(!extension, void());
   extension->releaseKExtra();
 }
 
-void HAYAKU_API enableKDataCache(bool enable) {
+void enableKDataCache(bool enable) {
   installHayakuExtraPluginBridge();
   auto* plugin =
       getPlugin<HayakuExtraPluginInterface>(HAYAKU_PLUGIN_HAYAKU_EXTRA);

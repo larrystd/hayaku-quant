@@ -51,29 +51,24 @@ class FactorStore {
 
 using FactorStoreResolver = std::function<FactorStore*()>;
 
-HAYAKU_API void setFactorStoreResolver(FactorStoreResolver resolver);
-[[nodiscard]] HAYAKU_API FactorStore* getFactorStore() noexcept;
-[[nodiscard]] HAYAKU_API bool hasFactorStore() noexcept;
+void setFactorStoreResolver(FactorStoreResolver resolver);
+[[nodiscard]] FactorStore* getFactorStore() noexcept;
+[[nodiscard]] bool hasFactorStore() noexcept;
 
-HAYAKU_API bool hasFactor(const string& name,
-                          const KQuery::KType& ktype = KQuery::DAY);
-HAYAKU_API Factor getFactor(const string& name,
-                            const KQuery::KType& ktype = KQuery::DAY);
-HAYAKU_API void saveFactor(const Factor& factor, bool updateBefore = true);
-HAYAKU_API void saveSpecialFactorValues(const Factor& factor,
-                                        const Stock& stock,
-                                        const DatetimeList& dates,
-                                        const PriceList& values, bool replace);
-HAYAKU_API void removeFactor(const string& name,
-                             const KQuery::KType& ktype = KQuery::DAY);
-HAYAKU_API FactorList getAllFactors();
-HAYAKU_API FactorSetList getAllFactorSets();
-HAYAKU_API void updateAllFactorsValues(
-    const KQuery::KType& ktype = KQuery::DAY);
-HAYAKU_API void saveFactorSet(const FactorSet& set);
-HAYAKU_API void removeFactorSet(const string& name, const KQuery::KType& ktype);
-HAYAKU_API FactorSet getFactorSet(const string& name,
-                                  const KQuery::KType& ktype = KQuery::DAY);
+bool hasFactor(const string& name, const KQuery::KType& ktype = KQuery::DAY);
+Factor getFactor(const string& name, const KQuery::KType& ktype = KQuery::DAY);
+void saveFactor(const Factor& factor, bool updateBefore = true);
+void saveSpecialFactorValues(const Factor& factor, const Stock& stock,
+                             const DatetimeList& dates, const PriceList& values,
+                             bool replace);
+void removeFactor(const string& name, const KQuery::KType& ktype = KQuery::DAY);
+FactorList getAllFactors();
+FactorSetList getAllFactorSets();
+void updateAllFactorsValues(const KQuery::KType& ktype = KQuery::DAY);
+void saveFactorSet(const FactorSet& set);
+void removeFactorSet(const string& name, const KQuery::KType& ktype);
+FactorSet getFactorSet(const string& name,
+                       const KQuery::KType& ktype = KQuery::DAY);
 
 [[nodiscard]] bool isValidFactorName(const string& name);
 [[nodiscard]] IndicatorList getValues(const Factor& factor,

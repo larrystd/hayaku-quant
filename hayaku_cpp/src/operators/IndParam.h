@@ -11,16 +11,16 @@
 
 namespace hayaku {
 
-class HAYAKU_API Indicator;
-class HAYAKU_API IndicatorImp;
+class Indicator;
+class IndicatorImp;
 
 /**
  * @brief Dynamic indicator parameter, used as the parameter of the other
  * indicators
  * @ingroup Indicator
  */
-class HAYAKU_API IndParam {
-  HAYAKU_API friend std::ostream& operator<<(std::ostream&, const IndParam&);
+class IndParam {
+  friend std::ostream& operator<<(std::ostream&, const IndParam&);
 
  public:
   IndParam();

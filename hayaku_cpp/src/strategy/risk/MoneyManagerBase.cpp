@@ -9,14 +9,12 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const MoneyManagerBase& mm) {
+std::ostream& operator<<(std::ostream& os, const MoneyManagerBase& mm) {
   os << "MoneyManager(" << mm.name() << ", " << mm.getParameter() << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const MoneyManagerPtr& mm) {
+std::ostream& operator<<(std::ostream& os, const MoneyManagerPtr& mm) {
   if (mm) {
     os << *mm;
   } else {

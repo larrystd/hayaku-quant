@@ -32,8 +32,6 @@ double MaxFundsOptimalSelector::evaluate(
   return ret;
 }
 
-SEPtr HAYAKU_API SE_MaxFundsOptimal() {
-  return make_shared<MaxFundsOptimalSelector>();
-}
+SEPtr SE_MaxFundsOptimal() { return make_shared<MaxFundsOptimalSelector>(); }
 
 }  // namespace hayaku

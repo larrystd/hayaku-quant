@@ -18,7 +18,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const KData& kdata) {
+std::ostream& operator<<(std::ostream& os, const KData& kdata) {
   os << "KData{\n  size : " << kdata.size() << "\n  stock: " << kdata.getStock()
      << "\n  query: " << kdata.getQuery();
   if (kdata.size() == 1) {
@@ -256,20 +256,19 @@ Indicator KData::vol() const { return VOL(*this); }
 
 Indicator KData::amo() const { return AMO(*this); }
 
-KData HAYAKU_API getKData(const string& market_code, const KQuery& query) {
+KData getKData(const string& market_code, const KQuery& query) {
   return getDataRuntime().getStock(market_code).getKData(query);
 }
 
-KData HAYAKU_API getKData(const string& market_code, const Datetime& start,
-                          const Datetime& end, const KQuery::KType& ktype,
-                          KQuery::RecoverType recoverType) {
+KData getKData(const string& market_code, const Datetime& start,
+               const Datetime& end, const KQuery::KType& ktype,
+               KQuery::RecoverType recoverType) {
   KQuery query(start, end, ktype, recoverType);
   return getDataRuntime().getStock(market_code).getKData(query);
 }
 
-KData HAYAKU_API getKData(const string& market_code, int64_t start, int64_t end,
-                          const KQuery::KType& ktype,
-                          KQuery::RecoverType recoverType) {
+KData getKData(const string& market_code, int64_t start, int64_t end,
+               const KQuery::KType& ktype, KQuery::RecoverType recoverType) {
   KQuery query(start, end, ktype, recoverType);
   return getDataRuntime().getStock(market_code).getKData(query);
 }

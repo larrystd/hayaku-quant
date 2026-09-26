@@ -21,7 +21,7 @@ typedef shared_ptr<KDataDriverConnectPool> KDataDriverConnectPoolPtr;
  * Data driver factory class
  * @ingroup DataDriver
  */
-class HAYAKU_API DataDriverFactory {
+class DataDriverFactory {
  public:
   /**
    * Initialize the supported default drivers

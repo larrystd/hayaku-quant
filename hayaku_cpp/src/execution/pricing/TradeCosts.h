@@ -30,7 +30,7 @@ namespace hayaku {
  * than 1 yuan
  * </pre>
  */
-class HAYAKU_API FixedATradeCost : public TradeCostBase {
+class FixedATradeCost : public TradeCostBase {
   TRADE_COST_NO_PRIVATE_MEMBER_SERIALIZATION
 
  public:
@@ -221,7 +221,7 @@ class FixedETFTradeCost : public TradeCostBase {
 
 namespace hayaku {
 
-class HAYAKU_API ZeroTradeCost : public TradeCostBase {
+class ZeroTradeCost : public TradeCostBase {
   TRADE_COST_NO_PRIVATE_MEMBER_SERIALIZATION
 
  public:
@@ -265,7 +265,7 @@ class HAYAKU_API ZeroTradeCost : public TradeCostBase {
 
 namespace hayaku {
 
-class HAYAKU_API TradeCostStub : public TradeCostBase {
+class TradeCostStub : public TradeCostBase {
   TRADE_COST_NO_PRIVATE_MEMBER_SERIALIZATION
 
  public:
@@ -337,11 +337,10 @@ namespace hayaku {
  * @see FixedATradeCost
  * @ingroup TradeCost
  */
-TradeCostPtr HAYAKU_API TC_FixedA(price_t commission = 0.0018,
-                                  price_t lowestCommission = 5.0,
-                                  price_t stamptax = 0.001,
-                                  price_t transferfee = 0.001,
-                                  price_t lowestTransferfee = 1.0);
+TradeCostPtr TC_FixedA(price_t commission = 0.0018,
+                       price_t lowestCommission = 5.0, price_t stamptax = 0.001,
+                       price_t transferfee = 0.001,
+                       price_t lowestTransferfee = 1.0);
 
 }  // namespace hayaku
 
@@ -378,10 +377,10 @@ namespace hayaku {
  * @see FixedATradeCost
  * @ingroup TradeCost
  */
-TradeCostPtr HAYAKU_API TC_FixedA2015(price_t commission = 0.0018,
-                                      price_t lowestCommission = 5.0,
-                                      price_t stamptax = 0.001,
-                                      price_t transferfee = 0.00002);
+TradeCostPtr TC_FixedA2015(price_t commission = 0.0018,
+                           price_t lowestCommission = 5.0,
+                           price_t stamptax = 0.001,
+                           price_t transferfee = 0.00002);
 
 }  // namespace hayaku
 
@@ -419,10 +418,10 @@ namespace hayaku {
  * @see FixedATradeCost
  * @ingroup TradeCost
  */
-TradeCostPtr HAYAKU_API TC_FixedA2017(price_t commission = 0.0018,
-                                      price_t lowestCommission = 5.0,
-                                      price_t stamptax = 0.001,
-                                      price_t transferfee = 0.00002);
+TradeCostPtr TC_FixedA2017(price_t commission = 0.0018,
+                           price_t lowestCommission = 5.0,
+                           price_t stamptax = 0.001,
+                           price_t transferfee = 0.00002);
 
 }  // namespace hayaku
 
@@ -449,8 +448,8 @@ namespace hayaku {
  * @see FixedETFTradeCost
  * @ingroup TradeCost
  */
-TradeCostPtr HAYAKU_API TC_FixedETF(price_t commission = 0.0001,
-                                    price_t lowestCommission = 5.0);
+TradeCostPtr TC_FixedETF(price_t commission = 0.0001,
+                         price_t lowestCommission = 5.0);
 
 }  // namespace hayaku
 
@@ -468,7 +467,7 @@ namespace hayaku {
  * @see ZeroTradeCost
  * @ingroup TradeCost
  */
-TradeCostPtr HAYAKU_API TC_Zero();
+TradeCostPtr TC_Zero();
 
 }  // namespace hayaku
 
@@ -482,6 +481,6 @@ TradeCostPtr HAYAKU_API TC_Zero();
 namespace hayaku {
 
 /* For testing only */
-HAYAKU_API TradeCostPtr TC_TestStub();
+TradeCostPtr TC_TestStub();
 
 }  // namespace hayaku

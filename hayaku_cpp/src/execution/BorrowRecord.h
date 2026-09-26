@@ -17,7 +17,7 @@ namespace hayaku {
  * Record the information of the currently borrowed shares
  * @ingroup ExecutionAccount
  */
-class HAYAKU_API BorrowRecord {
+class BorrowRecord {
  public:
   BorrowRecord();
   BorrowRecord(const Stock&, double number, price_t value);
@@ -77,7 +77,7 @@ class HAYAKU_API BorrowRecord {
 
 typedef vector<BorrowRecord> BorrowRecordList;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const BorrowRecord&);
+std::ostream& operator<<(std::ostream&, const BorrowRecord&);
 
 } /* namespace hayaku */
 

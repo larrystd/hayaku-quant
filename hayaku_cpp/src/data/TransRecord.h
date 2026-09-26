@@ -15,7 +15,7 @@ namespace hayaku {
  * Tick (sub-transaction) record
  * @ingroup StockManage
  */
-class HAYAKU_API TransRecord {
+class TransRecord {
  public:
   Datetime datetime;  // Time
   price_t price;      // Average transaction price
@@ -42,7 +42,7 @@ typedef vector<TransRecord> TransRecordList;
  * vol)
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream&, const TransRecord&);
+std::ostream& operator<<(std::ostream&, const TransRecord&);
 
 /**
  * Output the TransList information
@@ -56,13 +56,13 @@ HAYAKU_API std::ostream& operator<<(std::ostream&, const TransRecord&);
  * </pre>
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const TransList&);
+std::ostream& operator<<(std::ostream& os, const TransList&);
 
 /**
  * Compare whether two TransRecord are equal, generally used in tests only
  * @ingroup StockManage
  */
-bool HAYAKU_API operator==(const TransRecord& d1, const TransRecord& d2);
+bool operator==(const TransRecord& d1, const TransRecord& d2);
 
 } /* namespace hayaku */
 

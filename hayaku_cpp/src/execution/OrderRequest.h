@@ -28,7 +28,7 @@ enum class OrderSide : std::uint8_t {
  * Signal evaluation, slippage and market-data lookup remain outside the
  * execution boundary.
  */
-class HAYAKU_API OrderRequest {
+class OrderRequest {
  public:
   OrderRequest(OrderSide side, Datetime datetime, Stock stock,
                price_t realPrice, double number, price_t stoploss = 0.0,

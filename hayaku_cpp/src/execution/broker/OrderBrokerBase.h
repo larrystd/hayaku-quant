@@ -13,7 +13,7 @@
 
 namespace hayaku {
 
-struct HAYAKU_API BrokerPositionRecord {
+struct BrokerPositionRecord {
   Stock stock;
   price_t number{0.0};  // Quantity
   price_t money{0.0};   // Total funds spent on the buy
@@ -29,8 +29,7 @@ struct HAYAKU_API BrokerPositionRecord {
   string str() const;
 };
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const BrokerPositionRecord&);
+std::ostream& operator<<(std::ostream& os, const BrokerPositionRecord&);
 
 /**
  * Base class of the order broker, it implements the actual order operations and
@@ -53,7 +52,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os,
  * used to specify that moment.
  * @ingroup OrderBroker
  */
-class HAYAKU_API OrderBrokerBase {
+class OrderBrokerBase {
   PARAMETER_SUPPORT
 
  public:
@@ -196,10 +195,10 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(OrderBrokerBase)
 typedef shared_ptr<OrderBrokerBase> OrderBrokerPtr;
 
 /** @ingroup OrderBroker */
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const OrderBrokerBase&);
+std::ostream& operator<<(std::ostream& os, const OrderBrokerBase&);
 
 /** @ingroup OrderBroker */
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const OrderBrokerPtr&);
+std::ostream& operator<<(std::ostream& os, const OrderBrokerPtr&);
 
 inline const string& OrderBrokerBase::name() const { return name_; }
 

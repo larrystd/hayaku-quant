@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API KDataSharedBufferImp : public KDataImp {
+class KDataSharedBufferImp : public KDataImp {
  public:
   KDataSharedBufferImp() = default;
   KDataSharedBufferImp(const Stock& stock, const KQuery& query);

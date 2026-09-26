@@ -15,7 +15,7 @@ namespace hayaku {
  * Sector (Block) class, which can be regarded as a container of securities
  * @ingroup StockManage
  */
-class HAYAKU_API Block {
+class Block {
  public:
   Block() noexcept;
   Block(const string& category, const string& name);
@@ -118,9 +118,7 @@ class HAYAKU_API Block {
   bool remove(const Stock& stock);
 
   /** Number of contained securities */
-  size_t size() const noexcept {
-    return data_ ? data_->stock_dict_.size() : 0;
-  }
+  size_t size() const noexcept { return data_ ? data_->stock_dict_.size() : 0; }
 
   /** Whether it is empty */
   bool empty() const noexcept { return size() == 0; }
@@ -141,7 +139,7 @@ class HAYAKU_API Block {
   uint64_t strongHash() const;
 
  private:
-  struct HAYAKU_API Data {
+  struct Data {
     string category_;
     string name_;
     Stock index_stock_;  // The corresponding index, which may not exist
@@ -153,15 +151,15 @@ class HAYAKU_API Block {
 /** @ingroup StockManage */
 typedef vector<Block> BlockList;
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const Block&);
+std::ostream& operator<<(std::ostream& os, const Block&);
 
 /**
  * @brief Get a Block from the active data runtime
  * @param category
  * @param name
- * @return HAYAKU_API
+ * @return
  */
-HAYAKU_API Block getBlock(const string& category, const string& name);
+Block getBlock(const string& category, const string& name);
 
 } /* namespace hayaku */
 

@@ -61,7 +61,7 @@ void OPLineCondition::_calculate() {
   }
 }
 
-CNPtr HAYAKU_API CN_OPLine(const Indicator& op) {
+CNPtr CN_OPLine(const Indicator& op) {
   return make_shared<OPLineCondition>(op);
 }
 

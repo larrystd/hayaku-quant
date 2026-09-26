@@ -14,13 +14,12 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const AllocateFundsBase& af) {
+std::ostream& operator<<(std::ostream& os, const AllocateFundsBase& af) {
   os << "AllocateFunds(" << af.name() << ", " << af.getParameter() << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const AFPtr& af) {
+std::ostream& operator<<(std::ostream& os, const AFPtr& af) {
   if (af) {
     os << *af;
   } else {

@@ -86,11 +86,10 @@ void TaSar::_calculate(const Indicator& data) {
   int outNbElement;
   ::TA_SAR(discard_, total - 1, high, low, acceleration, maximum, &outBegIdx,
            &outNbElement, dst + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_SAR(double acceleration, double maximum) {
+Indicator TA_SAR(double acceleration, double maximum) {
   auto p = make_shared<TaSar>();
   p->setParam<double>("acceleration", acceleration);
   p->setParam<double>("maximum", maximum);
@@ -98,8 +97,7 @@ Indicator HAYAKU_API TA_SAR(double acceleration, double maximum) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API TA_SAR(const KData& k, double acceleration,
-                            double maximum) {
+Indicator TA_SAR(const KData& k, double acceleration, double maximum) {
   auto p = make_shared<TaSar>();
   p->setParam<double>("acceleration", acceleration);
   p->setParam<double>("maximum", maximum);
@@ -236,28 +234,23 @@ void TaSarext::_calculate(const Indicator& data) {
               accelerationinitlong, accelerationlong, accelerationmaxlong,
               accelerationinitshort, accelerationshort, accelerationmaxshort,
               &outBegIdx, &outNbElement, dst + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_SAREXT(double startvalue, double offsetonreverse,
-                               double accelerationinitlong,
-                               double accelerationlong,
-                               double accelerationmaxlong,
-                               double accelerationinitshort,
-                               double accelerationshort,
-                               double accelerationmaxshort) {
+Indicator TA_SAREXT(double startvalue, double offsetonreverse,
+                    double accelerationinitlong, double accelerationlong,
+                    double accelerationmaxlong, double accelerationinitshort,
+                    double accelerationshort, double accelerationmaxshort) {
   return Indicator(make_shared<TaSarext>(
       startvalue, offsetonreverse, accelerationinitlong, accelerationlong,
       accelerationmaxlong, accelerationinitshort, accelerationshort,
       accelerationmaxshort));
 }
 
-Indicator HAYAKU_API
-TA_SAREXT(const KData& k, double startvalue, double offsetonreverse,
-          double accelerationinitlong, double accelerationlong,
-          double accelerationmaxlong, double accelerationinitshort,
-          double accelerationshort, double accelerationmaxshort) {
+Indicator TA_SAREXT(const KData& k, double startvalue, double offsetonreverse,
+                    double accelerationinitlong, double accelerationlong,
+                    double accelerationmaxlong, double accelerationinitshort,
+                    double accelerationshort, double accelerationmaxshort) {
   auto p = make_shared<TaSarext>(startvalue, offsetonreverse,
                                  accelerationinitlong, accelerationlong,
                                  accelerationmaxlong, accelerationinitshort,

@@ -24,7 +24,7 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API BARSCOUNT();
+Indicator BARSCOUNT();
 
 inline Indicator BARSCOUNT(const Indicator& ind) { return BARSCOUNT()(ind); }
 
@@ -54,7 +54,7 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API BARSLAST();
+Indicator BARSLAST();
 
 inline Indicator BARSLAST(const Indicator& ind) { return BARSLAST()(ind); }
 
@@ -83,7 +83,7 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API BARSLASTCOUNT();
+Indicator BARSLASTCOUNT();
 
 inline Indicator BARSLASTCOUNT(const Indicator& ind) {
   return BARSLASTCOUNT()(ind);
@@ -115,8 +115,8 @@ namespace hayaku {
  * @param n the N-th time the condition holds, n is a positive integer
  * @ingroup Indicator
  */
-Indicator HAYAKU_API BARSLASTS(int n);
-Indicator HAYAKU_API BARSLASTS(const IndParam& n);
+Indicator BARSLASTS(int n);
+Indicator BARSLASTS(const IndParam& n);
 
 inline Indicator BARSLASTS(const Indicator& ind, int n) {
   return BARSLASTS(n)(ind);
@@ -171,7 +171,7 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API BARSSINCE();
+Indicator BARSSINCE();
 
 inline Indicator BARSSINCE(const Indicator& ind) { return BARSSINCE()(ind); }
 
@@ -197,7 +197,7 @@ inline Indicator BARSSINCE(Indicator::value_t val) {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API BARSSINCEN(int n);
+Indicator BARSSINCEN(int n);
 inline Indicator BARSSINCEN(const Indicator& ind, int n) {
   return BARSSINCEN(n)(ind);
 }
@@ -347,8 +347,8 @@ namespace hayaku {
  *  and should not assume "everything after discard is valid".
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SUMBARS(double a);
-Indicator HAYAKU_API SUMBARS(const IndParam& a);
+Indicator SUMBARS(double a);
+Indicator SUMBARS(const IndParam& a);
 
 inline Indicator SUMBARS(const Indicator& ind, double a) {
   return SUMBARS(a)(ind);
@@ -379,8 +379,8 @@ namespace hayaku {
  * @param n N-day time window
  * @ingroup Indicator
  */
-Indicator HAYAKU_API HHV(int n = 20);
-Indicator HAYAKU_API HHV(const IndParam& n);
+Indicator HHV(int n = 20);
+Indicator HHV(const IndParam& n);
 
 /**
  * The highest price within N days; when N=0 it starts from the first valid
@@ -424,8 +424,8 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API HHVBARS(int n = 20);
-Indicator HAYAKU_API HHVBARS(const IndParam& n);
+Indicator HHVBARS(int n = 20);
+Indicator HHVBARS(const IndParam& n);
 
 inline Indicator HHVBARS(const Indicator& ind, int n = 20) {
   return HHVBARS(n)(ind);
@@ -457,8 +457,8 @@ namespace hayaku {
  * @param n N-day time window; when N=0 it starts from the first valid value.
  * @ingroup Indicator
  */
-Indicator HAYAKU_API LLV(int n = 20);
-Indicator HAYAKU_API LLV(const IndParam& n);
+Indicator LLV(int n = 20);
+Indicator LLV(const IndParam& n);
 
 /**
  * The lowest price within N days; when N=0 it starts from the first valid
@@ -502,8 +502,8 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API LLVBARS(int n = 20);
-Indicator HAYAKU_API LLVBARS(const IndParam& n);
+Indicator LLVBARS(int n = 20);
+Indicator LLVBARS(const IndParam& n);
 
 inline Indicator LLVBARS(const Indicator& ind, int n = 20) {
   return LLVBARS(n)(ind);
@@ -627,8 +627,8 @@ namespace hayaku {
  * @param n number of the periods
  * @ingroup Indicator
  */
-Indicator HAYAKU_API COUNT(int n = 20);
-Indicator HAYAKU_API COUNT(const IndParam& n);
+Indicator COUNT(int n = 20);
+Indicator COUNT(const IndParam& n);
 
 /**
  * Count the total number; count the number of the periods satisfying the
@@ -677,8 +677,8 @@ namespace hayaku {
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SUM(int n = 20);
-Indicator HAYAKU_API SUM(const IndParam& n);
+Indicator SUM(int n = 20);
+Indicator SUM(const IndParam& n);
 
 /**
  * Calculate the sum. SUM(X,N) sums up X within N periods; when N=0 it starts
@@ -759,8 +759,8 @@ namespace hayaku {
  * @param n N-day time window
  * @ingroup Indicator
  */
-Indicator HAYAKU_API DEVSQ(int n = 10);
-Indicator HAYAKU_API DEVSQ(const IndParam& n);
+Indicator DEVSQ(int n = 10);
+Indicator DEVSQ(const IndParam& n);
 
 inline Indicator DEVSQ(const Indicator& data, int n = 10) {
   return DEVSQ(n)(data);
@@ -791,8 +791,8 @@ namespace hayaku {
  * greater than 0
  * @ingroup Indicator
  */
-Indicator HAYAKU_API EMA(int n = 22);
-Indicator HAYAKU_API EMA(const IndParam& n);
+Indicator EMA(int n = 22);
+Indicator EMA(const IndParam& n);
 
 /**
  * Exponential Moving Average (EMA)
@@ -828,8 +828,8 @@ namespace hayaku {
  * calculation starts from the first valid data
  * @ingroup Indicator
  */
-Indicator HAYAKU_API MA(int n = 22);
-Indicator HAYAKU_API MA(const IndParam& n);
+Indicator MA(int n = 22);
+Indicator MA(const IndParam& n);
 
 /**
  * Simple moving average
@@ -871,10 +871,10 @@ namespace hayaku {
  * @param m coefficient
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SMA(int n = 22, double m = 2.0);
-Indicator HAYAKU_API SMA(int, const IndParam& m);
-Indicator HAYAKU_API SMA(const IndParam& n, double m = 2.0);
-Indicator HAYAKU_API SMA(const IndParam& n, const IndParam& m);
+Indicator SMA(int n = 22, double m = 2.0);
+Indicator SMA(int, const IndParam& m);
+Indicator SMA(const IndParam& n, double m = 2.0);
+Indicator SMA(const IndParam& n, const IndParam& m);
 
 /**
  * Calculate the moving average
@@ -939,8 +939,8 @@ namespace hayaku {
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API WMA(int n = 22);
-Indicator HAYAKU_API WMA(const IndParam& n);
+Indicator WMA(int n = 22);
+Indicator WMA(const IndParam& n);
 
 /**
  * Weighted moving average
@@ -986,17 +986,16 @@ namespace hayaku {
  * @return it has 2 result sets, result(0) is AMA and result(1) is ER
  * @ingroup Indicator
  */
-Indicator HAYAKU_API AMA(int n = 10, int fast_n = 2, int slow_n = 30);
-Indicator HAYAKU_API AMA(int n, int fast_n, const IndParam& slow_n);
-Indicator HAYAKU_API AMA(int n, const IndParam& fast_n, int slow_n = 30);
-Indicator HAYAKU_API AMA(int n, const IndParam& fast_n, const IndParam& slow_n);
+Indicator AMA(int n = 10, int fast_n = 2, int slow_n = 30);
+Indicator AMA(int n, int fast_n, const IndParam& slow_n);
+Indicator AMA(int n, const IndParam& fast_n, int slow_n = 30);
+Indicator AMA(int n, const IndParam& fast_n, const IndParam& slow_n);
 
-Indicator HAYAKU_API AMA(const IndParam& n, int fast_n = 2, int slow_n = 30);
-Indicator HAYAKU_API AMA(const IndParam& n, int fast_n, const IndParam& slow_n);
-Indicator HAYAKU_API AMA(const IndParam& n, const IndParam& fast_n,
-                         int slow_n = 30);
-Indicator HAYAKU_API AMA(const IndParam& n, const IndParam& fast_n,
-                         const IndParam& slow_n);
+Indicator AMA(const IndParam& n, int fast_n = 2, int slow_n = 30);
+Indicator AMA(const IndParam& n, int fast_n, const IndParam& slow_n);
+Indicator AMA(const IndParam& n, const IndParam& fast_n, int slow_n = 30);
+Indicator AMA(const IndParam& n, const IndParam& fast_n,
+              const IndParam& slow_n);
 
 /**
  * Perry J. Kaufman adaptive moving average, see "Smarter Trading" (2006,
@@ -1121,8 +1120,7 @@ namespace hayaku {
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API DMA(const Indicator& x, const Indicator& a,
-                         bool fill_null = true);
+Indicator DMA(const Indicator& x, const Indicator& a, bool fill_null = true);
 
 }  // namespace hayaku
 
@@ -1141,7 +1139,7 @@ namespace hayaku {
  * @param r measurement noise variance
  * @ingroup Indicator
  */
-Indicator HAYAKU_API KALMAN(double q = 0.01, double r = 0.1);
+Indicator KALMAN(double q = 0.01, double r = 0.1);
 
 inline Indicator KALMAN(const Indicator& ind, double q = 0.01, double r = 0.1) {
   return KALMAN(q, r)(ind);

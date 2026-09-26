@@ -31,7 +31,7 @@ struct KRecordView;  // Defined in data_driver/KDataDriver.h
  * of KDataSharedBufferImp in the main process.
  * @ingroup StockManage
  */
-class HAYAKU_API KDataShmBufferImp : public KDataImp {
+class KDataShmBufferImp : public KDataImp {
  public:
   /**
    * Factory: try to construct the shared memory zero-copy view in client mode

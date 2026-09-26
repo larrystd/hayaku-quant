@@ -35,7 +35,7 @@ double FixedPercentMoneyManager ::_getBuyNumber(const Datetime& datetime,
   return account_->cash(datetime, query_.kType()) * p / risk;
 }
 
-MoneyManagerPtr HAYAKU_API MM_FixedPercent(double p) {
+MoneyManagerPtr MM_FixedPercent(double p) {
   MoneyManagerPtr ptr = make_shared<FixedPercentMoneyManager>();
   ptr->setParam<double>("p", p);
   return ptr;

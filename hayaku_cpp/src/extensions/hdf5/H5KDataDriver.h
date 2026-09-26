@@ -12,7 +12,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API H5KDataDriver : public KDataDriver {
+class H5KDataDriver : public KDataDriver {
  public:
   H5KDataDriver();
   virtual ~H5KDataDriver() override;

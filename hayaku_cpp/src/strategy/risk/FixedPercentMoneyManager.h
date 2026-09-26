@@ -19,7 +19,7 @@ namespace hayaku {
  * percent: the percentage of the total risk of every trade in the total assets,
  * e.g. 0.02 means 2% of the total assets
  */
-class HAYAKU_API FixedPercentMoneyManager : public MoneyManagerBase {
+class FixedPercentMoneyManager : public MoneyManagerBase {
   MONEY_MANAGER_IMP(FixedPercentMoneyManager)
   MONEY_MANAGER_NO_PRIVATE_MEMBER_SERIALIZATION
 

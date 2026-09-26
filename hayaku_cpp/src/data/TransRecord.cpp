@@ -9,8 +9,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const TransRecord& record) {
+std::ostream& operator<<(std::ostream& os, const TransRecord& record) {
   string strip(", ");
   os << std::fixed;
   (void)os.precision(4);
@@ -21,7 +20,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const TransList& data) {
+std::ostream& operator<<(std::ostream& os, const TransList& data) {
   if (data.size() > 0) {
     os << "TransList{\n  size : " << data.size()
        << "\n  start: " << data.front().datetime
@@ -32,7 +31,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const TransList& data) {
   return os;
 }
 
-bool HAYAKU_API operator==(const TransRecord& d1, const TransRecord& d2) {
+bool operator==(const TransRecord& d1, const TransRecord& d2) {
   return (d1.datetime == d2.datetime &&
           (std::fabs(d1.price - d2.price) < 0.0001) &&
           (std::fabs(d1.vol - d2.vol) < 0.0001) && (d1.direct == d2.direct));

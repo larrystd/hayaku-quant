@@ -17,7 +17,7 @@ namespace hayaku {
  * allocation algorithm
  * @ingroup Selector
  */
-struct HAYAKU_API StrategyWeight {
+struct StrategyWeight {
   internal::StrategyRuntimePtr strategy;
   double weight{1.0};
 
@@ -53,7 +53,7 @@ struct HAYAKU_API StrategyWeight {
 
 using StrategyWeightList = vector<StrategyWeight>;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const StrategyWeight&);
+std::ostream& operator<<(std::ostream&, const StrategyWeight&);
 
 inline bool operator==(const StrategyWeight& lhs, const StrategyWeight& rhs) {
   return lhs.strategy == rhs.strategy &&

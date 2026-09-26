@@ -15,7 +15,7 @@ namespace hayaku {
  * Market information record
  * @ingroup StockManage
  */
-class HAYAKU_API MarketInfo {
+class MarketInfo {
  public:
   /** Default constructor, returns Null<MarketInfo>() */
   MarketInfo();
@@ -90,7 +90,7 @@ class HAYAKU_API MarketInfo {
  * 00:00:00)
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream&, const MarketInfo&);
+std::ostream& operator<<(std::ostream&, const MarketInfo&);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

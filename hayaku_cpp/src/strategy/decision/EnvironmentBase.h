@@ -22,8 +22,7 @@ namespace hayaku {
  * trading object
  * @ingroup Environment
  */
-class HAYAKU_API EnvironmentBase
-    : public enable_shared_from_this<EnvironmentBase> {
+class EnvironmentBase : public enable_shared_from_this<EnvironmentBase> {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -183,8 +182,8 @@ typedef shared_ptr<EnvironmentBase> EVPtr;
  * Output the Environment information, e.g. Environment(name, params[...])
  * @ingroup Environment
  */
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const EnvironmentPtr&);
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const EnvironmentBase&);
+std::ostream& operator<<(std::ostream& os, const EnvironmentPtr&);
+std::ostream& operator<<(std::ostream& os, const EnvironmentBase&);
 
 } /* namespace hayaku */
 

@@ -9,8 +9,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const StockWeight& record) {
+std::ostream& operator<<(std::ostream& os, const StockWeight& record) {
   if (Null<StockWeight>() == record) {
     os << "Weight(Null)";
     return os;

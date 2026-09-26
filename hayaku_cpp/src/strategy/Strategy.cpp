@@ -175,8 +175,7 @@ void Strategy::start(bool autoRecieveSpot) {
   HAYAKU_WARN_IF_RETURN(pythonInInteractive(), void(),
                         "Can not start strategy in python interactive mode!");
   HAYAKU_WARN_IF(!on_recieved_spot_ && !on_change_ &&
-                     run_daily_at_list_.empty() &&
-                     run_daily_at_funcs_.empty(),
+                     run_daily_at_list_.empty() && run_daily_at_funcs_.empty(),
                  "No any process function is set!");
 
   _init();
@@ -564,11 +563,10 @@ TradeRecord Strategy::sell(const Stock& stk, price_t price, double num,
       .trade();
 }
 
-void HAYAKU_API
-runInStrategy(const internal::StrategyRuntimePtr& strategy, const Stock& stk,
-              const KQuery& query, const OrderBrokerPtr& broker,
-              const TradeCostPtr& costfunc,
-              const std::vector<OrderBrokerPtr>& other_brokers) {
+void runInStrategy(const internal::StrategyRuntimePtr& strategy,
+                   const Stock& stk, const KQuery& query,
+                   const OrderBrokerPtr& broker, const TradeCostPtr& costfunc,
+                   const std::vector<OrderBrokerPtr>& other_brokers) {
   HAYAKU_ASSERT(strategy && broker);
   HAYAKU_ASSERT(!stk.isNull());
   HAYAKU_ASSERT(query != Null<KQuery>());
@@ -588,10 +586,9 @@ runInStrategy(const internal::StrategyRuntimePtr& strategy, const Stock& stk,
   strategy->run(BacktestRequest(stk.getKData(query)));
 }
 
-void HAYAKU_API
-runInStrategy(const PFPtr& pf, const KQuery& query,
-              const OrderBrokerPtr& broker, const TradeCostPtr& costfunc,
-              const std::vector<OrderBrokerPtr>& other_brokers) {
+void runInStrategy(const PFPtr& pf, const KQuery& query,
+                   const OrderBrokerPtr& broker, const TradeCostPtr& costfunc,
+                   const std::vector<OrderBrokerPtr>& other_brokers) {
   HAYAKU_ASSERT(pf && broker);
   HAYAKU_ASSERT(query != Null<KQuery>());
 

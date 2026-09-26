@@ -14,9 +14,9 @@
 
 namespace hayaku {
 
-vector<FundsList> HAYAKU_API
-getFundsList(const vector<internal::ExecutionAccountPortPtr>& accounts,
-             const DatetimeList& ref_dates) {
+vector<FundsList> getFundsList(
+    const vector<internal::ExecutionAccountPortPtr>& accounts,
+    const DatetimeList& ref_dates) {
   return global_parallel_for_index(0, accounts.size(), [&](size_t i) {
     FundsList funds;
     if (accounts[i]) {
@@ -29,7 +29,7 @@ getFundsList(const vector<internal::ExecutionAccountPortPtr>& accounts,
   });
 }
 
-vector<Performance> HAYAKU_API getPerformanceList(
+vector<Performance> getPerformanceList(
     const vector<internal::ExecutionAccountPortPtr>& accounts,
     const Datetime& datetime, const KQuery::KType& ktype, bool ext) {
   return global_parallel_for_index(

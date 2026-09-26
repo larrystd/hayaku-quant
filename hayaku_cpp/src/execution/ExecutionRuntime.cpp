@@ -62,9 +62,9 @@ string ExecutionRuntime::str() const {
   PositionRecordList position = getPositionList();
   PositionRecordList::const_iterator iter = position.begin();
   os << "    "
-     << htr("code name takeDatetime hold_days number invest market_value bonus "
-            "return_rate "
-            "initial_capital_return\n");
+     << "code name takeDatetime hold_days number invest market_value bonus "
+        "return_rate "
+        "initial_capital_return\n";
   for (; iter != position.end(); ++iter) {
     price_t invest = iter->buyMoney - iter->sellMoney + iter->totalCost;
     KData k = iter->stock.getKData(query);
@@ -104,9 +104,7 @@ string ExecutionRuntime::str() const {
 ExecutionRuntime::ExecutionRuntime(const Datetime& datetime, price_t initcash,
                                    const TradeCostPtr& costfunc,
                                    const string& name)
-    : name_(name),
-      costfunc_(costfunc),
-      broker_last_datetime_(Datetime::now()) {
+    : name_(name), costfunc_(costfunc), broker_last_datetime_(Datetime::now()) {
   setParam<int>("precision", 2);  // Calculation precision
   ledger_.account_id_ = nextAccountId();
   ledger_.init_datetime_ = datetime;
@@ -119,10 +117,10 @@ ExecutionRuntime::ExecutionRuntime(const Datetime& datetime, price_t initcash,
   ledger_.init_cash_ = roundEx(initcash, 2);
   ledger_.cash_ = ledger_.init_cash_;
   ledger_.checkin_cash_ = ledger_.init_cash_;
-  ledger_.trade_list_.push_back(TradeRecord(
-      Null<Stock>(), ledger_.init_datetime_, BUSINESS_INIT,
-      ledger_.init_cash_, ledger_.init_cash_, 0.0, 0, CostRecord(), 0.0,
-      ledger_.cash_, OrderOrigin::UNSPECIFIED));
+  ledger_.trade_list_.push_back(
+      TradeRecord(Null<Stock>(), ledger_.init_datetime_, BUSINESS_INIT,
+                  ledger_.init_cash_, ledger_.init_cash_, 0.0, 0, CostRecord(),
+                  0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
   broker_last_datetime_ = Datetime::now();
   _saveAction(ledger_.trade_list_.back());
 }
@@ -156,10 +154,10 @@ void ExecutionRuntime::_reset() {
   ledger_.borrow_stock_.clear();
 
   ledger_.trade_list_.clear();
-  ledger_.trade_list_.push_back(TradeRecord(
-      Null<Stock>(), ledger_.init_datetime_, BUSINESS_INIT,
-      ledger_.init_cash_, ledger_.init_cash_, 0.0, 0, CostRecord(), 0.0,
-      ledger_.cash_, OrderOrigin::UNSPECIFIED));
+  ledger_.trade_list_.push_back(
+      TradeRecord(Null<Stock>(), ledger_.init_datetime_, BUSINESS_INIT,
+                  ledger_.init_cash_, ledger_.init_cash_, 0.0, 0, CostRecord(),
+                  0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
 
   ledger_.position_.clear();
   ledger_.position_history_.clear();
@@ -594,7 +592,7 @@ PositionRecord ExecutionRuntime::getShortPosition(const Stock& stock) const {
   position_map_type::const_iterator iter;
   iter = ledger_.short_position_.find(stock.id());
   return iter == ledger_.short_position_.end() ? PositionRecord()
-                                                : iter->second;
+                                               : iter->second;
 }
 
 BorrowRecordList ExecutionRuntime::getBorrowStockList() const {
@@ -884,13 +882,12 @@ bool ExecutionRuntime::borrowStock(const Datetime& datetime, const Stock& stock,
   ledger_.cash_ = roundEx(ledger_.cash_ - cost.total, precision);
 
   // Add it to the trade records
-  ledger_.trade_list_.push_back(TradeRecord(
-      stock, datetime, BUSINESS_BORROW_STOCK, price, price, 0.0, number, cost,
-      0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
+  ledger_.trade_list_.push_back(
+      TradeRecord(stock, datetime, BUSINESS_BORROW_STOCK, price, price, 0.0,
+                  number, cost, 0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
 
   // Update the current borrowed stock information
-  borrow_stock_map_type::iterator iter =
-      ledger_.borrow_stock_.find(stock.id());
+  borrow_stock_map_type::iterator iter = ledger_.borrow_stock_.find(stock.id());
   if (iter == ledger_.borrow_stock_.end()) {
     BorrowRecord record(stock, number, market_value);
     BorrowRecord::Data data(datetime, price, number);
@@ -997,9 +994,9 @@ bool ExecutionRuntime::returnStock(const Datetime& datetime, const Stock& stock,
   ledger_.cash_ = roundEx(ledger_.cash_ - cost.total, precision);
 
   // Update the trade records
-  ledger_.trade_list_.push_back(TradeRecord(
-      stock, datetime, BUSINESS_RETURN_STOCK, price, price, 0.0, number, cost,
-      0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
+  ledger_.trade_list_.push_back(
+      TradeRecord(stock, datetime, BUSINESS_RETURN_STOCK, price, price, 0.0,
+                  number, cost, 0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
 
   return true;
 }
@@ -1068,8 +1065,8 @@ TradeRecord ExecutionRuntime::buy(const Datetime& datetime, const Stock& stock,
     // Get the required principal amount
     CostRecord bor_cost = getBorrowCashCost(datetime, money);
     double rate = getMarginRate(datetime, stock);
-    price_t x = roundEx(ledger_.cash_ / rate + cost.total + bor_cost.total,
-                        precision);
+    price_t x =
+        roundEx(ledger_.cash_ / rate + cost.total + bor_cost.total, precision);
     if (x < money) {
       // The financing that can be obtained is not enough, add the principal
       // automatically
@@ -1867,8 +1864,8 @@ void ExecutionRuntime::updateWithWeight(const Datetime& datetime) {
         position.number += addcount;
         position.totalNumber += addcount;
         TradeRecord record(stock, weight_iter->datetime(), BUSINESS_GIFT, 0.0,
-                           0.0, 0.0, addcount, CostRecord(), 0.0,
-                           ledger_.cash_, OrderOrigin::UNSPECIFIED);
+                           0.0, 0.0, addcount, CostRecord(), 0.0, ledger_.cash_,
+                           OrderOrigin::UNSPECIFIED);
         new_trade_buffer.push_back(record);
       }
 
@@ -2242,8 +2239,7 @@ bool ExecutionRuntime::_add_buy_tr(const TradeRecord& tr) {
   ledger_.trade_list_.push_back(new_tr);
 
   // Update the current position record
-  position_map_type::iterator pos_iter =
-      ledger_.position_.find(tr.stock.id());
+  position_map_type::iterator pos_iter = ledger_.position_.find(tr.stock.id());
   if (pos_iter == ledger_.position_.end()) {
     PositionRecord position(
         tr.stock, tr.datetime, Null<Datetime>(), tr.number, tr.stoploss,
@@ -2279,8 +2275,7 @@ bool ExecutionRuntime::_add_sell_tr(const TradeRecord& tr) {
   HAYAKU_ERROR_IF_RETURN(tr.number == 0, false, "tr.number is zero!");
 
   // There is no position
-  position_map_type::iterator pos_iter =
-      ledger_.position_.find(tr.stock.id());
+  position_map_type::iterator pos_iter = ledger_.position_.find(tr.stock.id());
   HAYAKU_ERROR_IF_RETURN(pos_iter == ledger_.position_.end(), false,
                          "No position!");
 

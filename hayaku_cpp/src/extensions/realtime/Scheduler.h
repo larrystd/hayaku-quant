@@ -15,7 +15,7 @@ namespace hayaku {
 /**
  * Get the pointer of the global scheduler instance
  */
-HAYAKU_API TimerManager* getScheduler();
+TimerManager* getScheduler();
 
 /**
  * Used to release the global scheduler instance on program exit, for internal

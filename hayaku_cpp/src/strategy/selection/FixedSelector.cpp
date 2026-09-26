@@ -36,13 +36,12 @@ StrategyWeightList FixedSelector::_getSelected(Datetime date) {
 
 void FixedSelector::_calculate() {}
 
-SelectorPtr HAYAKU_API SE_Fixed(double weight) {
+SelectorPtr SE_Fixed(double weight) {
   return make_shared<FixedSelector>(weight);
 }
 
-SelectorPtr HAYAKU_API SE_Fixed(const StockList& stock_list,
-                                const internal::StrategyRuntimePtr& sys,
-                                double weight) {
+SelectorPtr SE_Fixed(const StockList& stock_list,
+                     const internal::StrategyRuntimePtr& sys, double weight) {
   SelectorPtr p = make_shared<FixedSelector>(weight);
   p->addStockList(stock_list, sys);
   return p;

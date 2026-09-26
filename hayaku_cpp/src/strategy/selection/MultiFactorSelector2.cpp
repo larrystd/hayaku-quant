@@ -82,8 +82,7 @@ SelectorPtr MultiFactorSelector2::_clone() {
 bool MultiFactorSelector2::isMatchAF(const AFPtr& af) { return true; }
 
 StrategyWeightList MultiFactorSelector2::_getSelected(Datetime date) {
-  ScoreRecordList scores =
-      mf_->getScores(date, 0, Null<size_t>(), sc_filter_);
+  ScoreRecordList scores = mf_->getScores(date, 0, Null<size_t>(), sc_filter_);
   StrategyWeightList ret;
   for (const auto& sc : scores) {
     ret.emplace_back(stk_sys_dict_[sc.stock], sc.value);
@@ -111,11 +110,11 @@ void MultiFactorSelector2::_calculate() {
 
   if (!mf_) {
     if ("MF_ICIRWeight" == mode) {
-      mf_ = MF_ICIRWeight(factorset_, stks, query, ref_stk, ic_n,
-                           ic_rolling_n, spearman);
+      mf_ = MF_ICIRWeight(factorset_, stks, query, ref_stk, ic_n, ic_rolling_n,
+                          spearman);
     } else if ("MF_ICWeight" == mode) {
       mf_ = MF_ICWeight(factorset_, stks, query, ref_stk, ic_n, ic_rolling_n,
-                         spearman);
+                        spearman);
     } else if ("MF_EqualWeight" == mode) {
       mf_ = MF_EqualWeight(factorset_, stks, query, ref_stk, ic_n, spearman);
     } else {
@@ -140,17 +139,16 @@ void MultiFactorSelector2::_calculate() {
   }
 }
 
-SelectorPtr HAYAKU_API SE_MultiFactor2(const MFPtr& mf,
-                                       const ScoresFilterPtr& filter) {
+SelectorPtr SE_MultiFactor2(const MFPtr& mf, const ScoresFilterPtr& filter) {
   auto p = make_shared<MultiFactorSelector2>(mf);
   p->setScoresFilter(filter);
   return p;
 }
 
-SelectorPtr HAYAKU_API SE_MultiFactor2(const FactorSet& factorset, int ic_n,
-                                       int ic_rolling_n, const Stock& ref_stk,
-                                       bool spearman, const string& mode,
-                                       const ScoresFilterPtr& filter) {
+SelectorPtr SE_MultiFactor2(const FactorSet& factorset, int ic_n,
+                            int ic_rolling_n, const Stock& ref_stk,
+                            bool spearman, const string& mode,
+                            const ScoresFilterPtr& filter) {
   auto p = make_shared<MultiFactorSelector2>();
   p->setFactorSet(factorset);
   p->setParam<int>("ic_n", ic_n);

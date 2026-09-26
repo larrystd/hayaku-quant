@@ -64,15 +64,11 @@ vector<Indicator> WeightMultiFactor::_calculate(
   });
 }
 
-MultiFactorPtr HAYAKU_API MF_Weight() {
-  return make_shared<WeightMultiFactor>();
-}
+MultiFactorPtr MF_Weight() { return make_shared<WeightMultiFactor>(); }
 
-MultiFactorPtr HAYAKU_API MF_Weight(const PriceList& weights,
-                                    const StockList& stks, const KQuery& query,
-                                    const Stock& ref_stk, int ic_n,
-                                    bool spearman, int mode,
-                                    bool save_all_factors) {
+MultiFactorPtr MF_Weight(const PriceList& weights, const StockList& stks,
+                         const KQuery& query, const Stock& ref_stk, int ic_n,
+                         bool spearman, int mode, bool save_all_factors) {
   return make_shared<WeightMultiFactor>(weights, stks, query, ref_stk, ic_n,
                                         spearman, mode, save_all_factors);
 }

@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const IndParam& ind) {
+std::ostream& operator<<(std::ostream& os, const IndParam& ind) {
   os << "IndParam: \n" << ind.ind_->formula();
   return os;
 }

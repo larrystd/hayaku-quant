@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API OperatorSelector : public SelectorBase {
+class OperatorSelector : public SelectorBase {
  public:
   OperatorSelector();
   explicit OperatorSelector(const string& name);

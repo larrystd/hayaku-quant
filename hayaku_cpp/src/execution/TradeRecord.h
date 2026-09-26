@@ -43,18 +43,18 @@ enum BUSINESS {
  * Get the business name, used for print output
  * @ingroup ExecutionAccount
  */
-string HAYAKU_API getBusinessName(BUSINESS);
+string getBusinessName(BUSINESS);
 
 /**
  * Get the BUSINESS enum value matching the given string
  */
-BUSINESS HAYAKU_API getBusinessEnum(const string&);
+BUSINESS getBusinessEnum(const string&);
 
 /**
  * Trade record
  * @ingroup ExecutionAccount
  */
-class HAYAKU_API TradeRecord {
+class TradeRecord {
  public:
   TradeRecord();
   TradeRecord(const Stock& stock, const Datetime& datetime, BUSINESS business,
@@ -144,9 +144,9 @@ typedef vector<TradeRecord> TradeRecordList;
  * Print the TradeRecord information
  * @ingroup ExecutionAccount
  */
-HAYAKU_API std::ostream& operator<<(std::ostream&, const TradeRecord&);
+std::ostream& operator<<(std::ostream&, const TradeRecord&);
 
-bool HAYAKU_API operator==(const TradeRecord& d1, const TradeRecord& d2);
+bool operator==(const TradeRecord& d1, const TradeRecord& d2);
 
 inline bool operator!=(const TradeRecord& d1, const TradeRecord& d2) {
   return !(d1 == d2);

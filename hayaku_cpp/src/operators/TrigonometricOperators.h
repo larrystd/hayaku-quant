@@ -17,7 +17,7 @@ namespace hayaku {
  * Cosine value
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ACOS();
+Indicator ACOS();
 
 inline Indicator ACOS(const Indicator& ind) { return ACOS()(ind); }
 
@@ -41,7 +41,7 @@ namespace hayaku {
  * Arcsine value
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ASIN();
+Indicator ASIN();
 
 inline Indicator ASIN(const Indicator& ind) { return ASIN()(ind); }
 
@@ -65,7 +65,7 @@ namespace hayaku {
  * Arctangent value
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ATAN();
+Indicator ATAN();
 
 inline Indicator ATAN(const Indicator& ind) { return ATAN()(ind); }
 
@@ -89,7 +89,7 @@ namespace hayaku {
  * Cosine value
  * @ingroup Indicator
  */
-Indicator HAYAKU_API COS();
+Indicator COS();
 
 inline Indicator COS(const Indicator& ind) { return COS()(ind); }
 
@@ -113,7 +113,7 @@ namespace hayaku {
  * Sine value
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SIN();
+Indicator SIN();
 
 inline Indicator SIN(const Indicator& ind) { return SIN()(ind); }
 
@@ -137,7 +137,7 @@ namespace hayaku {
  * Tangent value
  * @ingroup Indicator
  */
-Indicator HAYAKU_API TAN();
+Indicator TAN();
 
 inline Indicator TAN(const Indicator& ind) { return TAN()(ind); }
 

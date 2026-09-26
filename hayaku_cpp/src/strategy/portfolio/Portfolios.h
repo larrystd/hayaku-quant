@@ -51,13 +51,12 @@ namespace hayaku {
  * day
  * @return the portfolio instance
  */
-PortfolioPtr HAYAKU_API PF_Simple(const internal::PortfolioAccountPortPtr& tm =
-                                      internal::PortfolioAccountPortPtr(),
-                                  const SEPtr& se = SE_Fixed(),
-                                  const AFPtr& af = AF_EqualWeight(),
-                                  int adjust_cycle = 1,
-                                  const string& adjust_mode = "query",
-                                  bool delay_to_trading_day = true);
+PortfolioPtr PF_Simple(const internal::PortfolioAccountPortPtr& tm =
+                           internal::PortfolioAccountPortPtr(),
+                       const SEPtr& se = SE_Fixed(),
+                       const AFPtr& af = AF_EqualWeight(), int adjust_cycle = 1,
+                       const string& adjust_mode = "query",
+                       bool delay_to_trading_day = true);
 
 } /* namespace hayaku */
 
@@ -107,12 +106,13 @@ namespace hayaku {
  * on the rebalancing day, false by default
  * @return the portfolio instance
  */
-PortfolioPtr HAYAKU_API PF_WithoutAF(
-    const internal::PortfolioAccountPortPtr& tm =
-        internal::PortfolioAccountPortPtr(),
-    const SEPtr& se = SE_Fixed(), int adjust_cycle = 1,
-    const string& adjust_mode = "query", bool delay_to_trading_day = true,
-    bool trade_on_close = true, bool strategy_use_own_account = false,
-    bool sell_at_not_selected = false);
+PortfolioPtr PF_WithoutAF(const internal::PortfolioAccountPortPtr& tm =
+                              internal::PortfolioAccountPortPtr(),
+                          const SEPtr& se = SE_Fixed(), int adjust_cycle = 1,
+                          const string& adjust_mode = "query",
+                          bool delay_to_trading_day = true,
+                          bool trade_on_close = true,
+                          bool strategy_use_own_account = false,
+                          bool sell_at_not_selected = false);
 
 } /* namespace hayaku */

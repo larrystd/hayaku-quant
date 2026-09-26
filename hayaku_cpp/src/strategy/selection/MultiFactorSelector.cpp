@@ -159,10 +159,10 @@ StrategyWeightList MultiFactorSelector::_getSelected(Datetime date) {
 
   ScoreRecordList scores =
       mf_->getScores(date, 0, Null<size_t>(),
-                      [ignore_null, ignore_le_zero](const ScoreRecord& sc) {
-                        return !(ignore_null && std::isnan(sc.value)) &&
-                               !(ignore_le_zero && sc.value <= 0.0);
-                      });
+                     [ignore_null, ignore_le_zero](const ScoreRecord& sc) {
+                       return !(ignore_null && std::isnan(sc.value)) &&
+                              !(ignore_le_zero && sc.value <= 0.0);
+                     });
 
   // MultiFactorSelector2 with filters is recommended; this is kept for the old
   // interface compatibility only Apply the user-defined score filters
@@ -216,11 +216,11 @@ void MultiFactorSelector::_calculate() {
 
   if (!mf_) {
     if ("MF_ICIRWeight" == mode) {
-      mf_ = MF_ICIRWeight(factorset_, stks, query, ref_stk, ic_n,
-                           ic_rolling_n, spearman);
+      mf_ = MF_ICIRWeight(factorset_, stks, query, ref_stk, ic_n, ic_rolling_n,
+                          spearman);
     } else if ("MF_ICWeight" == mode) {
       mf_ = MF_ICWeight(factorset_, stks, query, ref_stk, ic_n, ic_rolling_n,
-                         spearman);
+                        spearman);
     } else if ("MF_EqualWeight" == mode) {
       mf_ = MF_EqualWeight(factorset_, stks, query, ref_stk, ic_n, spearman);
     } else {
@@ -252,14 +252,13 @@ void MultiFactorSelector::_calculate() {
   }
 }
 
-SelectorPtr HAYAKU_API SE_MultiFactor(const MFPtr& mf, int topn) {
+SelectorPtr SE_MultiFactor(const MFPtr& mf, int topn) {
   return make_shared<MultiFactorSelector>(mf, topn);
 }
 
-SelectorPtr HAYAKU_API SE_MultiFactor(const FactorSet& factorset, int topn,
-                                      int ic_n, int ic_rolling_n,
-                                      const Stock& ref_stk, bool spearman,
-                                      const string& mode) {
+SelectorPtr SE_MultiFactor(const FactorSet& factorset, int topn, int ic_n,
+                           int ic_rolling_n, const Stock& ref_stk,
+                           bool spearman, const string& mode) {
   auto p = make_shared<MultiFactorSelector>();
   p->setFactorSet(factorset);
   p->setParam<int>("topn", topn);

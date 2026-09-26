@@ -20,8 +20,8 @@ namespace hayaku {
  * it is 0 the actual length of the input ind is used
  * @ingroup Indicator
  */
-Indicator HAYAKU_API KURT(int n = 10);
-Indicator HAYAKU_API KURT(const IndParam& n);
+Indicator KURT(int n = 10);
+Indicator KURT(const IndParam& n);
 
 inline Indicator KURT(const Indicator& data, int n = 10) {
   return KURT(n)(data);
@@ -51,7 +51,7 @@ namespace hayaku {
  * to MDD)
  * @ingroup Indicator
  */
-Indicator HAYAKU_API MRR(int n = 0);
+Indicator MRR(int n = 0);
 
 /**
  * Maximum profit percentage
@@ -79,8 +79,8 @@ namespace hayaku {
  * it is 0 the actual length of the input ind is used
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SKEW(int n = 10);
-Indicator HAYAKU_API SKEW(const IndParam& n);
+Indicator SKEW(int n = 10);
+Indicator SKEW(const IndParam& n);
 
 inline Indicator SKEW(const Indicator& data, int n = 10) {
   return SKEW(n)(data);
@@ -110,8 +110,8 @@ namespace hayaku {
  * @param n N-day time window
  * @ingroup Indicator
  */
-Indicator HAYAKU_API STDEV(int n = 10);
-Indicator HAYAKU_API STDEV(const IndParam& n);
+Indicator STDEV(int n = 10);
+Indicator STDEV(const IndParam& n);
 
 /**
  * Calculate the sample standard deviation within N periods
@@ -147,8 +147,8 @@ namespace hayaku {
  * @param n N-day time window
  * @ingroup Indicator
  */
-Indicator HAYAKU_API STDP(int n = 10);
-Indicator HAYAKU_API STDP(const IndParam& n);
+Indicator STDP(int n = 10);
+Indicator STDP(const IndParam& n);
 
 inline Indicator STDP(const Indicator& data, int n = 10) {
   return STDP(n)(data);
@@ -180,8 +180,8 @@ namespace hayaku {
  * @param n N-day time window
  * @ingroup Indicator
  */
-Indicator HAYAKU_API VAR(int n = 10);
-Indicator HAYAKU_API VAR(const IndParam& n);
+Indicator VAR(int n = 10);
+Indicator VAR(const IndParam& n);
 
 inline Indicator VAR(const Indicator& data, int n = 10) { return VAR(n)(data); }
 
@@ -211,8 +211,8 @@ namespace hayaku {
  * @param n N-day time window
  * @ingroup Indicator
  */
-Indicator HAYAKU_API VARP(int n = 10);
-Indicator HAYAKU_API VARP(const IndParam& n);
+Indicator VARP(int n = 10);
+Indicator VARP(const IndParam& n);
 
 inline Indicator VARP(const Indicator& data, int n = 10) {
   return VARP(n)(data);
@@ -251,8 +251,8 @@ namespace hayaku {
  * @return Indicator
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ZSCORE(bool outExtreme = false, double nsigma = 3.0,
-                            bool recursive = false);
+Indicator ZSCORE(bool outExtreme = false, double nsigma = 3.0,
+                 bool recursive = false);
 
 inline Indicator ZSCORE(const Indicator& data, bool outExtreme = false,
                         double nsigma = 3.0, bool recursive = false) {
@@ -294,10 +294,9 @@ namespace hayaku {
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API BETA(const Indicator& ind1, const Indicator& ind2,
-                          int n = 10, bool fill_null = true);
-Indicator HAYAKU_API BETA(const Indicator& ref_ind, int n = 10,
-                          bool fill_null = true);
+Indicator BETA(const Indicator& ind1, const Indicator& ind2, int n = 10,
+               bool fill_null = true);
+Indicator BETA(const Indicator& ref_ind, int n = 10, bool fill_null = true);
 
 }  // namespace hayaku
 
@@ -321,10 +320,9 @@ namespace hayaku {
  * @param fill_null fill the missing dates with nan when the dates are aligned
  * @ingroup Indicator
  */
-Indicator HAYAKU_API CORR(const Indicator& ind1, const Indicator& ind2,
-                          int n = 10, bool fill_null = true);
-Indicator HAYAKU_API CORR(const Indicator& ref_ind, int n = 10,
-                          bool fill_null = true);
+Indicator CORR(const Indicator& ind1, const Indicator& ind2, int n = 10,
+               bool fill_null = true);
+Indicator CORR(const Indicator& ref_ind, int n = 10, bool fill_null = true);
 
 }  // namespace hayaku
 
@@ -346,10 +344,9 @@ namespace hayaku {
  * @param fill_null fill the missing dates with nan when the dates are aligned
  * @ingroup Indicator
  */
-Indicator HAYAKU_API COV(const Indicator& ind1, const Indicator& ind2,
-                         int n = 10, bool fill_null = true);
-Indicator HAYAKU_API COV(const Indicator& ref_ind, int n = 10,
-                         bool fill_null = true);
+Indicator COV(const Indicator& ind1, const Indicator& ind2, int n = 10,
+              bool fill_null = true);
+Indicator COV(const Indicator& ref_ind, int n = 10, bool fill_null = true);
 
 }  // namespace hayaku
 
@@ -371,10 +368,9 @@ namespace hayaku {
  * @param fill_null fill the missing values
  * @ingroup Indicator
  */
-Indicator HAYAKU_API SPEARMAN(const Indicator& ind, const Indicator& ref_ind,
-                              int n = 0, bool fill_null = true);
-Indicator HAYAKU_API SPEARMAN(const Indicator& ref_ind, int n = 0,
-                              bool fill_null = true);
+Indicator SPEARMAN(const Indicator& ind, const Indicator& ref_ind, int n = 0,
+                   bool fill_null = true);
+Indicator SPEARMAN(const Indicator& ref_ind, int n = 0, bool fill_null = true);
 
 }  // namespace hayaku
 
@@ -395,8 +391,8 @@ namespace hayaku {
  * @return Indicator
  * @ingroup Indicator
  */
-Indicator HAYAKU_API QUANTILE_TRUNC(int n = 60, double quantile_min = 0.01,
-                                    double quantile_max = 0.99);
+Indicator QUANTILE_TRUNC(int n = 60, double quantile_min = 0.01,
+                         double quantile_max = 0.99);
 
 inline Indicator QUANTILE_TRUNC(const Indicator& data, int n = 60,
                                 double quantile_min = 0.01,
@@ -434,11 +430,11 @@ namespace hayaku {
  * @return Indicator
  * @ingroup Indicator
  */
-Indicator HAYAKU_API IC(const StockList& stks, int n = 1, bool spearman = true,
-                        bool strict = false);
+Indicator IC(const StockList& stks, int n = 1, bool spearman = true,
+             bool strict = false);
 
-Indicator HAYAKU_API IC(const Block& blk, int n = 1, bool spearman = true,
-                        bool strict = false);
+Indicator IC(const Block& blk, int n = 1, bool spearman = true,
+             bool strict = false);
 
 inline Indicator IC(const Indicator& ind, const StockList& stks, int n = 1,
                     bool spearman = true, bool strict = false) {
@@ -464,8 +460,8 @@ inline Indicator IC(const Indicator& ind, const Block& blk, int n = 1,
  * @param strict strict mode, it follows the IC definition "the factor value at
  * t -> the return at t+1"
  */
-Indicator HAYAKU_API IC(IndicatorList inds, IndicatorList returns, int n = 1,
-                        bool use_spearman = true, bool strict = false);
+Indicator IC(IndicatorList inds, IndicatorList returns, int n = 1,
+             bool use_spearman = true, bool strict = false);
 
 }  // namespace hayaku
 
@@ -595,8 +591,8 @@ namespace hayaku {
  *         - result(1): goodness of fit R²
  *         - result(2): relative maximum residual RelMaxRes = max|yi - ŷi| / ȳ
  */
-Indicator HAYAKU_API SLOPE(int n = 22);
-Indicator HAYAKU_API SLOPE(const IndParam& n);
+Indicator SLOPE(int n = 22);
+Indicator SLOPE(const IndParam& n);
 
 /**
  * Calculate the linear regression slope, the goodness of fit R² and the
@@ -612,7 +608,7 @@ inline Indicator SLOPE(const Indicator& ind, int n = 22) {
   return SLOPE(n)(ind);
 }
 
-inline Indicator HAYAKU_API SLOPE(const Indicator& ind, const IndParam& n) {
+inline Indicator SLOPE(const Indicator& ind, const IndParam& n) {
   return SLOPE(n)(ind);
 }
 
@@ -651,8 +647,8 @@ namespace hayaku {
  * @param n number of the periods
  * @ingroup Indicator
  */
-Indicator HAYAKU_API TS_RANK(int n = 20);
-Indicator HAYAKU_API TS_RANK(const IndParam& n);
+Indicator TS_RANK(int n = 20);
+Indicator TS_RANK(const IndParam& n);
 
 /**
  * Time series rank, it calculates the rank ratio of the current value within

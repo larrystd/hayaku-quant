@@ -13,7 +13,7 @@
 
 namespace hayaku {
 
-HAYAKU_API PriceList calculate_style_residuals(const PriceList& y,
-                                               const vector<PriceList>& x);
+PriceList calculate_style_residuals(const PriceList& y,
+                                    const vector<PriceList>& x);
 
 }  // namespace hayaku

@@ -45,7 +45,7 @@ void IndicatorStoploss::_calculate() {
   }
 }
 
-StoplossPtr HAYAKU_API ST_Indicator(const Indicator& ind) {
+StoplossPtr ST_Indicator(const Indicator& ind) {
   return make_shared<IndicatorStoploss>(ind);
 }
 

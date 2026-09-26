@@ -9,8 +9,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const MarketInfo& market) {
+std::ostream& operator<<(std::ostream& os, const MarketInfo& market) {
   os << market.toString();
   return os;
 }

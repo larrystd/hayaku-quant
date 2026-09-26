@@ -9,15 +9,13 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const BlockInfoDriver& driver) {
+std::ostream& operator<<(std::ostream& os, const BlockInfoDriver& driver) {
   os << "BlockInfoDriver(" << driver.name() << ", " << driver.getParameter()
      << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const BlockInfoDriverPtr& driver) {
+std::ostream& operator<<(std::ostream& os, const BlockInfoDriverPtr& driver) {
   if (driver) {
     os << *driver;
   } else {

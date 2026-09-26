@@ -35,7 +35,7 @@ void AndSignal::_calculate(const KData& kdata) {
   }
 }
 
-HAYAKU_API SignalPtr operator&(const SignalPtr& sg1, const SignalPtr& sg2) {
+SignalPtr operator&(const SignalPtr& sg1, const SignalPtr& sg2) {
   return make_shared<AndSignal>(sg1, sg2);
 }
 
@@ -99,7 +99,7 @@ void OrSignal::_calculate(const KData& kdata) {
   }
 }
 
-HAYAKU_API SignalPtr operator|(const SignalPtr& sg1, const SignalPtr& sg2) {
+SignalPtr operator|(const SignalPtr& sg1, const SignalPtr& sg2) {
   return make_shared<OrSignal>(sg1, sg2);
 }
 

@@ -20,9 +20,9 @@ namespace hayaku {
  * @param minutes the number of the minutes contained in every K-line
  * @param getPhaseEnd get the phase end time to which the K-line belongs
  */
-void HAYAKU_API
-registerExtraKType(const string& ktype, const string& basetype, int32_t minutes,
-                   std::function<Datetime(const Datetime&)> getPhaseEnd);
+void registerExtraKType(const string& ktype, const string& basetype,
+                        int32_t minutes,
+                        std::function<Datetime(const Datetime&)> getPhaseEnd);
 
 /**
  * Register an extended K-line type, synthesized by the number of the bars
@@ -30,8 +30,8 @@ registerExtraKType(const string& ktype, const string& basetype, int32_t minutes,
  * @param basetype the corresponding base K-line type
  * @param nbars the number of the base K-lines contained in every K-line
  */
-void HAYAKU_API registerExtraKType(const string& ktype, const string& basetype,
-                                   int32_t nbars);
+void registerExtraKType(const string& ktype, const string& basetype,
+                        int32_t nbars);
 
 /**
  * Release the extended K-line
@@ -39,9 +39,9 @@ void HAYAKU_API registerExtraKType(const string& ktype, const string& basetype,
  * phase end date conversion function is used, which may cause a python GIL
  * error on exit; the extended K-line needs to be released manually in advance
  */
-void HAYAKU_API releaseExtraKType();
+void releaseExtraKType();
 
-void HAYAKU_API enableKDataCache(bool enable);
+void enableKDataCache(bool enable);
 
 /** Install the application-side resolver for the data-owned extended K-line
  * port. */

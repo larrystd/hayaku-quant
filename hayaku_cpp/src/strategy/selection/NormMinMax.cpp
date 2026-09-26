@@ -50,6 +50,6 @@ PriceList NormMinMax::normalize(const PriceList& data) {
   return result;
 }
 
-NormPtr HAYAKU_API NORM_MinMax() { return std::make_shared<NormMinMax>(); }
+NormPtr NORM_MinMax() { return std::make_shared<NormMinMax>(); }
 
 }  // namespace hayaku

@@ -15,7 +15,7 @@ namespace hayaku {
  * Portfolio without a fund allocation algorithm
  * @ingroup WithoutAFPortfolio
  */
-class HAYAKU_API WithoutAFPortfolio : public Portfolio {
+class WithoutAFPortfolio : public Portfolio {
   PORTFOLIO_IMP(WithoutAFPortfolio)
 
  public:
@@ -38,7 +38,7 @@ class HAYAKU_API WithoutAFPortfolio : public Portfolio {
       force_sell_sys_list_;  // System list of the forced sells
   list<internal::StrategyRuntimePtr>
       running_sys_list_;  // List of the currently running systems, they need
-                           // to be executed in turn
+                          // to be executed in turn
   internal::StrategyRuntimeList
       selected_list_;  // System list selected in the current cycle
 

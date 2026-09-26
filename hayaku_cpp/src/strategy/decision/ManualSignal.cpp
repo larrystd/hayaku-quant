@@ -17,6 +17,6 @@ ManualSignal::ManualSignal() : SignalBase("SG_Manual") {}
 
 void ManualSignal::_calculate(const KData&) {}
 
-SignalPtr HAYAKU_API SG_Manual() { return make_shared<ManualSignal>(); }
+SignalPtr SG_Manual() { return make_shared<ManualSignal>(); }
 
 }  // namespace hayaku

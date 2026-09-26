@@ -293,13 +293,13 @@ void IHighLine::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(max_val, curPos);
 }
 
-Indicator HAYAKU_API HHV(int n) {
+Indicator HHV(int n) {
   IndicatorImpPtr p = make_shared<IHighLine>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API HHV(const IndParam& n) {
+Indicator HHV(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IHighLine>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -464,13 +464,13 @@ void IHhvbars::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(curPos - maxPos, curPos);
 }
 
-Indicator HAYAKU_API HHVBARS(int n) {
+Indicator HHVBARS(int n) {
   IndicatorImpPtr p = make_shared<IHhvbars>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API HHVBARS(const IndParam& n) {
+Indicator HHVBARS(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IHhvbars>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -623,13 +623,13 @@ void ILowLine::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(min_val, curPos);
 }
 
-Indicator HAYAKU_API LLV(int n) {
+Indicator LLV(int n) {
   IndicatorImpPtr p = make_shared<ILowLine>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API LLV(const IndParam& n) {
+Indicator LLV(const IndParam& n) {
   IndicatorImpPtr p = make_shared<ILowLine>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -795,13 +795,13 @@ void ILowLineBars::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(curPos - minPos, curPos);
 }
 
-Indicator HAYAKU_API LLVBARS(int n) {
+Indicator LLVBARS(int n) {
   IndicatorImpPtr p = make_shared<ILowLineBars>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API LLVBARS(const IndParam& n) {
+Indicator LLVBARS(const IndParam& n) {
   IndicatorImpPtr p = make_shared<ILowLineBars>();
   p->setIndParam("n", n);
   return Indicator(p);

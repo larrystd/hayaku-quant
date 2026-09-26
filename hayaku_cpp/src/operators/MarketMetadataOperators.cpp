@@ -258,11 +258,9 @@ void IAdjFactor::_increment_calculate(const Indicator& ind, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ADJ_FACTOR() {
-  return Indicator(make_shared<IAdjFactor>());
-}
+Indicator ADJ_FACTOR() { return Indicator(make_shared<IAdjFactor>()); }
 
-Indicator HAYAKU_API ADJ_FACTOR(const KData& k) {
+Indicator ADJ_FACTOR(const KData& k) {
   auto p = make_shared<IAdjFactor>();
   p->setContext(k);
   return Indicator(p);
@@ -349,13 +347,13 @@ void ICodeLike::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API CODELIKE(const string& pattern) {
+Indicator CODELIKE(const string& pattern) {
   auto p = make_shared<ICodeLike>();
   p->setParam<string>("pattern", pattern);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API CODELIKE(const KData& k, const string& pattern) {
+Indicator CODELIKE(const KData& k, const string& pattern) {
   auto p = make_shared<ICodeLike>();
   p->setParam<string>("pattern", pattern);
   p->setContext(k);
@@ -651,8 +649,8 @@ void ICycle::_calculate(const Indicator& data) {
   memcpy(dst, src, sizeof(value_t) * total);
 }
 
-Indicator HAYAKU_API CYCLE(int adjust_cycle, const string& adjust_mode,
-                           bool delay_to_trading_day) {
+Indicator CYCLE(int adjust_cycle, const string& adjust_mode,
+                bool delay_to_trading_day) {
   auto p = make_shared<ICycle>();
   p->setParam<int>("adjust_cycle", adjust_cycle);
   p->setParam<string>("adjust_mode", adjust_mode);
@@ -660,9 +658,8 @@ Indicator HAYAKU_API CYCLE(int adjust_cycle, const string& adjust_mode,
   return Indicator(p);
 }
 
-Indicator HAYAKU_API CYCLE(const KData& k, int adjust_cycle,
-                           const string& adjust_mode,
-                           bool delay_to_trading_day) {
+Indicator CYCLE(const KData& k, int adjust_cycle, const string& adjust_mode,
+                bool delay_to_trading_day) {
   auto p = make_shared<ICycle>();
   p->setParam<int>("adjust_cycle", adjust_cycle);
   p->setParam<string>("adjust_mode", adjust_mode);
@@ -837,27 +834,27 @@ void IFinance::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API FINANCE(int field_ix) {
+Indicator FINANCE(int field_ix) {
   auto p = make_shared<IFinance>();
   p->setParam<int>("field_ix", field_ix);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API FINANCE(const KData& k, int field_ix) {
+Indicator FINANCE(const KData& k, int field_ix) {
   auto p = make_shared<IFinance>();
   p->setParam<int>("field_ix", field_ix);
   p->setContext(k);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API FINANCE(const string& field_name) {
+Indicator FINANCE(const string& field_name) {
   auto p = make_shared<IFinance>();
   p->setParam<int>("field_ix", -1);
   p->setParam<string>("field_name", field_name);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API FINANCE(const KData& k, const string& field_name) {
+Indicator FINANCE(const KData& k, const string& field_name) {
   auto p = make_shared<IFinance>();
   p->setParam<int>("field_ix", -1);
   p->setParam<string>("field_name", field_name);
@@ -983,11 +980,9 @@ void ILiuTongPan::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API LIUTONGPAN() {
-  return make_shared<ILiuTongPan>()->calculate();
-}
+Indicator LIUTONGPAN() { return make_shared<ILiuTongPan>()->calculate(); }
 
-Indicator HAYAKU_API LIUTONGPAN(const KData& k) {
+Indicator LIUTONGPAN(const KData& k) {
   auto p = make_shared<ILiuTongPan>();
   p->setContext(k);
   return Indicator(p);
@@ -1071,13 +1066,13 @@ void INameLike::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API NAMELIKE(const string& pattern) {
+Indicator NAMELIKE(const string& pattern) {
   auto p = make_shared<INameLike>();
   p->setParam<string>("pattern", pattern);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API NAMELIKE(const KData& k, const string& pattern) {
+Indicator NAMELIKE(const KData& k, const string& pattern) {
   auto p = make_shared<INameLike>();
   p->setParam<string>("pattern", pattern);
   p->setContext(k);
@@ -1151,9 +1146,9 @@ void IStkType::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API STKTYPE() { return make_shared<IStkType>()->calculate(); }
+Indicator STKTYPE() { return make_shared<IStkType>()->calculate(); }
 
-Indicator HAYAKU_API STKTYPE(const KData& k) {
+Indicator STKTYPE(const KData& k) {
   auto p = make_shared<IStkType>();
   p->setContext(k);
   return Indicator(p);
@@ -1274,20 +1269,20 @@ void IZhBond10::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API ZHBOND10(double default_val) {
+Indicator ZHBOND10(double default_val) {
   auto p = make_shared<IZhBond10>();
   p->setParam<double>("default", default_val);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API ZHBOND10(const DatetimeList& dates, double default_val) {
+Indicator ZHBOND10(const DatetimeList& dates, double default_val) {
   auto p = make_shared<IZhBond10>(dates);
   p->setParam<double>("default", default_val);
   p->calculate();
   return Indicator(p);
 }
 
-Indicator HAYAKU_API ZHBOND10(const KData& k, double default_val) {
+Indicator ZHBOND10(const KData& k, double default_val) {
   auto p = make_shared<IZhBond10>();
   p->setParam<double>("default", default_val);
   p->setContext(k);
@@ -1388,11 +1383,9 @@ void IZongGuBen::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ZONGGUBEN() {
-  return make_shared<IZongGuBen>()->calculate();
-}
+Indicator ZONGGUBEN() { return make_shared<IZongGuBen>()->calculate(); }
 
-Indicator HAYAKU_API ZONGGUBEN(const KData& k) {
+Indicator ZONGGUBEN(const KData& k) {
   auto p = make_shared<IZongGuBen>();
   p->setContext(k);
   return Indicator(p);
@@ -1507,7 +1500,7 @@ void IFactor::_calculate(const Indicator& data) {
   value.getImp()->swap(this);
 }
 
-Indicator HAYAKU_API FACTOR(const Factor& factor) {
+Indicator FACTOR(const Factor& factor) {
   return Indicator(make_shared<IFactor>(factor));
 }
 

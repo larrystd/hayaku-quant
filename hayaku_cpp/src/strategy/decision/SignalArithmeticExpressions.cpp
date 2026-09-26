@@ -142,7 +142,7 @@ void AddSignal::_calculate(const KData& kdata) {
   }
 }
 
-HAYAKU_API SignalPtr operator+(const SignalPtr& sg1, const SignalPtr& sg2) {
+SignalPtr operator+(const SignalPtr& sg1, const SignalPtr& sg2) {
   return make_shared<AddSignal>(sg1, sg2);
 }
 
@@ -187,11 +187,11 @@ void AddValueSignal::_calculate(const KData& kdata) {
   }
 }
 
-HAYAKU_API SignalPtr operator+(const SignalPtr& sg, double value) {
+SignalPtr operator+(const SignalPtr& sg, double value) {
   return make_shared<AddValueSignal>(sg, value);
 }
 
-HAYAKU_API SignalPtr operator+(double value, const SignalPtr& sg) {
+SignalPtr operator+(double value, const SignalPtr& sg) {
   return make_shared<AddValueSignal>(sg, value);
 }
 
@@ -230,7 +230,7 @@ void DivSignal::_calculate(const KData& kdata) {
   }
 }
 
-HAYAKU_API SignalPtr operator/(const SignalPtr& sg1, const SignalPtr& sg2) {
+SignalPtr operator/(const SignalPtr& sg1, const SignalPtr& sg2) {
   return make_shared<DivSignal>(sg1, sg2);
 }
 
@@ -273,11 +273,11 @@ void DivValueSignal::_calculate(const KData& kdata) {
   }
 }
 
-HAYAKU_API SignalPtr operator/(const SignalPtr& sg, double value) {
+SignalPtr operator/(const SignalPtr& sg, double value) {
   return make_shared<DivValueSignal>(sg, value);
 }
 
-HAYAKU_API SignalPtr operator/(double value, const SignalPtr& sg) {
+SignalPtr operator/(double value, const SignalPtr& sg) {
   return make_shared<DivValueSignal>(value, sg);
 }
 
@@ -313,7 +313,7 @@ void MulSignal::_calculate(const KData& kdata) {
   }
 }
 
-HAYAKU_API SignalPtr operator*(const SignalPtr& sg1, const SignalPtr& sg2) {
+SignalPtr operator*(const SignalPtr& sg1, const SignalPtr& sg2) {
   return make_shared<MulSignal>(sg1, sg2);
 }
 
@@ -344,11 +344,11 @@ void MulValueSignal::_calculate(const KData& kdata) {
   }
 }
 
-HAYAKU_API SignalPtr operator*(const SignalPtr& sg, double value) {
+SignalPtr operator*(const SignalPtr& sg, double value) {
   return make_shared<MulValueSignal>(sg, value);
 }
 
-HAYAKU_API SignalPtr operator*(double value, const SignalPtr& sg) {
+SignalPtr operator*(double value, const SignalPtr& sg) {
   return make_shared<MulValueSignal>(sg, value);
 }
 
@@ -399,7 +399,7 @@ void SubSignal::_calculate(const KData& kdata) {
   }
 }
 
-HAYAKU_API SignalPtr operator-(const SignalPtr& sg1, const SignalPtr& sg2) {
+SignalPtr operator-(const SignalPtr& sg1, const SignalPtr& sg2) {
   return make_shared<SubSignal>(sg1, sg2);
 }
 
@@ -468,11 +468,11 @@ void SubValueSignal::_calculate(const KData& kdata) {
   }
 }
 
-HAYAKU_API SignalPtr operator-(const SignalPtr& sg, double value) {
+SignalPtr operator-(const SignalPtr& sg, double value) {
   return make_shared<SubValueSignal>(sg, value);
 }
 
-HAYAKU_API SignalPtr operator-(double value, const SignalPtr& sg) {
+SignalPtr operator-(double value, const SignalPtr& sg) {
   return make_shared<SubValueSignal>(value, sg);
 }
 

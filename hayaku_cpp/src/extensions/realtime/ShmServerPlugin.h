@@ -9,8 +9,8 @@
 
 #include <string>
 
-#include "data/MarketTypes.h"  // Provides the empty fallback definition of HAYAKU_API (mac/linux does
-                               // not inject -D HAYAKU_API)
+#include "data/MarketTypes.h"  // Provides the empty fallback definition of (mac/linux does
+                               // not inject -D )
 #include "extensions/realtime/RealtimeExport.h"
 
 namespace hayaku {

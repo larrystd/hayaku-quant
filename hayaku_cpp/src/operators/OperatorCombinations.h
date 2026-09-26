@@ -32,7 +32,7 @@ std::vector<std::vector<size_t>> combinateIndex(const std::vector<T>& inputs) {
 
 /** Combine indicators without coupling analysis to an account or strategy
  * runtime. */
-std::vector<Indicator> HAYAKU_API
-combinateIndicator(const std::vector<Indicator>& inputs, int n);
+std::vector<Indicator> combinateIndicator(const std::vector<Indicator>& inputs,
+                                          int n);
 
 }  // namespace hayaku

@@ -40,7 +40,7 @@ double FixedCountMoneyManager::_getSellShortNumber(const Datetime& datetime,
   return getParam<double>("n");
 }
 
-MoneyManagerPtr HAYAKU_API MM_FixedCount(double n) {
+MoneyManagerPtr MM_FixedCount(double n) {
   MoneyManagerPtr p = make_shared<FixedCountMoneyManager>();
   p->setParam<double>("n", n);
   return p;

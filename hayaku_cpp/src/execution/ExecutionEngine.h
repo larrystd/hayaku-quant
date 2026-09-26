@@ -30,7 +30,7 @@ class ExecutionAccountPort;
  * The engine deliberately has no default constructor: account creation and
  * ownership policy belong to the application/session boundary.
  */
-class HAYAKU_API ExecutionEngine {
+class ExecutionEngine {
  public:
   explicit ExecutionEngine(const AccountConfig& config);
   ~ExecutionEngine();

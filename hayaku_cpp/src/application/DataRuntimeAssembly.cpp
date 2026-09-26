@@ -43,27 +43,27 @@ void registerClickHouseDrivers(const SessionOptions& options) {
 
   auto* plugin =
       getPlugin<DataDriverPluginInterface>(HAYAKU_PLUGIN_CLICKHOUSE_DRIVER);
-  HAYAKU_CHECK(plugin, "{}: {}", htr("Can not find plugin"),
+  HAYAKU_CHECK(plugin, "{}: {}", "Can not find plugin",
                HAYAKU_PLUGIN_CLICKHOUSE_DRIVER);
 
   if (baseInfo) {
     auto driver = plugin->getBaseInfoDriver();
     HAYAKU_CHECK(driver, "{}",
-                 htr("Can not get clickhouse driver! Check your license!"));
+                 "Can not get clickhouse driver! Check your license!");
     DataDriverFactory::regBaseInfoDriver(driver);
   }
 
   if (block) {
     auto driver = plugin->getBlockInfoDriver();
     HAYAKU_CHECK(driver, "{}",
-                 htr("Can not get clickhouse driver! Check your license!"));
+                 "Can not get clickhouse driver! Check your license!");
     DataDriverFactory::regBlockDriver(driver);
   }
 
   if (kdata) {
     auto driver = plugin->getKDataDriver();
     HAYAKU_CHECK(driver, "{}",
-                 htr("Can not get clickhouse driver! Check your license!"));
+                 "Can not get clickhouse driver! Check your license!");
     DataDriverFactory::regKDataDriver(driver);
   }
 }
@@ -75,7 +75,7 @@ void prepareDataRuntimeAssembly(const SessionOptions& options) {
   plugins.configurePluginPath(
       options.hayakuParam().tryGet<string>("plugindir", ""));
   const auto pluginPath = plugins.pluginPath();
-  HAYAKU_INFO(htr("Plugin path: {}", pluginPath));
+  HAYAKU_INFO(fmt::format("Plugin path: {}", pluginPath));
 
   registerClickHouseDrivers(options);
   setReportExtensionResolver([]() -> ReportExtension* {

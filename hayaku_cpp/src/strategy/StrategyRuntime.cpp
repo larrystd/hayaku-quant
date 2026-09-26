@@ -269,15 +269,12 @@ void StrategyRuntime::setAccount(PortfolioAccountPortPtr account) {
 }
 
 StrategyRuntimePtr StrategyRuntime::clone() const {
-  StrategyDefinition definition(mm_ ? mm_->clone() : MoneyManagerPtr(),
-                                sg_ ? sg_->clone() : SignalPtr(), name_,
-                                ev_ ? ev_->clone() : EnvironmentPtr(),
-                                cn_ ? cn_->clone() : ConditionPtr(),
-                                st_ ? st_->clone() : StoplossPtr(),
-                                tp_ ? tp_->clone() : StoplossPtr(),
-                                pg_ ? pg_->clone() : ProfitGoalPtr(),
-                                sp_ ? sp_->clone() : SlippagePtr(),
-                                parameters_);
+  StrategyDefinition definition(
+      mm_ ? mm_->clone() : MoneyManagerPtr(), sg_ ? sg_->clone() : SignalPtr(),
+      name_, ev_ ? ev_->clone() : EnvironmentPtr(),
+      cn_ ? cn_->clone() : ConditionPtr(), st_ ? st_->clone() : StoplossPtr(),
+      tp_ ? tp_->clone() : StoplossPtr(), pg_ ? pg_->clone() : ProfitGoalPtr(),
+      sp_ ? sp_->clone() : SlippagePtr(), parameters_);
   auto portfolioAccount = getAccount();
   ExecutionAccountPortPtr clonedAccount =
       getParam<bool>("shared_account") || !portfolioAccount
@@ -299,7 +296,7 @@ nlohmann::json StrategyRuntime::lastSuggestion() const {
   nlohmann::json result;
   result["name"] = name_;
   result["stock"] = stock_.isNull() ? nlohmann::json(nullptr)
-                                     : nlohmann::json(stock_.market_code());
+                                    : nlohmann::json(stock_.market_code());
   nlohmann::json pending = nlohmann::json::array();
   const auto append = [&](const PendingOrder& order) {
     if (order.valid) {
@@ -361,28 +358,26 @@ void StrategyRuntime::sellNotifyAll(const TradeRecord& record) {
 
 double StrategyRuntime::getBuyNumber(const Datetime& datetime, price_t price,
                                      price_t risk, OrderOrigin origin) {
-  return mm_ ? mm_->getBuyNumber(datetime, stock_, price, risk, origin)
-              : 0.0;
+  return mm_ ? mm_->getBuyNumber(datetime, stock_, price, risk, origin) : 0.0;
 }
 
 double StrategyRuntime::getSellNumber(const Datetime& datetime, price_t price,
                                       price_t risk, OrderOrigin origin) {
-  return mm_ ? mm_->getSellNumber(datetime, stock_, price, risk, origin)
-              : 0.0;
+  return mm_ ? mm_->getSellNumber(datetime, stock_, price, risk, origin) : 0.0;
 }
 
 double StrategyRuntime::getSellShortNumber(const Datetime& datetime,
                                            price_t price, price_t risk,
                                            OrderOrigin origin) {
   return mm_ ? mm_->getSellShortNumber(datetime, stock_, price, risk, origin)
-              : 0.0;
+             : 0.0;
 }
 
 double StrategyRuntime::getBuyShortNumber(const Datetime& datetime,
                                           price_t price, price_t risk,
                                           OrderOrigin origin) {
   return mm_ ? mm_->getBuyShortNumber(datetime, stock_, price, risk, origin)
-              : 0.0;
+             : 0.0;
 }
 
 price_t StrategyRuntime::getTakeProfitPrice(const Datetime& datetime,
@@ -422,9 +417,9 @@ TradeRecord StrategyRuntime::runMomentOnOpenNative(const KRecord& today,
   if (trace) {
     HAYAKU_INFO("{} ------------------------------------------------------",
                 today.datetime);
-    HAYAKU_INFO(htr("[{}] cal today {}", name_, today));
+    HAYAKU_INFO(fmt::format("[{}] cal today {}", name_, today));
     HAYAKU_INFO_IF(kdata_.getQuery().recoverType() != KQuery::NO_RECOVER,
-                   htr("[{}] raw today {}", name_, rawToday));
+                   fmt::format("[{}] raw today {}", name_, rawToday));
   }
   ++buy_days_;
   ++sell_short_days_;
@@ -482,10 +477,9 @@ TradeRecord StrategyRuntime::runMomentOnCloseNative(const KRecord& today,
 
   const price_t currentPrice = today.closePrice;
   const price_t rawCurrentPrice = rawToday.closePrice;
-  const PositionRecord position =
-      account_->getPosition(today.datetime, stock_);
-  HAYAKU_INFO_IF(trace,
-                 htr("[{}] current position: {}", name_, position.number));
+  const PositionRecord position = account_->getPosition(today.datetime, stock_);
+  HAYAKU_INFO_IF(
+      trace, fmt::format("[{}] current position: {}", name_, position.number));
   if (position.number == 0.0) {
     return {};
   }
@@ -525,21 +519,22 @@ TradeRecord StrategyRuntime::buy(const KRecord& today, const KRecord& src_today,
   // A delayed buy
   if (getParam<bool>("buy_delay")) {
     submitBuyRequest(today, src_today, from);
-    HAYAKU_INFO_IF(trace, htr("[{}] will be delay to buy", name_));
+    HAYAKU_INFO_IF(trace, fmt::format("[{}] will be delay to buy", name_));
     return result;
   }
 
   // Check whether it is a one-line limit up board
   if (today.highPrice == today.lowPrice) {
     if (getParam<bool>("can_trade_when_high_eq_low")) {
-      HAYAKU_WARN_IF(trace, htr("[{}] buy one-price board", name_));
+      HAYAKU_WARN_IF(trace, fmt::format("[{}] buy one-price board", name_));
       return buyNow(today, src_today, from);
     }
 
     // Get yesterday's close price and check whether it is a one-line limit up
     size_t pos = kdata_.getPos(today.datetime);
     if (pos == 0 || pos == Null<size_t>()) {
-      HAYAKU_INFO_IF(trace, htr("[{}] delay to buy, one-price board", name_));
+      HAYAKU_INFO_IF(trace,
+                     fmt::format("[{}] delay to buy, one-price board", name_));
       submitBuyRequest(today, src_today, from);
       return result;
     }
@@ -547,7 +542,8 @@ TradeRecord StrategyRuntime::buy(const KRecord& today, const KRecord& src_today,
     const auto& pre_day = kdata_.getKRecord(pos - 1);
     if (today.closePrice > pre_day.closePrice) {
       HAYAKU_INFO_IF(
-          trace, htr("[{}] delay to buy, one-price up-limit board", name_));
+          trace,
+          fmt::format("[{}] delay to buy, one-price up-limit board", name_));
       submitBuyRequest(today, src_today, from);
       return result;
     }
@@ -557,7 +553,8 @@ TradeRecord StrategyRuntime::buy(const KRecord& today, const KRecord& src_today,
   if (iszero(today.transAmount) || iszero(today.transCount)) {
     HAYAKU_INFO_IF(
         trace,
-        htr("[{}] delay to buy, current amount == 0 or count == 0", name_));
+        fmt::format("[{}] delay to buy, current amount == 0 or count == 0",
+                    name_));
     submitBuyRequest(today, src_today, from);
     return result;
   }
@@ -580,8 +577,9 @@ TradeRecord StrategyRuntime::buyNow(const KRecord& today,
   // price
   bool trace = getParam<bool>("trace");
   if (planPrice <= stoploss) {
-    HAYAKU_INFO_IF(trace, htr("[{}] buy failed, planPrice: {} <= stoploss: {}",
-                              name_, planPrice, stoploss));
+    HAYAKU_INFO_IF(trace,
+                   fmt::format("[{}] buy failed, planPrice: {} <= stoploss: {}",
+                               name_, planPrice, stoploss));
     return result;
   }
 
@@ -592,9 +590,9 @@ TradeRecord StrategyRuntime::buyNow(const KRecord& today,
   HAYAKU_ASSERT(min_num != 0.0);
   number = int64_t(number / min_num) * min_num;
   if (iszero(number) || number > stock_.maxTradeNumber()) {
-    HAYAKU_INFO_IF(
-        trace, "[{}] {}, number: {} == 0 or > maxTradeNumber: {}, {}", name_,
-        htr("buy failed"), number, stock_.maxTradeNumber(), mm_);
+    HAYAKU_INFO_IF(trace,
+                   "[{}] {}, number: {} == 0 or > maxTradeNumber: {}, {}",
+                   name_, "buy failed", number, stock_.maxTradeNumber(), mm_);
     return result;
   }
 
@@ -605,7 +603,7 @@ TradeRecord StrategyRuntime::buyNow(const KRecord& today,
       OrderRequest(OrderSide::BUY, today.datetime, stock_, realPrice, number,
                    stoploss, goalPrice, planPrice, from));
   if (BUSINESS_BUY != record.business) {
-    HAYAKU_INFO_IF(trace, htr("[{}] buy failed, {}", name_, record));
+    HAYAKU_INFO_IF(trace, fmt::format("[{}] buy failed, {}", name_, record));
     return result;
   }
 
@@ -624,7 +622,8 @@ TradeRecord StrategyRuntime::buyDelay(const KRecord& today,
   if (iszero(today.transAmount) || iszero(today.transCount)) {
     HAYAKU_INFO_IF(
         trace,
-        htr("[{}] delay to buy, current amount == 0 or count == 0", name_));
+        fmt::format("[{}] delay to buy, current amount == 0 or count == 0",
+                    name_));
     submitBuyRequest(today, src_today, pending_orders_.buy().origin);
     return result;
   }
@@ -634,7 +633,8 @@ TradeRecord StrategyRuntime::buyDelay(const KRecord& today,
     // Get yesterday's close price and check whether it is a one-line limit up
     size_t pos = kdata_.getPos(today.datetime);
     if (pos == 0 || pos == Null<size_t>()) {
-      HAYAKU_INFO_IF(trace, htr("[{}] delay to buy, one-price board", name_));
+      HAYAKU_INFO_IF(trace,
+                     fmt::format("[{}] delay to buy, one-price board", name_));
       submitBuyRequest(today, src_today, pending_orders_.buy().origin);
       return result;
     }
@@ -642,7 +642,8 @@ TradeRecord StrategyRuntime::buyDelay(const KRecord& today,
     const auto& pre_day = kdata_.getKRecord(pos - 1);
     if (today.closePrice > pre_day.closePrice) {
       HAYAKU_INFO_IF(
-          trace, htr("[{}] delay to buy, one-price up-limit board", name_));
+          trace,
+          fmt::format("[{}] delay to buy, one-price up-limit board", name_));
       submitBuyRequest(today, src_today, pending_orders_.buy().origin);
       return result;
     }
@@ -685,8 +686,8 @@ TradeRecord StrategyRuntime::buyDelay(const KRecord& today,
   price_t realPrice = getRealBuyPrice(today.datetime, planPrice);
   TradeRecord record = submitStrategyOrder(
       execution_, OrderRequest(OrderSide::BUY, today.datetime, stock_,
-                                realPrice, number, stoploss, goalPrice,
-                                planPrice, pending_orders_.buy().origin));
+                               realPrice, number, stoploss, goalPrice,
+                               planPrice, pending_orders_.buy().origin));
   if (BUSINESS_BUY != record.business) {
     pending_orders_.buy().clear();
     return result;
@@ -733,7 +734,7 @@ void StrategyRuntime::submitBuyRequest(const KRecord& today,
 TradeRecord StrategyRuntime::sellForce(const Datetime& date, double num,
                                        OrderOrigin from, bool on_open) {
   bool trace = getParam<bool>("trace");
-  HAYAKU_INFO_IF(trace, "[{}] {} {} by {}", name_, htr("force sell"), num,
+  HAYAKU_INFO_IF(trace, "[{}] {} {} by {}", name_, "force sell", num,
                  getOrderOriginName(from));
 
   TradeRecord record;
@@ -769,8 +770,8 @@ TradeRecord StrategyRuntime::sellForce(const Datetime& date, double num,
                    on_open ? src_krecord.openPrice : src_krecord.closePrice,
                    from));
   HAYAKU_WARN_IF_RETURN(record == Null<TradeRecord>(), record,
-                        "[{}] {}: {} by {}", name_, htr("Failed force sell"),
-                        num, getOrderOriginName(from));
+                        "[{}] {}: {} by {}", name_, "Failed force sell", num,
+                        getOrderOriginName(from));
 
   // The last take-profit price is initialized to 0 when there is no position
   if (!account_->have(stock_)) {
@@ -788,14 +789,14 @@ TradeRecord StrategyRuntime::sell(const KRecord& today,
   TradeRecord result;
   if (getParam<bool>("sell_delay")) {
     submitSellRequest(today, src_today, from);
-    HAYAKU_INFO_IF(trace, htr("[{}] will be delay to sell", name_));
+    HAYAKU_INFO_IF(trace, fmt::format("[{}] will be delay to sell", name_));
     return result;
   }
 
   // Check whether it may be a one-line limit down
   if (today.highPrice == today.lowPrice) {
     if (getParam<bool>("can_trade_when_high_eq_low")) {
-      HAYAKU_WARN_IF(trace, htr("[{}] sell one-price board", name_));
+      HAYAKU_WARN_IF(trace, fmt::format("[{}] sell one-price board", name_));
       return sellNow(today, src_today, from);
     }
 
@@ -803,14 +804,16 @@ TradeRecord StrategyRuntime::sell(const KRecord& today,
     // one-line limit down the sell is delayed
     size_t pos = kdata_.getPos(today.datetime);
     if (pos == 0 || pos == Null<size_t>()) {
-      HAYAKU_INFO_IF(trace, htr("[{}] delay to sell, one-price board", name_));
+      HAYAKU_INFO_IF(trace,
+                     fmt::format("[{}] delay to sell, one-price board", name_));
       submitSellRequest(today, src_today, from);
       return result;
     }
 
     const auto& preday = kdata_.getKRecord(pos - 1);
     if (today.closePrice < preday.closePrice) {
-      HAYAKU_INFO_IF(trace, htr("[{}] sell delayed: limit-down lock", name_));
+      HAYAKU_INFO_IF(trace,
+                     fmt::format("[{}] sell delayed: limit-down lock", name_));
       submitSellRequest(today, src_today, from);
       return result;
     }
@@ -819,13 +822,14 @@ TradeRecord StrategyRuntime::sell(const KRecord& today,
   if (iszero(today.transAmount) || iszero(today.transCount)) {
     HAYAKU_INFO_IF(
         trace,
-        htr("[{}] delay to sell, current amount == 0 or count == 0", name_));
+        fmt::format("[{}] delay to sell, current amount == 0 or count == 0",
+                    name_));
     submitSellRequest(today, src_today, from);
     return result;
   }
 
   result = sellNow(today, src_today, from);
-  HAYAKU_INFO_IF(trace, htr("[{}] sell now: {}", name_, result));
+  HAYAKU_INFO_IF(trace, fmt::format("[{}] sell now: {}", name_, result));
   return result;
 }
 
@@ -875,7 +879,8 @@ TradeRecord StrategyRuntime::sellDelay(const KRecord& today,
   if (iszero(today.transAmount) || iszero(today.transCount)) {
     HAYAKU_INFO_IF(
         trace,
-        htr("[{}] delay to sell, current amount == 0 or count == 0", name_));
+        fmt::format("[{}] delay to sell, current amount == 0 or count == 0",
+                    name_));
     submitSellRequest(today, src_today, pending_orders_.sell().origin);
     return result;
   }
@@ -886,14 +891,16 @@ TradeRecord StrategyRuntime::sellDelay(const KRecord& today,
     // one-line limit down the sell is delayed
     size_t pos = kdata_.getPos(today.datetime);
     if (pos == 0 || pos == Null<size_t>()) {
-      HAYAKU_INFO_IF(trace, htr("[{}] delay to sell, one-price board", name_));
+      HAYAKU_INFO_IF(trace,
+                     fmt::format("[{}] delay to sell, one-price board", name_));
       submitSellRequest(today, src_today, pending_orders_.sell().origin);
       return result;
     }
 
     const auto& preday = kdata_.getKRecord(pos - 1);
     if (today.closePrice < preday.closePrice) {
-      HAYAKU_INFO_IF(trace, htr("[{}] sell delayed: limit-down lock", name_));
+      HAYAKU_INFO_IF(trace,
+                     fmt::format("[{}] sell delayed: limit-down lock", name_));
       submitSellRequest(today, src_today, pending_orders_.sell().origin);
       return result;
     }
@@ -928,8 +935,8 @@ TradeRecord StrategyRuntime::sellDelay(const KRecord& today,
   price_t realPrice = getRealSellPrice(today.datetime, planPrice);
   TradeRecord record = submitStrategyOrder(
       execution_, OrderRequest(OrderSide::SELL, today.datetime, stock_,
-                                realPrice, number, stoploss, goalPrice,
-                                planPrice, pending_orders_.sell().origin));
+                               realPrice, number, stoploss, goalPrice,
+                               planPrice, pending_orders_.sell().origin));
   if (BUSINESS_SELL != record.business) {
     pending_orders_.sell().clear();
     return result;  // The sell operation failed
@@ -992,30 +999,34 @@ TradeRecord StrategyRuntime::buyShort(const KRecord& today,
   bool trace = getParam<bool>("trace");
   if (getParam<bool>("buy_delay")) {
     submitBuyShortRequest(today, src_today, from);
-    HAYAKU_INFO_IF(trace, htr("[{}] will buy short next bar open", name_));
+    HAYAKU_INFO_IF(trace,
+                   fmt::format("[{}] will buy short next bar open", name_));
     return result;
   }
 
   // The one-line board case
   if (today.highPrice == today.lowPrice) {
     if (getParam<bool>("can_trade_when_high_eq_low")) {
-      HAYAKU_WARN_IF(trace, htr("[{}] buy short one-price board", name_));
+      HAYAKU_WARN_IF(trace,
+                     fmt::format("[{}] buy short one-price board", name_));
       return buyShortNow(today, src_today, from);
     }
 
     // Get yesterday's data and check whether it is a one-line limit up,
     size_t pos = kdata_.getPos(today.datetime);
     if (pos == 0 || pos == Null<size_t>()) {
-      HAYAKU_INFO_IF(trace,
-                     htr("[{}] delay to buy short, one-price board", name_));
+      HAYAKU_INFO_IF(
+          trace,
+          fmt::format("[{}] delay to buy short, one-price board", name_));
       submitBuyShortRequest(today, src_today, from);
       return result;
     }
 
     const auto& preday = kdata_.getKRecord(pos - 1);
     if (today.closePrice > preday.closePrice) {
-      HAYAKU_INFO_IF(trace,
-                     htr("[{}] short covering delayed: limit-up lock", name_));
+      HAYAKU_INFO_IF(
+          trace,
+          fmt::format("[{}] short covering delayed: limit-up lock", name_));
       submitBuyShortRequest(today, src_today, from);
       return result;
     }
@@ -1023,7 +1034,8 @@ TradeRecord StrategyRuntime::buyShort(const KRecord& today,
 
   if (iszero(today.transAmount) || iszero(today.transCount)) {
     HAYAKU_INFO_IF(
-        trace, htr("[{}] delay to buy short, current amount == 0 or count == 0",
+        trace, fmt::format(
+                   "[{}] delay to buy short, current amount == 0 or count == 0",
                    name_));
     submitBuyShortRequest(today, src_today, from);
     return result;
@@ -1067,8 +1079,8 @@ TradeRecord StrategyRuntime::buyShortNow(const KRecord& today,
 
   TradeRecord record = submitStrategyOrder(
       execution_, OrderRequest(OrderSide::BUY_SHORT, today.datetime, stock_,
-                                realPrice, number, stoploss, goalPrice,
-                                planPrice, OrderOrigin::SIGNAL));
+                               realPrice, number, stoploss, goalPrice,
+                               planPrice, OrderOrigin::SIGNAL));
   if (BUSINESS_BUY_SHORT != record.business) {
     pending_orders_.buyShort().clear();
     return result;
@@ -1088,7 +1100,8 @@ TradeRecord StrategyRuntime::buyShortDelay(const KRecord& today,
   bool trace = getParam<bool>("trace");
   if (iszero(today.transAmount) || iszero(today.transCount)) {
     HAYAKU_INFO_IF(
-        trace, htr("[{}] delay to buy short, current amount == 0 or count == 0",
+        trace, fmt::format(
+                   "[{}] delay to buy short, current amount == 0 or count == 0",
                    name_));
     submitBuyShortRequest(today, src_today, pending_orders_.buyShort().origin);
     return result;
@@ -1099,8 +1112,9 @@ TradeRecord StrategyRuntime::buyShortDelay(const KRecord& today,
     // Get yesterday's data and check whether it is a one-line limit up,
     size_t pos = kdata_.getPos(today.datetime);
     if (pos == 0 || pos == Null<size_t>()) {
-      HAYAKU_INFO_IF(trace,
-                     htr("[{}] delay to buy short, one-price board", name_));
+      HAYAKU_INFO_IF(
+          trace,
+          fmt::format("[{}] delay to buy short, one-price board", name_));
       submitBuyShortRequest(today, src_today,
                             pending_orders_.buyShort().origin);
       return result;
@@ -1108,8 +1122,9 @@ TradeRecord StrategyRuntime::buyShortDelay(const KRecord& today,
 
     const auto& preday = kdata_.getKRecord(pos - 1);
     if (today.closePrice > preday.closePrice) {
-      HAYAKU_INFO_IF(trace,
-                     htr("[{}] short covering delayed: limit-up lock", name_));
+      HAYAKU_INFO_IF(
+          trace,
+          fmt::format("[{}] short covering delayed: limit-up lock", name_));
       submitBuyShortRequest(today, src_today,
                             pending_orders_.buyShort().origin);
       return result;
@@ -1155,8 +1170,8 @@ TradeRecord StrategyRuntime::buyShortDelay(const KRecord& today,
   price_t realPrice = getRealBuyPrice(today.datetime, planPrice);
   TradeRecord record = submitStrategyOrder(
       execution_, OrderRequest(OrderSide::BUY_SHORT, today.datetime, stock_,
-                                realPrice, number, stoploss, goalPrice,
-                                planPrice, OrderOrigin::SIGNAL));
+                               realPrice, number, stoploss, goalPrice,
+                               planPrice, OrderOrigin::SIGNAL));
   if (BUSINESS_BUY_SHORT != record.business) {
     pending_orders_.buyShort().clear();
     return result;
@@ -1218,14 +1233,16 @@ TradeRecord StrategyRuntime::sellShort(const KRecord& today,
 
   if (today.highPrice == today.lowPrice) {
     if (getParam<bool>("can_trade_when_high_eq_low")) {
-      HAYAKU_WARN_IF(trace, htr("[{}] buy short one-price board", name_));
+      HAYAKU_WARN_IF(trace,
+                     fmt::format("[{}] buy short one-price board", name_));
       return sellShortNow(today, src_today, from);
     }
 
     size_t pos = kdata_.getPos(today.datetime);
     if (pos == 0 || pos == Null<size_t>()) {
-      HAYAKU_INFO_IF(trace,
-                     htr("[{}] delay to sell short, one-price board", name_));
+      HAYAKU_INFO_IF(
+          trace,
+          fmt::format("[{}] delay to sell short, one-price board", name_));
       submitSellShortRequest(today, src_today, from);
       return result;
     }
@@ -1233,7 +1250,8 @@ TradeRecord StrategyRuntime::sellShort(const KRecord& today,
     const auto& preday = kdata_.getKRecord(pos - 1);
     if (today.closePrice < preday.closePrice) {
       HAYAKU_INFO_IF(
-          trace, htr("[{}] short selling delayed: limit-down lock", name_));
+          trace,
+          fmt::format("[{}] short selling delayed: limit-down lock", name_));
       submitSellShortRequest(today, src_today, from);
       return result;
     }
@@ -1242,7 +1260,8 @@ TradeRecord StrategyRuntime::sellShort(const KRecord& today,
   if (iszero(today.transAmount) || iszero(today.transCount)) {
     HAYAKU_INFO_IF(
         trace,
-        htr("[{}] delay to sell short, current amount == 0 or count == 0",
+        fmt::format(
+            "[{}] delay to sell short, current amount == 0 or count == 0",
             name_));
     submitSellShortRequest(today, src_today, from);
     return result;
@@ -1278,8 +1297,8 @@ TradeRecord StrategyRuntime::sellShortNow(const KRecord& today,
   price_t realPrice = getRealSellPrice(today.datetime, planPrice);
   TradeRecord record = submitStrategyOrder(
       execution_, OrderRequest(OrderSide::SELL_SHORT, today.datetime, stock_,
-                                realPrice, number, stoploss, goalPrice,
-                                planPrice, OrderOrigin::SIGNAL));
+                               realPrice, number, stoploss, goalPrice,
+                               planPrice, OrderOrigin::SIGNAL));
   if (BUSINESS_SELL_SHORT != record.business) {
     pending_orders_.sellShort().clear();
     return result;  // The sell operation failed
@@ -1300,7 +1319,8 @@ TradeRecord StrategyRuntime::sellShortDelay(const KRecord& today,
   if (iszero(today.transAmount) || iszero(today.transCount)) {
     HAYAKU_INFO_IF(
         trace,
-        htr("[{}] delay to sell short, current amount == 0 or count == 0",
+        fmt::format(
+            "[{}] delay to sell short, current amount == 0 or count == 0",
             name_));
     submitSellShortRequest(today, src_today,
                            pending_orders_.sellShort().origin);
@@ -1311,8 +1331,9 @@ TradeRecord StrategyRuntime::sellShortDelay(const KRecord& today,
       !getParam<bool>("can_trade_when_high_eq_low")) {
     size_t pos = kdata_.getPos(today.datetime);
     if (pos == 0 || pos == Null<size_t>()) {
-      HAYAKU_INFO_IF(trace,
-                     htr("[{}] delay to sell short, one-price board", name_));
+      HAYAKU_INFO_IF(
+          trace,
+          fmt::format("[{}] delay to sell short, one-price board", name_));
       submitSellShortRequest(today, src_today,
                              pending_orders_.sellShort().origin);
       return result;
@@ -1321,7 +1342,8 @@ TradeRecord StrategyRuntime::sellShortDelay(const KRecord& today,
     const auto& preday = kdata_.getKRecord(pos - 1);
     if (today.closePrice < preday.closePrice) {
       HAYAKU_INFO_IF(
-          trace, htr("[{}] short selling delayed: limit-down lock", name_));
+          trace,
+          fmt::format("[{}] short selling delayed: limit-down lock", name_));
       submitSellShortRequest(today, src_today,
                              pending_orders_.sellShort().origin);
       return result;
@@ -1355,8 +1377,8 @@ TradeRecord StrategyRuntime::sellShortDelay(const KRecord& today,
 
   TradeRecord record = submitStrategyOrder(
       execution_, OrderRequest(OrderSide::SELL_SHORT, today.datetime, stock_,
-                                realPrice, number, stoploss, goalPrice,
-                                planPrice, pending_orders_.sellShort().origin));
+                               realPrice, number, stoploss, goalPrice,
+                               planPrice, pending_orders_.sellShort().origin));
   if (BUSINESS_SELL_SHORT != record.business) {
     pending_orders_.sellShort().clear();
     return result;  // The sell operation failed

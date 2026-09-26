@@ -45,7 +45,7 @@ price_t FixedPercentProfitGoal::getGoal(const Datetime& datetime,
                               : price * (1 + getParam<double>("p"));
 }
 
-ProfitGoalPtr HAYAKU_API PG_FixedPercent(double p) {
+ProfitGoalPtr PG_FixedPercent(double p) {
   ProfitGoalPtr ptr = make_shared<FixedPercentProfitGoal>();
   ptr->setParam<double>("p", p);
   return ptr;

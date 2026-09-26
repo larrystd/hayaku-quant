@@ -13,7 +13,6 @@ namespace hayaku::internal {
 
 /** Create an isolated execution account without exposing ExecutionRuntime to
  * strategy code. */
-HAYAKU_API ExecutionAccountPortPtr
-makeExecutionAccount(const AccountConfig& config);
+ExecutionAccountPortPtr makeExecutionAccount(const AccountConfig& config);
 
 }  // namespace hayaku::internal

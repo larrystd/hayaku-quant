@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-SignalPtr HAYAKU_API SG_Flex(const Indicator& op, int slow_n) {
+SignalPtr SG_Flex(const Indicator& op, int slow_n) {
   SignalPtr sg = SG_Cross(op, EMA(slow_n)(op));
   sg->name("SG_Flex");
   return sg;

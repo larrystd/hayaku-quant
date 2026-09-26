@@ -125,8 +125,7 @@ PriceList NormQuantileUniform::normalize(const PriceList &src) {
   return result;
 }
 
-NormPtr HAYAKU_API NORM_Quantile_Uniform(double quantile_min,
-                                         double quantile_max) {
+NormPtr NORM_Quantile_Uniform(double quantile_min, double quantile_max) {
   return std::make_shared<NormQuantileUniform>(quantile_min, quantile_max);
 }
 

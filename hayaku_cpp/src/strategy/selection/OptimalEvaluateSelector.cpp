@@ -37,9 +37,9 @@ double OptimalEvaluateSelector::evaluate(
   return ret;
 }
 
-SEPtr HAYAKU_API
-SE_EvaluateOptimal(std::function<double(const internal::StrategyRuntimePtr&,
-                                        const Datetime&)>&& evaluate) {
+SEPtr SE_EvaluateOptimal(
+    std::function<double(const internal::StrategyRuntimePtr&,
+                         const Datetime&)>&& evaluate) {
   return make_shared<OptimalEvaluateSelector>(std::move(evaluate));
 }
 

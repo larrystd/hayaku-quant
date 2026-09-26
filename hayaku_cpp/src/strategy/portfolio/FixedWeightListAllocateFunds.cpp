@@ -54,7 +54,7 @@ StrategyWeightList FixedWeightListAllocateFunds ::_allocateWeight(
   return result;
 }
 
-AFPtr HAYAKU_API AF_FixedWeightList(const PriceList& weights) {
+AFPtr AF_FixedWeightList(const PriceList& weights) {
   HAYAKU_ERROR_IF(weights.empty(), "Input weights is empty!");
   auto p = make_shared<FixedWeightListAllocateFunds>(weights);
   p->setParam<PriceList>("weights", weights);

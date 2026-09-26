@@ -87,7 +87,7 @@ void IJumpDown::_increment_calculate(const Indicator& ind, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API JUMPDOWN() { return Indicator(make_shared<IJumpDown>()); }
+Indicator JUMPDOWN() { return Indicator(make_shared<IJumpDown>()); }
 
 } /* namespace hayaku */
 
@@ -131,6 +131,6 @@ void IJumpUp::_increment_calculate(const Indicator& ind, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API JUMPUP() { return Indicator(make_shared<IJumpUp>()); }
+Indicator JUMPUP() { return Indicator(make_shared<IJumpUp>()); }
 
 } /* namespace hayaku */

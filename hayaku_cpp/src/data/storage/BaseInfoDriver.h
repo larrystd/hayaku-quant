@@ -98,7 +98,7 @@ struct StockInfo {
  * Base class of the basic information data driver
  * @ingroup DataDriver
  */
-class HAYAKU_API BaseInfoDriver {
+class BaseInfoDriver {
   PARAMETER_SUPPORT
 
  public:
@@ -243,8 +243,8 @@ class HAYAKU_API BaseInfoDriver {
 
 typedef shared_ptr<BaseInfoDriver> BaseInfoDriverPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const BaseInfoDriver&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const BaseInfoDriverPtr&);
+std::ostream& operator<<(std::ostream&, const BaseInfoDriver&);
+std::ostream& operator<<(std::ostream&, const BaseInfoDriverPtr&);
 
 inline const string& BaseInfoDriver::name() const { return name_; }
 

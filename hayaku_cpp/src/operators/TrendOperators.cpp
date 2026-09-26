@@ -196,13 +196,13 @@ void IAdx::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API ADX(int n) {
+Indicator ADX(int n) {
   auto p = make_shared<IAdx>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API ADX(const KData& kdata, int n) {
+Indicator ADX(const KData& kdata, int n) {
   auto p = make_shared<IAdx>();
   p->setParam<int>("n", n);
   p->setContext(kdata);
@@ -401,13 +401,13 @@ void IAdx2::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API ADX2(int n) {
+Indicator ADX2(int n) {
   auto p = make_shared<IAdx2>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API ADX2(const KData& kdata, int n) {
+Indicator ADX2(const KData& kdata, int n) {
   auto p = make_shared<IAdx2>();
   p->setParam<int>("n", n);
   p->setContext(kdata);
@@ -533,13 +533,13 @@ void IAtr::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ATR(int n) {
+Indicator ATR(int n) {
   auto p = make_shared<IAtr>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API ATR(const KData& kdata, int n) {
+Indicator ATR(const KData& kdata, int n) {
   Indicator ret = ATR(n);
   ret.setContext(kdata);
   return ret;
@@ -619,15 +619,13 @@ void IDiff::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API DIFF(int n) {
+Indicator DIFF(int n) {
   IndicatorImpPtr p = make_shared<IDiff>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API DIFF(const Indicator& data, int n) {
-  return DIFF(n)(data);
-}
+Indicator DIFF(const Indicator& data, int n) { return DIFF(n)(data); }
 
 } /* namespace hayaku */
 
@@ -778,13 +776,13 @@ void IMacd::_dyn_one_circle(const Indicator& ind, size_t curPos, int n1, int n2,
 void IMacd::_dyn_calculate(const Indicator& ind) {
   auto iter = ind_params_.find("n1");
   Indicator n1 = iter != ind_params_.end() ? Indicator(iter->second)
-                                            : CVAL(ind, getParam<int>("n1"));
+                                           : CVAL(ind, getParam<int>("n1"));
   iter = ind_params_.find("n2");
   Indicator n2 = iter != ind_params_.end() ? Indicator(iter->second)
-                                            : CVAL(ind, getParam<int>("n2"));
+                                           : CVAL(ind, getParam<int>("n2"));
   iter = ind_params_.find("n3");
   Indicator n3 = iter != ind_params_.end() ? Indicator(iter->second)
-                                            : CVAL(ind, getParam<int>("n3"));
+                                           : CVAL(ind, getParam<int>("n3"));
 
   HAYAKU_CHECK(n1.size() == ind.size(),
                "ind_param(n2).size()={}, ind.size()={}!", n2.size(),
@@ -809,7 +807,7 @@ void IMacd::_dyn_calculate(const Indicator& ind) {
   updateDiscard();
 }
 
-Indicator HAYAKU_API MACD(int n1, int n2, int n3) {
+Indicator MACD(int n1, int n2, int n3) {
   IndicatorImpPtr p = make_shared<IMacd>();
   p->setParam<int>("n1", n1);
   p->setParam<int>("n2", n2);
@@ -817,8 +815,7 @@ Indicator HAYAKU_API MACD(int n1, int n2, int n3) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API MACD(const IndParam& n1, const IndParam& n2,
-                          const IndParam& n3) {
+Indicator MACD(const IndParam& n1, const IndParam& n2, const IndParam& n3) {
   IndicatorImpPtr p = make_shared<IMacd>();
   p->setIndParam("n1", n1);
   p->setIndParam("n2", n2);
@@ -905,9 +902,9 @@ void ITr::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API TR() { return make_shared<ITr>()->calculate(); }
+Indicator TR() { return make_shared<ITr>()->calculate(); }
 
-Indicator HAYAKU_API TR(const KData& k) {
+Indicator TR(const KData& k) {
   auto p = make_shared<ITr>();
   p->setContext(k);
   return Indicator(p);

@@ -236,7 +236,7 @@ KQuery::RecoverType KQuery::getRecoverTypeEnum(const string& arg) {
   return INVALID_RECOVER_TYPE;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const KQuery& query) {
+std::ostream& operator<<(std::ostream& os, const KQuery& query) {
   string strip(", ");
   if (query.queryType() == KQuery::INDEX) {
     os << "KQuery(" << query.start() << strip << query.end() << strip
@@ -253,7 +253,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const KQuery& query) {
   return os;
 }
 
-bool HAYAKU_API operator!=(const KQuery& q1, const KQuery& q2) noexcept {
+bool operator!=(const KQuery& q1, const KQuery& q2) noexcept {
   // cppcheck-suppress [mismatchingContainerExpression]
   HAYAKU_IF_RETURN(q1.queryType() != q2.queryType(), true);
   if (q1.queryType() == KQuery::DATE) {
@@ -265,7 +265,7 @@ bool HAYAKU_API operator!=(const KQuery& q1, const KQuery& q2) noexcept {
          q1.start() != q2.start() || q1.end() != q2.end();
 }
 
-bool HAYAKU_API operator==(const KQuery& q1, const KQuery& q2) noexcept {
+bool operator==(const KQuery& q1, const KQuery& q2) noexcept {
   // cppcheck-suppress [mismatchingContainerExpression]
   HAYAKU_IF_RETURN(q1.queryType() != q2.queryType(), false);
   if (q1.queryType() == KQuery::DATE) {

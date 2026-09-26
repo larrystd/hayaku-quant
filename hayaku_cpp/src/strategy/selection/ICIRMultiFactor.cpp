@@ -98,15 +98,11 @@ IndicatorList ICIRMultiFactor::_calculate(
       });
 }
 
-MultiFactorPtr HAYAKU_API MF_ICIRWeight() {
-  return make_shared<ICIRMultiFactor>();
-}
+MultiFactorPtr MF_ICIRWeight() { return make_shared<ICIRMultiFactor>(); }
 
-MultiFactorPtr HAYAKU_API MF_ICIRWeight(const StockList& stks,
-                                        const KQuery& query,
-                                        const Stock& ref_stk, int ic_n,
-                                        int ic_rolling_n, bool spearman,
-                                        int mode, bool save_all_factors) {
+MultiFactorPtr MF_ICIRWeight(const StockList& stks, const KQuery& query,
+                             const Stock& ref_stk, int ic_n, int ic_rolling_n,
+                             bool spearman, int mode, bool save_all_factors) {
   return make_shared<ICIRMultiFactor>(stks, query, ref_stk, ic_n, ic_rolling_n,
                                       spearman, mode, save_all_factors);
 }

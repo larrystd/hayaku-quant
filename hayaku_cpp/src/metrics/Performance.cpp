@@ -7,15 +7,11 @@
 
 #include "metrics/Performance.h"
 
-#include "common/Os.h"
-
 namespace hayaku {
 
 namespace {
 
-/** Mapping from the legacy Chinese keys (used before the i18n refactoring) to
- * the current English keys. It is kept for backward compatibility only, do not
- * use it in the new code. */
+/** Legacy Chinese key aliases retained for backward compatibility. */
 const std::map<string, string>& legacyKeyMap() {
   static const std::map<string, string> keys = {
       {"帐户初始金额", "Account Initial Capital"},
@@ -75,10 +71,7 @@ const std::map<string, string>& legacyKeyMap() {
   return keys;
 }
 
-/** The unified mapping from the English key to the corresponding Chinese name.
- * It is initialized from the inversion of legacyKeyMap, and the Chinese names
- * registered via addKey are also stored in it, so that all the methods of
- * Performance share the same key name mapping. */
+/** English keys and their legacy Chinese aliases, including addKey aliases. */
 std::map<string, string>& chineseNameMap() {
   static std::map<string, string> names = [] {
     std::map<string, string> ret;
@@ -88,15 +81,6 @@ std::map<string, string>& chineseNameMap() {
     return ret;
   }();
   return names;
-}
-
-/** Get the corresponding Chinese name of the given English key; returns an
- * empty string if it has not been registered */
-const string& lookupChineseName(const string& key) {
-  static const string empty;
-  const auto& names = chineseNameMap();
-  auto iter = names.find(key);
-  return iter == names.end() ? empty : iter->second;
 }
 
 /** Get the current English key of the given legacy Chinese key; it is kept for
@@ -113,8 +97,8 @@ const string& lookupLegacyKey(const string& key) {
 }
 
 /** Check whether the given key is an English key, i.e. it consists of the
- * printable ASCII characters only. Since the i18n refactoring, the non-English
- * keys, such as the legacy Chinese ones, are not supported any more.
+ * printable ASCII characters only. Non-English keys are accepted only as
+ * deprecated aliases for lookups.
  */
 bool isEnglishKey(const string& key) {
   for (unsigned char ch : key) {
@@ -129,58 +113,58 @@ bool isEnglishKey(const string& key) {
 
 Performance::Performance()
     : keys_({"Account Initial Capital",
-              "Total Invested Principal",
-              "Total Invested Assets",
-              "Total Borrowed Cash",
-              "Total Borrowed Assets",
-              "Total Dividends",
-              "Cash Balance",
-              "Open Position Net Value",
-              "Current Total Assets",
-              "Total Cost of Closed Trades",
-              "Total Net Profit of Closed Trades",
-              "Max Cash Usage per Trade %",
-              "Avg Cash Usage per Trade %",
-              "Open Position Account Return %",
-              "Closed Trade Account Return %",
-              "Account CAGR %",
-              "Account Avg Annual Return %",
-              "Total Profit of Winning Trades",
-              "Total Loss of Losing Trades",
-              "Total Closed Trades",
-              "Number of Winning Trades",
-              "Number of Losing Trades",
-              "Win Rate %",
-              "Profit Expectancy",
-              "Avg Profit per Winning Trade",
-              "Avg Loss per Losing Trade",
-              "Avg Win / Avg Loss Ratio",
-              "Profit Factor",
-              "Largest Single Win",
-              "Largest Single Win %",
-              "Largest Single Loss",
-              "Largest Single Loss %",
-              "Avg Holding Period of Winning Trades",
-              "Max Holding Period of Winning Trades",
-              "Avg Holding Period of Losing Trades",
-              "Max Holding Period of Losing Trades",
-              "Total Time Flat",
-              "Time Flat / Total Time %",
-              "Avg Time Flat",
-              "Max Time Flat",
-              "Max Consecutive Wins",
-              "Max Consecutive Losses",
-              "Max Consecutive Win Amount",
-              "Max Consecutive Loss Amount",
-              "R-Multiple Expectancy",
-              "Trade Opportunities per Year",
-              "Annual Expected R-Multiple",
-              "Avg R-Multiple of Winning Trades",
-              "Avg R-Multiple of Losing Trades",
-              "Max Single Win R-Multiple",
-              "Max Single Loss R-Multiple",
-              "Max Consecutive Win R-Multiple",
-              "Max Consecutive Loss R-Multiple"}) {
+             "Total Invested Principal",
+             "Total Invested Assets",
+             "Total Borrowed Cash",
+             "Total Borrowed Assets",
+             "Total Dividends",
+             "Cash Balance",
+             "Open Position Net Value",
+             "Current Total Assets",
+             "Total Cost of Closed Trades",
+             "Total Net Profit of Closed Trades",
+             "Max Cash Usage per Trade %",
+             "Avg Cash Usage per Trade %",
+             "Open Position Account Return %",
+             "Closed Trade Account Return %",
+             "Account CAGR %",
+             "Account Avg Annual Return %",
+             "Total Profit of Winning Trades",
+             "Total Loss of Losing Trades",
+             "Total Closed Trades",
+             "Number of Winning Trades",
+             "Number of Losing Trades",
+             "Win Rate %",
+             "Profit Expectancy",
+             "Avg Profit per Winning Trade",
+             "Avg Loss per Losing Trade",
+             "Avg Win / Avg Loss Ratio",
+             "Profit Factor",
+             "Largest Single Win",
+             "Largest Single Win %",
+             "Largest Single Loss",
+             "Largest Single Loss %",
+             "Avg Holding Period of Winning Trades",
+             "Max Holding Period of Winning Trades",
+             "Avg Holding Period of Losing Trades",
+             "Max Holding Period of Losing Trades",
+             "Total Time Flat",
+             "Time Flat / Total Time %",
+             "Avg Time Flat",
+             "Max Time Flat",
+             "Max Consecutive Wins",
+             "Max Consecutive Losses",
+             "Max Consecutive Win Amount",
+             "Max Consecutive Loss Amount",
+             "R-Multiple Expectancy",
+             "Trade Opportunities per Year",
+             "Annual Expected R-Multiple",
+             "Avg R-Multiple of Winning Trades",
+             "Avg R-Multiple of Losing Trades",
+             "Max Single Win R-Multiple",
+             "Max Single Loss R-Multiple",
+             "Max Consecutive Win R-Multiple",
+             "Max Consecutive Loss R-Multiple"}) {
   for (const auto& key : keys_) {
     result_[key] = 0.0;
   }
@@ -275,14 +259,8 @@ string Performance::report() {
 
   buf.setf(std::ios_base::fixed);
   buf.precision(2);
-  bool zh_lang = (getSystemLanguage() == "zh_cn");
   for (const auto& key : keys_) {
-    const string& chinese = lookupChineseName(key);
-    if (zh_lang && !chinese.empty()) {
-      buf << chinese << ": " << result_.at(key) << std::endl;
-    } else {
-      buf << htr(key.c_str()) << ": " << result_.at(key) << std::endl;
-    }
+    buf << key << ": " << result_.at(key) << std::endl;
   }
 
   buf.unsetf(std::ostream::floatfield);
@@ -478,9 +456,9 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
 
   if (result_["Total Invested Principal"] != 0.0) {
     result_["Open Position Account Return %"] =
-        100. * (result_["Current Total Assets"] /
-                    result_["Total Invested Principal"] -
-                1.);
+        100. *
+        (result_["Current Total Assets"] / result_["Total Invested Principal"] -
+         1.);
     result_["Closed Trade Account Return %"] =
         100. * result_["Total Net Profit of Closed Trades"] /
         result_["Total Invested Principal"];
@@ -517,7 +495,7 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
 
   if (result_["Total Closed Trades"] != 0.0) {
     result_["Win Rate %"] = 100 * result_["Number of Winning Trades"] /
-                             result_["Total Closed Trades"];
+                            result_["Total Closed Trades"];
     result_["R-Multiple Expectancy"] =
         roundEx(total_r / result_["Total Closed Trades"], precision);
   }
@@ -530,8 +508,7 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
 
   result_["Profit Expectancy"] =
       0.01 * result_["Win Rate %"] * result_["Avg Profit per Winning Trade"] +
-      (1 - 0.01 * result_["Win Rate %"]) *
-          result_["Avg Loss per Losing Trade"];
+      (1 - 0.01 * result_["Win Rate %"]) * result_["Avg Loss per Losing Trade"];
 
   int64_t duration = 0;
   if (tm->firstDatetime() != Null<Datetime>()) {

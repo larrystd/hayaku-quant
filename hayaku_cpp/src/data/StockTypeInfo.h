@@ -31,7 +31,7 @@ namespace hayaku {
  * Security type information
  * @ingroup StockManage
  */
-class HAYAKU_API StockTypeInfo {
+class StockTypeInfo {
  public:
   /** Default constructor, returns Null<StockTypeInfo>() */
   StockTypeInfo();
@@ -74,10 +74,10 @@ class HAYAKU_API StockTypeInfo {
   uint32_t type_;       // Security type
   string description_;  // Description
   price_t tick_;        // Minimum tick size
-  price_t tick_value_;   // Price of every tick
+  price_t tick_value_;  // Price of every tick
   price_t
       unit_;  // Price per minimum change, i.e. unit price = tickValue / tick
-  int precision_;          // Price precision
+  int precision_;            // Price precision
   double min_trade_number_;  // Minimum trade quantity per order
   double max_trade_number_;  // Maximum trade quantity per order
 };
@@ -87,7 +87,7 @@ class HAYAKU_API StockTypeInfo {
  * tick, precision, minTradeNumber, maxTradeNumber)
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream&, const StockTypeInfo&);
+std::ostream& operator<<(std::ostream&, const StockTypeInfo&);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

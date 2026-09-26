@@ -108,7 +108,7 @@ boost::uuids::uuid readUUID() {
 
 }  // namespace
 
-bool HAYAKU_API CanUpgrade() {
+bool CanUpgrade() {
   int current_version = HAYAKU_VERSION_MAJOR * 1000000 +
                         HAYAKU_VERSION_MINOR * 1000 + HAYAKU_VERSION_ALTER;
   auto& info = telemetryInfo();
@@ -116,7 +116,7 @@ bool HAYAKU_API CanUpgrade() {
   return info.latest_version_info.version > current_version;
 }
 
-LatestVersionInfo HAYAKU_API getLatestVersionInfo() {
+LatestVersionInfo getLatestVersionInfo() {
   auto& info = telemetryInfo();
   std::shared_lock<std::shared_mutex> lock(info.latest_version_mutex);
   return info.latest_version_info;
@@ -126,7 +126,7 @@ void updateSysInfoExpiredTime(Datetime time) {
   telemetryInfo().expire_time = time;
 }
 
-void HAYAKU_API reminderLicenseExpiration() {
+void reminderLicenseExpiration() {
   auto remain = telemetryInfo().expire_time - Datetime::now();
   HAYAKU_WARN_IF(remain > Days(0) && remain < Days(10),
                  "Note! Your license will expire in {} days.", remain.days());

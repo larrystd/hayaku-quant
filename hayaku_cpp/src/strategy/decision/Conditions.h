@@ -25,7 +25,7 @@ namespace hayaku {
  * position means the system is valid, otherwise it is invalid
  * @return
  */
-CNPtr HAYAKU_API CN_Bool(const Indicator& ind);
+CNPtr CN_Bool(const Indicator& ind);
 
 } /* namespace hayaku */
 
@@ -45,8 +45,7 @@ namespace hayaku {
  * @param cond2 system valid condition 2
  * @return the AndCondition instance pointer
  */
-HAYAKU_API ConditionPtr operator&(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2);
+ConditionPtr operator&(const ConditionPtr& cond1, const ConditionPtr& cond2);
 
 /**
  * The OR of two system valid conditions, equivalent to the union of the two
@@ -54,17 +53,12 @@ HAYAKU_API ConditionPtr operator&(const ConditionPtr& cond1,
  * @param cond2 system valid condition 2
  * @return the OrCondition instance pointer
  */
-HAYAKU_API ConditionPtr operator|(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2);
+ConditionPtr operator|(const ConditionPtr& cond1, const ConditionPtr& cond2);
 
-HAYAKU_API ConditionPtr operator+(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2);
-HAYAKU_API ConditionPtr operator-(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2);
-HAYAKU_API ConditionPtr operator*(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2);
-HAYAKU_API ConditionPtr operator/(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2);
+ConditionPtr operator+(const ConditionPtr& cond1, const ConditionPtr& cond2);
+ConditionPtr operator-(const ConditionPtr& cond1, const ConditionPtr& cond2);
+ConditionPtr operator*(const ConditionPtr& cond1, const ConditionPtr& cond2);
+ConditionPtr operator/(const ConditionPtr& cond1, const ConditionPtr& cond2);
 
 }  // namespace hayaku
 
@@ -84,7 +78,7 @@ namespace hayaku {
  * special purposes
  * @return CNPtr
  */
-CNPtr HAYAKU_API CN_Manual();
+CNPtr CN_Manual();
 
 }  // namespace hayaku
 
@@ -104,6 +98,6 @@ namespace hayaku {
  * @param op
  * @return
  */
-CNPtr HAYAKU_API CN_OPLine(const Indicator& op);
+CNPtr CN_OPLine(const Indicator& op);
 
 } /* namespace hayaku */

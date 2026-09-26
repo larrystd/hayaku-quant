@@ -30,12 +30,6 @@
 #include "common/serialization/KData_serialization.h"
 #endif
 
-#ifndef DATATYPE_H_
-#ifndef HAYAKU_API
-#define HAYAKU_API
-#endif
-#endif
-
 namespace hayaku {
 
 #ifndef DATATYPE_H_
@@ -192,9 +186,8 @@ struct ParamItemRecord {
  *
  * @ingroup Utilities
  */
-class HAYAKU_API Parameter {
-  HAYAKU_API friend std::ostream& operator<<(std::ostream& os,
-                                             const Parameter& param);
+class Parameter {
+  friend std::ostream& operator<<(std::ostream& os, const Parameter& param);
 
  public:
   Parameter();
@@ -335,34 +328,34 @@ class HAYAKU_API Parameter {
 
 #define PARAMETER_SUPPORT                                                 \
  protected:                                                               \
-  Parameter params_;                                                     \
+  Parameter params_;                                                      \
                                                                           \
  public:                                                                  \
-  const Parameter& getParameter() const { return params_; }              \
+  const Parameter& getParameter() const { return params_; }               \
                                                                           \
-  void setParameter(const Parameter& param) { params_ = param; }         \
+  void setParameter(const Parameter& param) { params_ = param; }          \
                                                                           \
   bool haveParam(const string& name) const noexcept {                     \
-    return params_.have(name);                                           \
+    return params_.have(name);                                            \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   void setParam(const string& name, const ValueType& value) {             \
-    params_.set<ValueType>(name, value);                                 \
+    params_.set<ValueType>(name, value);                                  \
   }                                                                       \
   template <typename ValueType>                                           \
   void setParam(const string& name, ValueType& value) {                   \
-    params_.set<ValueType>(name, std::forward<ValueType>(value));        \
+    params_.set<ValueType>(name, std::forward<ValueType>(value));         \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   ValueType getParam(const string& name) const {                          \
-    return params_.get<ValueType>(name);                                 \
+    return params_.get<ValueType>(name);                                  \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   ValueType tryGetParam(const string& name, const ValueType& val) const { \
-    return params_.tryGet<ValueType>(name, val);                         \
+    return params_.tryGet<ValueType>(name, val);                          \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
@@ -388,7 +381,7 @@ class HAYAKU_API Parameter {
  */
 #define PARAMETER_SUPPORT_WITH_CHECK                                      \
  protected:                                                               \
-  Parameter params_;                                                     \
+  Parameter params_;                                                      \
   void paramChanged();                                                    \
   void checkParam(const string& name) const {                             \
     baseCheckParam(name);                                                 \
@@ -400,41 +393,41 @@ class HAYAKU_API Parameter {
   void baseCheckParam(const string& name) const;                          \
                                                                           \
  public:                                                                  \
-  const Parameter& getParameter() const { return params_; }              \
+  const Parameter& getParameter() const { return params_; }               \
                                                                           \
   void setParameter(const Parameter& param) {                             \
-    params_ = param;                                                     \
-    for (auto iter = params_.begin(); iter != params_.end(); ++iter) {  \
+    params_ = param;                                                      \
+    for (auto iter = params_.begin(); iter != params_.end(); ++iter) {    \
       checkParam(iter->first);                                            \
     }                                                                     \
     paramChanged();                                                       \
   }                                                                       \
                                                                           \
   bool haveParam(const string& name) const noexcept {                     \
-    return params_.have(name);                                           \
+    return params_.have(name);                                            \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   void setParam(const string& name, const ValueType& value) {             \
-    params_.set<ValueType>(name, value);                                 \
+    params_.set<ValueType>(name, value);                                  \
     checkParam(name);                                                     \
     paramChanged();                                                       \
   }                                                                       \
   template <typename ValueType>                                           \
   void setParam(const string& name, ValueType&& value) {                  \
-    params_.set<ValueType>(name, std::forward<ValueType>(value));        \
+    params_.set<ValueType>(name, std::forward<ValueType>(value));         \
     checkParam(name);                                                     \
     paramChanged();                                                       \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   ValueType getParam(const string& name) const {                          \
-    return params_.get<ValueType>(name);                                 \
+    return params_.get<ValueType>(name);                                  \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   ValueType tryGetParam(const string& name, const ValueType& val) const { \
-    return params_.tryGet<ValueType>(name, val);                         \
+    return params_.tryGet<ValueType>(name, val);                          \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
@@ -484,10 +477,9 @@ void Parameter::set(const string& name, const ValueType& value) {
     }
 
     if (strcmp(params_[name].type().name(), value.type().name()) != 0) {
-      throw std::logic_error("Mismatching type! need type " +
-                             string(params_[name].type().name()) +
-                             " but value type is " +
-                             string(value.type().name()));
+      throw std::logic_error(
+          "Mismatching type! need type " + string(params_[name].type().name()) +
+          " but value type is " + string(value.type().name()));
     }
 
     params_[name] = value;
@@ -641,9 +633,9 @@ inline int64_t Parameter::get(const string& name) const {
   }
 }
 
-HAYAKU_API bool operator==(const Parameter&, const Parameter&);
-HAYAKU_API bool operator!=(const Parameter&, const Parameter&);
-HAYAKU_API bool operator<(const Parameter&, const Parameter&);
+bool operator==(const Parameter&, const Parameter&);
+bool operator!=(const Parameter&, const Parameter&);
+bool operator<(const Parameter&, const Parameter&);
 
 } /* namespace hayaku */
 

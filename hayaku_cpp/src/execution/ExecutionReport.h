@@ -18,11 +18,11 @@ enum class ExecutionStatus : std::uint8_t {
   REJECTED,
 };
 
-class HAYAKU_API ExecutionReport {
+class ExecutionReport {
  public:
   explicit ExecutionReport(TradeRecord record)
       : status_(record.isNull() ? ExecutionStatus::REJECTED
-                                 : ExecutionStatus::FILLED),
+                                : ExecutionStatus::FILLED),
         record_(std::move(record)) {}
 
   [[nodiscard]] ExecutionStatus status() const noexcept { return status_; }

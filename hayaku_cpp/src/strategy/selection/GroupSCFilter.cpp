@@ -66,7 +66,7 @@ ScoreRecordList GroupSCFilter::_filter(const ScoreRecordList& scores,
   return ret;
 }
 
-ScoresFilterPtr HAYAKU_API SCFilter_Group(int group, int group_index) {
+ScoresFilterPtr SCFilter_Group(int group, int group_index) {
   HAYAKU_CHECK(group > 0, "group must > 0!");
   HAYAKU_CHECK(group_index >= 0 && group_index < group,
                "group_index must >= 0 and < group!");

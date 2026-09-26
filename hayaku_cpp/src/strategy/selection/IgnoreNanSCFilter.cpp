@@ -31,7 +31,7 @@ ScoreRecordList IgnoreNanSCFilter::_filter(const ScoreRecordList& scores,
   return ret;
 }
 
-ScoresFilterPtr HAYAKU_API SCFilter_IgnoreNan() {
+ScoresFilterPtr SCFilter_IgnoreNan() {
   return std::make_shared<IgnoreNanSCFilter>();
 }
 

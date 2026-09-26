@@ -19,7 +19,7 @@ namespace hayaku {
  * current planned trade to the system
  * @ingroup Stoploss
  */
-class HAYAKU_API StoplossBase : public enable_shared_from_this<StoplossBase> {
+class StoplossBase : public enable_shared_from_this<StoplossBase> {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -178,8 +178,8 @@ typedef shared_ptr<StoplossBase> STPtr;
 typedef shared_ptr<StoplossBase> TakeProfitPtr;
 typedef shared_ptr<StoplossBase> TPPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const StoplossBase&);
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const StoplossPtr&);
+std::ostream& operator<<(std::ostream& os, const StoplossBase&);
+std::ostream& operator<<(std::ostream& os, const StoplossPtr&);
 
 inline const string& StoplossBase::name() const { return name_; }
 

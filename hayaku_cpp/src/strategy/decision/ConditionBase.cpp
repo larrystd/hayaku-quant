@@ -11,12 +11,12 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const ConditionBase& cn) {
+std::ostream& operator<<(std::ostream& os, const ConditionBase& cn) {
   os << "Condition(" << cn.name() << ", " << cn.getParameter() << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const ConditionPtr& cn) {
+std::ostream& operator<<(std::ostream& os, const ConditionPtr& cn) {
   if (cn) {
     os << *cn;
   } else {

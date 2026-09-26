@@ -31,7 +31,7 @@ namespace ipc {
  * plugin control interfaces that inherit PluginBase).
  * @ingroup DataDriver
  */
-class HAYAKU_API ShmMirrorSink {
+class ShmMirrorSink {
  public:
   virtual ~ShmMirrorSink() = default;
   virtual void onRealtimeUpdate(const std::string& market_code,
@@ -46,7 +46,7 @@ class HAYAKU_API ShmMirrorSink {
  * exclude the writing of the forked child process (maintaining the
  * single-writer premise)
  */
-HAYAKU_API void registerShmMirrorSink(ShmMirrorSink* sink) noexcept;
+void registerShmMirrorSink(ShmMirrorSink* sink) noexcept;
 
 /**
  * The existing call entry of Stock::realtimeUpdate; when nothing is registered
@@ -55,9 +55,8 @@ HAYAKU_API void registerShmMirrorSink(ShmMirrorSink* sink) noexcept;
  * judgment + the pid gating of the forked child process + the virtual call
  * forwarding
  */
-HAYAKU_API void shmMirrorRealtimeUpdate(const std::string& market_code,
-                                        const KQuery::KType& ktype,
-                                        const KRecord& record);
+void shmMirrorRealtimeUpdate(const std::string& market_code,
+                             const KQuery::KType& ktype, const KRecord& record);
 
 }  // namespace ipc
 }  // namespace hayaku

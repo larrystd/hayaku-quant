@@ -35,7 +35,7 @@ ScoreRecordList TopNSCFilter::_filter(const ScoreRecordList& scores,
   return ret;
 }
 
-ScoresFilterPtr HAYAKU_API SCFilter_TopN(int topn) {
+ScoresFilterPtr SCFilter_TopN(int topn) {
   auto p = std::make_shared<TopNSCFilter>();
   p->setParam<int>("topn", topn);
   return p;

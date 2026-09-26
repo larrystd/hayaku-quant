@@ -25,7 +25,7 @@ struct RunRanges {
       : start(start_), run_start(run_start_), end(end_) {}
 };
 
-class HAYAKU_API OptimalSelectorBase : public SelectorBase {
+class OptimalSelectorBase : public SelectorBase {
   CLASS_LOGGER_IMP(SE_Optimal)
   SELECTOR_IMP(OptimalSelectorBase)
   SELECTOR_NO_PRIVATE_MEMBER_SERIALIZATION

@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API KDataPrivatedBufferImp : public KDataImp {
+class KDataPrivatedBufferImp : public KDataImp {
  public:
   KDataPrivatedBufferImp();
   KDataPrivatedBufferImp(const Stock& stock, const KQuery& query);

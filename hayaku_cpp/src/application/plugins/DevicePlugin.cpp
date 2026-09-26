@@ -13,22 +13,23 @@
 
 namespace hayaku {
 
-void HAYAKU_API bindEmail(const std::string& email,
-                          const std::string& active_code) {
+void bindEmail(const std::string& email, const std::string& active_code) {
   auto* plugin = getPlugin<DevicePluginInterface>(HAYAKU_PLUGIN_DEVICE);
-  HAYAKU_ERROR_IF_RETURN(!plugin, void(),
-                         htr("Can't find {} plugin!", HAYAKU_PLUGIN_DEVICE));
+  HAYAKU_ERROR_IF_RETURN(
+      !plugin, void(),
+      fmt::format("Can't find {} plugin!", HAYAKU_PLUGIN_DEVICE));
   plugin->bind(email, active_code);
 }
 
-void HAYAKU_API activeDevice(const std::string& active_code, bool replace) {
+void activeDevice(const std::string& active_code, bool replace) {
   auto* plugin = getPlugin<DevicePluginInterface>(HAYAKU_PLUGIN_DEVICE);
-  HAYAKU_ERROR_IF_RETURN(!plugin, void(),
-                         htr("Can't find {} plugin!", HAYAKU_PLUGIN_DEVICE));
+  HAYAKU_ERROR_IF_RETURN(
+      !plugin, void(),
+      fmt::format("Can't find {} plugin!", HAYAKU_PLUGIN_DEVICE));
   plugin->activate(active_code, replace);
 }
 
-std::string HAYAKU_API viewLicense() {
+std::string viewLicense() {
   auto* plugin = getPlugin<DevicePluginInterface>(HAYAKU_PLUGIN_DEVICE);
   if (!plugin) {
     return fmt::format("Can't find {} plugin!", HAYAKU_PLUGIN_DEVICE);
@@ -36,14 +37,15 @@ std::string HAYAKU_API viewLicense() {
   return plugin->viewLicense();
 }
 
-void HAYAKU_API removeLicense() {
+void removeLicense() {
   auto* plugin = getPlugin<DevicePluginInterface>(HAYAKU_PLUGIN_DEVICE);
-  HAYAKU_ERROR_IF_RETURN(!plugin, void(),
-                         htr("Can't find {} plugin!", HAYAKU_PLUGIN_DEVICE));
+  HAYAKU_ERROR_IF_RETURN(
+      !plugin, void(),
+      fmt::format("Can't find {} plugin!", HAYAKU_PLUGIN_DEVICE));
   plugin->removeLicense();
 }
 
-std::string HAYAKU_API fetchTrialLicense(const std::string& email) {
+std::string fetchTrialLicense(const std::string& email) {
   auto* plugin = getPlugin<DevicePluginInterface>(HAYAKU_PLUGIN_DEVICE);
   if (!plugin) {
     return fmt::format("Can't find {} plugin!", HAYAKU_PLUGIN_DEVICE);
@@ -51,7 +53,7 @@ std::string HAYAKU_API fetchTrialLicense(const std::string& email) {
   return plugin->fetchTrialLicense(email);
 }
 
-bool HAYAKU_API isValidLicense() {
+bool isValidLicense() {
   auto* plugin = getPlugin<DevicePluginInterface>(HAYAKU_PLUGIN_DEVICE, false);
   if (!plugin) {
     return false;
@@ -59,7 +61,7 @@ bool HAYAKU_API isValidLicense() {
   return plugin->isValidLicsense();
 }
 
-Datetime HAYAKU_API getExpireDate() {
+Datetime getExpireDate() {
   auto* plugin = getPlugin<DevicePluginInterface>(HAYAKU_PLUGIN_DEVICE, false);
   HAYAKU_IF_RETURN(!plugin, Datetime::min());
   return plugin->getExpireDate();

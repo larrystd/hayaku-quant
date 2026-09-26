@@ -19,7 +19,7 @@ static bool isType(const boost::any& value) {
   return strcmp(value.type().name(), typeid(T).name()) == 0;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const Parameter& param) {
+std::ostream& operator<<(std::ostream& os, const Parameter& param) {
   // os << std::fixed;
   // (void)os.precision(4);
   os << "params[";
@@ -179,7 +179,7 @@ string Parameter::getNameValueList() const {
   return os.str();
 }
 
-HAYAKU_API bool operator==(const Parameter& p1, const Parameter& p2) {
+bool operator==(const Parameter& p1, const Parameter& p2) {
   // Note: the parameter is case sensitive
   HAYAKU_IF_RETURN(p1.size() != p2.size(), false);
 
@@ -269,12 +269,12 @@ HAYAKU_API bool operator==(const Parameter& p1, const Parameter& p2) {
   return true;
 }
 
-HAYAKU_API bool operator!=(const Parameter& p1, const Parameter& p2) {
+bool operator!=(const Parameter& p1, const Parameter& p2) {
   // Note: the parameter is case sensitive
   return !(p1 == p2);
 }
 
-HAYAKU_API bool operator<(const Parameter& p1, const Parameter& p2) {
+bool operator<(const Parameter& p1, const Parameter& p2) {
   return p1.getNameValueList() < p2.getNameValueList();
 }
 

@@ -12,8 +12,8 @@
 
 namespace hayaku {
 
-class HAYAKU_API Factor final {
-  friend HAYAKU_API std::ostream& operator<<(std::ostream& os, const Factor&);
+class Factor final {
+  friend std::ostream& operator<<(std::ostream& os, const Factor&);
 
  public:
   Factor();
@@ -293,8 +293,8 @@ class HAYAKU_API Factor final {
     ar& BOOST_SERIALIZATION_NVP(tmp_needSaveValue);
     ar& BOOST_SERIALIZATION_NVP(tmp_recover_type);
     data_ = make_shared<Data>(tmp_name, tmp_formula, tmp_ktype, tmp_brief,
-                               tmp_details, tmp_needSaveValue, tmp_startDate,
-                               tmp_block, tmp_recover_type);
+                              tmp_details, tmp_needSaveValue, tmp_startDate,
+                              tmp_block, tmp_recover_type);
     createAt(tmp_createAt);
     updateAt(tmp_updateAt);
   }
@@ -335,8 +335,7 @@ inline const Datetime& Factor::startDate() const noexcept {
 }
 
 inline void Factor::startDate(const Datetime& datetime) {
-  data_->start_date =
-      datetime == Null<Datetime>() ? Datetime::min() : datetime;
+  data_->start_date = datetime == Null<Datetime>() ? Datetime::min() : datetime;
 }
 
 inline const Block& Factor::block() const noexcept { return data_->block; }
@@ -363,17 +362,13 @@ inline const string& Factor::brief() const noexcept { return data_->brief; }
 
 inline void Factor::brief(const string& brief) { data_->brief = brief; }
 
-inline const string& Factor::details() const noexcept {
-  return data_->details;
-}
+inline const string& Factor::details() const noexcept { return data_->details; }
 
 inline bool Factor::needSaveValue() const noexcept {
   return data_->need_save_value;
 }
 
-inline void Factor::details(const string& details) {
-  data_->details = details;
-}
+inline void Factor::details(const string& details) { data_->details = details; }
 
 inline uint64_t Factor::hash() const noexcept { return (uint64_t)data_.get(); }
 
@@ -383,7 +378,7 @@ inline bool Factor::isNull() const noexcept {
 
 typedef vector<Factor> FactorList;
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const Factor&);
+std::ostream& operator<<(std::ostream& os, const Factor&);
 
 }  // namespace hayaku
 

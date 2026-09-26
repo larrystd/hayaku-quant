@@ -243,69 +243,69 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
 
 #define EXPOERT_TA_FUNC(func) BOOST_CLASS_EXPORT(hayaku::Cls_##func)
 
-#define TA_IN1_OUT1_IMP(func, func_lookback)                     \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {}           \
-  Cls_##func::~Cls_##func() {}                                   \
-                                                                 \
-  void Cls_##func::_calculate(const Indicator &data) {           \
-    int lookback = func_lookback();                              \
-    size_t total = data.size();                                  \
-    if (lookback < 0) {                                          \
+#define TA_IN1_OUT1_IMP(func, func_lookback)                    \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {}          \
+  Cls_##func::~Cls_##func() {}                                  \
+                                                                \
+  void Cls_##func::_calculate(const Indicator &data) {          \
+    int lookback = func_lookback();                             \
+    size_t total = data.size();                                 \
+    if (lookback < 0) {                                         \
       discard_ = total;                                         \
-      return;                                                    \
-    }                                                            \
+      return;                                                   \
+    }                                                           \
     discard_ = data.discard() + lookback;                       \
     if (discard_ >= total) {                                    \
       discard_ = total;                                         \
-      return;                                                    \
-    }                                                            \
-                                                                 \
-    auto const *src = data.data();                               \
-    auto *dst = this->data();                                    \
-    int outBegIdx;                                               \
-    int outNbElement;                                            \
+      return;                                                   \
+    }                                                           \
+                                                                \
+    auto const *src = data.data();                              \
+    auto *dst = this->data();                                   \
+    int outBegIdx;                                              \
+    int outNbElement;                                           \
     ::func(discard_, total - 1, src, &outBegIdx, &outNbElement, \
            dst + discard_);                                     \
     HAYAKU_ASSERT((outBegIdx == discard_) &&                    \
-                  (outBegIdx + outNbElement) <= total);          \
-  }                                                              \
-                                                                 \
-  Indicator HAYAKU_API func() { return Indicator(make_shared<Cls_##func>()); }
+                  (outBegIdx + outNbElement) <= total);         \
+  }                                                             \
+                                                                \
+  Indicator func() { return Indicator(make_shared<Cls_##func>()); }
 
-#define TA_IN1_OUT1_INT_IMP(func, func_lookback)                             \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {}                       \
-  Cls_##func::~Cls_##func() {}                                               \
-                                                                             \
-  void Cls_##func::_calculate(const Indicator &data) {                       \
-    int lookback = func_lookback();                                          \
-    size_t total = data.size();                                              \
-    if (lookback < 0) {                                                      \
+#define TA_IN1_OUT1_INT_IMP(func, func_lookback)                            \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {}                      \
+  Cls_##func::~Cls_##func() {}                                              \
+                                                                            \
+  void Cls_##func::_calculate(const Indicator &data) {                      \
+    int lookback = func_lookback();                                         \
+    size_t total = data.size();                                             \
+    if (lookback < 0) {                                                     \
       discard_ = total;                                                     \
-      return;                                                                \
-    }                                                                        \
-                                                                             \
+      return;                                                               \
+    }                                                                       \
+                                                                            \
     discard_ = data.discard() + lookback;                                   \
     if (discard_ >= total) {                                                \
       discard_ = total;                                                     \
-      return;                                                                \
-    }                                                                        \
-                                                                             \
-    auto const *src = data.data();                                           \
-    std::unique_ptr<int[]> buf = std::make_unique<int[]>(total);             \
-    int outBegIdx;                                                           \
-    int outNbElement;                                                        \
+      return;                                                               \
+    }                                                                       \
+                                                                            \
+    auto const *src = data.data();                                          \
+    std::unique_ptr<int[]> buf = std::make_unique<int[]>(total);            \
+    int outBegIdx;                                                          \
+    int outNbElement;                                                       \
     ::func(discard_, total - 1, src, &outBegIdx, &outNbElement, buf.get()); \
     HAYAKU_ASSERT((outBegIdx == discard_) &&                                \
-                  (outBegIdx + outNbElement) <= total);                      \
+                  (outBegIdx + outNbElement) <= total);                     \
     discard_ = outBegIdx;                                                   \
-    auto *dst = this->data();                                                \
-    dst = dst + outBegIdx;                                                   \
-    for (int i = 0; i < outNbElement; ++i) {                                 \
-      dst[i] = buf[i];                                                       \
-    }                                                                        \
-  }                                                                          \
-                                                                             \
-  Indicator HAYAKU_API func() { return Indicator(make_shared<Cls_##func>()); }
+    auto *dst = this->data();                                               \
+    dst = dst + outBegIdx;                                                  \
+    for (int i = 0; i < outNbElement; ++i) {                                \
+      dst[i] = buf[i];                                                      \
+    }                                                                       \
+  }                                                                         \
+                                                                            \
+  Indicator func() { return Indicator(make_shared<Cls_##func>()); }
 
 #define TA_IN1_OUT1_N_IMP(func, func_lookback, period, period_min, period_max) \
   Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                          \
@@ -325,13 +325,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int lookback = func_lookback(n);                                           \
     size_t total = data.size();                                                \
     if (lookback < 0) {                                                        \
-      discard_ = total;                                                       \
+      discard_ = total;                                                        \
       return;                                                                  \
     }                                                                          \
                                                                                \
-    discard_ = data.discard() + lookback;                                     \
-    if (discard_ >= total) {                                                  \
-      discard_ = total;                                                       \
+    discard_ = data.discard() + lookback;                                      \
+    if (discard_ >= total) {                                                   \
+      discard_ = total;                                                        \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -340,9 +340,9 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
                                                                                \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement,            \
-           dst + discard_);                                                   \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
+    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement,             \
+           dst + discard_);                                                    \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                   \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -362,120 +362,119 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     }                                                                          \
   }                                                                            \
                                                                                \
-  Indicator HAYAKU_API func(int n) {                                           \
+  Indicator func(int n) {                                                      \
     auto p = make_shared<Cls_##func>();                                        \
     p->setParam<int>("n", n);                                                  \
     return Indicator(p);                                                       \
   }                                                                            \
                                                                                \
-  Indicator HAYAKU_API func(const IndParam &n) {                               \
+  Indicator func(const IndParam &n) {                                          \
     IndicatorImpPtr p = make_shared<Cls_##func>();                             \
     p->setIndParam("n", n);                                                    \
     return Indicator(p);                                                       \
   }
 
-#define TA_IN1_OUT1_INT_N_IMP(func, func_lookback, period, period_min,    \
-                              period_max)                                 \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                     \
-    setParam<int>("n", period);                                           \
-  }                                                                       \
-  Cls_##func::~Cls_##func() {}                                            \
-                                                                          \
-  void Cls_##func::_checkParam(const string &name) const {                \
-    if (name == "n") {                                                    \
-      int n = getParam<int>("n");                                         \
-      HAYAKU_ASSERT(n >= period_min && n <= period_max);                  \
-    }                                                                     \
-  }                                                                       \
-                                                                          \
-  void Cls_##func::_calculate(const Indicator &data) {                    \
-    int n = getParam<int>("n");                                           \
-    int lookback = func_lookback(n);                                      \
-    size_t total = data.size();                                           \
-    if (lookback < 0) {                                                   \
-      discard_ = total;                                                  \
-      return;                                                             \
-    }                                                                     \
-                                                                          \
-    discard_ = data.discard() + lookback;                                \
-    if (discard_ >= total) {                                             \
-      discard_ = total;                                                  \
-      return;                                                             \
-    }                                                                     \
-                                                                          \
-    auto const *src = data.data();                                        \
-    std::unique_ptr<int[]> buf = std::make_unique<int[]>(total);          \
-    int outBegIdx;                                                        \
-    int outNbElement;                                                     \
-    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement,       \
-           buf.get());                                                    \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                             \
-                  (outBegIdx + outNbElement) <= total);                   \
-    discard_ = outBegIdx;                                                \
-    auto *dst = this->data();                                             \
-    dst = dst + outBegIdx;                                                \
-    for (int i = 0; i < outNbElement; ++i) {                              \
-      dst[i] = buf[i];                                                    \
-    }                                                                     \
-  }                                                                       \
-                                                                          \
-  void Cls_##func::_dyn_run_one_step(const Indicator &ind, size_t curPos, \
-                                     size_t step) {                       \
-    int back = func_lookback(step);                                       \
-    HAYAKU_IF_RETURN(back < 0 || back + ind.discard() > curPos, void());  \
-                                                                          \
-    std::unique_ptr<int[]> buf = std::make_unique<int[]>(curPos);         \
-    auto const *src = ind.data();                                         \
-    int outBegIdx;                                                        \
-    int outNbElement;                                                     \
-    ::func(ind.discard(), curPos, src, step, &outBegIdx, &outNbElement,   \
-           buf.get());                                                    \
-    if (outNbElement >= 1) {                                              \
-      _set(buf.get()[outNbElement - 1], curPos);                          \
-    }                                                                     \
-  }                                                                       \
-                                                                          \
-  Indicator HAYAKU_API func(int n) {                                      \
-    auto p = make_shared<Cls_##func>();                                   \
-    p->setParam<int>("n", n);                                             \
-    return Indicator(p);                                                  \
-  }                                                                       \
-                                                                          \
-  Indicator HAYAKU_API func(const IndParam &n) {                          \
-    IndicatorImpPtr p = make_shared<Cls_##func>();                        \
-    p->setIndParam("n", n);                                               \
-    return Indicator(p);                                                  \
+#define TA_IN1_OUT1_INT_N_IMP(func, func_lookback, period, period_min,         \
+                              period_max)                                      \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                          \
+    setParam<int>("n", period);                                                \
+  }                                                                            \
+  Cls_##func::~Cls_##func() {}                                                 \
+                                                                               \
+  void Cls_##func::_checkParam(const string &name) const {                     \
+    if (name == "n") {                                                         \
+      int n = getParam<int>("n");                                              \
+      HAYAKU_ASSERT(n >= period_min && n <= period_max);                       \
+    }                                                                          \
+  }                                                                            \
+                                                                               \
+  void Cls_##func::_calculate(const Indicator &data) {                         \
+    int n = getParam<int>("n");                                                \
+    int lookback = func_lookback(n);                                           \
+    size_t total = data.size();                                                \
+    if (lookback < 0) {                                                        \
+      discard_ = total;                                                        \
+      return;                                                                  \
+    }                                                                          \
+                                                                               \
+    discard_ = data.discard() + lookback;                                      \
+    if (discard_ >= total) {                                                   \
+      discard_ = total;                                                        \
+      return;                                                                  \
+    }                                                                          \
+                                                                               \
+    auto const *src = data.data();                                             \
+    std::unique_ptr<int[]> buf = std::make_unique<int[]>(total);               \
+    int outBegIdx;                                                             \
+    int outNbElement;                                                          \
+    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement, buf.get()); \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                   \
+                  (outBegIdx + outNbElement) <= total);                        \
+    discard_ = outBegIdx;                                                      \
+    auto *dst = this->data();                                                  \
+    dst = dst + outBegIdx;                                                     \
+    for (int i = 0; i < outNbElement; ++i) {                                   \
+      dst[i] = buf[i];                                                         \
+    }                                                                          \
+  }                                                                            \
+                                                                               \
+  void Cls_##func::_dyn_run_one_step(const Indicator &ind, size_t curPos,      \
+                                     size_t step) {                            \
+    int back = func_lookback(step);                                            \
+    HAYAKU_IF_RETURN(back < 0 || back + ind.discard() > curPos, void());       \
+                                                                               \
+    std::unique_ptr<int[]> buf = std::make_unique<int[]>(curPos);              \
+    auto const *src = ind.data();                                              \
+    int outBegIdx;                                                             \
+    int outNbElement;                                                          \
+    ::func(ind.discard(), curPos, src, step, &outBegIdx, &outNbElement,        \
+           buf.get());                                                         \
+    if (outNbElement >= 1) {                                                   \
+      _set(buf.get()[outNbElement - 1], curPos);                               \
+    }                                                                          \
+  }                                                                            \
+                                                                               \
+  Indicator func(int n) {                                                      \
+    auto p = make_shared<Cls_##func>();                                        \
+    p->setParam<int>("n", n);                                                  \
+    return Indicator(p);                                                       \
+  }                                                                            \
+                                                                               \
+  Indicator func(const IndParam &n) {                                          \
+    IndicatorImpPtr p = make_shared<Cls_##func>();                             \
+    p->setIndParam("n", n);                                                    \
+    return Indicator(p);                                                       \
   }
 
-#define TA_IN1_OUT2_IMP(func, func_lookback)                     \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 2) {}           \
-  Cls_##func::~Cls_##func() {}                                   \
-  void Cls_##func::_calculate(const Indicator &data) {           \
-    size_t total = data.size();                                  \
-    int lookback = func_lookback();                              \
-    if (lookback < 0) {                                          \
+#define TA_IN1_OUT2_IMP(func, func_lookback)                    \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 2) {}          \
+  Cls_##func::~Cls_##func() {}                                  \
+  void Cls_##func::_calculate(const Indicator &data) {          \
+    size_t total = data.size();                                 \
+    int lookback = func_lookback();                             \
+    if (lookback < 0) {                                         \
       discard_ = total;                                         \
-      return;                                                    \
-    }                                                            \
+      return;                                                   \
+    }                                                           \
     discard_ = data.discard() + lookback;                       \
     if (discard_ >= total) {                                    \
       discard_ = total;                                         \
-      return;                                                    \
-    }                                                            \
-                                                                 \
-    auto const *src = data.data();                               \
-    auto *dst0 = this->data(0);                                  \
-    auto *dst1 = this->data(1);                                  \
-                                                                 \
-    int outBegIdx;                                               \
-    int outNbElement;                                            \
+      return;                                                   \
+    }                                                           \
+                                                                \
+    auto const *src = data.data();                              \
+    auto *dst0 = this->data(0);                                 \
+    auto *dst1 = this->data(1);                                 \
+                                                                \
+    int outBegIdx;                                              \
+    int outNbElement;                                           \
     ::func(discard_, total - 1, src, &outBegIdx, &outNbElement, \
-           dst0 + discard_, dst1 + discard_);                  \
+           dst0 + discard_, dst1 + discard_);                   \
     HAYAKU_ASSERT(outBegIdx == discard_ &&                      \
-                  (outBegIdx + outNbElement) <= total);          \
-  }                                                              \
-                                                                 \
-  Indicator HAYAKU_API func() { return Indicator(make_shared<Cls_##func>()); }
+                  (outBegIdx + outNbElement) <= total);         \
+  }                                                             \
+                                                                \
+  Indicator func() { return Indicator(make_shared<Cls_##func>()); }
 
 #define TA_IN1_OUT2_INT_N_IMP(func, func_lookback, period, period_min,        \
                               period_max)                                     \
@@ -496,13 +495,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int lookback = func_lookback(n);                                          \
     size_t total = data.size();                                               \
     if (lookback < 0) {                                                       \
-      discard_ = total;                                                      \
+      discard_ = total;                                                       \
       return;                                                                 \
     }                                                                         \
                                                                               \
-    discard_ = data.discard() + lookback;                                    \
-    if (discard_ >= total) {                                                 \
-      discard_ = total;                                                      \
+    discard_ = data.discard() + lookback;                                     \
+    if (discard_ >= total) {                                                  \
+      discard_ = total;                                                       \
       return;                                                                 \
     }                                                                         \
                                                                               \
@@ -512,11 +511,11 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int *buf1 = buf0 + total;                                                 \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement, buf0,     \
+    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement, buf0,      \
            buf1);                                                             \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                       \
-    discard_ = outBegIdx;                                                    \
+    discard_ = outBegIdx;                                                     \
     auto *dst0 = this->data(0) + outBegIdx;                                   \
     auto *dst1 = this->data(1) + outBegIdx;                                   \
     for (int i = 0; i < outNbElement; ++i) {                                  \
@@ -544,13 +543,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     }                                                                         \
   }                                                                           \
                                                                               \
-  Indicator HAYAKU_API func(int n) {                                          \
+  Indicator func(int n) {                                                     \
     auto p = make_shared<Cls_##func>();                                       \
     p->setParam<int>("n", n);                                                 \
     return Indicator(p);                                                      \
   }                                                                           \
                                                                               \
-  Indicator HAYAKU_API func(const IndParam &n) {                              \
+  Indicator func(const IndParam &n) {                                         \
     IndicatorImpPtr p = make_shared<Cls_##func>();                            \
     p->setIndParam("n", n);                                                   \
     return Indicator(p);                                                      \
@@ -574,12 +573,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     size_t total = data.size();                                                \
     int lookback = func_lookback(n);                                           \
     if (lookback < 0) {                                                        \
-      discard_ = total;                                                       \
+      discard_ = total;                                                        \
       return;                                                                  \
     }                                                                          \
-    discard_ = data.discard() + lookback;                                     \
-    if (discard_ >= total) {                                                  \
-      discard_ = total;                                                       \
+    discard_ = data.discard() + lookback;                                      \
+    if (discard_ >= total) {                                                   \
+      discard_ = total;                                                        \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -589,9 +588,9 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
                                                                                \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement,            \
-           dst0 + discard_, dst1 + discard_);                                \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
+    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement,             \
+           dst0 + discard_, dst1 + discard_);                                  \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                   \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -614,13 +613,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     }                                                                          \
   }                                                                            \
                                                                                \
-  Indicator HAYAKU_API func(int n) {                                           \
+  Indicator func(int n) {                                                      \
     auto p = make_shared<Cls_##func>();                                        \
     p->setParam<int>("n", n);                                                  \
     return Indicator(p);                                                       \
   }                                                                            \
                                                                                \
-  Indicator HAYAKU_API func(const IndParam &n) {                               \
+  Indicator func(const IndParam &n) {                                          \
     IndicatorImpPtr p = make_shared<Cls_##func>();                             \
     p->setIndParam("n", n);                                                    \
     return Indicator(p);                                                       \
@@ -644,12 +643,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     size_t total = data.size();                                                \
     int lookback = func_lookback(n);                                           \
     if (lookback < 0) {                                                        \
-      discard_ = total;                                                       \
+      discard_ = total;                                                        \
       return;                                                                  \
     }                                                                          \
-    discard_ = data.discard() + lookback;                                     \
-    if (discard_ >= total) {                                                  \
-      discard_ = total;                                                       \
+    discard_ = data.discard() + lookback;                                      \
+    if (discard_ >= total) {                                                   \
+      discard_ = total;                                                        \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -660,9 +659,9 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
                                                                                \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement,            \
-           dst0 + discard_, dst1 + discard_, dst2 + discard_);              \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
+    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement,             \
+           dst0 + discard_, dst1 + discard_, dst2 + discard_);                 \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                   \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -687,64 +686,64 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     }                                                                          \
   }                                                                            \
                                                                                \
-  Indicator HAYAKU_API func(int n) {                                           \
+  Indicator func(int n) {                                                      \
     auto p = make_shared<Cls_##func>();                                        \
     p->setParam<int>("n", n);                                                  \
     return Indicator(p);                                                       \
   }                                                                            \
                                                                                \
-  Indicator HAYAKU_API func(const IndParam &n) {                               \
+  Indicator func(const IndParam &n) {                                          \
     IndicatorImpPtr p = make_shared<Cls_##func>();                             \
     p->setIndParam("n", n);                                                    \
     return Indicator(p);                                                       \
   }
 
-#define TA_IN2_OUT1_IMP(func, func_lookback)                              \
-  Cls_##func::Cls_##func() : Indicator2InImp(#func, 1) {}                 \
-  Cls_##func::Cls_##func(const Indicator &ref_ind, bool fill_null)        \
-      : Indicator2InImp(#func, ref_ind, fill_null, 1) {}                  \
-  Cls_##func::~Cls_##func() {}                                            \
-                                                                          \
-  void Cls_##func::_calculate(const Indicator &ind) {                     \
-    size_t total = ind.size();                                            \
-    HAYAKU_IF_RETURN(total == 0, void());                                 \
-                                                                          \
-    Indicator ref = prepare(ind);                                         \
-    int lookback = func_lookback();                                       \
-    if (lookback < 0) {                                                   \
-      discard_ = total;                                                  \
-      return;                                                             \
-    }                                                                     \
-                                                                          \
-    size_t in_discard = std::max(ind.discard(), ref.discard());           \
-    discard_ = lookback + in_discard;                                    \
-    if (discard_ >= total) {                                             \
-      discard_ = total;                                                  \
-      return;                                                             \
-    }                                                                     \
-                                                                          \
-    const auto *src0 = ind.data();                                        \
-    const auto *src1 = ref.data();                                        \
-    auto *dst = this->data();                                             \
-    int outBegIdx;                                                        \
-    int outNbElement;                                                     \
-    ::func(discard_, total - 1, src0, src1, &outBegIdx, &outNbElement,   \
-           dst + discard_);                                              \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                             \
-                  (outBegIdx + outNbElement) <= total);                   \
-  }                                                                       \
-                                                                          \
-  Indicator HAYAKU_API func(bool fill_null) {                             \
-    auto p = make_shared<Cls_##func>();                                   \
-    p->setParam<bool>("fill_null", fill_null);                            \
-    return Indicator(p);                                                  \
-  }                                                                       \
-                                                                          \
-  Indicator HAYAKU_API func(const Indicator &ind1, const Indicator &ind2, \
-                            bool fill_null) {                             \
-    auto p = make_shared<Cls_##func>(ind2, fill_null);                    \
-    Indicator result(p);                                                  \
-    return result(ind1);                                                  \
+#define TA_IN2_OUT1_IMP(func, func_lookback)                           \
+  Cls_##func::Cls_##func() : Indicator2InImp(#func, 1) {}              \
+  Cls_##func::Cls_##func(const Indicator &ref_ind, bool fill_null)     \
+      : Indicator2InImp(#func, ref_ind, fill_null, 1) {}               \
+  Cls_##func::~Cls_##func() {}                                         \
+                                                                       \
+  void Cls_##func::_calculate(const Indicator &ind) {                  \
+    size_t total = ind.size();                                         \
+    HAYAKU_IF_RETURN(total == 0, void());                              \
+                                                                       \
+    Indicator ref = prepare(ind);                                      \
+    int lookback = func_lookback();                                    \
+    if (lookback < 0) {                                                \
+      discard_ = total;                                                \
+      return;                                                          \
+    }                                                                  \
+                                                                       \
+    size_t in_discard = std::max(ind.discard(), ref.discard());        \
+    discard_ = lookback + in_discard;                                  \
+    if (discard_ >= total) {                                           \
+      discard_ = total;                                                \
+      return;                                                          \
+    }                                                                  \
+                                                                       \
+    const auto *src0 = ind.data();                                     \
+    const auto *src1 = ref.data();                                     \
+    auto *dst = this->data();                                          \
+    int outBegIdx;                                                     \
+    int outNbElement;                                                  \
+    ::func(discard_, total - 1, src0, src1, &outBegIdx, &outNbElement, \
+           dst + discard_);                                            \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                           \
+                  (outBegIdx + outNbElement) <= total);                \
+  }                                                                    \
+                                                                       \
+  Indicator func(bool fill_null) {                                     \
+    auto p = make_shared<Cls_##func>();                                \
+    p->setParam<bool>("fill_null", fill_null);                         \
+    return Indicator(p);                                               \
+  }                                                                    \
+                                                                       \
+  Indicator func(const Indicator &ind1, const Indicator &ind2,         \
+                 bool fill_null) {                                     \
+    auto p = make_shared<Cls_##func>(ind2, fill_null);                 \
+    Indicator result(p);                                               \
+    return result(ind1);                                               \
   }
 
 #define TA_IN2_OUT1_N_IMP(func, func_lookback, period, period_min, period_max) \
@@ -780,14 +779,14 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int n = getParam<int>("n");                                                \
     int lookback = func_lookback(n);                                           \
     if (lookback < 0) {                                                        \
-      discard_ = total;                                                       \
+      discard_ = total;                                                        \
       return;                                                                  \
     }                                                                          \
                                                                                \
     size_t in_discard = std::max(ind.discard(), ref.discard());                \
-    discard_ = lookback + in_discard;                                         \
-    if (discard_ >= total) {                                                  \
-      discard_ = total;                                                       \
+    discard_ = lookback + in_discard;                                          \
+    if (discard_ >= total) {                                                   \
+      discard_ = total;                                                        \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -796,150 +795,80 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     auto *dst = this->data();                                                  \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(discard_, total - 1, src0, src1, n, &outBegIdx, &outNbElement,     \
-           dst + discard_);                                                   \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
+    ::func(discard_, total - 1, src0, src1, n, &outBegIdx, &outNbElement,      \
+           dst + discard_);                                                    \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                   \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
-  Indicator HAYAKU_API func(int n, bool fill_null) {                           \
+  Indicator func(int n, bool fill_null) {                                      \
     return Indicator(make_shared<Cls_##func>(n, fill_null));                   \
   }                                                                            \
                                                                                \
-  Indicator HAYAKU_API func(const Indicator &ind1, const Indicator &ind2,      \
-                            int n, bool fill_null) {                           \
+  Indicator func(const Indicator &ind1, const Indicator &ind2, int n,          \
+                 bool fill_null) {                                             \
     auto p = make_shared<Cls_##func>(ind2, n, fill_null);                      \
     Indicator result(p);                                                       \
     return result(ind1);                                                       \
   }
 
-#define TA_OHLC_OUT1_IMP(func, func_lookback)                                  \
+#define TA_OHLC_OUT1_IMP(func, func_lookback)                                 \
   Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
-                                                                               \
-  void Cls_##func::_calculate(const Indicator &data) {                         \
-    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
-                   "The input is ignored because {} depends on the context!",  \
-                   name_);                                                    \
-                                                                               \
-    KData k = getContext();                                                    \
-    size_t total = k.size();                                                   \
-    HAYAKU_IF_RETURN(total == 0, void());                                      \
-                                                                               \
-    _readyBuffer(total, 1);                                                    \
-    int lookback = func_lookback();                                            \
-    if (lookback < 0 || lookback >= total) {                                   \
-      discard_ = total;                                                       \
-      return;                                                                  \
-    }                                                                          \
-                                                                               \
-    const KRecord *kptr = k.data();                                            \
-    std::unique_ptr<double[]> buf = std::make_unique<double[]>(4 * total);     \
-    double *open = buf.get();                                                  \
-    double *high = open + total;                                               \
-    double *low = high + total;                                                \
-    double *close = low + total;                                               \
-    for (size_t i = 0; i < total; ++i) {                                       \
-      open[i] = kptr[i].openPrice;                                             \
-      high[i] = kptr[i].highPrice;                                             \
-      low[i] = kptr[i].lowPrice;                                               \
-      close[i] = kptr[i].closePrice;                                           \
-    }                                                                          \
-                                                                               \
-    discard_ = lookback;                                                      \
-    auto *dst = this->data();                                                  \
-    int outBegIdx;                                                             \
-    int outNbElement;                                                          \
-    ::func(discard_, total - 1, open, high, low, close, &outBegIdx,           \
-           &outNbElement, dst + discard_);                                    \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
-                  (outBegIdx + outNbElement) <= total);                        \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func() {                                                \
-    return make_shared<Cls_##func>()->calculate();                             \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func(const KData &k) {                                  \
-    auto p = make_shared<Cls_##func>();                                        \
-    p->setContext(k);                                                          \
-    return Indicator(p);                                                       \
-  }
-
-#define TA_OHLC_OUT1_INT_IMP(func, func_lookback)                              \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
-                                                                               \
-  void Cls_##func::_calculate(const Indicator &data) {                         \
-    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
-                   "The input is ignored because {} depends on the context!",  \
-                   name_);                                                    \
-                                                                               \
-    KData k = getContext();                                                    \
-    size_t total = k.size();                                                   \
-    HAYAKU_IF_RETURN(total == 0, void());                                      \
-                                                                               \
-    _readyBuffer(total, 1);                                                    \
-                                                                               \
-    int lookback = func_lookback();                                            \
-    if (lookback < 0 || lookback >= total) {                                   \
-      discard_ = total;                                                       \
-      return;                                                                  \
-    }                                                                          \
-                                                                               \
-    const KRecord *kptr = k.data();                                            \
-    std::unique_ptr<double[]> buf = std::make_unique<double[]>(4 * total);     \
-    double *open = buf.get();                                                  \
-    double *high = open + total;                                               \
-    double *low = high + total;                                                \
-    double *close = low + total;                                               \
-    for (size_t i = 0; i < total; ++i) {                                       \
-      open[i] = kptr[i].openPrice;                                             \
-      high[i] = kptr[i].highPrice;                                             \
-      low[i] = kptr[i].lowPrice;                                               \
-      close[i] = kptr[i].closePrice;                                           \
-    }                                                                          \
-                                                                               \
-    std::unique_ptr<int[]> outbuf = std::make_unique<int[]>(total);            \
-    int outBegIdx;                                                             \
-    int outNbElement;                                                          \
-    discard_ = lookback;                                                      \
-    ::func(discard_, total - 1, open, high, low, close, &outBegIdx,           \
-           &outNbElement, outbuf.get());                                       \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
-                  (outBegIdx + outNbElement) <= total);                        \
-    auto *dst = this->data() + outBegIdx;                                      \
-    for (size_t i = 0; i < outNbElement; ++i) {                                \
-      dst[i] = outbuf[i];                                                      \
-    }                                                                          \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func() {                                                \
-    return make_shared<Cls_##func>()->calculate();                             \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func(const KData &k) {                                  \
-    auto p = make_shared<Cls_##func>();                                        \
-    p->setContext(k);                                                          \
-    return Indicator(p);                                                       \
-  }
-
-#define TA_OHLC_OUT1_INT_P1_D_IMP(func, func_lookback, param1, param1_value,  \
-                                  param1_min, param1_max)                     \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                         \
-    need_context_ = true;                                                    \
-    setParam<double>(#param1, param1_value);                                  \
-  }                                                                           \
-                                                                              \
-  void Cls_##func::_checkParam(const string &name) const {                    \
-    if (name == #param1) {                                                    \
-      double p = getParam<double>(#param1);                                   \
-      HAYAKU_ASSERT(p >= param1_min && p <= param1_max);                      \
-    }                                                                         \
-  }                                                                           \
                                                                               \
   void Cls_##func::_calculate(const Indicator &data) {                        \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
                    "The input is ignored because {} depends on the context!", \
-                   name_);                                                   \
+                   name_);                                                    \
+                                                                              \
+    KData k = getContext();                                                   \
+    size_t total = k.size();                                                  \
+    HAYAKU_IF_RETURN(total == 0, void());                                     \
+                                                                              \
+    _readyBuffer(total, 1);                                                   \
+    int lookback = func_lookback();                                           \
+    if (lookback < 0 || lookback >= total) {                                  \
+      discard_ = total;                                                       \
+      return;                                                                 \
+    }                                                                         \
+                                                                              \
+    const KRecord *kptr = k.data();                                           \
+    std::unique_ptr<double[]> buf = std::make_unique<double[]>(4 * total);    \
+    double *open = buf.get();                                                 \
+    double *high = open + total;                                              \
+    double *low = high + total;                                               \
+    double *close = low + total;                                              \
+    for (size_t i = 0; i < total; ++i) {                                      \
+      open[i] = kptr[i].openPrice;                                            \
+      high[i] = kptr[i].highPrice;                                            \
+      low[i] = kptr[i].lowPrice;                                              \
+      close[i] = kptr[i].closePrice;                                          \
+    }                                                                         \
+                                                                              \
+    discard_ = lookback;                                                      \
+    auto *dst = this->data();                                                 \
+    int outBegIdx;                                                            \
+    int outNbElement;                                                         \
+    ::func(discard_, total - 1, open, high, low, close, &outBegIdx,           \
+           &outNbElement, dst + discard_);                                    \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
+                  (outBegIdx + outNbElement) <= total);                       \
+  }                                                                           \
+                                                                              \
+  Indicator func() { return make_shared<Cls_##func>()->calculate(); }         \
+                                                                              \
+  Indicator func(const KData &k) {                                            \
+    auto p = make_shared<Cls_##func>();                                       \
+    p->setContext(k);                                                         \
+    return Indicator(p);                                                      \
+  }
+
+#define TA_OHLC_OUT1_INT_IMP(func, func_lookback)                             \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
+                                                                              \
+  void Cls_##func::_calculate(const Indicator &data) {                        \
+    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
+                   "The input is ignored because {} depends on the context!", \
+                   name_);                                                    \
                                                                               \
     KData k = getContext();                                                   \
     size_t total = k.size();                                                  \
@@ -947,9 +876,9 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
                                                                               \
     _readyBuffer(total, 1);                                                   \
                                                                               \
-    int lookback = func_lookback(param1_value);                               \
+    int lookback = func_lookback();                                           \
     if (lookback < 0 || lookback >= total) {                                  \
-      discard_ = total;                                                      \
+      discard_ = total;                                                       \
       return;                                                                 \
     }                                                                         \
                                                                               \
@@ -969,11 +898,10 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     std::unique_ptr<int[]> outbuf = std::make_unique<int[]>(total);           \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    discard_ = lookback;                                                     \
-    ::func(discard_, total - 1, open, high, low, close,                      \
-           getParam<double>(#param1), &outBegIdx, &outNbElement,              \
-           outbuf.get());                                                     \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
+    discard_ = lookback;                                                      \
+    ::func(discard_, total - 1, open, high, low, close, &outBegIdx,           \
+           &outNbElement, outbuf.get());                                      \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                       \
     auto *dst = this->data() + outBegIdx;                                     \
     for (size_t i = 0; i < outNbElement; ++i) {                               \
@@ -981,301 +909,32 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     }                                                                         \
   }                                                                           \
                                                                               \
-  Indicator HAYAKU_API func(double p) {                                       \
-    auto ptr = make_shared<Cls_##func>();                                     \
-    ptr->setParam<double>(#param1, p);                                        \
-    ptr->calculate();                                                         \
-    return Indicator(ptr);                                                    \
-  }                                                                           \
+  Indicator func() { return make_shared<Cls_##func>()->calculate(); }         \
                                                                               \
-  Indicator HAYAKU_API func(const KData &k, double p) {                       \
-    auto ptr = make_shared<Cls_##func>();                                     \
-    ptr->setParam<double>(#param1, p);                                        \
-    ptr->setContext(k);                                                       \
-    return Indicator(ptr);                                                    \
+  Indicator func(const KData &k) {                                            \
+    auto p = make_shared<Cls_##func>();                                       \
+    p->setContext(k);                                                         \
+    return Indicator(p);                                                      \
   }
 
-#define TA_HLCV_OUT1_IMP(func, func_lookback)                                  \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
-                                                                               \
-  void Cls_##func::_calculate(const Indicator &data) {                         \
-    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
-                   "The input is ignored because {} depends on the context!",  \
-                   name_);                                                    \
-                                                                               \
-    KData k = getContext();                                                    \
-    size_t total = k.size();                                                   \
-    HAYAKU_IF_RETURN(total == 0, void());                                      \
-                                                                               \
-    _readyBuffer(total, 1);                                                    \
-    int lookback = func_lookback();                                            \
-    if (lookback < 0 || lookback >= total) {                                   \
-      discard_ = total;                                                       \
-      return;                                                                  \
-    }                                                                          \
-                                                                               \
-    const KRecord *kptr = k.data();                                            \
-    std::unique_ptr<double[]> buf = std::make_unique<double[]>(4 * total);     \
-    double *high = buf.get();                                                  \
-    double *low = high + total;                                                \
-    double *close = low + total;                                               \
-    double *vol = close + total;                                               \
-    for (size_t i = 0; i < total; ++i) {                                       \
-      high[i] = kptr[i].highPrice;                                             \
-      low[i] = kptr[i].lowPrice;                                               \
-      close[i] = kptr[i].closePrice;                                           \
-      vol[i] = kptr[i].transCount;                                             \
-    }                                                                          \
-                                                                               \
-    auto *dst = this->data();                                                  \
-    int outBegIdx;                                                             \
-    int outNbElement;                                                          \
-    discard_ = lookback;                                                      \
-    ::func(discard_, total - 1, high, low, close, vol, &outBegIdx,            \
-           &outNbElement, dst + discard_);                                    \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
-                  (outBegIdx + outNbElement) <= total);                        \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func() {                                                \
-    return make_shared<Cls_##func>()->calculate();                             \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func(const KData &k) {                                  \
-    auto ptr = make_shared<Cls_##func>();                                      \
-    ptr->setContext(k);                                                        \
-    return Indicator(ptr);                                                     \
-  }
-
-#define TA_HL_OUT1_IMP(func, func_lookback)                                    \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
-                                                                               \
-  void Cls_##func::_calculate(const Indicator &data) {                         \
-    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
-                   "The input is ignored because {} depends on the context!",  \
-                   name_);                                                    \
-                                                                               \
-    KData k = getContext();                                                    \
-    size_t total = k.size();                                                   \
-    HAYAKU_IF_RETURN(total == 0, void());                                      \
-                                                                               \
-    _readyBuffer(total, 1);                                                    \
-    int lookback = func_lookback();                                            \
-    if (lookback < 0 || lookback >= total) {                                   \
-      discard_ = total;                                                       \
-      return;                                                                  \
-    }                                                                          \
-                                                                               \
-    const KRecord *kptr = k.data();                                            \
-    std::unique_ptr<double[]> buf = std::make_unique<double[]>(2 * total);     \
-    double *high = buf.get();                                                  \
-    double *low = high + total;                                                \
-    for (size_t i = 0; i < total; ++i) {                                       \
-      high[i] = kptr[i].highPrice;                                             \
-      low[i] = kptr[i].lowPrice;                                               \
-    }                                                                          \
-                                                                               \
-    auto *dst = this->data();                                                  \
-    int outBegIdx;                                                             \
-    int outNbElement;                                                          \
-    discard_ = lookback;                                                      \
-    ::func(discard_, total - 1, high, low, &outBegIdx, &outNbElement,         \
-           dst + discard_);                                                   \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
-                  (outBegIdx + outNbElement) <= total);                        \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func() {                                                \
-    return make_shared<Cls_##func>()->calculate();                             \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func(const KData &k) {                                  \
-    auto ptr = make_shared<Cls_##func>();                                      \
-    ptr->setContext(k);                                                        \
-    return Indicator(ptr);                                                     \
-  }
-
-#define TA_CV_OUT1_IMP(func, func_lookback)                                    \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
-                                                                               \
-  void Cls_##func::_calculate(const Indicator &data) {                         \
-    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
-                   "The input is ignored because {} depends on the context!",  \
-                   name_);                                                    \
-                                                                               \
-    KData k = getContext();                                                    \
-    size_t total = k.size();                                                   \
-    HAYAKU_IF_RETURN(total == 0, void());                                      \
-                                                                               \
-    _readyBuffer(total, 1);                                                    \
-    int lookback = func_lookback();                                            \
-    if (lookback < 0 || lookback >= total) {                                   \
-      discard_ = 0;                                                           \
-      return;                                                                  \
-    }                                                                          \
-                                                                               \
-    const KRecord *kptr = k.data();                                            \
-    std::unique_ptr<double[]> buf = std::make_unique<double[]>(2 * total);     \
-    double *close = buf.get();                                                 \
-    double *vol = close + total;                                               \
-    for (size_t i = 0; i < total; ++i) {                                       \
-      close[i] = kptr[i].closePrice;                                           \
-      vol[i] = kptr[i].transCount;                                             \
-    }                                                                          \
-                                                                               \
-    auto *dst = this->data();                                                  \
-    int outBegIdx;                                                             \
-    int outNbElement;                                                          \
-    discard_ = lookback;                                                      \
-    ::func(discard_, total - 1, close, vol, &outBegIdx, &outNbElement,        \
-           dst + discard_);                                                   \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
-                  (outBegIdx + outNbElement) <= total);                        \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func() {                                                \
-    return make_shared<Cls_##func>()->calculate();                             \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func(const KData &k) {                                  \
-    auto ptr = make_shared<Cls_##func>();                                      \
-    ptr->setContext(k);                                                        \
-    return Indicator(ptr);                                                     \
-  }
-
-#define TA_HLC_OUT1_IMP(func, func_lookback)                                   \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
-                                                                               \
-  void Cls_##func::_calculate(const Indicator &data) {                         \
-    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
-                   "The input is ignored because {} depends on the context!",  \
-                   name_);                                                    \
-                                                                               \
-    KData k = getContext();                                                    \
-    size_t total = k.size();                                                   \
-    HAYAKU_IF_RETURN(total == 0, void());                                      \
-                                                                               \
-    _readyBuffer(total, 1);                                                    \
-    int lookback = func_lookback();                                            \
-    if (lookback < 0 || lookback >= total) {                                   \
-      discard_ = total;                                                       \
-      return;                                                                  \
-    }                                                                          \
-                                                                               \
-    const KRecord *kptr = k.data();                                            \
-    std::unique_ptr<double[]> buf = std::make_unique<double[]>(3 * total);     \
-    double *high = buf.get();                                                  \
-    double *low = high + total;                                                \
-    double *close = low + total;                                               \
-    for (size_t i = 0; i < total; ++i) {                                       \
-      high[i] = kptr[i].highPrice;                                             \
-      low[i] = kptr[i].lowPrice;                                               \
-      close[i] = kptr[i].closePrice;                                           \
-    }                                                                          \
-                                                                               \
-    discard_ = lookback;                                                      \
-    auto *dst = this->data();                                                  \
-    int outBegIdx;                                                             \
-    int outNbElement;                                                          \
-    ::func(discard_, total - 1, high, low, close, &outBegIdx, &outNbElement,  \
-           dst + discard_);                                                   \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
-                  (outBegIdx + outNbElement) <= total);                        \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func() {                                                \
-    return make_shared<Cls_##func>()->calculate();                             \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func(const KData &k) {                                  \
-    auto ptr = make_shared<Cls_##func>();                                      \
-    ptr->setContext(k);                                                        \
-    return Indicator(ptr);                                                     \
-  }
-
-#define TA_HLC_OUT1_N_IMP(func, func_lookback, period, period_min, period_max) \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                          \
-    need_context_ = true;                                                     \
-    setParam<int>("n", period);                                                \
-  }                                                                            \
-                                                                               \
-  void Cls_##func::_checkParam(const string &name) const {                     \
-    if (name == "n") {                                                         \
-      int n = getParam<int>("n");                                              \
-      HAYAKU_ASSERT(n >= period_min && n <= period_max);                       \
-    }                                                                          \
-  }                                                                            \
-                                                                               \
-  void Cls_##func::_calculate(const Indicator &data) {                         \
-    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
-                   "The input is ignored because {} depends on the context!",  \
-                   name_);                                                    \
-                                                                               \
-    KData k = getContext();                                                    \
-    size_t total = k.size();                                                   \
-    HAYAKU_IF_RETURN(total == 0, void());                                      \
-                                                                               \
-    _readyBuffer(total, 1);                                                    \
-    int n = getParam<int>("n");                                                \
-    int back = func_lookback(n);                                               \
-    if (back < 0 || back >= total) {                                           \
-      discard_ = total;                                                       \
-      return;                                                                  \
-    }                                                                          \
-                                                                               \
-    const KRecord *kptr = k.data();                                            \
-    std::unique_ptr<double[]> buf = std::make_unique<double[]>(3 * total);     \
-    double *high = buf.get();                                                  \
-    double *low = high + total;                                                \
-    double *close = low + total;                                               \
-    for (size_t i = 0; i < total; ++i) {                                       \
-      high[i] = kptr[i].highPrice;                                             \
-      low[i] = kptr[i].lowPrice;                                               \
-      close[i] = kptr[i].closePrice;                                           \
-    }                                                                          \
-                                                                               \
-    discard_ = back;                                                          \
-    auto *dst = this->data();                                                  \
-    int outBegIdx;                                                             \
-    int outNbElement;                                                          \
-    ::func(discard_, total - 1, high, low, close, n, &outBegIdx,              \
-           &outNbElement, dst + discard_);                                    \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
-                  (outBegIdx + outNbElement) <= total);                        \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func(int n) {                                           \
-    auto p = make_shared<Cls_##func>();                                        \
-    p->setParam<int>("n", n);                                                  \
-    p->calculate();                                                            \
-    return Indicator(p);                                                       \
-  }                                                                            \
-                                                                               \
-  Indicator HAYAKU_API func(const KData &k, int n) {                           \
-    auto p = make_shared<Cls_##func>();                                        \
-    p->setParam<int>("n", n);                                                  \
-    p->setContext(k);                                                          \
-    return Indicator(p);                                                       \
-  }
-
-#define TA_HLCV_OUT1_N_IMP(func, func_lookback, period, period_min,           \
-                           period_max)                                        \
+#define TA_OHLC_OUT1_INT_P1_D_IMP(func, func_lookback, param1, param1_value,  \
+                                  param1_min, param1_max)                     \
   Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                         \
-    need_context_ = true;                                                    \
-    setParam<int>("n", period);                                               \
+    need_context_ = true;                                                     \
+    setParam<double>(#param1, param1_value);                                  \
   }                                                                           \
                                                                               \
   void Cls_##func::_checkParam(const string &name) const {                    \
-    if (name == "n") {                                                        \
-      int n = getParam<int>("n");                                             \
-      HAYAKU_ASSERT(n >= period_min && n <= period_max);                      \
+    if (name == #param1) {                                                    \
+      double p = getParam<double>(#param1);                                   \
+      HAYAKU_ASSERT(p >= param1_min && p <= param1_max);                      \
     }                                                                         \
   }                                                                           \
                                                                               \
   void Cls_##func::_calculate(const Indicator &data) {                        \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
                    "The input is ignored because {} depends on the context!", \
-                   name_);                                                   \
+                   name_);                                                    \
                                                                               \
     KData k = getContext();                                                   \
     size_t total = k.size();                                                  \
@@ -1283,10 +942,70 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
                                                                               \
     _readyBuffer(total, 1);                                                   \
                                                                               \
-    int n = getParam<int>("n");                                               \
-    int back = func_lookback(n);                                              \
-    if (back < 0 || back >= total) {                                          \
-      discard_ = total;                                                      \
+    int lookback = func_lookback(param1_value);                               \
+    if (lookback < 0 || lookback >= total) {                                  \
+      discard_ = total;                                                       \
+      return;                                                                 \
+    }                                                                         \
+                                                                              \
+    const KRecord *kptr = k.data();                                           \
+    std::unique_ptr<double[]> buf = std::make_unique<double[]>(4 * total);    \
+    double *open = buf.get();                                                 \
+    double *high = open + total;                                              \
+    double *low = high + total;                                               \
+    double *close = low + total;                                              \
+    for (size_t i = 0; i < total; ++i) {                                      \
+      open[i] = kptr[i].openPrice;                                            \
+      high[i] = kptr[i].highPrice;                                            \
+      low[i] = kptr[i].lowPrice;                                              \
+      close[i] = kptr[i].closePrice;                                          \
+    }                                                                         \
+                                                                              \
+    std::unique_ptr<int[]> outbuf = std::make_unique<int[]>(total);           \
+    int outBegIdx;                                                            \
+    int outNbElement;                                                         \
+    discard_ = lookback;                                                      \
+    ::func(discard_, total - 1, open, high, low, close,                       \
+           getParam<double>(#param1), &outBegIdx, &outNbElement,              \
+           outbuf.get());                                                     \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
+                  (outBegIdx + outNbElement) <= total);                       \
+    auto *dst = this->data() + outBegIdx;                                     \
+    for (size_t i = 0; i < outNbElement; ++i) {                               \
+      dst[i] = outbuf[i];                                                     \
+    }                                                                         \
+  }                                                                           \
+                                                                              \
+  Indicator func(double p) {                                                  \
+    auto ptr = make_shared<Cls_##func>();                                     \
+    ptr->setParam<double>(#param1, p);                                        \
+    ptr->calculate();                                                         \
+    return Indicator(ptr);                                                    \
+  }                                                                           \
+                                                                              \
+  Indicator func(const KData &k, double p) {                                  \
+    auto ptr = make_shared<Cls_##func>();                                     \
+    ptr->setParam<double>(#param1, p);                                        \
+    ptr->setContext(k);                                                       \
+    return Indicator(ptr);                                                    \
+  }
+
+#define TA_HLCV_OUT1_IMP(func, func_lookback)                                 \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
+                                                                              \
+  void Cls_##func::_calculate(const Indicator &data) {                        \
+    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
+                   "The input is ignored because {} depends on the context!", \
+                   name_);                                                    \
+                                                                              \
+    KData k = getContext();                                                   \
+    size_t total = k.size();                                                  \
+    HAYAKU_IF_RETURN(total == 0, void());                                     \
+                                                                              \
+    _readyBuffer(total, 1);                                                   \
+    int lookback = func_lookback();                                           \
+    if (lookback < 0 || lookback >= total) {                                  \
+      discard_ = total;                                                       \
       return;                                                                 \
     }                                                                         \
                                                                               \
@@ -1303,57 +1022,40 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
       vol[i] = kptr[i].transCount;                                            \
     }                                                                         \
                                                                               \
-    discard_ = back;                                                         \
     auto *dst = this->data();                                                 \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    ::func(discard_, total - 1, high, low, close, vol, n, &outBegIdx,        \
-           &outNbElement, dst + discard_);                                   \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
+    discard_ = lookback;                                                      \
+    ::func(discard_, total - 1, high, low, close, vol, &outBegIdx,            \
+           &outNbElement, dst + discard_);                                    \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                       \
   }                                                                           \
                                                                               \
-  Indicator HAYAKU_API func(int n) {                                          \
-    auto p = make_shared<Cls_##func>();                                       \
-    p->setParam<int>("n", n);                                                 \
-    p->calculate();                                                           \
-    return Indicator(p);                                                      \
-  }                                                                           \
+  Indicator func() { return make_shared<Cls_##func>()->calculate(); }         \
                                                                               \
-  Indicator HAYAKU_API func(const KData &k, int n) {                          \
-    auto p = make_shared<Cls_##func>();                                       \
-    p->setParam<int>("n", n);                                                 \
-    p->setContext(k);                                                         \
-    return Indicator(p);                                                      \
+  Indicator func(const KData &k) {                                            \
+    auto ptr = make_shared<Cls_##func>();                                     \
+    ptr->setContext(k);                                                       \
+    return Indicator(ptr);                                                    \
   }
 
-#define TA_HL_OUT1_N_IMP(func, func_lookback, period, period_min, period_max) \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                         \
-    need_context_ = true;                                                    \
-    setParam<int>("n", period);                                               \
-  }                                                                           \
-                                                                              \
-  void Cls_##func::_checkParam(const string &name) const {                    \
-    if (name == "n") {                                                        \
-      int n = getParam<int>("n");                                             \
-      HAYAKU_ASSERT(n >= period_min && n <= period_max);                      \
-    }                                                                         \
-  }                                                                           \
+#define TA_HL_OUT1_IMP(func, func_lookback)                                   \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
                                                                               \
   void Cls_##func::_calculate(const Indicator &data) {                        \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
                    "The input is ignored because {} depends on the context!", \
-                   name_);                                                   \
+                   name_);                                                    \
                                                                               \
     KData k = getContext();                                                   \
     size_t total = k.size();                                                  \
     HAYAKU_IF_RETURN(total == 0, void());                                     \
                                                                               \
     _readyBuffer(total, 1);                                                   \
-    int n = getParam<int>("n");                                               \
-    int back = func_lookback(n);                                              \
-    if (back < 0 || back >= total) {                                          \
-      discard_ = total;                                                      \
+    int lookback = func_lookback();                                           \
+    if (lookback < 0 || lookback >= total) {                                  \
+      discard_ = total;                                                       \
       return;                                                                 \
     }                                                                         \
                                                                               \
@@ -1366,97 +1068,121 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
       low[i] = kptr[i].lowPrice;                                              \
     }                                                                         \
                                                                               \
-    discard_ = back;                                                         \
     auto *dst = this->data();                                                 \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    ::func(discard_, total - 1, high, low, n, &outBegIdx, &outNbElement,     \
-           dst + discard_);                                                  \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
+    discard_ = lookback;                                                      \
+    ::func(discard_, total - 1, high, low, &outBegIdx, &outNbElement,         \
+           dst + discard_);                                                   \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                       \
   }                                                                           \
                                                                               \
-  Indicator HAYAKU_API func(int n) {                                          \
-    auto p = make_shared<Cls_##func>();                                       \
-    p->setParam<int>("n", n);                                                 \
-    p->calculate();                                                           \
-    return Indicator(p);                                                      \
-  }                                                                           \
+  Indicator func() { return make_shared<Cls_##func>()->calculate(); }         \
                                                                               \
-  Indicator HAYAKU_API func(const KData &k, int n) {                          \
-    auto p = make_shared<Cls_##func>();                                       \
-    p->setParam<int>("n", n);                                                 \
-    p->setContext(k);                                                         \
-    return Indicator(p);                                                      \
+  Indicator func(const KData &k) {                                            \
+    auto ptr = make_shared<Cls_##func>();                                     \
+    ptr->setContext(k);                                                       \
+    return Indicator(ptr);                                                    \
   }
 
-#define TA_HL_OUT2_N_IMP(func, func_lookback, period, period_min, period_max) \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 2) {                         \
-    need_context_ = true;                                                    \
-    setParam<int>("n", period);                                               \
-  }                                                                           \
-                                                                              \
-  void Cls_##func::_checkParam(const string &name) const {                    \
-    if (name == "n") {                                                        \
-      int n = getParam<int>("n");                                             \
-      HAYAKU_ASSERT(n >= period_min && n <= period_max);                      \
-    }                                                                         \
-  }                                                                           \
+#define TA_CV_OUT1_IMP(func, func_lookback)                                   \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
                                                                               \
   void Cls_##func::_calculate(const Indicator &data) {                        \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
                    "The input is ignored because {} depends on the context!", \
-                   name_);                                                   \
+                   name_);                                                    \
                                                                               \
     KData k = getContext();                                                   \
     size_t total = k.size();                                                  \
     HAYAKU_IF_RETURN(total == 0, void());                                     \
                                                                               \
-    _readyBuffer(total, 2);                                                   \
-    int n = getParam<int>("n");                                               \
-    int back = func_lookback(n);                                              \
-    if (back < 0 || back >= total) {                                          \
-      discard_ = total;                                                      \
+    _readyBuffer(total, 1);                                                   \
+    int lookback = func_lookback();                                           \
+    if (lookback < 0 || lookback >= total) {                                  \
+      discard_ = 0;                                                           \
       return;                                                                 \
     }                                                                         \
                                                                               \
     const KRecord *kptr = k.data();                                           \
     std::unique_ptr<double[]> buf = std::make_unique<double[]>(2 * total);    \
-    double *high = buf.get();                                                 \
-    double *low = high + total;                                               \
+    double *close = buf.get();                                                \
+    double *vol = close + total;                                              \
     for (size_t i = 0; i < total; ++i) {                                      \
-      high[i] = kptr[i].highPrice;                                            \
-      low[i] = kptr[i].lowPrice;                                              \
+      close[i] = kptr[i].closePrice;                                          \
+      vol[i] = kptr[i].transCount;                                            \
     }                                                                         \
                                                                               \
-    discard_ = back;                                                         \
-    auto *dst0 = this->data(0);                                               \
-    auto *dst1 = this->data(1);                                               \
+    auto *dst = this->data();                                                 \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    ::func(discard_, total - 1, high, low, n, &outBegIdx, &outNbElement,     \
-           dst0 + discard_, dst1 + discard_);                               \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
+    discard_ = lookback;                                                      \
+    ::func(discard_, total - 1, close, vol, &outBegIdx, &outNbElement,        \
+           dst + discard_);                                                   \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                       \
   }                                                                           \
                                                                               \
-  Indicator HAYAKU_API func(int n) {                                          \
-    auto p = make_shared<Cls_##func>();                                       \
-    p->setParam<int>("n", n);                                                 \
-    p->calculate();                                                           \
-    return Indicator(p);                                                      \
-  }                                                                           \
+  Indicator func() { return make_shared<Cls_##func>()->calculate(); }         \
                                                                               \
-  Indicator HAYAKU_API func(const KData &k, int n) {                          \
-    auto p = make_shared<Cls_##func>();                                       \
-    p->setParam<int>("n", n);                                                 \
-    p->setContext(k);                                                         \
-    return Indicator(p);                                                      \
+  Indicator func(const KData &k) {                                            \
+    auto ptr = make_shared<Cls_##func>();                                     \
+    ptr->setContext(k);                                                       \
+    return Indicator(ptr);                                                    \
   }
 
-#define TA_HLC_OUT3_N_IMP(func, func_lookback, period, period_min, period_max) \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 3) {                          \
-    need_context_ = true;                                                     \
+#define TA_HLC_OUT1_IMP(func, func_lookback)                                  \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
+                                                                              \
+  void Cls_##func::_calculate(const Indicator &data) {                        \
+    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
+                   "The input is ignored because {} depends on the context!", \
+                   name_);                                                    \
+                                                                              \
+    KData k = getContext();                                                   \
+    size_t total = k.size();                                                  \
+    HAYAKU_IF_RETURN(total == 0, void());                                     \
+                                                                              \
+    _readyBuffer(total, 1);                                                   \
+    int lookback = func_lookback();                                           \
+    if (lookback < 0 || lookback >= total) {                                  \
+      discard_ = total;                                                       \
+      return;                                                                 \
+    }                                                                         \
+                                                                              \
+    const KRecord *kptr = k.data();                                           \
+    std::unique_ptr<double[]> buf = std::make_unique<double[]>(3 * total);    \
+    double *high = buf.get();                                                 \
+    double *low = high + total;                                               \
+    double *close = low + total;                                              \
+    for (size_t i = 0; i < total; ++i) {                                      \
+      high[i] = kptr[i].highPrice;                                            \
+      low[i] = kptr[i].lowPrice;                                              \
+      close[i] = kptr[i].closePrice;                                          \
+    }                                                                         \
+                                                                              \
+    discard_ = lookback;                                                      \
+    auto *dst = this->data();                                                 \
+    int outBegIdx;                                                            \
+    int outNbElement;                                                         \
+    ::func(discard_, total - 1, high, low, close, &outBegIdx, &outNbElement,  \
+           dst + discard_);                                                   \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
+                  (outBegIdx + outNbElement) <= total);                       \
+  }                                                                           \
+                                                                              \
+  Indicator func() { return make_shared<Cls_##func>()->calculate(); }         \
+                                                                              \
+  Indicator func(const KData &k) {                                            \
+    auto ptr = make_shared<Cls_##func>();                                     \
+    ptr->setContext(k);                                                       \
+    return Indicator(ptr);                                                    \
+  }
+
+#define TA_HLC_OUT1_N_IMP(func, func_lookback, period, period_min, period_max) \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                          \
+    need_context_ = true;                                                      \
     setParam<int>("n", period);                                                \
   }                                                                            \
                                                                                \
@@ -1470,7 +1196,268 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   void Cls_##func::_calculate(const Indicator &data) {                         \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
                    "The input is ignored because {} depends on the context!",  \
+                   name_);                                                     \
+                                                                               \
+    KData k = getContext();                                                    \
+    size_t total = k.size();                                                   \
+    HAYAKU_IF_RETURN(total == 0, void());                                      \
+                                                                               \
+    _readyBuffer(total, 1);                                                    \
+    int n = getParam<int>("n");                                                \
+    int back = func_lookback(n);                                               \
+    if (back < 0 || back >= total) {                                           \
+      discard_ = total;                                                        \
+      return;                                                                  \
+    }                                                                          \
+                                                                               \
+    const KRecord *kptr = k.data();                                            \
+    std::unique_ptr<double[]> buf = std::make_unique<double[]>(3 * total);     \
+    double *high = buf.get();                                                  \
+    double *low = high + total;                                                \
+    double *close = low + total;                                               \
+    for (size_t i = 0; i < total; ++i) {                                       \
+      high[i] = kptr[i].highPrice;                                             \
+      low[i] = kptr[i].lowPrice;                                               \
+      close[i] = kptr[i].closePrice;                                           \
+    }                                                                          \
+                                                                               \
+    discard_ = back;                                                           \
+    auto *dst = this->data();                                                  \
+    int outBegIdx;                                                             \
+    int outNbElement;                                                          \
+    ::func(discard_, total - 1, high, low, close, n, &outBegIdx,               \
+           &outNbElement, dst + discard_);                                     \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                   \
+                  (outBegIdx + outNbElement) <= total);                        \
+  }                                                                            \
+                                                                               \
+  Indicator func(int n) {                                                      \
+    auto p = make_shared<Cls_##func>();                                        \
+    p->setParam<int>("n", n);                                                  \
+    p->calculate();                                                            \
+    return Indicator(p);                                                       \
+  }                                                                            \
+                                                                               \
+  Indicator func(const KData &k, int n) {                                      \
+    auto p = make_shared<Cls_##func>();                                        \
+    p->setParam<int>("n", n);                                                  \
+    p->setContext(k);                                                          \
+    return Indicator(p);                                                       \
+  }
+
+#define TA_HLCV_OUT1_N_IMP(func, func_lookback, period, period_min,           \
+                           period_max)                                        \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                         \
+    need_context_ = true;                                                     \
+    setParam<int>("n", period);                                               \
+  }                                                                           \
+                                                                              \
+  void Cls_##func::_checkParam(const string &name) const {                    \
+    if (name == "n") {                                                        \
+      int n = getParam<int>("n");                                             \
+      HAYAKU_ASSERT(n >= period_min && n <= period_max);                      \
+    }                                                                         \
+  }                                                                           \
+                                                                              \
+  void Cls_##func::_calculate(const Indicator &data) {                        \
+    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
+                   "The input is ignored because {} depends on the context!", \
                    name_);                                                    \
+                                                                              \
+    KData k = getContext();                                                   \
+    size_t total = k.size();                                                  \
+    HAYAKU_IF_RETURN(total == 0, void());                                     \
+                                                                              \
+    _readyBuffer(total, 1);                                                   \
+                                                                              \
+    int n = getParam<int>("n");                                               \
+    int back = func_lookback(n);                                              \
+    if (back < 0 || back >= total) {                                          \
+      discard_ = total;                                                       \
+      return;                                                                 \
+    }                                                                         \
+                                                                              \
+    const KRecord *kptr = k.data();                                           \
+    std::unique_ptr<double[]> buf = std::make_unique<double[]>(4 * total);    \
+    double *high = buf.get();                                                 \
+    double *low = high + total;                                               \
+    double *close = low + total;                                              \
+    double *vol = close + total;                                              \
+    for (size_t i = 0; i < total; ++i) {                                      \
+      high[i] = kptr[i].highPrice;                                            \
+      low[i] = kptr[i].lowPrice;                                              \
+      close[i] = kptr[i].closePrice;                                          \
+      vol[i] = kptr[i].transCount;                                            \
+    }                                                                         \
+                                                                              \
+    discard_ = back;                                                          \
+    auto *dst = this->data();                                                 \
+    int outBegIdx;                                                            \
+    int outNbElement;                                                         \
+    ::func(discard_, total - 1, high, low, close, vol, n, &outBegIdx,         \
+           &outNbElement, dst + discard_);                                    \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
+                  (outBegIdx + outNbElement) <= total);                       \
+  }                                                                           \
+                                                                              \
+  Indicator func(int n) {                                                     \
+    auto p = make_shared<Cls_##func>();                                       \
+    p->setParam<int>("n", n);                                                 \
+    p->calculate();                                                           \
+    return Indicator(p);                                                      \
+  }                                                                           \
+                                                                              \
+  Indicator func(const KData &k, int n) {                                     \
+    auto p = make_shared<Cls_##func>();                                       \
+    p->setParam<int>("n", n);                                                 \
+    p->setContext(k);                                                         \
+    return Indicator(p);                                                      \
+  }
+
+#define TA_HL_OUT1_N_IMP(func, func_lookback, period, period_min, period_max) \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                         \
+    need_context_ = true;                                                     \
+    setParam<int>("n", period);                                               \
+  }                                                                           \
+                                                                              \
+  void Cls_##func::_checkParam(const string &name) const {                    \
+    if (name == "n") {                                                        \
+      int n = getParam<int>("n");                                             \
+      HAYAKU_ASSERT(n >= period_min && n <= period_max);                      \
+    }                                                                         \
+  }                                                                           \
+                                                                              \
+  void Cls_##func::_calculate(const Indicator &data) {                        \
+    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
+                   "The input is ignored because {} depends on the context!", \
+                   name_);                                                    \
+                                                                              \
+    KData k = getContext();                                                   \
+    size_t total = k.size();                                                  \
+    HAYAKU_IF_RETURN(total == 0, void());                                     \
+                                                                              \
+    _readyBuffer(total, 1);                                                   \
+    int n = getParam<int>("n");                                               \
+    int back = func_lookback(n);                                              \
+    if (back < 0 || back >= total) {                                          \
+      discard_ = total;                                                       \
+      return;                                                                 \
+    }                                                                         \
+                                                                              \
+    const KRecord *kptr = k.data();                                           \
+    std::unique_ptr<double[]> buf = std::make_unique<double[]>(2 * total);    \
+    double *high = buf.get();                                                 \
+    double *low = high + total;                                               \
+    for (size_t i = 0; i < total; ++i) {                                      \
+      high[i] = kptr[i].highPrice;                                            \
+      low[i] = kptr[i].lowPrice;                                              \
+    }                                                                         \
+                                                                              \
+    discard_ = back;                                                          \
+    auto *dst = this->data();                                                 \
+    int outBegIdx;                                                            \
+    int outNbElement;                                                         \
+    ::func(discard_, total - 1, high, low, n, &outBegIdx, &outNbElement,      \
+           dst + discard_);                                                   \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
+                  (outBegIdx + outNbElement) <= total);                       \
+  }                                                                           \
+                                                                              \
+  Indicator func(int n) {                                                     \
+    auto p = make_shared<Cls_##func>();                                       \
+    p->setParam<int>("n", n);                                                 \
+    p->calculate();                                                           \
+    return Indicator(p);                                                      \
+  }                                                                           \
+                                                                              \
+  Indicator func(const KData &k, int n) {                                     \
+    auto p = make_shared<Cls_##func>();                                       \
+    p->setParam<int>("n", n);                                                 \
+    p->setContext(k);                                                         \
+    return Indicator(p);                                                      \
+  }
+
+#define TA_HL_OUT2_N_IMP(func, func_lookback, period, period_min, period_max) \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 2) {                         \
+    need_context_ = true;                                                     \
+    setParam<int>("n", period);                                               \
+  }                                                                           \
+                                                                              \
+  void Cls_##func::_checkParam(const string &name) const {                    \
+    if (name == "n") {                                                        \
+      int n = getParam<int>("n");                                             \
+      HAYAKU_ASSERT(n >= period_min && n <= period_max);                      \
+    }                                                                         \
+  }                                                                           \
+                                                                              \
+  void Cls_##func::_calculate(const Indicator &data) {                        \
+    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
+                   "The input is ignored because {} depends on the context!", \
+                   name_);                                                    \
+                                                                              \
+    KData k = getContext();                                                   \
+    size_t total = k.size();                                                  \
+    HAYAKU_IF_RETURN(total == 0, void());                                     \
+                                                                              \
+    _readyBuffer(total, 2);                                                   \
+    int n = getParam<int>("n");                                               \
+    int back = func_lookback(n);                                              \
+    if (back < 0 || back >= total) {                                          \
+      discard_ = total;                                                       \
+      return;                                                                 \
+    }                                                                         \
+                                                                              \
+    const KRecord *kptr = k.data();                                           \
+    std::unique_ptr<double[]> buf = std::make_unique<double[]>(2 * total);    \
+    double *high = buf.get();                                                 \
+    double *low = high + total;                                               \
+    for (size_t i = 0; i < total; ++i) {                                      \
+      high[i] = kptr[i].highPrice;                                            \
+      low[i] = kptr[i].lowPrice;                                              \
+    }                                                                         \
+                                                                              \
+    discard_ = back;                                                          \
+    auto *dst0 = this->data(0);                                               \
+    auto *dst1 = this->data(1);                                               \
+    int outBegIdx;                                                            \
+    int outNbElement;                                                         \
+    ::func(discard_, total - 1, high, low, n, &outBegIdx, &outNbElement,      \
+           dst0 + discard_, dst1 + discard_);                                 \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
+                  (outBegIdx + outNbElement) <= total);                       \
+  }                                                                           \
+                                                                              \
+  Indicator func(int n) {                                                     \
+    auto p = make_shared<Cls_##func>();                                       \
+    p->setParam<int>("n", n);                                                 \
+    p->calculate();                                                           \
+    return Indicator(p);                                                      \
+  }                                                                           \
+                                                                              \
+  Indicator func(const KData &k, int n) {                                     \
+    auto p = make_shared<Cls_##func>();                                       \
+    p->setParam<int>("n", n);                                                 \
+    p->setContext(k);                                                         \
+    return Indicator(p);                                                      \
+  }
+
+#define TA_HLC_OUT3_N_IMP(func, func_lookback, period, period_min, period_max) \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 3) {                          \
+    need_context_ = true;                                                      \
+    setParam<int>("n", period);                                                \
+  }                                                                            \
+                                                                               \
+  void Cls_##func::_checkParam(const string &name) const {                     \
+    if (name == "n") {                                                         \
+      int n = getParam<int>("n");                                              \
+      HAYAKU_ASSERT(n >= period_min && n <= period_max);                       \
+    }                                                                          \
+  }                                                                            \
+                                                                               \
+  void Cls_##func::_calculate(const Indicator &data) {                         \
+    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
+                   "The input is ignored because {} depends on the context!",  \
+                   name_);                                                     \
                                                                                \
     KData k = getContext();                                                    \
     size_t total = k.size();                                                   \
@@ -1480,7 +1467,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int n = getParam<int>("n");                                                \
     int back = func_lookback(n);                                               \
     if (back < 0 || back >= total) {                                           \
-      discard_ = total;                                                       \
+      discard_ = total;                                                        \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -1498,24 +1485,23 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     auto *dst0 = this->data(0);                                                \
     auto *dst1 = this->data(1);                                                \
     auto *dst2 = this->data(2);                                                \
-    discard_ = back;                                                          \
+    discard_ = back;                                                           \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(discard_, total - 1, high, low, close, n, &outBegIdx,              \
-           &outNbElement, dst0 + discard_, dst1 + discard_,                  \
-           dst2 + discard_);                                                  \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
+    ::func(discard_, total - 1, high, low, close, n, &outBegIdx,               \
+           &outNbElement, dst0 + discard_, dst1 + discard_, dst2 + discard_);  \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                   \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
-  Indicator HAYAKU_API func(int n) {                                           \
+  Indicator func(int n) {                                                      \
     auto p = make_shared<Cls_##func>();                                        \
     p->setParam<int>("n", n);                                                  \
     p->calculate();                                                            \
     return Indicator(p);                                                       \
   }                                                                            \
                                                                                \
-  Indicator HAYAKU_API func(const KData &k, int n) {                           \
+  Indicator func(const KData &k, int n) {                                      \
     auto p = make_shared<Cls_##func>();                                        \
     p->setParam<int>("n", n);                                                  \
     p->setContext(k);                                                          \
@@ -1524,7 +1510,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
 
 #define TA_OC_OUT1_N_IMP(func, func_lookback, period, period_min, period_max) \
   Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                         \
-    need_context_ = true;                                                    \
+    need_context_ = true;                                                     \
     setParam<int>("n", period);                                               \
   }                                                                           \
                                                                               \
@@ -1538,7 +1524,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   void Cls_##func::_calculate(const Indicator &data) {                        \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
                    "The input is ignored because {} depends on the context!", \
-                   name_);                                                   \
+                   name_);                                                    \
                                                                               \
     KData k = getContext();                                                   \
     size_t total = k.size();                                                  \
@@ -1548,7 +1534,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int n = getParam<int>("n");                                               \
     int back = func_lookback(n);                                              \
     if (back < 0 || back >= total) {                                          \
-      discard_ = total;                                                      \
+      discard_ = total;                                                       \
       return;                                                                 \
     }                                                                         \
                                                                               \
@@ -1562,23 +1548,23 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     }                                                                         \
                                                                               \
     auto *dst = this->data();                                                 \
-    discard_ = back;                                                         \
+    discard_ = back;                                                          \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    ::func(discard_, total - 1, open, close, n, &outBegIdx, &outNbElement,   \
-           dst + discard_);                                                  \
-    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
+    ::func(discard_, total - 1, open, close, n, &outBegIdx, &outNbElement,    \
+           dst + discard_);                                                   \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                       \
   }                                                                           \
                                                                               \
-  Indicator HAYAKU_API func(int n) {                                          \
+  Indicator func(int n) {                                                     \
     auto p = make_shared<Cls_##func>();                                       \
     p->setParam<int>("n", n);                                                 \
     p->calculate();                                                           \
     return Indicator(p);                                                      \
   }                                                                           \
                                                                               \
-  Indicator HAYAKU_API func(const KData &k, int n) {                          \
+  Indicator func(const KData &k, int n) {                                     \
     auto p = make_shared<Cls_##func>();                                       \
     p->setParam<int>("n", n);                                                 \
     p->setContext(k);                                                         \

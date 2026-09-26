@@ -70,9 +70,9 @@ void IAd::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API AD() { return make_shared<IAd>()->calculate(); }
+Indicator AD() { return make_shared<IAd>()->calculate(); }
 
-Indicator HAYAKU_API AD(const KData& k) {
+Indicator AD(const KData& k) {
   auto p = make_shared<IAd>();
   p->setContext(k);
   return Indicator(p);
@@ -228,13 +228,13 @@ void ICost::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API COST(double x) {
+Indicator COST(double x) {
   auto p = make_shared<ICost>();
   p->setParam<double>("percent", x);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API COST(const KData& k, double x) {
+Indicator COST(const KData& k, double x) {
   auto p = make_shared<ICost>();
   p->setParam<double>("percent", x);
   p->setContext(k);
@@ -360,9 +360,9 @@ void IHsl::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API HSL() { return make_shared<IHsl>()->calculate(); }
+Indicator HSL() { return make_shared<IHsl>()->calculate(); }
 
-Indicator HAYAKU_API HSL(const KData& k) {
+Indicator HSL(const KData& k) {
   auto p = make_shared<IHsl>();
   p->setContext(k);
   return Indicator(p);
@@ -499,19 +499,17 @@ static Indicator INDEX(const string& kpart, bool fill_null) {
   return p->calculate();
 }
 
-Indicator HAYAKU_API INDEXO(bool fill_null) { return INDEX("OPEN", fill_null); }
+Indicator INDEXO(bool fill_null) { return INDEX("OPEN", fill_null); }
 
-Indicator HAYAKU_API INDEXH(bool fill_null) { return INDEX("HIGH", fill_null); }
+Indicator INDEXH(bool fill_null) { return INDEX("HIGH", fill_null); }
 
-Indicator HAYAKU_API INDEXL(bool fill_null) { return INDEX("LOW", fill_null); }
+Indicator INDEXL(bool fill_null) { return INDEX("LOW", fill_null); }
 
-Indicator HAYAKU_API INDEXC(bool fill_null) {
-  return INDEX("CLOSE", fill_null);
-}
+Indicator INDEXC(bool fill_null) { return INDEX("CLOSE", fill_null); }
 
-Indicator HAYAKU_API INDEXA(bool fill_null) { return INDEX("AMO", fill_null); }
+Indicator INDEXA(bool fill_null) { return INDEX("AMO", fill_null); }
 
-Indicator HAYAKU_API INDEXV(bool fill_null) { return INDEX("VOL", fill_null); }
+Indicator INDEXV(bool fill_null) { return INDEX("VOL", fill_null); }
 
 }  // namespace hayaku
 
@@ -524,22 +522,22 @@ Indicator HAYAKU_API INDEXV(bool fill_null) { return INDEX("VOL", fill_null); }
 
 namespace hayaku {
 
-Indicator HAYAKU_API INDEXADV() {
+Indicator INDEXADV() {
   KData k = getKData("SH880005", KQueryByIndex(-1));
   return CONTEXT(k.close());
 }
 
-Indicator HAYAKU_API INDEXADV(const KQuery& query) {
+Indicator INDEXADV(const KQuery& query) {
   KData k = getKData("SH880005", query);
   return CONTEXT(k.close());
 }
 
-Indicator HAYAKU_API INDEXDEC() {
+Indicator INDEXDEC() {
   KData k = getKData("SH880005", KQueryByIndex(-1));
   return CONTEXT(k.open());
 }
 
-Indicator HAYAKU_API INDEXDEC(const KQuery& query) {
+Indicator INDEXDEC(const KQuery& query) {
   KData k = getKData("SH880005", query);
   return CONTEXT(k.open());
 }
@@ -666,7 +664,7 @@ void ITime::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API DATE(const KData& kdata) {
+Indicator DATE(const KData& kdata) {
   auto p = make_shared<ITime>();
   p->setParam<string>("type", "DATE");
   p->name("DATE");
@@ -674,7 +672,7 @@ Indicator HAYAKU_API DATE(const KData& kdata) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API TIME(const KData& kdata) {
+Indicator TIME(const KData& kdata) {
   auto p = make_shared<ITime>();
   p->setParam<string>("type", "TIME");
   p->name("TIME");
@@ -682,7 +680,7 @@ Indicator HAYAKU_API TIME(const KData& kdata) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API YEAR(const KData& kdata) {
+Indicator YEAR(const KData& kdata) {
   auto p = make_shared<ITime>();
   p->setParam<string>("type", "YEAR");
   p->name("YEAR");
@@ -690,7 +688,7 @@ Indicator HAYAKU_API YEAR(const KData& kdata) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API MONTH(const KData& kdata) {
+Indicator MONTH(const KData& kdata) {
   auto p = make_shared<ITime>();
   p->setParam<string>("type", "MONTH");
   p->name("MONTH");
@@ -698,7 +696,7 @@ Indicator HAYAKU_API MONTH(const KData& kdata) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API WEEK(const KData& kdata) {
+Indicator WEEK(const KData& kdata) {
   auto p = make_shared<ITime>();
   p->setParam<string>("type", "WEEK");
   p->name("WEEK");
@@ -706,7 +704,7 @@ Indicator HAYAKU_API WEEK(const KData& kdata) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API DAY(const KData& kdata) {
+Indicator DAY(const KData& kdata) {
   auto p = make_shared<ITime>();
   p->setParam<string>("type", "DAY");
   p->name("DAY");
@@ -714,7 +712,7 @@ Indicator HAYAKU_API DAY(const KData& kdata) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API HOUR(const KData& kdata) {
+Indicator HOUR(const KData& kdata) {
   auto p = make_shared<ITime>();
   p->setParam<string>("type", "HOUR");
   p->name("HOUR");
@@ -722,7 +720,7 @@ Indicator HAYAKU_API HOUR(const KData& kdata) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API MINUTE(const KData& kdata) {
+Indicator MINUTE(const KData& kdata) {
   auto p = make_shared<ITime>();
   p->setParam<string>("type", "MINUTE");
   p->name("MINUTE");
@@ -731,56 +729,56 @@ Indicator HAYAKU_API MINUTE(const KData& kdata) {
 }
 
 //-----------------------------------------------------------
-Indicator HAYAKU_API DATE() {
+Indicator DATE() {
   IndicatorImpPtr p = make_shared<ITime>();
   p->setParam<string>("type", "DATE");
   p->name("DATE");
   return p->calculate();
 }
 
-Indicator HAYAKU_API TIME() {
+Indicator TIME() {
   IndicatorImpPtr p = make_shared<ITime>();
   p->setParam<string>("type", "TIME");
   p->name("TIME");
   return p->calculate();
 }
 
-Indicator HAYAKU_API YEAR() {
+Indicator YEAR() {
   IndicatorImpPtr p = make_shared<ITime>();
   p->setParam<string>("type", "YEAR");
   p->name("YEAR");
   return p->calculate();
 }
 
-Indicator HAYAKU_API MONTH() {
+Indicator MONTH() {
   IndicatorImpPtr p = make_shared<ITime>();
   p->setParam<string>("type", "MONTH");
   p->name("MONTH");
   return p->calculate();
 }
 
-Indicator HAYAKU_API WEEK() {
+Indicator WEEK() {
   IndicatorImpPtr p = make_shared<ITime>();
   p->setParam<string>("type", "WEEK");
   p->name("WEEK");
   return p->calculate();
 }
 
-Indicator HAYAKU_API DAY() {
+Indicator DAY() {
   IndicatorImpPtr p = make_shared<ITime>();
   p->setParam<string>("type", "DAY");
   p->name("DAY");
   return p->calculate();
 }
 
-Indicator HAYAKU_API HOUR() {
+Indicator HOUR() {
   IndicatorImpPtr p = make_shared<ITime>();
   p->setParam<string>("type", "HOUR");
   p->name("HOUR");
   return p->calculate();
 }
 
-Indicator HAYAKU_API MINUTE() {
+Indicator MINUTE() {
   IndicatorImpPtr p = make_shared<ITime>();
   p->setParam<string>("type", "MINUTE");
   p->name("MINUTE");
@@ -869,11 +867,9 @@ void ITimeLine::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API TIMELINE() {
-  return make_shared<ITimeLine>()->calculate();
-}
+Indicator TIMELINE() { return make_shared<ITimeLine>()->calculate(); }
 
-Indicator HAYAKU_API TIMELINE(const KData& k) {
+Indicator TIMELINE(const KData& k) {
   auto p = make_shared<ITimeLine>();
   p->setContext(k);
   return Indicator(p);
@@ -890,14 +886,14 @@ Indicator HAYAKU_API TIMELINE(const KData& k) {
 
 namespace hayaku {
 
-Indicator HAYAKU_API TIMELINEVOL() {
+Indicator TIMELINEVOL() {
   Indicator ind = TIMELINE();
   ind.name("TIMELINEVOL");
   ind.setParam<string>("part", "vol");
   return ind;
 }
 
-Indicator HAYAKU_API TIMELINEVOL(const KData& k) {
+Indicator TIMELINEVOL(const KData& k) {
   Indicator ind = TIMELINE(k);
   ind.name("TIMELINEVOL");
   ind.setParam<string>("part", "vol");
@@ -918,13 +914,13 @@ Indicator HAYAKU_API TIMELINEVOL(const KData& k) {
 namespace hayaku {
 
 // No need to multiply by 100, the trading volume is already in lots, i.e. 100
-Indicator HAYAKU_API TURNOVER(int n) {
+Indicator TURNOVER(int n) {
   HAYAKU_ASSERT(n >= 1);
   return n == 1 ? (VOL() / LIUTONGPAN())
                 : (SUM(VOL(), n) / SUM(LIUTONGPAN(), n));
 }
 
-Indicator HAYAKU_API TURNOVER(const KData& kdata, int n) {
+Indicator TURNOVER(const KData& kdata, int n) {
   HAYAKU_ASSERT(n >= 1);
   return n == 1 ? (kdata.vol() / LIUTONGPAN(kdata))
                 : (SUM(kdata.vol(), n) / SUM(LIUTONGPAN(kdata), n));
@@ -1038,6 +1034,6 @@ void IWinner::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API WINNER() { return Indicator(make_shared<IWinner>()); }
+Indicator WINNER() { return Indicator(make_shared<IWinner>()); }
 
 } /* namespace hayaku */

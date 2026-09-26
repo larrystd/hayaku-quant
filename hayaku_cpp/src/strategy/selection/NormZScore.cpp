@@ -103,7 +103,7 @@ PriceList NormZScore::normalize(const PriceList& data) {
   return ret;
 }
 
-NormPtr HAYAKU_API NORM_Zscore(bool outExtreme, double nsigma, bool recursive) {
+NormPtr NORM_Zscore(bool outExtreme, double nsigma, bool recursive) {
   return std::make_shared<NormZScore>(outExtreme, nsigma, recursive);
 }
 

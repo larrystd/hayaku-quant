@@ -61,8 +61,8 @@ void BandSignal2::_calculate(const KData& kdata) {
   }
 }
 
-SignalPtr HAYAKU_API SG_Band(const Indicator& sig, const Indicator& lower,
-                             const Indicator& upper) {
+SignalPtr SG_Band(const Indicator& sig, const Indicator& lower,
+                  const Indicator& upper) {
   return make_shared<BandSignal2>(sig, lower, upper);
 }
 

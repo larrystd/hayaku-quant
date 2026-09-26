@@ -11,13 +11,13 @@
 
 namespace hayaku {
 
-class HAYAKU_API Indicator;
+class Indicator;
 
 /**
  * K-line (candlestick) data
  * @ingroup StockManage
  */
-class HAYAKU_API KData {
+class KData {
  public:
   KData();
   KData(const KData&) noexcept;
@@ -231,7 +231,7 @@ class HAYAKU_API KData {
  * </pre>
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const KData& kdata);
+std::ostream& operator<<(std::ostream& os, const KData& kdata);
 
 /**
  * Get the K-line data of the given security identifier with the given query
@@ -240,7 +240,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const KData& kdata);
  * @param query query condition
  * @ingroup StockManage
  */
-KData HAYAKU_API getKData(const string& market_code, const KQuery& query);
+KData getKData(const string& market_code, const KQuery& query);
 
 /**
  * Get the K-line data of the given security identifier directly by date
@@ -251,11 +251,11 @@ KData HAYAKU_API getKData(const string& market_code, const KQuery& query);
  * @param recoverType price adjustment type
  * @ingroup StockManage
  */
-KData HAYAKU_API getKData(const string& market_code,
-                          const Datetime& start = Datetime::min(),
-                          const Datetime& end = Null<Datetime>(),
-                          const KQuery::KType& ktype = KQuery::DAY,
-                          KQuery::RecoverType recoverType = KQuery::NO_RECOVER);
+KData getKData(const string& market_code,
+               const Datetime& start = Datetime::min(),
+               const Datetime& end = Null<Datetime>(),
+               const KQuery::KType& ktype = KQuery::DAY,
+               KQuery::RecoverType recoverType = KQuery::NO_RECOVER);
 
 /**
  * Get the K-line data of the given security identifier directly by index
@@ -267,10 +267,10 @@ KData HAYAKU_API getKData(const string& market_code,
  * @param recoverType price adjustment type
  * @ingroup StockManage
  */
-KData HAYAKU_API getKData(const string& market_code, int64_t start = 0,
-                          int64_t end = Null<int64_t>(),
-                          const KQuery::KType& ktype = KQuery::DAY,
-                          KQuery::RecoverType recoverType = KQuery::NO_RECOVER);
+KData getKData(const string& market_code, int64_t start = 0,
+               int64_t end = Null<int64_t>(),
+               const KQuery::KType& ktype = KQuery::DAY,
+               KQuery::RecoverType recoverType = KQuery::NO_RECOVER);
 
 inline KData::KData(const KData& x) noexcept : imp_(x.imp_) {}
 

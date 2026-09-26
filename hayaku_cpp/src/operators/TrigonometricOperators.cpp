@@ -182,7 +182,7 @@ void IAcos::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ACOS() { return Indicator(make_shared<IAcos>()); }
+Indicator ACOS() { return Indicator(make_shared<IAcos>()); }
 
 } /* namespace hayaku */
 
@@ -224,7 +224,7 @@ void IAsin::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ASIN() { return Indicator(make_shared<IAsin>()); }
+Indicator ASIN() { return Indicator(make_shared<IAsin>()); }
 
 } /* namespace hayaku */
 
@@ -266,7 +266,7 @@ void IAtan::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ATAN() { return Indicator(make_shared<IAtan>()); }
+Indicator ATAN() { return Indicator(make_shared<IAtan>()); }
 
 } /* namespace hayaku */
 
@@ -308,7 +308,7 @@ void ICos::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API COS() { return Indicator(make_shared<ICos>()); }
+Indicator COS() { return Indicator(make_shared<ICos>()); }
 
 } /* namespace hayaku */
 
@@ -350,7 +350,7 @@ void ISin::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API SIN() { return Indicator(make_shared<ISin>()); }
+Indicator SIN() { return Indicator(make_shared<ISin>()); }
 
 } /* namespace hayaku */
 
@@ -392,6 +392,6 @@ void ITan::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API TAN() { return Indicator(make_shared<ITan>()); }
+Indicator TAN() { return Indicator(make_shared<ITan>()); }
 
 } /* namespace hayaku */

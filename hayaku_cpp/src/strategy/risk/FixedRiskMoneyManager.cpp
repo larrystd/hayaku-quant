@@ -33,7 +33,7 @@ double FixedRiskMoneyManager ::_getBuyNumber(const Datetime& datetime,
   return getParam<double>("risk") / risk;
 }
 
-MoneyManagerPtr HAYAKU_API MM_FixedRisk(double risk) {
+MoneyManagerPtr MM_FixedRisk(double risk) {
   MoneyManagerPtr p = make_shared<FixedRiskMoneyManager>();
   p->setParam<double>("risk", risk);
   return p;

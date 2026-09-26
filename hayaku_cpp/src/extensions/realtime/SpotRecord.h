@@ -15,7 +15,7 @@ namespace hayaku {
  * Data structure of the received external realtime data
  * @ingroup Agent
  */
-struct HAYAKU_API SpotRecord {
+struct SpotRecord {
   string market;              ///< Market identifier
   string code;                ///< Security code
   string name;                ///< Security name

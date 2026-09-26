@@ -194,8 +194,8 @@ void IIc::_calculate(const Indicator& inputInd) {
       "The number(>=2) of stock is insufficient! current stock number: {}",
       stk_count);
   for (size_t i = 0; i < stk_count; i++) {
-    HAYAKU_ERROR_IF_RETURN(stks_[i].isNull(), void(),
-                           "The [{}] stock is null!", i);
+    HAYAKU_ERROR_IF_RETURN(stks_[i].isNull(), void(), "The [{}] stock is null!",
+                           i);
   }
 
   int n = getParam<int>("n");
@@ -274,18 +274,17 @@ void IIc::_calculate(const Indicator& inputInd) {
   updateDiscard();
 }
 
-Indicator HAYAKU_API IC(const StockList& stks, int n, bool spearman,
-                        bool strict) {
+Indicator IC(const StockList& stks, int n, bool spearman, bool strict) {
   return Indicator(make_shared<IIc>(stks, n, spearman, strict));
 }
 
-Indicator HAYAKU_API IC(const Block& blk, int n, bool spearman, bool strict) {
+Indicator IC(const Block& blk, int n, bool spearman, bool strict) {
   StockList stks = blk.getStockList();
   return IC(stks, n, spearman, strict);
 }
 
-Indicator HAYAKU_API IC(IndicatorList inds, IndicatorList returns, int n,
-                        bool use_spearman, bool strict) {
+Indicator IC(IndicatorList inds, IndicatorList returns, int n,
+             bool use_spearman, bool strict) {
   HAYAKU_CHECK(n >= 1, "The n({}) must be greater than 1!", n);
   HAYAKU_CHECK(
       inds.size() == returns.size(),
@@ -582,13 +581,13 @@ void ISlope::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(relmaxres, curPos, 2);
 }
 
-Indicator HAYAKU_API SLOPE(int n) {
+Indicator SLOPE(int n) {
   IndicatorImpPtr p = make_shared<ISlope>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API SLOPE(const IndParam& n) {
+Indicator SLOPE(const IndParam& n) {
   IndicatorImpPtr p = make_shared<ISlope>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -685,13 +684,13 @@ void ITsRank::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(static_cast<price_t>(count) / step, curPos);
 }
 
-Indicator HAYAKU_API TS_RANK(int n) {
+Indicator TS_RANK(int n) {
   IndicatorImpPtr p = make_shared<ITsRank>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API TS_RANK(const IndParam& n) {
+Indicator TS_RANK(const IndParam& n) {
   IndicatorImpPtr p = make_shared<ITsRank>();
   p->setIndParam("n", n);
   return Indicator(p);

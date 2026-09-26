@@ -49,7 +49,7 @@ namespace hayaku {
  * @param n calculation period, 14 by default
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ADX(int n = 14);
+Indicator ADX(int n = 14);
 
 /**
  * ADX average directional index
@@ -57,7 +57,7 @@ Indicator HAYAKU_API ADX(int n = 14);
  * @param n calculation period, 14 by default
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ADX(const KData& kdata, int n = 14);
+Indicator ADX(const KData& kdata, int n = 14);
 
 }  // namespace hayaku
 
@@ -87,7 +87,7 @@ namespace hayaku {
  * than 1
  * @return the Indicator with three result sets
  */
-Indicator HAYAKU_API ADX2(const KData& kdata, int n = 14);
+Indicator ADX2(const KData& kdata, int n = 14);
 
 /**
  * @brief Average directional index (ADX2) - using the EMA smoothing way
@@ -99,7 +99,7 @@ Indicator HAYAKU_API ADX2(const KData& kdata, int n = 14);
  * than 1
  * @return the ADX2 indicator calculator
  */
-Indicator HAYAKU_API ADX2(int n = 14);
+Indicator ADX2(int n = 14);
 
 }  // namespace hayaku
 
@@ -118,7 +118,7 @@ namespace hayaku {
  * greater than 1
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ATR(int n = 14);
+Indicator ATR(int n = 14);
 
 /**
  * Average True Range (ATR)
@@ -127,7 +127,7 @@ Indicator HAYAKU_API ATR(int n = 14);
  * greater than 1
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ATR(const KData& kdata, int n = 14);
+Indicator ATR(const KData& kdata, int n = 14);
 
 }  // namespace hayaku
 
@@ -145,7 +145,7 @@ namespace hayaku {
  * @param n difference period, 1 by default
  * @ingroup Indicator
  */
-Indicator HAYAKU_API DIFF(int n = 1);
+Indicator DIFF(int n = 1);
 
 /**
  * Difference indicator, i.e. data[i] - data[i-n]
@@ -153,7 +153,7 @@ Indicator HAYAKU_API DIFF(int n = 1);
  * @param n difference period, 1 by default
  * @ingroup Indicator
  */
-Indicator HAYAKU_API DIFF(const Indicator& data, int n = 1);
+Indicator DIFF(const Indicator& data, int n = 1);
 
 }  // namespace hayaku
 
@@ -180,9 +180,8 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API MACD(int n1 = 12, int n2 = 26, int n3 = 9);
-Indicator HAYAKU_API MACD(const IndParam& n1, const IndParam& n2,
-                          const IndParam& n3);
+Indicator MACD(int n1 = 12, int n2 = 26, int n3 = 9);
+Indicator MACD(const IndParam& n1, const IndParam& n2, const IndParam& n3);
 
 /**
  * MACD moving average convergence / divergence
@@ -247,8 +246,8 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API TR();
-Indicator HAYAKU_API TR(const KData&);
+Indicator TR();
+Indicator TR(const KData&);
 
 }  // namespace hayaku
 
@@ -267,8 +266,8 @@ namespace hayaku {
  * Rate of change indicator ((price / prevPrice)-1)*100
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ROC(int n = 10);
-Indicator HAYAKU_API ROC(const IndParam& n);
+Indicator ROC(int n = 10);
+Indicator ROC(const IndParam& n);
 
 inline Indicator ROC(const Indicator& ind, int n = 10) { return ROC(n)(ind); }
 
@@ -298,8 +297,8 @@ namespace hayaku {
  * (the profit beyond the principal)
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ROCP(int n = 10);
-Indicator HAYAKU_API ROCP(const IndParam& n);
+Indicator ROCP(int n = 10);
+Indicator ROCP(const IndParam& n);
 
 inline Indicator ROCP(const Indicator& ind, int n = 10) { return ROCP(n)(ind); }
 
@@ -329,8 +328,8 @@ namespace hayaku {
  * (including the principal)
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ROCR(int n = 10);
-Indicator HAYAKU_API ROCR(const IndParam& n);
+Indicator ROCR(int n = 10);
+Indicator ROCR(const IndParam& n);
 
 inline Indicator ROCR(const Indicator& ind, int n = 10) { return ROCR(n)(ind); }
 
@@ -359,8 +358,8 @@ namespace hayaku {
  * Rate of change indicator (price / prevPrice) * 100
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ROCR100(int n = 10);
-Indicator HAYAKU_API ROCR100(const IndParam& n);
+Indicator ROCR100(int n = 10);
+Indicator ROCR100(const IndParam& n);
 
 inline Indicator ROCR100(const Indicator& ind, int n = 10) {
   return ROCR100(n)(ind);
@@ -392,8 +391,8 @@ namespace hayaku {
  * Relative strength index
  * @ingroup Indicator
  */
-Indicator HAYAKU_API RSI(int n = 14);
-Indicator HAYAKU_API RSI(const Indicator& data, int n = 14);
+Indicator RSI(int n = 14);
+Indicator RSI(const Indicator& data, int n = 14);
 
 }  // namespace hayaku
 
@@ -426,8 +425,8 @@ namespace hayaku {
 
  * @ingroup Indicator
  */
-Indicator HAYAKU_API VIGOR(const KData& kdata, int n = 2);
+Indicator VIGOR(const KData& kdata, int n = 2);
 
-Indicator HAYAKU_API VIGOR(int n = 2);
+Indicator VIGOR(int n = 2);
 
 }  // namespace hayaku

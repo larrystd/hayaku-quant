@@ -11,10 +11,6 @@
 
 #include "application/plugins/PluginManager.h"
 
-#ifndef HAYAKU_API
-#define HAYAKU_API
-#endif
-
 namespace hayaku {
 
 /**
@@ -53,9 +49,9 @@ class PluginRuntime final {
   bool user_configured_path_{false};
 };
 
-HAYAKU_API PluginRuntime& getPluginRuntime();
-HAYAKU_API void setPluginPath(const std::string& path) noexcept;
-HAYAKU_API std::string getPluginPath();
+PluginRuntime& getPluginRuntime();
+void setPluginPath(const std::string& path) noexcept;
+std::string getPluginPath();
 
 template <typename PluginInterfaceT>
 PluginInterfaceT* getPlugin(const std::string& pluginName,

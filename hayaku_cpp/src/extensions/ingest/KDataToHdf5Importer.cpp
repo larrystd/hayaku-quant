@@ -16,7 +16,8 @@ KDataToHdf5Importer::KDataToHdf5Importer() {
   plugin_ = getPlugin<ImportKDataToHdf5PluginInterface>(
       HAYAKU_PLUGIN_IMPORTKDATATOHDF5);
   if (!plugin_) {
-    HAYAKU_ERROR(htr("Can't find {} plugin!", HAYAKU_PLUGIN_IMPORTKDATATOHDF5));
+    HAYAKU_ERROR(
+        fmt::format("Can't find {} plugin!", HAYAKU_PLUGIN_IMPORTKDATATOHDF5));
   }
 }
 
@@ -26,16 +27,15 @@ bool KDataToHdf5Importer::setConfig(const string& datapath,
                                     const vector<string>& markets,
                                     const vector<string>& ktypes,
                                     const string& baseinfo_path) {
-  return plugin_
-             ? plugin_->setConfig(datapath, markets, ktypes, baseinfo_path)
-             : false;
+  return plugin_ ? plugin_->setConfig(datapath, markets, ktypes, baseinfo_path)
+                 : false;
 }
 
 Datetime KDataToHdf5Importer::getLastDatetime(const string& market,
                                               const string& code,
                                               const KQuery::KType& ktype) {
   return plugin_ ? plugin_->getLastDatetime(market, code, ktype)
-                  : Null<Datetime>();
+                 : Null<Datetime>();
 }
 
 void KDataToHdf5Importer::addKRecordList(const string& market,
@@ -82,8 +82,8 @@ bool KDataToHdf5Importer::addMarket(const string& market, const string& name,
                                     uint64_t close1, uint64_t open2,
                                     uint64_t close2) {
   return plugin_ ? plugin_->addMarket(market, name, description, index_code,
-                                        open1, close1, open2, close2)
-                  : false;
+                                      open1, close1, open2, close2)
+                 : false;
 }
 
 bool KDataToHdf5Importer::addStockType(uint32_t type_id,
@@ -91,10 +91,9 @@ bool KDataToHdf5Importer::addStockType(uint32_t type_id,
                                        uint32_t precision, double tick,
                                        double tick_value, double min_trade,
                                        double max_trade) {
-  return plugin_
-             ? plugin_->addStockType(type_id, description, precision, tick,
-                                      tick_value, min_trade, max_trade)
-             : false;
+  return plugin_ ? plugin_->addStockType(type_id, description, precision, tick,
+                                         tick_value, min_trade, max_trade)
+                 : false;
 }
 
 }  // namespace hayaku

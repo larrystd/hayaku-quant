@@ -35,8 +35,6 @@ void BoolCondition::_calculate() {
   }
 }
 
-CNPtr HAYAKU_API CN_Bool(const Indicator& ind) {
-  return make_shared<BoolCondition>(ind);
-}
+CNPtr CN_Bool(const Indicator& ind) { return make_shared<BoolCondition>(ind); }
 
 }  // namespace hayaku

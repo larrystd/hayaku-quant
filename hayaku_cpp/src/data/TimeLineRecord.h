@@ -15,7 +15,7 @@ namespace hayaku {
  * Time-sharing (intraday) line record
  * @ingroup StockManage
  */
-class HAYAKU_API TimeLineRecord {
+class TimeLineRecord {
  public:
   Datetime datetime;
   price_t price;
@@ -38,7 +38,7 @@ typedef vector<TimeLineRecord> TimeLineList;
  * price, vol)
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream&, const TimeLineRecord&);
+std::ostream& operator<<(std::ostream&, const TimeLineRecord&);
 
 /**
  * Output the TimeLine information
@@ -52,13 +52,13 @@ HAYAKU_API std::ostream& operator<<(std::ostream&, const TimeLineRecord&);
  * </pre>
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const TimeLineList&);
+std::ostream& operator<<(std::ostream& os, const TimeLineList&);
 
 /**
  * Compare whether two TimeLineRecord are equal, generally used in tests only
  * @ingroup StockManage
  */
-bool HAYAKU_API operator==(const TimeLineRecord& d1, const TimeLineRecord& d2);
+bool operator==(const TimeLineRecord& d1, const TimeLineRecord& d2);
 
 } /* namespace hayaku */
 

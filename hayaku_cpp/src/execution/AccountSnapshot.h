@@ -13,7 +13,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API AccountSnapshot {
+class AccountSnapshot {
  public:
   AccountSnapshot(FundsRecord funds, PositionRecordList positions,
                   PositionRecordList shortPositions)

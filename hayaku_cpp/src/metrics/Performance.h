@@ -19,7 +19,7 @@ namespace hayaku {
  * Simple performance statistics
  * @ingroup Performance
  */
-class HAYAKU_API Performance {
+class Performance {
  public:
   Performance();
   virtual ~Performance();
@@ -32,8 +32,8 @@ class HAYAKU_API Performance {
   Performance& operator=(Performance&& other) noexcept;
 
   /** Whether it is a valid statistics item
-   *  @note The legacy Chinese keys (used before the i18n refactoring) are still
-   * accepted for backward compatibility, but they are deprecated */
+   *  @note Legacy Chinese aliases remain accepted for lookup but are
+   * deprecated. */
   bool exist(const string& key);
 
   /** Reset, clearing the calculated results */
@@ -41,8 +41,8 @@ class HAYAKU_API Performance {
 
   /** Get the statistics value by the item name; it takes effect only after
    * statistics or report has been run
-   *  @note The legacy Chinese keys (used before the i18n refactoring) are still
-   * accepted for backward compatibility, but they are deprecated */
+   *  @note Legacy Chinese aliases remain accepted for lookup but are
+   * deprecated. */
   double get(const string& name) const;
 
   /** The same as get */
@@ -79,20 +79,14 @@ class HAYAKU_API Performance {
   const map_type& getAll() const { return result_; }
 
   /** Add a new statistics item
-   *  @note Since the i18n refactoring, only the English key is supported; a
-   * non-English key, such as a legacy Chinese one, is rejected with an error
-   * log
-   *  @param chinese the optional corresponding Chinese name of the key, which
-   * is registered into the unified key name mapping: it is displayed by report
-   * in the Chinese environment, and the Chinese key is also accepted by
-   * get/exist like the built-in legacy keys
+   *  @note Only English keys are supported; non-English keys are rejected.
+   *  @param chinese optional legacy alias accepted by get/exist; report always
+   * uses the English key
    */
   void addKey(const string& key, const string& chinese = string());
 
   /** Set the value of the given statistics item
-   *  @note Since the i18n refactoring, only the English key is supported; a
-   * non-English key, such as a legacy Chinese one, is rejected with an error
-   * log
+   *  @note Only English keys are supported; non-English keys are rejected.
    */
   void setValue(const string& key, double value);
 
@@ -100,7 +94,7 @@ class HAYAKU_API Performance {
   map_type result_;
   StringList
       keys_;  // Saves the order of the statistics items; neither map nor
-               // unordered_map can keep the insertion order when iterating
+              // unordered_map can keep the insertion order when iterating
 };
 
 } /* namespace hayaku */

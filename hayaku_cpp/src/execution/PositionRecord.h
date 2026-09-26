@@ -16,7 +16,7 @@ namespace hayaku {
  * Position record
  * @ingroup ExecutionAccount
  */
-class HAYAKU_API PositionRecord {
+class PositionRecord {
  public:
   PositionRecord() = default;
   PositionRecord(const Stock& stock, const Datetime& takeDatetime,
@@ -41,10 +41,10 @@ class HAYAKU_API PositionRecord {
    */
   price_t totalProfit() const;
 
-  Stock stock;             ///< Trading object
-  Datetime takeDatetime;   ///< Date of the first position opening
-  Datetime cleanDatetime;  ///< Closing date, it is Null<Datetime>() in the
-                           ///< current position records
+  Stock stock;              ///< Trading object
+  Datetime takeDatetime;    ///< Date of the first position opening
+  Datetime cleanDatetime;   ///< Closing date, it is Null<Datetime>() in the
+                            ///< current position records
   double number{0.0};       ///< Current held quantity
   price_t stoploss{0.0};    ///< Current stop-loss price
   price_t goalPrice{0.0};   ///< Current target price
@@ -116,9 +116,9 @@ typedef vector<PositionRecord> PositionRecordList;
  * Output the position record information
  * @ingroup ExecutionAccount
  */
-HAYAKU_API std::ostream& operator<<(std::ostream&, const PositionRecord&);
+std::ostream& operator<<(std::ostream&, const PositionRecord&);
 
-bool HAYAKU_API operator==(const PositionRecord& d1, const PositionRecord& d2);
+bool operator==(const PositionRecord& d1, const PositionRecord& d2);
 
 } /* namespace hayaku */
 

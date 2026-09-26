@@ -21,6 +21,6 @@ price_t NoGoalProfitGoal::getGoal(const Datetime& datetime, price_t price) {
   return Null<price_t>();
 }
 
-ProfitGoalPtr HAYAKU_API PG_NoGoal() { return make_shared<NoGoalProfitGoal>(); }
+ProfitGoalPtr PG_NoGoal() { return make_shared<NoGoalProfitGoal>(); }
 
 } /* namespace hayaku */

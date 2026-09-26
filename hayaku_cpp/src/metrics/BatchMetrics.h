@@ -20,9 +20,9 @@ namespace hayaku {
  * @return vector<FundsList>
  * @ingroup ExecutionAccount
  */
-vector<FundsList> HAYAKU_API
-getFundsList(const vector<internal::ExecutionAccountPortPtr>& accounts,
-             const DatetimeList& ref_dates);
+vector<FundsList> getFundsList(
+    const vector<internal::ExecutionAccountPortPtr>& accounts,
+    const DatetimeList& ref_dates);
 
 /**
  * Get the funds list of the account list at once
@@ -34,9 +34,9 @@ getFundsList(const vector<internal::ExecutionAccountPortPtr>& accounts,
  * @return vector<FundsList>
  * @ingroup ExecutionAccount
  */
-vector<Performance> HAYAKU_API
-getPerformanceList(const vector<internal::ExecutionAccountPortPtr>& accounts,
-                   const Datetime& datetime = Datetime::now(),
-                   const KQuery::KType& ktype = KQuery::DAY, bool ext = true);
+vector<Performance> getPerformanceList(
+    const vector<internal::ExecutionAccountPortPtr>& accounts,
+    const Datetime& datetime = Datetime::now(),
+    const KQuery::KType& ktype = KQuery::DAY, bool ext = true);
 
 }  // namespace hayaku

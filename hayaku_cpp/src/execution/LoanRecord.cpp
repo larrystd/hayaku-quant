@@ -9,8 +9,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const LoanRecord& record) {
+std::ostream& operator<<(std::ostream& os, const LoanRecord& record) {
   os << std::fixed;
   (void)os.precision(2);
   os << "LoanRecord(" << record.datetime << ", " << record.value << ")";

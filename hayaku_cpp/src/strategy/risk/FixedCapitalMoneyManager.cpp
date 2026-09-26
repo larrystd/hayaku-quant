@@ -35,7 +35,7 @@ double FixedCapitalMoneyManager ::_getBuyNumber(const Datetime& datetime,
   return account_->cash(datetime, query_.kType()) / capital;
 }
 
-MoneyManagerPtr HAYAKU_API MM_FixedCapital(double capital) {
+MoneyManagerPtr MM_FixedCapital(double capital) {
   MoneyManagerPtr p = make_shared<FixedCapitalMoneyManager>();
   p->setParam<double>("capital", capital);
   return p;

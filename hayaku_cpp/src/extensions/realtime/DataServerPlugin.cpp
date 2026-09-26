@@ -20,7 +20,8 @@ void startDataServer(const std::string& addr, size_t work_num, bool save_tick,
                      bool buf_tick, const std::string& parquet_path) {
   auto* plugin = getPlugin<DataServerPluginInterface>(HAYAKU_PLUGIN_DATASERVER);
   HAYAKU_ERROR_IF_RETURN(
-      !plugin, void(), htr("Can't find {} plugin!", HAYAKU_PLUGIN_DATASERVER));
+      !plugin, void(),
+      fmt::format("Can't find {} plugin!", HAYAKU_PLUGIN_DATASERVER));
   plugin->start(addr, work_num, save_tick, buf_tick, parquet_path);
 }
 

@@ -34,7 +34,7 @@ class HayakuSession;
 /**
  * @brief Strategy runtime
  */
-class HAYAKU_API Strategy {
+class Strategy {
   CLASS_LOGGER_IMP(Strategy)
   PARAMETER_SUPPORT_WITH_CHECK
 
@@ -283,11 +283,10 @@ typedef shared_ptr<Strategy> StrategyPtr;
  * @param costfunc the cost function
  * @param other_brokers the other order brokers
  */
-void HAYAKU_API
-runInStrategy(const internal::StrategyRuntimePtr& strategy, const Stock& stk,
-              const KQuery& query, const OrderBrokerPtr& broker,
-              const TradeCostPtr& costfunc,
-              const std::vector<OrderBrokerPtr>& other_brokers = {});
+void runInStrategy(const internal::StrategyRuntimePtr& strategy,
+                   const Stock& stk, const KQuery& query,
+                   const OrderBrokerPtr& broker, const TradeCostPtr& costfunc,
+                   const std::vector<OrderBrokerPtr>& other_brokers = {});
 
 /**
  * @brief Execute the portfolio strategy PF in the strategy runtime
@@ -300,10 +299,9 @@ runInStrategy(const internal::StrategyRuntimePtr& strategy, const Stock& stk,
  * @param costfunc the cost function
  * @param other_brokers the other order brokers
  */
-void HAYAKU_API
-runInStrategy(const PFPtr& pf, const KQuery& query,
-              const OrderBrokerPtr& broker, const TradeCostPtr& costfunc,
-              const std::vector<OrderBrokerPtr>& other_brokers = {});
+void runInStrategy(const PFPtr& pf, const KQuery& query,
+                   const OrderBrokerPtr& broker, const TradeCostPtr& costfunc,
+                   const std::vector<OrderBrokerPtr>& other_brokers = {});
 
 /** @} */
 }  // namespace hayaku

@@ -24,7 +24,7 @@ namespace hayaku {
  * @return SignalPtr
  * @ingroup Signal
  */
-SignalPtr HAYAKU_API SG_AllwaysBuy();
+SignalPtr SG_AllwaysBuy();
 
 }  // namespace hayaku
 
@@ -48,8 +48,7 @@ namespace hayaku {
  * @param upper upper band
  * @return SignalPtr
  */
-SignalPtr HAYAKU_API SG_Band(const Indicator& ind, price_t lower,
-                             price_t upper);
+SignalPtr SG_Band(const Indicator& ind, price_t lower, price_t upper);
 
 /**
  * Indicator band indicator: buy when the indicator exceeds the upper band
@@ -60,8 +59,8 @@ SignalPtr HAYAKU_API SG_Band(const Indicator& ind, price_t lower,
  * @param upper upper band indicator
  * @return SignalPtr
  */
-SignalPtr HAYAKU_API SG_Band(const Indicator& ind, const Indicator& lower,
-                             const Indicator& upper);
+SignalPtr SG_Band(const Indicator& ind, const Indicator& lower,
+                  const Indicator& upper);
 
 } /* namespace hayaku */
 
@@ -85,8 +84,8 @@ namespace hayaku {
  * @return signal generator
  * @ingroup Signal
  */
-SignalPtr HAYAKU_API SG_Bool(const Indicator& buy, const Indicator& sell,
-                             bool alternate = true);
+SignalPtr SG_Bool(const Indicator& buy, const Indicator& sell,
+                  bool alternate = true);
 
 } /* namespace hayaku */
 
@@ -108,7 +107,7 @@ namespace hayaku {
  * @return signal generator
  * @ingroup Signal
  */
-SignalPtr HAYAKU_API SG_Cross(const Indicator& fast, const Indicator& slow);
+SignalPtr SG_Cross(const Indicator& fast, const Indicator& slow);
 
 } /* namespace hayaku */
 
@@ -132,7 +131,7 @@ namespace hayaku {
  * @return signal generator
  * @ingroup Signal
  */
-SignalPtr HAYAKU_API SG_CrossGold(const Indicator& fast, const Indicator& slow);
+SignalPtr SG_CrossGold(const Indicator& fast, const Indicator& slow);
 
 } /* namespace hayaku */
 
@@ -149,7 +148,7 @@ namespace hayaku {
  * It uses the PF rebalancing cycle as the buy signal
  * @return SignalPtr
  */
-SignalPtr HAYAKU_API SG_Cycle();
+SignalPtr SG_Cycle();
 
 }  // namespace hayaku
 
@@ -172,7 +171,7 @@ namespace hayaku {
  * @return signal generator
  * @ingroup Signal
  */
-SignalPtr HAYAKU_API SG_Flex(const Indicator& op, int slow_n);
+SignalPtr SG_Flex(const Indicator& op, int slow_n);
 
 } /* namespace hayaku */
 
@@ -185,23 +184,23 @@ SignalPtr HAYAKU_API SG_Flex(const Indicator& op, int slow_n);
 
 namespace hayaku {
 
-HAYAKU_API SignalPtr operator+(const SignalPtr& sg1, const SignalPtr& sg2);
-HAYAKU_API SignalPtr operator-(const SignalPtr& sg1, const SignalPtr& sg2);
-HAYAKU_API SignalPtr operator*(const SignalPtr& sg1, const SignalPtr& sg2);
-HAYAKU_API SignalPtr operator/(const SignalPtr& sg1, const SignalPtr& sg2);
+SignalPtr operator+(const SignalPtr& sg1, const SignalPtr& sg2);
+SignalPtr operator-(const SignalPtr& sg1, const SignalPtr& sg2);
+SignalPtr operator*(const SignalPtr& sg1, const SignalPtr& sg2);
+SignalPtr operator/(const SignalPtr& sg1, const SignalPtr& sg2);
 
-HAYAKU_API SignalPtr operator+(const SignalPtr& sg, double value);
-HAYAKU_API SignalPtr operator-(const SignalPtr& sg, double value);
-HAYAKU_API SignalPtr operator*(const SignalPtr& sg, double value);
-HAYAKU_API SignalPtr operator/(const SignalPtr& sg, double value);
+SignalPtr operator+(const SignalPtr& sg, double value);
+SignalPtr operator-(const SignalPtr& sg, double value);
+SignalPtr operator*(const SignalPtr& sg, double value);
+SignalPtr operator/(const SignalPtr& sg, double value);
 
-HAYAKU_API SignalPtr operator+(double value, const SignalPtr& sg);
-HAYAKU_API SignalPtr operator-(double value, const SignalPtr& sg);
-HAYAKU_API SignalPtr operator*(double value, const SignalPtr& sg);
-HAYAKU_API SignalPtr operator/(double value, const SignalPtr& sg);
+SignalPtr operator+(double value, const SignalPtr& sg);
+SignalPtr operator-(double value, const SignalPtr& sg);
+SignalPtr operator*(double value, const SignalPtr& sg);
+SignalPtr operator/(double value, const SignalPtr& sg);
 
-HAYAKU_API SignalPtr operator&(const SignalPtr& sg1, const SignalPtr& sg2);
-HAYAKU_API SignalPtr operator|(const SignalPtr& sg1, const SignalPtr& sg2);
+SignalPtr operator&(const SignalPtr& sg1, const SignalPtr& sg2);
+SignalPtr operator|(const SignalPtr& sg1, const SignalPtr& sg2);
 
 //------------------------------------------------------------------
 // Since the alternate of SG is True by default, when using a form such as "sg1
@@ -321,7 +320,7 @@ namespace hayaku {
  * testing or other special purposes
  * @return SignalPtr
  */
-SignalPtr HAYAKU_API SG_Manual();
+SignalPtr SG_Manual();
 
 }  // namespace hayaku
 
@@ -343,7 +342,7 @@ namespace hayaku {
  * @return signal generator
  * @ingroup Signal
  */
-SignalPtr HAYAKU_API SG_OneSide(const Indicator& ind, bool is_buy);
+SignalPtr SG_OneSide(const Indicator& ind, bool is_buy);
 
 /** Generate a one-sided buy signal */
 inline SignalPtr SG_Buy(const Indicator& ind) { return SG_OneSide(ind, true); }
@@ -382,8 +381,8 @@ namespace hayaku {
  * @return
  * @ingroup Signal
  */
-SignalPtr HAYAKU_API SG_Single(const Indicator& ind, int filter_n = 20,
-                               double filter_p = 0.1);
+SignalPtr SG_Single(const Indicator& ind, int filter_n = 20,
+                    double filter_p = 0.1);
 
 /**
  * Single line inflection point signal 2
@@ -402,7 +401,7 @@ SignalPtr HAYAKU_API SG_Single(const Indicator& ind, int filter_n = 20,
  * @return
  * @ingroup Signal
  */
-SignalPtr HAYAKU_API SG_Single2(const Indicator& ind, int filter_n = 20,
-                                double filter_p = 0.1);
+SignalPtr SG_Single2(const Indicator& ind, int filter_n = 20,
+                     double filter_p = 0.1);
 
 } /* namespace hayaku */

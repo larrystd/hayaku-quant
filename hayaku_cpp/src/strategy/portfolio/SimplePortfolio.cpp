@@ -126,8 +126,8 @@ void SimplePortfolio::_runMomentOnOpen(const Datetime& date,
   // cashAccount and tm)
   bool trace = getParam<bool>("trace");
   HAYAKU_INFO_IF(trace, "[PF] {}: {}, {}: {}, {}: {}",
-                 htr("The sum cash of subAccount"), sum_cash, htr("cash tm"),
-                 cash_account_->currentCash(), htr("tm cash"),
+                 "The sum cash of subAccount", sum_cash, "cash tm",
+                 cash_account_->currentCash(), "tm cash",
                  account_->currentCash());
   sum_cash += cash_account_->currentCash();
 
@@ -142,9 +142,9 @@ void SimplePortfolio::_runMomentOnOpen(const Datetime& date,
       }
     }
     HAYAKU_INFO_IF(trace, "[PF] {}: {}, {}: {}, {}: {}",
-                   htr("After compensate: the sum cash of subAccount"),
-                   sum_cash, htr("cash tm"), cash_account_->currentCash(),
-                   htr("tm cash"), account_->currentCash());
+                   "After compensate: the sum cash of subAccount", sum_cash,
+                   "cash tm", cash_account_->currentCash(), "tm cash",
+                   account_->currentCash());
   }
 
   //----------------------------------------------------------------------
@@ -152,24 +152,23 @@ void SimplePortfolio::_runMomentOnOpen(const Datetime& date,
   //----------------------------------------------------------------------
   if (trace) {
     auto funds = account_->getFunds(date, query_.kType());
-    HAYAKU_INFO("[PF] [{}] - {}: {},  {}: {}, {}: {}", htr("before rebalance"),
-                htr("total funds"), funds.cash + funds.market_value,
-                htr("cash"), funds.cash, htr("market_value"),
-                funds.market_value);
+    HAYAKU_INFO("[PF] [{}] - {}: {},  {}: {}, {}: {}", "before rebalance",
+                "total funds", funds.cash + funds.market_value, "cash",
+                funds.cash, "market_value", funds.market_value);
   }
 
   //----------------------------------------------------------------------
   // At the open, handle first the systems whose position adjustment sell failed
   // on the previous trading day
   //----------------------------------------------------------------------
-  HAYAKU_INFO_IF(trace, "[PF] {}: {}", htr("process delay adjust sys, size"),
+  HAYAKU_INFO_IF(trace, "[PF] {}: {}", "process delay adjust sys, size",
                  delay_adjust_sys_list_.size());
   StrategyWeightList tmp_continue_adjust_sys_list;
   for (auto& sys : delay_adjust_sys_list_) {
     auto tr =
         sys.strategy->sellForceOnOpen(date, sys.weight, OrderOrigin::PORTFOLIO);
     if (!tr.isNull()) {
-      HAYAKU_INFO_IF(trace, htr("[PF] Delay adjust sell: {}", tr));
+      HAYAKU_INFO_IF(trace, fmt::format("[PF] Delay adjust sell: {}", tr));
       account_->addTradeRecord(tr);
 
       // After the sell, try to withdraw the funds and transfer them to the
@@ -187,7 +186,8 @@ void SimplePortfolio::_runMomentOnOpen(const Datetime& date,
           date, sys.strategy->getStock());
       if (position.number > 0.0) {
         HAYAKU_INFO_IF(
-            trace, htr("[{}] failed to force sell, delay to next day", name()));
+            trace, fmt::format("[{}] failed to force sell, delay to next day",
+                               name()));
         tmp_continue_adjust_sys_list.emplace_back(sys);
       }
     }
@@ -202,12 +202,12 @@ void SimplePortfolio::_runMomentOnOpen(const Datetime& date,
   for (auto& sys : running_sys_set_) {
     auto tr = sys->processPendingSell(date);
     if (!tr.isNull()) {
-      HAYAKU_INFO_IF(trace, htr("[PF] sell delay on open {}", tr));
+      HAYAKU_INFO_IF(trace, fmt::format("[PF] sell delay on open {}", tr));
       account_->addTradeRecord(tr);
     }
     tr = sys->processPendingBuy(date);
     if (!tr.isNull()) {
-      HAYAKU_INFO_IF(trace, htr("[PF] buy delay on open {}", tr));
+      HAYAKU_INFO_IF(trace, fmt::format("[PF] buy delay on open {}", tr));
       account_->addTradeRecord(tr);
     }
   }
@@ -234,8 +234,8 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
           ((sys->getParam<bool>("buy_delay") && !pending.buy().valid) &&
            (sys->getParam<bool>("sell_delay") && !pending.buy().valid))) {
         // There is no delayed buy / sell signal
-        HAYAKU_INFO_IF(trace,
-                       htr("[PF] remove no signal delay sys: {}", sys->name()));
+        HAYAKU_INFO_IF(trace, fmt::format("[PF] remove no signal delay sys: {}",
+                                          sys->name()));
         tmp_will_remove_sys_.emplace_back(sys, 0.0);
 
         auto sub_cash = subAccount->currentCash();
@@ -266,9 +266,9 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
       for (auto& sw : tmp_selected_list_) {
         if (sw.strategy) {
           if (running_sys_set_.find(sw.strategy) == running_sys_set_.end()) {
-            HAYAKU_INFO_IF(trace,
-                           htr("[PF] clear delay buy request(future): {}",
-                               sw.strategy->name()));
+            HAYAKU_INFO_IF(
+                trace, fmt::format("[PF] clear delay buy request(future): {}",
+                                   sw.strategy->name()));
             sw.strategy->clearPendingBuy();
           }
         }
@@ -277,8 +277,9 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
 
     if (trace && !tmp_selected_list_.empty()) {
       for (auto& sys : tmp_selected_list_) {
-        HAYAKU_INFO_IF(sys.strategy, htr("[PF] select: {}, score: {:<.4f}",
-                                         sys.strategy->name(), sys.weight));
+        HAYAKU_INFO_IF(sys.strategy,
+                       fmt::format("[PF] select: {}, score: {:<.4f}",
+                                   sys.strategy->name(), sys.weight));
       }
     }
 
@@ -320,7 +321,7 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
       if (subAccount->currentCash() < 1.0 &&
           0 == subAccount->getHoldNumber(date, sys->getStock())) {
         // There is no cash
-        HAYAKU_INFO_IF(trace, htr("[PF] remove sys: {}", sys->name()));
+        HAYAKU_INFO_IF(trace, fmt::format("[PF] remove sys: {}", sys->name()));
         tmp_will_remove_sys_.emplace_back(sys, 0.0);
       }
     }
@@ -343,9 +344,9 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
   //----------------------------------------------------------------------
   if (trace) {
     auto funds = account_->getFunds(date, query_.kType());
-    HAYAKU_INFO("[PF] [{}] - {}: {}, {}: {}, {}: {}", htr("after adjust"),
-                htr("total assets"), funds.total_assets(), htr("cash"),
-                funds.cash, htr("market_value"), funds.market_value);
+    HAYAKU_INFO("[PF] [{}] - {}: {}, {}: {}, {}: {}", "after adjust",
+                "total assets", funds.total_assets(), "cash", funds.cash,
+                "market_value", funds.market_value);
   }
 
   //----------------------------------------------------------------------------
@@ -366,17 +367,17 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
         if (delay_adjust_sys_set.find(sub_sys.get()) ==
             delay_adjust_sys_set.end()) {
           if (sub_sys->getParam<bool>("buy_delay")) {
-            HAYAKU_INFO_IF(
-                sg->shouldBuy(date),
-                htr("[PF] {} sg will buy on next open", sub_sys->name()));
+            HAYAKU_INFO_IF(sg->shouldBuy(date),
+                           fmt::format("[PF] {} sg will buy on next open",
+                                       sub_sys->name()));
           } else {
-            HAYAKU_INFO_IF(
-                sg->shouldBuy(date),
-                htr("[PF] {} sg will buy on current close", sub_sys->name()));
+            HAYAKU_INFO_IF(sg->shouldBuy(date),
+                           fmt::format("[PF] {} sg will buy on current close",
+                                       sub_sys->name()));
           }
         } else {
-          HAYAKU_INFO(
-              htr("[PF] {} will adjust sell on next open", sub_sys->name()));
+          HAYAKU_INFO(fmt::format("[PF] {} will adjust sell on next open",
+                                  sub_sys->name()));
         }
       }
     }
@@ -393,9 +394,9 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
   //----------------------------------------------------------------------
   if (trace) {
     auto funds = account_->getFunds(date, query_.kType());
-    HAYAKU_INFO("[PF] [{}] - {}: {}, {}: {}, {}: {}", htr("after run at close"),
-                htr("total assets"), funds.total_assets(), htr("cash"),
-                funds.cash, htr("market_value"), funds.market_value);
+    HAYAKU_INFO("[PF] [{}] - {}: {}, {}: {}, {}: {}", "after run at close",
+                "total assets", funds.total_assets(), "cash", funds.cash,
+                "market_value", funds.market_value);
   }
 }
 
@@ -415,10 +416,9 @@ json SimplePortfolio::lastSuggestion() const {
   return ret;
 }
 
-PortfolioPtr HAYAKU_API PF_Simple(const internal::PortfolioAccountPortPtr& tm,
-                                  const SEPtr& st, const AFPtr& af,
-                                  int adjust_cycle, const string& adjust_mode,
-                                  bool delay_to_trading_day) {
+PortfolioPtr PF_Simple(const internal::PortfolioAccountPortPtr& tm,
+                       const SEPtr& st, const AFPtr& af, int adjust_cycle,
+                       const string& adjust_mode, bool delay_to_trading_day) {
   PortfolioPtr ret = make_shared<SimplePortfolio>(tm, st, af);
   ret->setParam<int>("adjust_cycle", adjust_cycle);
   ret->setParam<string>("adjust_mode", adjust_mode);

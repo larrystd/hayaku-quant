@@ -195,9 +195,8 @@ void IAdvance::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ADVANCE(const KQuery& query, const string& market,
-                             int stk_type, bool ignore_context,
-                             bool fill_null) {
+Indicator ADVANCE(const KQuery& query, const string& market, int stk_type,
+                  bool ignore_context, bool fill_null) {
   IndicatorImpPtr p = make_shared<IAdvance>();
   p->setParam<KQuery>("query", query);
   p->setParam<string>("market", market);
@@ -398,9 +397,8 @@ void IDecline::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API DECLINE(const KQuery& query, const string& market,
-                             int stk_type, bool ignore_context,
-                             bool fill_null) {
+Indicator DECLINE(const KQuery& query, const string& market, int stk_type,
+                  bool ignore_context, bool fill_null) {
   IndicatorImpPtr p = make_shared<IDecline>();
   p->setParam<KQuery>("query", query);
   p->setParam<string>("market", market);
@@ -539,7 +537,7 @@ void IBlockSetNum::_increment_calculate(const Indicator& ind,
   }
 }
 
-Indicator HAYAKU_API BLOCKSETNUM(const Block& block, const KQuery& query) {
+Indicator BLOCKSETNUM(const Block& block, const KQuery& query) {
   IndicatorImpPtr p = make_shared<IBlockSetNum>();
   p->setParam<KQuery>("query", query);
   p->setParam<Block>("block", block);
@@ -548,7 +546,7 @@ Indicator HAYAKU_API BLOCKSETNUM(const Block& block, const KQuery& query) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API BLOCKSETNUM(const Block& block) {
+Indicator BLOCKSETNUM(const Block& block) {
   return BLOCKSETNUM(block, KQuery(0, 0));
 }
 
@@ -629,15 +627,14 @@ void IInBlock::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API INBLOCK(const string& category, const string& name) {
+Indicator INBLOCK(const string& category, const string& name) {
   auto p = make_shared<IInBlock>();
   p->setParam<string>("category", category);
   p->setParam<string>("name", name);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API INBLOCK(const KData& k, const string& category,
-                             const string& name) {
+Indicator INBLOCK(const KData& k, const string& category, const string& name) {
   auto p = make_shared<IInBlock>();
   p->setParam<string>("category", category);
   p->setParam<string>("name", name);
@@ -973,7 +970,7 @@ void IInSum::_calculate(const Indicator& ind) {
   }
 }
 
-Indicator HAYAKU_API INSUM(const Block& block, int mode, bool fill_null) {
+Indicator INSUM(const Block& block, int mode, bool fill_null) {
   IndicatorImpPtr p = make_shared<IInSum>();
   p->setParam<Block>("block", block);
   p->setParam<int>("mode", mode);
@@ -982,8 +979,8 @@ Indicator HAYAKU_API INSUM(const Block& block, int mode, bool fill_null) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API INSUM(const Block& block, const KQuery& query,
-                           const Indicator& ind, int mode, bool fill_null) {
+Indicator INSUM(const Block& block, const KQuery& query, const Indicator& ind,
+                int mode, bool fill_null) {
   IndicatorImpPtr p = make_shared<IInSum>();
   p->setParam<KQuery>("query", query);
   p->setParam<Block>("block", block);
@@ -993,8 +990,8 @@ Indicator HAYAKU_API INSUM(const Block& block, const KQuery& query,
   return Indicator(p)(ind);
 }
 
-Indicator HAYAKU_API INSUM(const Block& block, const Indicator& ind, int mode,
-                           bool fill_null) {
+Indicator INSUM(const Block& block, const Indicator& ind, int mode,
+                bool fill_null) {
   return INSUM(block, KQuery(0, 0), ind, mode, fill_null);
 }
 

@@ -8,20 +8,16 @@
  * header-level static initializer.
  */
 
-#ifndef HAYAKU_API
-#define HAYAKU_API
-#endif
-
 namespace hayaku {
 
 /** Acquire the core process runtime. The first acquisition performs
  * initialization. */
-HAYAKU_API void acquireProcessRuntime();
+void acquireProcessRuntime();
 
 /** Release one acquisition. The final release shuts down the core process
  * runtime. */
-HAYAKU_API void releaseProcessRuntime() noexcept;
+void releaseProcessRuntime() noexcept;
 
-[[nodiscard]] HAYAKU_API bool processRuntimeActive() noexcept;
+[[nodiscard]] bool processRuntimeActive() noexcept;
 
 }  // namespace hayaku

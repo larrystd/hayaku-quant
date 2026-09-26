@@ -18,7 +18,7 @@
 namespace hayaku {
 
 /** Immutable ownership of the components needed to run one strategy. */
-class HAYAKU_API StrategyDefinition {
+class StrategyDefinition {
  public:
   StrategyDefinition(MoneyManagerPtr moneyManager, SignalPtr signal,
                      string name = "Strategy", EnvironmentPtr environment = {},
@@ -53,9 +53,7 @@ class HAYAKU_API StrategyDefinition {
   Parameter parameters_;
 };
 
-inline const string& StrategyDefinition::name() const noexcept {
-  return name_;
-}
+inline const string& StrategyDefinition::name() const noexcept { return name_; }
 
 inline const MoneyManagerPtr& StrategyDefinition::moneyManager()
     const noexcept {

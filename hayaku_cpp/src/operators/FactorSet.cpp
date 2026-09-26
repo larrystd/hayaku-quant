@@ -16,7 +16,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const FactorSet& set) {
+std::ostream& operator<<(std::ostream& os, const FactorSet& set) {
   os << set.str();
   return os;
 }
@@ -167,8 +167,7 @@ bool FactorSet::have(const string& name) const noexcept {
 
 const Factor& FactorSet::get(const string& name) const {
   auto it = data_->nameIndexMap.find(name);
-  HAYAKU_CHECK(it != data_->nameIndexMap.end(), "Factor '{}' not found!",
-               name);
+  HAYAKU_CHECK(it != data_->nameIndexMap.end(), "Factor '{}' not found!", name);
   return data_->factors[it->second];
 }
 

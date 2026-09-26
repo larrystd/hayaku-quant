@@ -113,9 +113,6 @@ std::string HAYAKU_UTILS_API getPlatform();
 /** Get the current CPU architecture name */
 std::string HAYAKU_UTILS_API getCpuArch();
 
-/** Get the current system language name (returned in lowercase) */
-std::string HAYAKU_UTILS_API getSystemLanguage();
-
 uint64_t HAYAKU_UTILS_API getMemoryMaxSize();
 
 uint64_t HAYAKU_UTILS_API getMemoryIdleSize();

@@ -120,8 +120,8 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API EVERY(int n = 20);
-Indicator HAYAKU_API EVERY(const IndParam& n);
+Indicator EVERY(int n = 20);
+Indicator EVERY(const IndParam& n);
 
 inline Indicator EVERY(const Indicator& ind, int n = 20) {
   return EVERY(n)(ind);
@@ -159,8 +159,8 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API EXIST(int n = 20);
-Indicator HAYAKU_API EXIST(const IndParam& n);
+Indicator EXIST(int n = 20);
+Indicator EXIST(const IndParam& n);
 
 inline Indicator EXIST(const Indicator& ind, int n = 20) {
   return EXIST(n)(ind);
@@ -199,8 +199,8 @@ namespace hayaku {
  * </pre>
  * @ingroup Indicator
  */
-Indicator HAYAKU_API FILTER(int n = 5);
-Indicator HAYAKU_API FILTER(const IndParam& n);
+Indicator FILTER(int n = 5);
+Indicator FILTER(const IndParam& n);
 
 inline Indicator FILTER(const Indicator& ind, int n = 5) {
   return FILTER(n)(ind);
@@ -231,7 +231,7 @@ namespace hayaku {
  * otherwise 0.
  * @ingroup Indicator
  */
-Indicator HAYAKU_API NOT();
+Indicator NOT();
 
 /**
  * Logical NOT. NOT(X) returns the negation of X, i.e. it returns 1 when X=0,
@@ -257,7 +257,7 @@ namespace hayaku {
  * Whether it is positive infinity (use ISINFA for negative infinity)
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ISINF();
+Indicator ISINF();
 
 inline Indicator ISINF(const Indicator& ind) { return ISINF()(ind); }
 
@@ -277,7 +277,7 @@ namespace hayaku {
  * Whether it is negative infinity (use ISINF for positive infinity)
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ISINFA();
+Indicator ISINFA();
 
 inline Indicator ISINFA(const Indicator& ind) { return ISINFA()(ind); }
 
@@ -298,8 +298,8 @@ namespace hayaku {
  * last one, otherwise 0.
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ISLASTBAR();
-Indicator HAYAKU_API ISLASTBAR(const KData& kdata);
+Indicator ISLASTBAR();
+Indicator ISLASTBAR(const KData& kdata);
 
 inline Indicator ISLASTBAR(const Indicator& ind) { return ISLASTBAR()(ind); }
 
@@ -357,7 +357,7 @@ namespace hayaku {
  *
  * @return Indicator the limit-down judgment indicator instance
  */
-Indicator HAYAKU_API ISLIMITDOWN();
+Indicator ISLIMITDOWN();
 
 /**
  * @brief Judge whether the stock in the given K-line data is limit down
@@ -366,7 +366,7 @@ Indicator HAYAKU_API ISLIMITDOWN();
  * @return Indicator the limit-down judgment indicator instance
  * @see ISLIMITDOWN()
  */
-Indicator HAYAKU_API ISLIMITDOWN(const KData& k);
+Indicator ISLIMITDOWN(const KData& k);
 
 }  // namespace hayaku
 
@@ -416,7 +416,7 @@ namespace hayaku {
  *
  * @return Indicator the limit-up judgment indicator instance
  */
-Indicator HAYAKU_API ISLIMITUP();
+Indicator ISLIMITUP();
 
 /**
  * @brief Judge whether the stock in the given K-line data is limit up
@@ -425,7 +425,7 @@ Indicator HAYAKU_API ISLIMITUP();
  * @return Indicator the limit-up judgment indicator instance
  * @see ISLIMITUP()
  */
-Indicator HAYAKU_API ISLIMITUP(const KData& k);
+Indicator ISLIMITUP(const KData& k);
 
 }  // namespace hayaku
 
@@ -444,7 +444,7 @@ namespace hayaku {
  * @param ignore_discard whether to ignore the discard values, false by default
  * @ingroup Indicator
  */
-Indicator HAYAKU_API ISNA(bool ignore_discard = false);
+Indicator ISNA(bool ignore_discard = false);
 
 inline Indicator ISNA(const Indicator& ind, bool ignore_discard = false) {
   return ISNA(ignore_discard)(ind);
@@ -616,7 +616,7 @@ namespace hayaku {
  * Edge jump, jumping from greater than 0.0 to <= 0.0
  * @ingroup Indicator
  */
-Indicator HAYAKU_API JUMPDOWN();
+Indicator JUMPDOWN();
 
 inline Indicator JUMPDOWN(const Indicator& ind) { return JUMPDOWN()(ind); }
 
@@ -636,7 +636,7 @@ namespace hayaku {
  * Edge jump, jumping from less than or equal to 0.0 to > 0.0
  * @ingroup Indicator
  */
-Indicator HAYAKU_API JUMPUP();
+Indicator JUMPUP();
 
 inline Indicator JUMPUP(const Indicator& ind) { return JUMPUP()(ind); }
 

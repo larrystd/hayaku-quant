@@ -46,9 +46,8 @@ namespace hayaku {
  *
  * @ingroup Indicator
  */
-HAYAKU_API std::vector<double> multi_regression(const Stock& stk,
-                                                const KQuery& query,
-                                                const IndicatorList& inds);
+std::vector<double> multi_regression(const Stock& stk, const KQuery& query,
+                                     const IndicatorList& inds);
 
 /**
  * Perform a multiple linear regression analysis on a stock (variadic version)
@@ -95,9 +94,8 @@ std::vector<double> multi_regression(const Stock& stk, const KQuery& query,
  *
  * @ingroup Indicator
  */
-HAYAKU_API std::vector<double> multi_regression_full(const Stock& stk,
-                                                     const KQuery& query,
-                                                     const IndicatorList& inds);
+std::vector<double> multi_regression_full(const Stock& stk, const KQuery& query,
+                                          const IndicatorList& inds);
 
 /**
  * Perform a multiple linear regression analysis on a stock (full version,

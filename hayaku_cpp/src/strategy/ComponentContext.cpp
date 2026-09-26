@@ -58,8 +58,7 @@ void ComponentContext::bind(const KData& kdata) {
     runtime_.kdata_ = kdata;
   }
 
-  HAYAKU_TRACE_IF_RETURN(runtime_.calculated_, void(),
-                         "No need to calculate!");
+  HAYAKU_TRACE_IF_RETURN(runtime_.calculated_, void(), "No need to calculate!");
 
   runtime_.stock_ = runtime_.kdata_.getStock();
   KQuery query = runtime_.kdata_.getQuery();
@@ -74,9 +73,9 @@ void ComponentContext::bind(const KData& kdata) {
 
   HAYAKU_WARN_IF(query.recoverType() == KQuery::FORWARD ||
                      query.recoverType() == KQuery::EQUAL_FORWARD,
-                 htr("You are using forward or equal_forward adjusted K-line "
-                     "data, which introduces "
-                     "look-ahead bias!"));
+                 "You are using forward or equal_forward adjusted K-line "
+                 "data, which introduces "
+                 "look-ahead bias!");
 
   if (runtime_.sg_) {
     runtime_.sg_->setTO(runtime_.kdata_);

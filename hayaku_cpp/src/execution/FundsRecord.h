@@ -16,7 +16,7 @@ namespace hayaku {
  * Record of the current execution-account asset situation.
  * @ingroup ExecutionAccount
  */
-class HAYAKU_API FundsRecord {
+class FundsRecord {
  public:
   FundsRecord() = default;
   FundsRecord(price_t cash, price_t market_value, price_t short_market_value,
@@ -97,9 +97,9 @@ typedef vector<FundsRecord> FundsRecordList;
  * Output the TradeRecord information
  * @ingroup ExecutionAccount
  */
-HAYAKU_API std::ostream& operator<<(std::ostream&, const FundsRecord&);
+std::ostream& operator<<(std::ostream&, const FundsRecord&);
 
-bool HAYAKU_API operator==(const FundsRecord& d1, const FundsRecord& d2);
+bool operator==(const FundsRecord& d1, const FundsRecord& d2);
 
 } /* namespace hayaku */
 

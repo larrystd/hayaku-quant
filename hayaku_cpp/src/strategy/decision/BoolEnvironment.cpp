@@ -59,7 +59,7 @@ void BoolEnvironment::_calculate() {
   }
 }
 
-EVPtr HAYAKU_API EV_Bool(const Indicator& ind, const string& market) {
+EVPtr EV_Bool(const Indicator& ind, const string& market) {
   EVPtr p = make_shared<BoolEnvironment>(ind);
   p->setParam<string>("market", market);
   return p;

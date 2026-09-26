@@ -265,38 +265,38 @@ void IRecover::_increment_calculate(const Indicator& ind, size_t start_pos) {
 }
 #endif
 
-Indicator HAYAKU_API RECOVER_FORWARD() {
+Indicator RECOVER_FORWARD() {
   return Indicator(make_shared<IRecover>(KQuery::FORWARD));
 }
 
-Indicator HAYAKU_API RECOVER_BACKWARD() {
+Indicator RECOVER_BACKWARD() {
   return Indicator(make_shared<IRecover>(KQuery::BACKWARD));
 }
 
-Indicator HAYAKU_API RECOVER_EQUAL_FORWARD() {
+Indicator RECOVER_EQUAL_FORWARD() {
   return Indicator(make_shared<IRecover>(KQuery::EQUAL_FORWARD));
 }
 
-Indicator HAYAKU_API RECOVER_EQUAL_BACKWARD() {
+Indicator RECOVER_EQUAL_BACKWARD() {
   return Indicator(make_shared<IRecover>(KQuery::EQUAL_BACKWARD));
 }
 
-Indicator HAYAKU_API RECOVER_FORWARD(const Indicator& ind) {
+Indicator RECOVER_FORWARD(const Indicator& ind) {
   IRecover::checkInputIndicator(ind);
   return RECOVER_FORWARD()(ind);
 }
 
-Indicator HAYAKU_API RECOVER_BACKWARD(const Indicator& ind) {
+Indicator RECOVER_BACKWARD(const Indicator& ind) {
   IRecover::checkInputIndicator(ind);
   return RECOVER_BACKWARD()(ind);
 }
 
-Indicator HAYAKU_API RECOVER_EQUAL_FORWARD(const Indicator& ind) {
+Indicator RECOVER_EQUAL_FORWARD(const Indicator& ind) {
   IRecover::checkInputIndicator(ind);
   return RECOVER_EQUAL_FORWARD()(ind);
 }
 
-Indicator HAYAKU_API RECOVER_EQUAL_BACKWARD(const Indicator& ind) {
+Indicator RECOVER_EQUAL_BACKWARD(const Indicator& ind) {
   IRecover::checkInputIndicator(ind);
   return RECOVER_EQUAL_BACKWARD()(ind);
 }
@@ -354,13 +354,13 @@ void IRef::_dyn_run_one_step(const Indicator& ind, size_t curPos, size_t step) {
   }
 }
 
-Indicator HAYAKU_API REF(int n) {
+Indicator REF(int n) {
   IndicatorImpPtr p = make_shared<IRef>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API REF(const IndParam& n) {
+Indicator REF(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IRef>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -431,7 +431,7 @@ void IRefX::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API REFX(int n) {
+Indicator REFX(int n) {
   IndicatorImpPtr p = make_shared<IRefX>();
   p->setParam<int>("n", n);
   return Indicator(p);
@@ -479,7 +479,7 @@ void ILastValue::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API LASTVALUE(bool ignore_discard) {
+Indicator LASTVALUE(bool ignore_discard) {
   auto p = make_shared<ILastValue>();
   p->setParam<bool>("ignore_discard", ignore_discard);
   return Indicator(p);

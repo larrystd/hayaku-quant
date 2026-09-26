@@ -98,7 +98,7 @@ void TaAdosc::_calculate(const Indicator& data) {
   HAYAKU_ASSERT(discard_ == outBegIdx);
 }
 
-Indicator HAYAKU_API TA_ADOSC(int fast_n, int slow_n) {
+Indicator TA_ADOSC(int fast_n, int slow_n) {
   auto p = make_shared<TaAdosc>();
   p->setParam<int>("fast_n", fast_n);
   p->setParam<int>("slow_n", slow_n);
@@ -106,7 +106,7 @@ Indicator HAYAKU_API TA_ADOSC(int fast_n, int slow_n) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API TA_ADOSC(const KData& k, int fast_n, int slow_n) {
+Indicator TA_ADOSC(const KData& k, int fast_n, int slow_n) {
   auto p = make_shared<TaAdosc>();
   p->setParam<int>("fast_n", fast_n);
   p->setParam<int>("slow_n", slow_n);
@@ -193,11 +193,10 @@ void TaApo::_calculate(const Indicator& data) {
   int outNbElement;
   ::TA_APO(discard_, total - 1, src, fast_n, slow_n, matype, &outBegIdx,
            &outNbElement, dst + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_APO(int fast_n, int slow_n, int matype) {
+Indicator TA_APO(int fast_n, int slow_n, int matype) {
   auto p = make_shared<TaApo>();
   p->setParam<int>("fast_n", fast_n);
   p->setParam<int>("slow_n", slow_n);
@@ -286,12 +285,11 @@ void TaMacd::_calculate(const Indicator& data) {
   int outBegIdx;
   int outNbElement;
   ::TA_MACD(discard_, total - 1, src, fast_n, slow_n, signal_n, &outBegIdx,
-            &outNbElement, dst0 + discard_, dst1 + discard_,
-            dst2 + discard_);
+            &outNbElement, dst0 + discard_, dst1 + discard_, dst2 + discard_);
   HAYAKU_ASSERT(outBegIdx == discard_ && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_MACD(int fast_n, int slow_n, int signal_n) {
+Indicator TA_MACD(int fast_n, int slow_n, int signal_n) {
   auto p = make_shared<TaMacd>();
   p->setParam<int>("fast_n", fast_n);
   p->setParam<int>("slow_n", slow_n);
@@ -393,13 +391,11 @@ void TaMacdext::_calculate(const Indicator& data) {
   ::TA_MACDEXT(discard_, total - 1, src, fast_n, fast_matype, slow_n,
                slow_matype, signal_n, signal_matype, &outBegIdx, &outNbElement,
                dst0 + discard_, dst1 + discard_, dst2 + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_MACDEXT(int fast_n, int slow_n, int signal_n,
-                                int fast_matype, int slow_matype,
-                                int signal_matype) {
+Indicator TA_MACDEXT(int fast_n, int slow_n, int signal_n, int fast_matype,
+                     int slow_matype, int signal_matype) {
   auto p = make_shared<TaMacdext>();
   p->setParam<int>("fast_n", fast_n);
   p->setParam<int>("fast_matype", fast_matype);
@@ -490,11 +486,10 @@ void TaPpo::_calculate(const Indicator& data) {
   int outNbElement;
   ::TA_PPO(discard_, total - 1, src, fast_n, slow_n, matype, &outBegIdx,
            &outNbElement, dst + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_PPO(int fast_n, int slow_n, int matype) {
+Indicator TA_PPO(int fast_n, int slow_n, int matype) {
   auto p = make_shared<TaPpo>();
   p->setParam<int>("fast_n", fast_n);
   p->setParam<int>("slow_n", slow_n);
@@ -603,12 +598,11 @@ void TaStoch::_calculate(const Indicator& data) {
   ::TA_STOCH(discard_, total - 1, high, low, close, fastk_n, slowk_n,
              slowk_matype, slowd_n, slowd_matype, &outBegIdx, &outNbElement,
              dst0 + discard_, dst1 + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_STOCH(int fastk_n, int slowk_n, int slowk_matype,
-                              int slowd_n, int slowd_matype) {
+Indicator TA_STOCH(int fastk_n, int slowk_n, int slowk_matype, int slowd_n,
+                   int slowd_matype) {
   auto p = make_shared<TaStoch>();
   p->setParam<int>("fastk_n", fastk_n);
   p->setParam<int>("slowk_n", slowk_n);
@@ -619,8 +613,8 @@ Indicator HAYAKU_API TA_STOCH(int fastk_n, int slowk_n, int slowk_matype,
   return Indicator(p);
 }
 
-Indicator HAYAKU_API TA_STOCH(const KData& k, int fastk_n, int slowk_n,
-                              int slowk_matype, int slowd_n, int slowd_matype) {
+Indicator TA_STOCH(const KData& k, int fastk_n, int slowk_n, int slowk_matype,
+                   int slowd_n, int slowd_matype) {
   auto p = make_shared<TaStoch>();
   p->setParam<int>("fastk_n", fastk_n);
   p->setParam<int>("slowk_n", slowk_n);
@@ -727,11 +721,10 @@ void TaStochf::_calculate(const Indicator& data) {
   ::TA_STOCHF(discard_, total - 1, high, low, close, fastk_n, fastd_n,
               fastd_matype, &outBegIdx, &outNbElement, dst0 + discard_,
               dst1 + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_STOCHF(int fastk_n, int fastd_n, int fastd_matype) {
+Indicator TA_STOCHF(int fastk_n, int fastd_n, int fastd_matype) {
   auto p = make_shared<TaStochf>();
   p->setParam<int>("fastk_n", fastk_n);
   p->setParam<int>("fastd_n", fastd_n);
@@ -740,8 +733,8 @@ Indicator HAYAKU_API TA_STOCHF(int fastk_n, int fastd_n, int fastd_matype) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API TA_STOCHF(const KData& k, int fastk_n, int fastd_n,
-                               int fastd_matype) {
+Indicator TA_STOCHF(const KData& k, int fastk_n, int fastd_n,
+                    int fastd_matype) {
   auto p = make_shared<TaStochf>();
   p->setParam<int>("fastk_n", fastk_n);
   p->setParam<int>("fastd_n", fastd_n);
@@ -836,11 +829,10 @@ void TaStochrsi::_calculate(const Indicator& data) {
   int outNbElement;
   ::TA_STOCHRSI(discard_, total - 1, src, n, fastk_n, fastd_n, matype,
                 &outBegIdx, &outNbElement, dst0 + discard_, dst1 + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_STOCHRSI(int n, int fastk_n, int fastd_n, int matype) {
+Indicator TA_STOCHRSI(int n, int fastk_n, int fastd_n, int matype) {
   auto p = make_shared<TaStochrsi>();
   p->setParam<int>("n", n);
   p->setParam<int>("fastk_n", fastk_n);
@@ -940,11 +932,10 @@ void TaUltosc::_calculate(const Indicator& data) {
   int outNbElement;
   ::TA_ULTOSC(discard_, total - 1, high, low, close, n1, n2, n3, &outBegIdx,
               &outNbElement, dst + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_ULTOSC(int n1, int n2, int n3) {
+Indicator TA_ULTOSC(int n1, int n2, int n3) {
   auto p = make_shared<TaUltosc>();
   p->setParam<int>("n1", n1);
   p->setParam<int>("n2", n2);
@@ -953,7 +944,7 @@ Indicator HAYAKU_API TA_ULTOSC(int n1, int n2, int n3) {
   return Indicator(p);
 }
 
-Indicator HAYAKU_API TA_ULTOSC(const KData& k, int n1, int n2, int n3) {
+Indicator TA_ULTOSC(const KData& k, int n1, int n2, int n3) {
   auto p = make_shared<TaUltosc>();
   p->setParam<int>("n1", n1);
   p->setParam<int>("n2", n2);

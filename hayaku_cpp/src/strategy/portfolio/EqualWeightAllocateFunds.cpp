@@ -28,8 +28,6 @@ StrategyWeightList EqualWeightAllocateFunds ::_allocateWeight(
   return result;
 }
 
-AFPtr HAYAKU_API AF_EqualWeight() {
-  return make_shared<EqualWeightAllocateFunds>();
-}
+AFPtr AF_EqualWeight() { return make_shared<EqualWeightAllocateFunds>(); }
 
 } /* namespace hayaku */

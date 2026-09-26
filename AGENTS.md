@@ -11,7 +11,7 @@
 > `docs/arch/refactor/step-6-progress.md`; old `hayaku.fetcher`, `hayaku.util`,
 > `hayaku.flat`, `hayaku.extend`, and `hayaku.gui.data` paths are removed.
 > **Refactor note (Step 6B, 2026-09-26):** Python tests and examples moved outside the
-> installable package to `tests/python` and `examples/python`.
+> installable package; they now live in `python/tests` and `python/examples`.
 > **Refactor note (Step 6C, 2026-09-26):** the installable Python package follows the eight
 > C++ domains: `common`, `data`, `operators`, `execution`, `metrics`, `strategy`,
 > `application`, and `extensions`. Optional ingestion, realtime, visualization, and
@@ -19,34 +19,38 @@
 > under `hayaku.application`. The former `hayaku.indicator`, `hayaku.analysis`,
 > `hayaku.apps`, `hayaku.session`, `hayaku.ingest`, `hayaku.realtime`,
 > `hayaku.visualization`, and `hayaku.spi` paths are removed.
+> **C++ focus (2026-09-26):** the default build, tests, and CI use C++. The existing
+> Python integration is retained under `python/` and has explicit commands.
 
 ## 1. Project Overview
 
 - **Hayaku** is an open-source ultra-high-speed quantitative trading research framework based on **C++/Python**, focusing on the strategy analysis, the backtesting and the live trading capability extensions (deeply adapted to the domestic China A-share market).
 - The core capabilities: the trading model development, the ultra-fast computing engine, the efficient backtesting system and the live trading extensions.
-- The project composition: the **high-performance C++ core library** (`hayaku_cpp`) + the **pybind11 binding layer** (`hayaku_pywrap`) + the **Python interface layer** (the `hayaku` package) + the **interactive exploration tools** (`hayaku.application.interactive`).
+- The project composition: the **high-performance C++ core library** (`hayaku_cpp`) + the **pybind11 binding layer** (`python/hayaku_pywrap`) + the **Python interface layer** (the `python/hayaku` package) + the **interactive exploration tools** (`hayaku.application.interactive`).
 - License: Apache License 2.0; the default branch is `master`, plus the `release`, `bugfix` and `feature/*` branches.
-- Project documentation source: `docs/` (Sphinx, mainly in Chinese); upstream history remains at [hikyuu.readthedocs.io](https://hikyuu.readthedocs.io/zh-cn/latest/index.html).
+- Project documentation is Markdown in `README.md`, `README.en.md`, `BAZEL.md`, and `docs/arch/`; upstream history remains at [hikyuu.readthedocs.io](https://hikyuu.readthedocs.io/zh-cn/latest/index.html).
 
 ## 2. Repository Structure
 
 ```
-hayaku-quant/
+hayaku-quant2/
 ├── MODULE.bazel / MODULE.bazel.lock  # Pinned C++ dependencies
 ├── .bazelversion / .bazelrc          # Bazel version and compiler defaults
 ├── BUILD.bazel                       # Shared test fixtures
-├── bazel/                            # Third-party builds, feature configuration, packaging tests
+├── bazel/                            # Third-party builds, feature configuration, C++ tooling
 ├── hayaku_cpp/src/BUILD.bazel        # Core, ingest and realtime C++ libraries
 ├── hayaku_cpp/test/BUILD.bazel       # C++ regression tests
 ├── hayaku_cpp/demo/BUILD.bazel       # C++ examples
-├── hayaku_pywrap/BUILD.bazel         # Python 3.10 native extensions
-├── hayaku/                           # Python interface package
-├── hayaku_ingest_native/             # Optional ingestion package
-├── hayaku_realtime_native/           # Optional realtime package
-├── tools/wheels/                     # Optional wheel packaging definitions
-├── tests/python/                     # Python regression suite
-├── docs/                             # English and Chinese Sphinx documentation
-└── .github/workflows/                # Bazel, docs and architecture checks
+├── python/                          # Optional Python integration
+│   ├── hayaku/                       # Python interface package
+│   ├── hayaku_pywrap/BUILD.bazel     # Python 3.10 native extensions
+│   ├── hayaku_ingest_native/         # Optional ingestion package
+│   ├── hayaku_realtime_native/       # Optional realtime package
+│   ├── wheels/                       # Optional wheel definitions
+│   ├── tests/                        # Python regression suite
+│   └── examples/                     # Python examples
+├── docs/arch/                        # Markdown architecture notes
+└── .github/workflows/                # Bazel and architecture checks
 ```
 
 ## 3. Build System (Bazel)
@@ -57,13 +61,15 @@ Bazel platforms. Bazelisk reads `.bazelversion`; dependencies are fixed in
 and FlatBuffers generates `spot_generated.h` from `spot.fbs`.
 
 ```bash
-./op.sh build        # Build and stage the shared libraries and Python 3.10 extensions
-./op.sh test         # Full C++ suite and Python package loading tests
+./op.sh build        # Build C++ libraries
+./op.sh python-build # Build and stage optional Python 3.10 extensions
+./op.sh test         # C++ suite
+./op.sh python-smoke # Python package loading tests
 ./op.sh python-test  # Source-tree Python regression suite
 bazel build //...    # All Bazel targets
 ```
 
-`./op.sh build` copies the six native outputs into the source Python packages.
+`./op.sh python-build` copies the six native outputs into `python/` packages.
 `./op.sh wheel`, `wheel-ingest`, and `wheel-realtime` create binary wheels. See
 [BAZEL.md](BAZEL.md) for direct Bazel commands and output paths.
 
@@ -73,15 +79,15 @@ headers under `bazel-bin/`.
 
 ## 4. Testing
 
-### Python Tests (tests/python/)
+### Python Tests (python/tests/)
 
 ```bash
-export PYTHONPATH=.
-./op.sh python-test           # the entry used by the CI
+export PYTHONPATH=python
+./op.sh python-test
 ```
 
-- The independent test files of each module: `Indicator.py`, `KData.py`, `Signal.py`, `MoneyManager.py`, `Stoploss.py`, `AllocateFunds.py`, `Datetime.py`, `Parameter.py`, etc., which can be run individually (e.g. `python3 tests/python/Indicator.py`).
-- The new Python features should add the corresponding tests under `tests/python/`.
+- The independent test files of each module: `Indicator.py`, `KData.py`, `Signal.py`, `MoneyManager.py`, `Stoploss.py`, `AllocateFunds.py`, `Datetime.py`, `Parameter.py`, etc., which can be run individually (e.g. `PYTHONPATH=python python3.10 python/tests/Indicator.py`).
+- The new Python features should add the corresponding tests under `python/tests/`.
 
 ### C++ Tests (hayaku_cpp/test/)
 
@@ -119,18 +125,18 @@ TEST_CASE("test_IniParser_hasSection") {
 
 - `//hayaku_cpp/test:cval_test`: focused indicator and serialization checks.
 - `//hayaku_cpp/test:unit_test`: full C++ suite (798 doctest cases on current fixtures).
-- `//bazel:python_package_smoke_test`: staged native package import checks.
-- `tests/python/test.py`: broader Python regression suite, run with Python 3.10.
+- `//python:python_package_smoke_test`: staged native package import checks.
+- `python/tests/test.py`: broader Python regression suite, run with Python 3.10.
 
 ## 5. Code Conventions
 
 | Language | Convention                                   | Key points                                                                                                                       |
 | -------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | C++      | `.clang-format` (Google style as the base) | a 4-space indent, a column width of 100, the attached braces; compiler options are in the Bazel `BUILD.bazel` files |
-| Python   | `hayaku/.style.yapf` (yapf) + `.flake8`  | a 4-space indent, a column width of 120 (flake8`max-line-length=120`)                                                          |
+| Python   | `python/hayaku/.style.yapf` (yapf) + `.flake8`  | a 4-space indent, a column width of 120 (flake8`max-line-length=120`)                                                          |
 
 - Format the changed files with `clang-format` / `yapf` before committing, to avoid deviating from the existing style.
-- Adding a new public API requires synchronizing generated `.pyi` stubs through the release workflow and the documentation (`docs/zh/` and `docs/en/`; the two trees must be updated in pairs with a consistent structure).
+- Adding a new public API requires synchronizing generated `.pyi` stubs through the release workflow and updating the relevant Markdown documentation.
 
 ### Naming Conventions (C++)
 
@@ -139,7 +145,7 @@ The conventions below describe the existing public API. New and renamed instance
 | The identifier category                   | The convention                                                                                                                                               | The examples                                                                                                                                                                                                        |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Namespace                                 | all lowercase                                                                                                                                                | `namespace hayaku;`                                                                                                                                                                                                  |
-| Class / struct                            | `PascalCase`, the business domain + the core concept; the exported classes carry the `HAYAKU_API` macro                                                     | `class HAYAKU_API StockManager`, `class SignalBase`, `struct ParamItemRecord`                                                                                                                                    |
+| Class / struct                            | `PascalCase`, the business domain + the core concept | `class DataEngine`, `class SignalBase`, `struct ParamItemRecord` |
 | Public member functions                   | `camelCase`, starting with a verb (`should/get/set/is/has/reload…`)                                                                                     | `shouldBuy()`, `getBuyValue()`, `reloadWith()`, `isIpcClientMode()`, `setTO()`, `nextTimeShouldBuy()`                                                                                                   |
 | Protected / private member functions      | the`_` prefix + `camelCase` (the hooks that the subclasses need to override start with `_`)                                                            | `_calculate()`, `_reset()`, `_clone()`, `_addBuySignal()`, `_testingSetIpcClientMode()`                                                                                                                   |
 | Member variables                          | `snake_case_` (Google C++ style; no `m_` prefix) | `impl_`, `runtime_`, `base_info_driver_`, `buy_sig_` |
@@ -148,19 +154,19 @@ The conventions below describe the existing public API. New and renamed instance
 | The static local variables in functions   | the`g_` prefix + `camelCase` (consistent with the global variables, easy to identify the long-lived storage)                                             | `static std::once_flag g_tz_set;`, `static long int g_timezone;`                                                                                                                                                |
 | Type aliases / smart pointer aliases      | the business object name +`Ptr` (`typedef shared_ptr<T> XPtr;`)                                                                                          | `typedef shared_ptr<SignalBase> SignalPtr;`                                                                                                                                                                       |
 | Enumeration types / enumeration values    | the enumeration type in`PascalCase`; the enumeration values in all uppercase + underscores                                                                 | `KQuery::QueryType { INDEX, DATE, INVALID }`                                                                                                                                                                      |
-| Macros / compilation switches / constants | all uppercase + underscores                                                                                                                                  | `HAYAKU_API`, `HAYAKU_SUPPORT_SERIALIZATION`, `HAYAKU_ENABLE_NODE`, `IND_EQ_THRESHOLD`                                                                                                                               |
+| Macros / compilation switches / constants | all uppercase + underscores | `HAYAKU_SUPPORT_SERIALIZATION`, `HAYAKU_ENABLE_NODE`, `IND_EQ_THRESHOLD` |
 | Function parameters                       | `camelCase`                                                                                                                                                | `baseInfoParam`, `kdataParam`, `datetime`, `context`                                                                                                                                                        |
 | Local variables                           | `camelCase`                                                                                                                                                | the local variable style inside`initParam()`                                                                                                                                                                      |
 | Header/source file names                  | `PascalCase`; stateful or independently testable business classes normally retain a matching file, while related PODs and thin stateless factories may be grouped by business capability | `Stock.h`, `SignalBase.h`, `ScalarMathOperators.h` |
 | Derived implementations                  | Place them in the owning business module; do not create `imp`, `crt`, `internal`, `logic`, `support`, or `utils` directories merely to describe implementation technique | `strategy/decision/CrossSignal.h`, `execution/pricing/SlippageModels.h` |
 
-> Note: `hayaku` is the only top-level namespace of the entire C++ core library; newly added public classes must carry the `HAYAKU_API` export macro. Factory functions and derived implementations belong to capability-named files inside their owning business module.
+> Note: `hayaku` is the only top-level namespace of the entire C++ core library. Factory functions and derived implementations belong to capability-named files inside their owning business module.
 >
 > **The file organization constraint**: preserve one-file ownership for complex stateful classes. Closely related value types, declarations, thin factories, and stateless implementations may coexist when they share one business responsibility and test boundary. Do not merge unrelated code merely to reduce file count.
 
 ### Naming Conventions (Python)
 
-The conventions below are distilled from the existing code of the `hayaku/` package (excluding the `cpp/` compiled artifacts):
+The conventions below are distilled from the existing code of the `python/hayaku/` package (excluding the `cpp/` compiled artifacts):
 
 | The identifier category                 | The convention                                                                                                                      | The examples                                                                                                                |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -176,7 +182,7 @@ The conventions below are distilled from the existing code of the `hayaku/` pack
 | Local variables                         | `snake_case`                                                                                                                      | `df`, `ind_list`, `head_stock_code`, `params`, `cloned`                                                           |
 | Function parameters                     | `snake_case`; the annotated variable names are also `snake_case`                                                                | `head_stock_code`, `col_name`, `col_date`, `allocate_weight_func`, `get_real_buy_price`                           |
 | Custom decorators                       | the`hayaku_` prefix + `snake_case`                                                                                                 | `@hayaku_catch`, `@hayaku_check_ignore`                                                                                       |
-| property / accessors                    | `snake_case` (the `PascalCase` accessors in `application/gui/flat/Spot.py` are the flatbuffers generated code, **not** this convention) | the accessor methods of the`hayaku/` code itself are mainly `snake_case`                                                |
+| property / accessors                    | `snake_case` (the `PascalCase` accessors in `application/gui/flat/Spot.py` are the flatbuffers generated code, **not** this convention) | the accessor methods of the`python/hayaku/` code itself are mainly `snake_case`                                                |
 
 > Note: the stubs generated by pybind11-stubgen, such as `hayaku/cpp/core3xx.pyi`, may contain the naming inconsistent with the above; they belong to the binding layer generated artifacts and are not regarded as the Python-side handwritten conventions.
 
@@ -189,16 +195,16 @@ The `.pyi` stubs of the C++ binding layer (`core.so` / `core.pyd`) are generated
 pip install pybind11-stubgen
 
 # 2. Generate the stubs (run it in the repository root, outputting to the current directory; make sure the project directory
-#    is in the PYTHONPATH, and the compiled artifacts are under hayaku/cpp/ so that import hayaku works)
-pybind11-stubgen -o . hayaku
+#    is in the PYTHONPATH, and the compiled artifacts are under python/hayaku/cpp/ so that import hayaku works)
+PYTHONPATH=python pybind11-stubgen -o python hayaku
 ```
 
 - Do not generate the stubs by hand; only generate them when releasing or when requested manually.
-- After modifying the bindings under `hayaku_pywrap/` (adding/changing the classes, the functions and the parameters), the corresponding stubs should be regenerated and synchronized.
+- After modifying the bindings under `python/hayaku_pywrap/` (adding/changing the classes, the functions and the parameters), the corresponding stubs should be regenerated and synchronized.
 
 ## 6. Architecture and Key Components
 
-The core components of the systematic trading framework are implemented under `hayaku_cpp/src/strategy/` and `hayaku_cpp/src/execution/`; their Python-facing modules are under `hayaku/strategy/`, `hayaku/execution/`, and related packages:
+The core components of the systematic trading framework are implemented under `hayaku_cpp/src/strategy/` and `hayaku_cpp/src/execution/`; their Python-facing modules are under `python/hayaku/strategy/`, `python/hayaku/execution/`, and related packages:
 
 | The level              | The components                                                                                               | The description                                                                                                                |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -208,34 +214,32 @@ The core components of the systematic trading framework are implemented under `h
 | The data level         | StockManagerSM / KDataKD / QueryQ                                                                            | the security management, the K-line data, the time range query                                                                 |
 
 - The data storage supports: HDF5 (the default) / MySQL / ClickHouse / SQLite / TDX.
-- For the new indicators/new strategy components, it is recommended to implement them in the C++ core first (including the bindings and the unit tests), and then expose them at the Python layer; the pure Python extensions go into the corresponding subpackages of `hayaku/`.
+- For the new indicators/new strategy components, it is recommended to implement them in the C++ core first (including the bindings and the unit tests), and then expose them at the Python layer; the pure Python extensions go into the corresponding subpackages of `python/hayaku/`.
 
 ## 7. Documentation
 
-- Sphinx + myst_parser, **dual-source and bilingual**: `docs/zh/` (Chinese) and `docs/en/` (English) are two **independent Sphinx trees**, each with its own `conf.py`, without using gettext.
-- The files are still a mix of `.rst` and `.md` (the new files prefer `.md`).
-- The local build: `cd docs && ./make.sh` (building both trees → `build/html/{en,zh}`); `./make.sh en` / `./make.sh zh` build only one tree.
-- **They must be maintained in pairs**: when changing the documentation of either language, synchronize the other tree within the same PR, keeping the file sets / the toctree / the heading levels / the labels / the images / the code blocks consistent.
-- When modifying the public interfaces/adding the parts, synchronize the corresponding sections under **both trees** (`indicator/`, `data/`, `execution/`, `strategy/`, `factor.md`, etc.).
-- The RTD hosting configuration: `docs/en/.readthedocs.yaml`, `docs/zh/.readthedocs.yaml` (the configuration files are **not** placed at the repository root); the cross-language jumps are provided by the RTD Flyout, and hardcoding the `/en/`, `/zh-cn/` links in the sources is forbidden.
-- **When doing Chinese-English translation (covering the C++/Python comment anglicization, the docstrings, the bilingual docs, the README, etc.), the wording must refer to the glossary `docs/tools/glossary.zh-en.md`**; new terms must be registered in the glossary first (via PR review), and then be used — do not invent synonymous translations.
+- Maintain Chinese Markdown in `README.md`, `BAZEL.md`, and `docs/arch/`; keep `README.en.md` in sync with the main README.
+- Update the relevant Markdown pages when public interfaces or behavior change, and keep local links valid.
+- `docs/arch/refactor/` contains historical records; references there to retired documentation describe past states.
 
 ## 8. The AI Development Workflow and Caveats
 
-1. **Locate the code**: C++ logic → `hayaku_cpp/src/`; bindings → `hayaku_pywrap/`; Python layer → `hayaku/`; tests → `hayaku_cpp/test/` and `tests/python/`.
-2. **After modifying the C++ code, you must recompile and let the Python package load the new artifacts**:
+1. **Locate the code**: C++ logic → `hayaku_cpp/src/`; bindings → `python/hayaku_pywrap/`; Python layer → `python/hayaku/`; tests → `hayaku_cpp/test/` and `python/tests/`.
+2. **After modifying C++ code, recompile and run the C++ tests**. When the Python integration is affected, stage and test its bindings too:
 
    ```bash
    ./op.sh build
-   # The wrapper stages the native libraries into the Python packages.
+   ./op.sh test
+   ./op.sh python-build
+   ./op.sh python-smoke
    ```
 
-   The Python package loads `core310.so` and `libhayaku.so` from `hayaku/cpp/`.
-3. **When only changing the Python layer, there is no need to recompile the C++**, but note that the generated `.pyi` stubs must stay in sync with the implementations, and `hayaku/core.py` plus each domain's `_extensions.py` carry the Python enhancements.
-4. **Do not commit the compiled artifacts**: `*.so`, `*.pyd`, `*.dll`, `build/` are all in `.gitignore`; the `core3xx.so`, etc. under `hayaku/cpp/` are the local build artifacts.
-5. **Adding new dependencies**: the C++ dependencies go into `MODULE.bazel` and the Bazel `BUILD.bazel` files; the Python dependencies go into `requirements.txt`.
+   The Python package loads `core310.so` and `libhayaku.so` from `python/hayaku/cpp/`.
+3. **When only changing the Python layer, there is no need to recompile the C++**, but note that the generated `.pyi` stubs must stay in sync with the implementations, and `python/hayaku/core.py` plus each domain's `_extensions.py` carry the Python enhancements.
+4. **Do not commit the compiled artifacts**: `*.so`, `*.pyd`, `*.dll`, `build/` are all in `.gitignore`; the `core3xx.so`, etc. under `python/hayaku/cpp/` are the local build artifacts.
+5. **Adding new dependencies**: the C++ dependencies go into `MODULE.bazel` and the Bazel `BUILD.bazel` files; the Python dependencies go into `python/requirements.txt`.
 6. **Submission gate**: run `./op.sh ci` to build all C++ targets and execute the C++ tests. Run Python and package tests separately when changing those interfaces.
-7. **The CI will verify**: the macOS/Linux Bazel pipeline runs `./op.sh ci`; the docs pipeline remains under `.github/workflows/`. PRs must pass the applicable checks before merging into `master`.
+7. **The CI will verify**: the macOS/Linux Bazel pipeline runs `./op.sh ci`; PRs must pass the applicable checks before merging into `master`.
 8. **The git commit messages uniformly use English**: in the conventional commits style, e.g. `fix(data): fix cross-period aggregation of derived K-lines in the SQL backend`; the historical early commits have Chinese messages, but all the new commits use English, and the body text is also in English.
 9. **The AI must not commit proactively**: an AI coding agent is forbidden to execute `git commit`, and should also avoid `git add`; after completing each step, list "the list of the files to be committed + the suggested English commit message (a directly copyable `git commit -m "..."`)" and inform the user, letting the user decide the commit timing and the granularity.
 10. **Handle with care**: keep Bazel target source lists and dependency edges current when adding C++ or binding files.

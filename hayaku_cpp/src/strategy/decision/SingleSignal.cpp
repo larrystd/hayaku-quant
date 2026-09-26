@@ -72,8 +72,7 @@ void SingleSignal::_calculate(const KData& kdata) {
   }
 }
 
-SignalPtr HAYAKU_API SG_Single(const Indicator& ind, int filter_n,
-                               double filter_p) {
+SignalPtr SG_Single(const Indicator& ind, int filter_n, double filter_p) {
   SignalPtr p = make_shared<SingleSignal>(ind);
   p->setParam<int>("filter_n", filter_n);
   p->setParam<double>("filter_p", filter_p);

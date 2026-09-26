@@ -10,18 +10,13 @@
 #include "application/plugins/PluginBase.h"
 #include "data/RealtimeDataSource.h"
 
-#ifndef HAYAKU_API
-#define HAYAKU_API
-#endif
-
 namespace hayaku {
 
 /**
  * The shm data service plugin interface
  * @ingroup DataDriver
  */
-class HAYAKU_API ShmServerPluginInterface : public PluginBase,
-                                            public RealtimeDataSource {
+class ShmServerPluginInterface : public PluginBase, public RealtimeDataSource {
  public:
   static constexpr uint32_t PLUGIN_INTERFACE_VERSION = 1;
   ShmServerPluginInterface() = default;

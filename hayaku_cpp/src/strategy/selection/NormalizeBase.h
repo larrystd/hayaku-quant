@@ -14,7 +14,7 @@ namespace hayaku {
 /**
  * Base class of the time cross-section data normalization
  */
-class HAYAKU_API NormalizeBase {
+class NormalizeBase {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -109,8 +109,8 @@ typedef std::shared_ptr<NormalizeBase> NormalizePtr;
   }                                        \
   PriceList normalize(const PriceList& data) override;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const NormalizeBase&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const NormalizePtr&);
+std::ostream& operator<<(std::ostream&, const NormalizeBase&);
+std::ostream& operator<<(std::ostream&, const NormalizePtr&);
 
 }  // namespace hayaku
 

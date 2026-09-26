@@ -17,10 +17,9 @@ namespace hayaku {
  * would cause a parallel deadlock
  * @ingroup Selector
  */
-class HAYAKU_API ScoresFilterBase {
+class ScoresFilterBase {
   PARAMETER_SUPPORT_WITH_CHECK
-  friend HAYAKU_API std::ostream& operator<<(std::ostream&,
-                                             const ScoresFilterBase&);
+  friend std::ostream& operator<<(std::ostream&, const ScoresFilterBase&);
 
  public:
   ScoresFilterBase() = default;
@@ -45,8 +44,8 @@ class HAYAKU_API ScoresFilterBase {
   virtual ScoresFilterPtr _clone() = 0;
 
  public:
-  friend HAYAKU_API ScoresFilterPtr operator|(const ScoresFilterPtr& a,
-                                              const ScoresFilterPtr& b);
+  friend ScoresFilterPtr operator|(const ScoresFilterPtr& a,
+                                   const ScoresFilterPtr& b);
 
   bool isPythonObject() const noexcept { return is_python_object_; }
 
@@ -109,11 +108,10 @@ typedef std::shared_ptr<ScoresFilterBase> SCFilterPtr;
                                   const Datetime& date, const KQuery& query) \
       override;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const ScoresFilterBase&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const ScoresFilterPtr&);
+std::ostream& operator<<(std::ostream&, const ScoresFilterBase&);
+std::ostream& operator<<(std::ostream&, const ScoresFilterPtr&);
 
-HAYAKU_API ScoresFilterPtr operator|(const ScoresFilterPtr& a,
-                                     const ScoresFilterPtr& b);
+ScoresFilterPtr operator|(const ScoresFilterPtr& a, const ScoresFilterPtr& b);
 
 }  // namespace hayaku
 

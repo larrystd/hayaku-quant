@@ -62,15 +62,13 @@ IndicatorList EqualWeightMultiFactor::_calculate(
   });
 }
 
-MultiFactorPtr HAYAKU_API MF_EqualWeight() {
+MultiFactorPtr MF_EqualWeight() {
   return make_shared<EqualWeightMultiFactor>();
 }
 
-MultiFactorPtr HAYAKU_API MF_EqualWeight(const StockList& stks,
-                                         const KQuery& query,
-                                         const Stock& ref_stk, int ic_n,
-                                         bool spearman, int mode,
-                                         bool save_all_factors) {
+MultiFactorPtr MF_EqualWeight(const StockList& stks, const KQuery& query,
+                              const Stock& ref_stk, int ic_n, bool spearman,
+                              int mode, bool save_all_factors) {
   return make_shared<EqualWeightMultiFactor>(stks, query, ref_stk, ic_n,
                                              spearman, mode, save_all_factors);
 }

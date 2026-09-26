@@ -17,7 +17,7 @@ namespace hayaku {
  * Portfolio
  * @ingroup SimplePortfolio
  */
-class HAYAKU_API SimplePortfolio : public Portfolio {
+class SimplePortfolio : public Portfolio {
   PORTFOLIO_IMP(SimplePortfolio)
 
  public:
@@ -31,7 +31,7 @@ class HAYAKU_API SimplePortfolio : public Portfolio {
  private:
   internal::StrategyRuntimeList
       dlist_sys_list_;  // The systems that cannot execute a sell because the
-                         // security is delisted (the whole assets are lost)
+                        // security is delisted (the whole assets are lost)
   StrategyWeightList
       delay_adjust_sys_list_;  // System list of the delayed rebalancing sells
   StrategyWeightList tmp_selected_list_;

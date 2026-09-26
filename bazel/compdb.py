@@ -11,7 +11,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 QUERY = 'mnemonic("CppCompile", //... + //hayaku_cpp/test:unit_test_bin)'
-SOURCE_ROOTS = ("hayaku_cpp/", "hayaku_pywrap/")
+SOURCE_ROOTS = ("hayaku_cpp/", "python/hayaku_pywrap/")
 
 
 def bazel_output(bazel: str, *arguments: str) -> str:

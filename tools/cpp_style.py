@@ -19,9 +19,9 @@ SOURCE_ROOTS = (
     "hayaku_cpp/src",
     "hayaku_cpp/test",
     "hayaku_cpp/demo",
-    "hayaku_pywrap",
-    "hayaku_ingest_native",
-    "hayaku_realtime_native",
+    "python/hayaku_pywrap",
+    "python/hayaku_ingest_native",
+    "python/hayaku_realtime_native",
 )
 
 
@@ -73,9 +73,9 @@ def resolve_files(names, extensions):
 
 
 def tracked_source_files():
-    """Use Git's tracked-file list so generated and third-party files stay out."""
+    """Use Git's source list, including new files, while excluding ignored outputs."""
     result = subprocess.run(
-        ["git", "ls-files", "-z", "--", *SOURCE_ROOTS],
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", *SOURCE_ROOTS],
         cwd=PROJECT_ROOT,
         capture_output=True,
         check=True,
@@ -83,7 +83,8 @@ def tracked_source_files():
     return [
         PROJECT_ROOT / os.fsdecode(name)
         for name in result.stdout.split(b"\0")
-        if name and Path(os.fsdecode(name)).suffix in FORMAT_EXTENSIONS
+        if name and (PROJECT_ROOT / os.fsdecode(name)).is_file()
+        and Path(os.fsdecode(name)).suffix in FORMAT_EXTENSIONS
     ]
 
 

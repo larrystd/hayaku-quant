@@ -201,13 +201,13 @@ void IEma::_dyn_run_one_step(const Indicator& ind, size_t curPos, size_t step) {
   }
 }
 
-Indicator HAYAKU_API EMA(int n) {
+Indicator EMA(int n) {
   IndicatorImpPtr p = make_shared<IEma>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API EMA(const IndParam& n) {
+Indicator EMA(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IEma>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -392,13 +392,13 @@ void IMa::_dyn_run_one_step(const Indicator& ind, size_t curPos, size_t step) {
   }
 }
 
-Indicator HAYAKU_API MA(int n) {
+Indicator MA(int n) {
   IndicatorImpPtr p = make_shared<IMa>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API MA(const IndParam& n) {
+Indicator MA(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IMa>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -475,10 +475,10 @@ void ISma::_dyn_one_circle(const Indicator& ind, size_t curPos, int n,
 void ISma::_dyn_calculate(const Indicator& ind) {
   auto iter = ind_params_.find("n");
   Indicator n = iter != ind_params_.end() ? Indicator(iter->second)
-                                           : CVAL(ind, getParam<int>("n"));
+                                          : CVAL(ind, getParam<int>("n"));
   iter = ind_params_.find("m");
   Indicator m = iter != ind_params_.end() ? Indicator(iter->second)
-                                           : CVAL(ind, getParam<int>("m"));
+                                          : CVAL(ind, getParam<int>("m"));
 
   HAYAKU_CHECK(n.size() == ind.size(), "ind_param(n).size()={}, ind.size()={}!",
                n.size(), ind.size());
@@ -497,28 +497,28 @@ void ISma::_dyn_calculate(const Indicator& ind) {
   updateDiscard();
 }
 
-Indicator HAYAKU_API SMA(int n, double m) {
+Indicator SMA(int n, double m) {
   IndicatorImpPtr p = make_shared<ISma>();
   p->setParam<int>("n", n);
   p->setParam<double>("m", m);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API SMA(int n, const IndParam& m) {
+Indicator SMA(int n, const IndParam& m) {
   IndicatorImpPtr p = make_shared<ISma>();
   p->setParam<int>("n", n);
   p->setIndParam("m", m);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API SMA(const IndParam& n, const IndParam& m) {
+Indicator SMA(const IndParam& n, const IndParam& m) {
   IndicatorImpPtr p = make_shared<ISma>();
   p->setIndParam("n", n);
   p->setIndParam("m", m);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API SMA(const IndParam& n, double m) {
+Indicator SMA(const IndParam& n, double m) {
   IndicatorImpPtr p = make_shared<ISma>();
   p->setIndParam("n", n);
   p->setParam<double>("m", m);
@@ -646,13 +646,13 @@ void IWma::_dyn_run_one_step(const Indicator& ind, size_t curPos, size_t step) {
   _set(sum / (step * (step + 1) / 2.), curPos);
 }
 
-Indicator HAYAKU_API WMA(int n) {
+Indicator WMA(int n) {
   IndicatorImpPtr p = make_shared<IWma>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API WMA(const IndParam& n) {
+Indicator WMA(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IWma>();
   p->setIndParam("n", n);
   return Indicator(p);

@@ -27,7 +27,7 @@ namespace hayaku {
  * calendar
  * @return
  */
-EVPtr HAYAKU_API EV_Bool(const Indicator& ind, const string& market = "SH");
+EVPtr EV_Bool(const Indicator& ind, const string& market = "SH");
 
 }  // namespace hayaku
 
@@ -46,8 +46,7 @@ namespace hayaku {
  * @param ev2 market environment 2
  * @return the AndCondition instance pointer
  */
-HAYAKU_API EnvironmentPtr operator&(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2);
+EnvironmentPtr operator&(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
 
 /**
  * The OR of two market environments, equivalent to the union of the two
@@ -55,17 +54,12 @@ HAYAKU_API EnvironmentPtr operator&(const EnvironmentPtr& ev1,
  * @param ev2 market environment 2
  * @return the OrCondition instance pointer
  */
-HAYAKU_API EnvironmentPtr operator|(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2);
+EnvironmentPtr operator|(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
 
-HAYAKU_API EnvironmentPtr operator+(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2);
-HAYAKU_API EnvironmentPtr operator-(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2);
-HAYAKU_API EnvironmentPtr operator*(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2);
-HAYAKU_API EnvironmentPtr operator/(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2);
+EnvironmentPtr operator+(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
+EnvironmentPtr operator-(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
+EnvironmentPtr operator*(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
+EnvironmentPtr operator/(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
 
 }  // namespace hayaku
 
@@ -85,7 +79,7 @@ namespace hayaku {
  * the testing or other purposes
  * @return EVPtr
  */
-EVPtr HAYAKU_API EV_Manual();
+EVPtr EV_Manual();
 
 }  // namespace hayaku
 
@@ -106,7 +100,7 @@ namespace hayaku {
  * @param market market name, "SH" by default
  * @return
  */
-EVPtr HAYAKU_API EV_TwoLine(const Indicator& fast, const Indicator& slow,
-                            const string& market = "SH");
+EVPtr EV_TwoLine(const Indicator& fast, const Indicator& slow,
+                 const string& market = "SH");
 
 } /* namespace hayaku */

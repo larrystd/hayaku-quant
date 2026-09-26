@@ -12,7 +12,7 @@
 
 namespace hayaku {
 
-struct HAYAKU_API ScoreRecord {
+struct ScoreRecord {
   typedef Indicator::value_t value_t;
 
   Stock stock;
@@ -31,13 +31,11 @@ struct HAYAKU_API ScoreRecord {
 typedef vector<ScoreRecord> ScoreRecordList;
 typedef vector<ScoreRecord> ScoreList;
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out, const ScoreRecord& td);
+std::ostream& operator<<(std::ostream& out, const ScoreRecord& td);
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out,
-                                    const ScoreRecordList& td);
+std::ostream& operator<<(std::ostream& out, const ScoreRecordList& td);
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out,
-                                    const vector<ScoreRecordList>& td);
+std::ostream& operator<<(std::ostream& out, const vector<ScoreRecordList>& td);
 
 }  // namespace hayaku
 

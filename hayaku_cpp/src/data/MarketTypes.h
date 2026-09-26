@@ -7,10 +7,6 @@
  *      Author: fasiondog
  */
 
-#ifndef HAYAKU_API
-#define HAYAKU_API
-#endif
-
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -34,7 +30,6 @@
 #include "common/Arithmetic.h"
 #include "common/Config.h"
 #include "common/CppDef.h"
-#include "common/Lang.h"
 #include "common/Log.h"
 #include "common/Null.h"
 #include "common/OsDef.h"

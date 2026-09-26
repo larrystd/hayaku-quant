@@ -113,11 +113,12 @@ release.x86.version.h
 hayaku.code-workspace
 /install
 /build
+/.xmake/
+/python/build/
+/python/dist/
 /cmake-build-*/
 /CMakeFiles/
 /CMakeCache.txt
-/docs/build
-/docs/_build
 /docs/notepad-workspace
 /docs/design
 /cppcheck-cppcheck-build-dir
@@ -126,11 +127,11 @@ install
 .DS_Store
 hayaku_cpp/hayaku/config.h
 hayaku_cpp/hayaku/version.h
-hayaku/tools/maintain/importdata.ini
-hayaku/libboost_*
-hayaku/cpp/libboost_*
-hayaku/importdata
-hayaku/.eggs
+python/hayaku/tools/maintain/importdata.ini
+python/hayaku/libboost_*
+python/hayaku/cpp/libboost_*
+python/hayaku/importdata
+python/hayaku/.eggs
 Hayaku.egg-info
 hayaku.egg-info
 hayaku_noarrow.egg-info
@@ -148,38 +149,31 @@ cover*.info
 *.gcda
 *.profraw
 *.profdata
-hayaku/cpp/libhayaku_hdf5_cpp.so.200
-hayaku/cpp/libhayaku_hdf5_cpp.so.200.2.0
-hayaku/cpp/libhayaku_hdf5_hl_cpp.so.200
-hayaku/cpp/libhayaku_hdf5_hl_cpp.so.200.1.0
-hayaku/cpp/libhayaku_hdf5_hl.so.200
-hayaku/cpp/libhayaku_hdf5_hl.so.200.1.0
-hayaku/cpp/libhayaku_hdf5.so.200
-hayaku/cpp/libhayaku_hdf5.so.200.2.0
-hayaku/include
+python/hayaku/cpp/libhayaku_hdf5_cpp.so.200
+python/hayaku/cpp/libhayaku_hdf5_cpp.so.200.2.0
+python/hayaku/cpp/libhayaku_hdf5_hl_cpp.so.200
+python/hayaku/cpp/libhayaku_hdf5_hl_cpp.so.200.1.0
+python/hayaku/cpp/libhayaku_hdf5_hl.so.200
+python/hayaku/cpp/libhayaku_hdf5_hl.so.200.1.0
+python/hayaku/cpp/libhayaku_hdf5.so.200
+python/hayaku/cpp/libhayaku_hdf5.so.200.2.0
+python/hayaku/include
 .virtual_documents
 venv
 hayaku_cpp/hayaku/utilities/config.h
 data_server_docker_file
 hayaku.ini
-hayaku/cpp/i18n/zh_CN.mo
 GEMINI.md
-hayaku/cpp/i18n/zh_CN/hayaku.mo
-i18n/zh_CN.mo
 quotes/
 wget-*
-hayaku/cpp/i18n/zh_CN/hayaku_plugin.mo
 soft_copyright_application
 compile_commands.json
 /bazel-*
 
 # Native libraries copied into the Python package are build outputs.
-# Keep only the package markers and translation source tree.
-/hayaku/cpp/*
-!/hayaku/cpp/__init__.py
-!/hayaku/cpp/i18n/
-!/hayaku/cpp/i18n/**/
-!/hayaku/cpp/i18n/**/__init__.py
+# Keep only the package marker.
+/python/hayaku/cpp/*
+!/python/hayaku/cpp/__init__.py
 
 # Test runner output (tracked test fixtures under test_data are preserved)
 /test_data/tmp/

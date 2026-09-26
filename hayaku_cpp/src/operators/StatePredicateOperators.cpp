@@ -169,7 +169,7 @@ void IIsInf::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ISINF() { return Indicator(make_shared<IIsInf>()); }
+Indicator ISINF() { return Indicator(make_shared<IIsInf>()); }
 
 } /* namespace hayaku */
 
@@ -210,7 +210,7 @@ void IIsInfa::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ISINFA() { return Indicator(make_shared<IIsInfa>()); }
+Indicator ISINFA() { return Indicator(make_shared<IIsInfa>()); }
 
 } /* namespace hayaku */
 
@@ -259,11 +259,9 @@ void IIsLastBar::_calculate(const Indicator& data) {
   dst[total - 1] = 1.;
 }
 
-Indicator HAYAKU_API ISLASTBAR() {
-  return Indicator(make_shared<IIsLastBar>());
-}
+Indicator ISLASTBAR() { return Indicator(make_shared<IIsLastBar>()); }
 
-Indicator HAYAKU_API ISLASTBAR(const KData& kdata) {
+Indicator ISLASTBAR(const KData& kdata) {
   auto p = make_shared<IIsLastBar>();
   p->setContext(kdata);
   return Indicator(p);
@@ -338,11 +336,9 @@ void IIsLimitDown::_increment_calculate(const Indicator& data,
   }
 }
 
-Indicator HAYAKU_API ISLIMITDOWN() {
-  return make_shared<IIsLimitDown>()->calculate();
-}
+Indicator ISLIMITDOWN() { return make_shared<IIsLimitDown>()->calculate(); }
 
-Indicator HAYAKU_API ISLIMITDOWN(const KData& k) {
+Indicator ISLIMITDOWN(const KData& k) {
   auto p = make_shared<IIsLimitDown>();
   p->setContext(k);
   return Indicator(p);
@@ -415,11 +411,9 @@ void IIsLimitUp::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ISLIMITUP() {
-  return make_shared<IIsLimitUp>()->calculate();
-}
+Indicator ISLIMITUP() { return make_shared<IIsLimitUp>()->calculate(); }
 
-Indicator HAYAKU_API ISLIMITUP(const KData& k) {
+Indicator ISLIMITUP(const KData& k) {
   auto p = make_shared<IIsLimitUp>();
   p->setContext(k);
   return Indicator(p);
@@ -465,7 +459,7 @@ void IIsNa::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ISNA(bool ignore_discard) {
+Indicator ISNA(bool ignore_discard) {
   auto p = make_shared<IIsNa>();
   p->setParam<bool>("ignore_discard", ignore_discard);
   return Indicator(p);

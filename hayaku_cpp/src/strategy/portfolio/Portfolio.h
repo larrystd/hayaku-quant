@@ -21,7 +21,7 @@ using json = nlohmann::json;
  * Portfolio
  * @ingroup Portfolio
  */
-class HAYAKU_API Portfolio : public enable_shared_from_this<Portfolio> {
+class Portfolio : public enable_shared_from_this<Portfolio> {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -170,8 +170,8 @@ class HAYAKU_API Portfolio : public enable_shared_from_this<Portfolio> {
 
   std::vector<std::pair<Datetime, double>>
       adjust_turnover_;  // Rebalancing cycle turnover rate (the subclass needs
-                          // to implement it itself, it is absent if not
-                          // implemented)
+                         // to implement it itself, it is absent if not
+                         // implemented)
 
 //============================================
 // Serialization support
@@ -222,8 +222,8 @@ class HAYAKU_API Portfolio : public enable_shared_from_this<Portfolio> {
 typedef shared_ptr<Portfolio> PortfolioPtr;
 typedef shared_ptr<Portfolio> PFPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const Portfolio&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const PortfolioPtr&);
+std::ostream& operator<<(std::ostream&, const Portfolio&);
+std::ostream& operator<<(std::ostream&, const PortfolioPtr&);
 
 inline const string& Portfolio::name() const { return name_; }
 

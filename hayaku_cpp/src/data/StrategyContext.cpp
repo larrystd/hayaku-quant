@@ -9,8 +9,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const StrategyContext& context) {
+std::ostream& operator<<(std::ostream& os, const StrategyContext& context) {
   os << context.str();
   return os;
 }

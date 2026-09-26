@@ -27,7 +27,7 @@ namespace hayaku {
  * @param p the fixed offset percentage
  * @return SPPtr
  */
-SlippagePtr HAYAKU_API SP_FixedPercent(double p = 0.001);
+SlippagePtr SP_FixedPercent(double p = 0.001);
 
 } /* namespace hayaku */
 
@@ -47,7 +47,7 @@ namespace hayaku {
  * @param value
  * @return
  */
-SlippagePtr HAYAKU_API SP_FixedValue(double value = 0.01);
+SlippagePtr SP_FixedValue(double value = 0.01);
 
 } /* namespace hayaku */
 
@@ -67,7 +67,7 @@ namespace hayaku {
  * @param stddev standard deviation of the normal distribution
  * @return the slippage object pointer
  */
-SlippagePtr HAYAKU_API SP_Normal(double mean = 0.0, double stddev = 0.05);
+SlippagePtr SP_Normal(double mean = 0.0, double stddev = 0.05);
 
 } /* namespace hayaku */
 
@@ -87,7 +87,7 @@ namespace hayaku {
  * @param stddev the standard deviation parameter of the log-normal distribution
  * @return the slippage object pointer
  */
-SlippagePtr HAYAKU_API SP_LogNormal(double mean = 0.0, double stddev = 0.05);
+SlippagePtr SP_LogNormal(double mean = 0.0, double stddev = 0.05);
 
 } /* namespace hayaku */
 
@@ -110,9 +110,8 @@ namespace hayaku {
  * @param max_value the truncation maximum
  * @return the slippage object pointer
  */
-SlippagePtr HAYAKU_API SP_TruncNormal(double mean = 0.0, double stddev = 0.05,
-                                      double min_value = -0.1,
-                                      double max_value = 0.1);
+SlippagePtr SP_TruncNormal(double mean = 0.0, double stddev = 0.05,
+                           double min_value = -0.1, double max_value = 0.1);
 
 } /* namespace hayaku */
 
@@ -133,8 +132,7 @@ namespace hayaku {
  * @param max_value the upper limit of the offset price
  * @return
  */
-SlippagePtr HAYAKU_API SP_Uniform(double min_value = -0.05,
-                                  double max_value = 0.05);
+SlippagePtr SP_Uniform(double min_value = -0.05, double max_value = 0.05);
 
 } /* namespace hayaku */
 

@@ -16,8 +16,7 @@ namespace hayaku {
  * @param email e-mail
  * @param active_code license code
  */
-void HAYAKU_API bindEmail(const std::string& email,
-                          const std::string& active_code);
+void bindEmail(const std::string& email, const std::string& active_code);
 
 /**
  * @brief Activate the device
@@ -25,22 +24,21 @@ void HAYAKU_API bindEmail(const std::string& email,
  * @param replace when the device limit is exceeded, forcefully replace the
  * earliest activated device
  */
-void HAYAKU_API activeDevice(const std::string& active_code,
-                             bool replace = false);
+void activeDevice(const std::string& active_code, bool replace = false);
 
 /** View the license information */
-std::string HAYAKU_API viewLicense();
+std::string viewLicense();
 
 /** Remove the license */
-void HAYAKU_API removeLicense();
+void removeLicense();
 
 /** Get the trial license */
-std::string HAYAKU_API fetchTrialLicense(const std::string& email);
+std::string fetchTrialLicense(const std::string& email);
 
 /** Check whether the license is valid */
-bool HAYAKU_API isValidLicense();
+bool isValidLicense();
 
 /** Get the license expiration time */
-Datetime HAYAKU_API getExpireDate();
+Datetime getExpireDate();
 
 }  // namespace hayaku

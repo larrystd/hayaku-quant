@@ -282,12 +282,12 @@ void IBeta::_increment_calculate(const Indicator& ind, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API BETA(const Indicator& ref_ind, int n, bool fill_null) {
+Indicator BETA(const Indicator& ref_ind, int n, bool fill_null) {
   return Indicator(make_shared<IBeta>(ref_ind, n, fill_null));
 }
 
-Indicator HAYAKU_API BETA(const Indicator& ind1, const Indicator& ind2, int n,
-                          bool fill_null) {
+Indicator BETA(const Indicator& ind1, const Indicator& ind2, int n,
+               bool fill_null) {
   auto p = make_shared<IBeta>(ind2, n, fill_null);
   Indicator result(p);
   return result(ind1);
@@ -448,12 +448,12 @@ void ICorr::_increment_calculate(const Indicator& ind, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API CORR(const Indicator& ref_ind, int n, bool fill_null) {
+Indicator CORR(const Indicator& ref_ind, int n, bool fill_null) {
   return Indicator(make_shared<ICorr>(ref_ind, n, fill_null));
 }
 
-Indicator HAYAKU_API CORR(const Indicator& ind1, const Indicator& ind2, int n,
-                          bool fill_null) {
+Indicator CORR(const Indicator& ind1, const Indicator& ind2, int n,
+               bool fill_null) {
   auto p = make_shared<ICorr>(ind2, n, fill_null);
   Indicator result(p);
   return result(ind1);
@@ -588,12 +588,12 @@ void ICov::_increment_calculate(const Indicator& ind, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API COV(const Indicator& ref_ind, int n, bool fill_null) {
+Indicator COV(const Indicator& ref_ind, int n, bool fill_null) {
   return Indicator(make_shared<ICov>(ref_ind, n, fill_null));
 }
 
-Indicator HAYAKU_API COV(const Indicator& ind1, const Indicator& ind2, int n,
-                         bool fill_null) {
+Indicator COV(const Indicator& ind1, const Indicator& ind2, int n,
+              bool fill_null) {
   auto p = make_shared<ICov>(ind2, n, fill_null);
   Indicator result(p);
   return result(ind1);
@@ -766,12 +766,12 @@ void ISpearman::_increment_calculate(const Indicator& ind, size_t start_pos) {
       100);
 }
 
-Indicator HAYAKU_API SPEARMAN(const Indicator& ref_ind, int n, bool fill_null) {
+Indicator SPEARMAN(const Indicator& ref_ind, int n, bool fill_null) {
   return Indicator(make_shared<ISpearman>(ref_ind, n, fill_null));
 }
 
-Indicator HAYAKU_API SPEARMAN(const Indicator& ind, const Indicator& ref_ind,
-                              int n, bool fill_null) {
+Indicator SPEARMAN(const Indicator& ind, const Indicator& ref_ind, int n,
+                   bool fill_null) {
   auto p = make_shared<ISpearman>(ref_ind, n, fill_null);
   Indicator result(p);
   return result(ind);
@@ -880,8 +880,7 @@ void IQuantileTrunc::_increment_calculate(const Indicator& data,
       });
 }
 
-Indicator HAYAKU_API QUANTILE_TRUNC(int n, double quantile_min,
-                                    double quantile_max) {
+Indicator QUANTILE_TRUNC(int n, double quantile_min, double quantile_max) {
   auto p = make_shared<IQuantileTrunc>();
   p->setParam<int>("n", n);
   p->setParam<double>("quantile_min", quantile_min);

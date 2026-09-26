@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API AddCondition : public ConditionBase {
+class AddCondition : public ConditionBase {
  public:
   AddCondition();
   AddCondition(const ConditionPtr& cond1, const ConditionPtr& cond2);
@@ -50,7 +50,7 @@ class HAYAKU_API AddCondition : public ConditionBase {
 
 namespace hayaku {
 
-class HAYAKU_API AndCondition : public ConditionBase {
+class AndCondition : public ConditionBase {
  public:
   AndCondition();
   AndCondition(const ConditionPtr& cond1, const ConditionPtr& cond2);
@@ -89,7 +89,7 @@ class HAYAKU_API AndCondition : public ConditionBase {
 
 namespace hayaku {
 
-class HAYAKU_API DivCondition : public ConditionBase {
+class DivCondition : public ConditionBase {
  public:
   DivCondition();
   DivCondition(const ConditionPtr& cond1, const ConditionPtr& cond2);
@@ -128,7 +128,7 @@ class HAYAKU_API DivCondition : public ConditionBase {
 
 namespace hayaku {
 
-class HAYAKU_API MultiCondition : public ConditionBase {
+class MultiCondition : public ConditionBase {
  public:
   MultiCondition();
   MultiCondition(const ConditionPtr& cond1, const ConditionPtr& cond2);
@@ -167,7 +167,7 @@ class HAYAKU_API MultiCondition : public ConditionBase {
 
 namespace hayaku {
 
-class HAYAKU_API OrCondition : public ConditionBase {
+class OrCondition : public ConditionBase {
  public:
   OrCondition();
   OrCondition(const ConditionPtr& cond1, const ConditionPtr& cond2);
@@ -206,7 +206,7 @@ class HAYAKU_API OrCondition : public ConditionBase {
 
 namespace hayaku {
 
-class HAYAKU_API SubCondition : public ConditionBase {
+class SubCondition : public ConditionBase {
  public:
   SubCondition();
   SubCondition(const ConditionPtr& cond1, const ConditionPtr& cond2);

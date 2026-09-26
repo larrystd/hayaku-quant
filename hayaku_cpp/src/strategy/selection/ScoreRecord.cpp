@@ -9,7 +9,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out, const ScoreRecord& td) {
+std::ostream& operator<<(std::ostream& out, const ScoreRecord& td) {
   out << std::fixed;
   out.precision(4);
   out << "(" << td.stock.market_code() << ", " << td.value << ")" << std::endl;
@@ -18,8 +18,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& out, const ScoreRecord& td) {
   return out;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out,
-                                    const ScoreRecordList& td) {
+std::ostream& operator<<(std::ostream& out, const ScoreRecordList& td) {
   out << std::fixed;
   out.precision(4);
   size_t total = td.size();
@@ -41,8 +40,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out,
-                                    const vector<ScoreRecordList>& td) {
+std::ostream& operator<<(std::ostream& out, const vector<ScoreRecordList>& td) {
   out << std::fixed;
   out.precision(4);
   size_t total = td.size();

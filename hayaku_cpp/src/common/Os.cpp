@@ -28,7 +28,6 @@
 #endif
 
 #if HAYAKU_OS_OSX || HAYAKU_OS_IOS
-#include <CoreFoundation/CoreFoundation.h>
 #include <mach/host_info.h>
 #include <mach/mach.h>
 #include <mach/mach_host.h>
@@ -389,72 +388,6 @@ std::string HAYAKU_UTILS_API getCpuArch() {
 #endif
   return ret;
 }
-
-#if HAYAKU_OS_WINDOWS
-std::string HAYAKU_UTILS_API getSystemLanguage() {
-  LCID lcid = GetUserDefaultUILanguage();
-  char lang[256];
-
-  std::string ret;
-  if (GetLocaleInfoA(lcid, LOCALE_SISO639LANGNAME, lang, sizeof(lang)) == 0) {
-    return ret;
-  }
-
-  ret = std::string(lang);
-  to_lower(ret);
-  if (ret == "zh") {
-    ret = "zh_cn";
-  }
-  return ret;
-}
-
-#elif HAYAKU_OS_LINUX
-std::string HAYAKU_UTILS_API getSystemLanguage() {
-  std::string ret;
-  const char *langEnv = std::getenv("LANG");
-  HAYAKU_IF_RETURN(langEnv == nullptr, ret);
-
-  std::string lang(langEnv);
-  auto ss = split(lang, '.');
-  ret = std::string(ss[0]);
-  to_lower(ret);
-  return ret;
-}
-
-#elif HAYAKU_OS_OSX
-std::string HAYAKU_UTILS_API getSystemLanguage() {
-  CFLocaleRef currentLocale = CFLocaleCopyCurrent();
-
-  // An explicit type conversion
-  CFStringRef languageCode =
-      (CFStringRef)CFLocaleGetValue(currentLocale, kCFLocaleLanguageCode);
-
-  if (languageCode == nullptr ||
-      !(CFStringGetTypeID() == CFGetTypeID(languageCode))) {
-    CFRelease(currentLocale);
-    return "";
-  }
-
-  CFIndex length = CFStringGetLength(languageCode);
-  CFIndex maxSize =
-      CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
-  std::unique_ptr<char[]> buffer(new char[maxSize]);
-
-  if (CFStringGetCString(languageCode, buffer.get(), maxSize,
-                         kCFStringEncodingUTF8)) {
-    std::string result(buffer.get());
-    CFRelease(currentLocale);
-    to_lower(result);
-    if (result == "zh") {
-      result = "zh_cn";
-    }
-    return result;
-  }
-
-  CFRelease(currentLocale);
-  return "";
-}
-#endif
 
 uint64_t HAYAKU_UTILS_API getMemoryMaxSize() {
 #if HAYAKU_OS_WINDOWS

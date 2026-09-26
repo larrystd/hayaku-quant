@@ -11,40 +11,36 @@
 
 #include "common/Config.h"
 
-#ifndef HAYAKU_API
-#define HAYAKU_API
-#endif
-
 namespace hayaku {
 
 void sysinfo_init();
 void sysinfo_clean();
 
 /** Get the current version number of Hayaku. */
-std::string HAYAKU_API getVersion();
+std::string getVersion();
 
 /** Get the detailed version number, including the build time. */
-std::string HAYAKU_API getVersionWithBuild();
+std::string getVersionWithBuild();
 
 /** Get the version number including the Git commit information. */
-std::string HAYAKU_API getVersionWithGit();
+std::string getVersionWithGit();
 
 /** Whether it is currently running in the Python environment. */
-bool HAYAKU_API runningInPython();
+bool runningInPython();
 
 /** Whether it is currently running in the Jupyter environment. */
-bool HAYAKU_API pythonInJupyter();
+bool pythonInJupyter();
 
 /** Whether Python is running in interactive mode. */
-bool HAYAKU_API pythonInInteractive();
+bool pythonInInteractive();
 
 /** Set whether it is running under Python. */
-void HAYAKU_API setRunningInPython(bool inpython);
+void setRunningInPython(bool inpython);
 
 /** Set whether Python runs in interactive mode. */
-void HAYAKU_API setPythonInInteractive(bool interactive);
+void setPythonInInteractive(bool interactive);
 
 /** Set whether it is running in the Jupyter environment. */
-void HAYAKU_API setPythonInJupyter(bool injupyter);
+void setPythonInJupyter(bool injupyter);
 
 }  // namespace hayaku

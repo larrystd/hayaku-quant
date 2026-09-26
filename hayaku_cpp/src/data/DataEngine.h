@@ -22,7 +22,7 @@ namespace hayaku {
 class HayakuSession;
 class DataRuntime;
 
-class HAYAKU_API DataEngine {
+class DataEngine {
  public:
   DataEngine(const DataEngine&) = delete;
   DataEngine& operator=(const DataEngine&) = delete;

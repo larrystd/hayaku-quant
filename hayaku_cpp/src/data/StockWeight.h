@@ -15,7 +15,7 @@ namespace hayaku {
  * Ex-rights/ex-dividend data structure
  * @ingroup StockManage
  */
-class HAYAKU_API StockWeight {
+class StockWeight {
  public:
   /** Default constructor, returns Null<StockWeight>() */
   StockWeight() = default;
@@ -55,15 +55,15 @@ class HAYAKU_API StockWeight {
   price_t suogu() const noexcept { return suogu_; }
 
  private:
-  Datetime datetime_;         // Ex-rights/ex-dividend date
+  Datetime datetime_;           // Ex-rights/ex-dividend date
   price_t count_as_gift_{0.};   // Bonus shares per 10 shares
   price_t count_for_sell_{0.};  // Rights shares per 10 shares
   price_t price_for_sell_{0.};  // Rights issue price
-  price_t bonus_{0.};         // Dividend per 10 shares
-  price_t increasement_{0.};  // Capitalized shares per 10 shares
-  price_t total_count_{0.};    // Total share capital (10 thousand shares)
-  price_t free_count_{0.};     // Outstanding shares (10 thousand shares)
-  price_t suogu_{0.};         // Share expansion/contraction ratio
+  price_t bonus_{0.};           // Dividend per 10 shares
+  price_t increasement_{0.};    // Capitalized shares per 10 shares
+  price_t total_count_{0.};     // Total share capital (10 thousand shares)
+  price_t free_count_{0.};      // Outstanding shares (10 thousand shares)
+  price_t suogu_{0.};           // Share expansion/contraction ratio
 };
 
 /** @ingroup StockManage */
@@ -75,7 +75,7 @@ typedef vector<StockWeight> StockWeightList;
  * freeCount)
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream&, const StockWeight&);
+std::ostream& operator<<(std::ostream&, const StockWeight&);
 
 ///////////////////////////////////////////////////////////////////////////////
 //

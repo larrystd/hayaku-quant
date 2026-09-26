@@ -165,7 +165,7 @@ void IMdd::_increment_calculate(const Indicator& ind, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API MDD(int n) {
+Indicator MDD(int n) {
   IndicatorImpPtr p = make_shared<IMdd>();
   p->setParam<int>("n", n);
   return Indicator(p);
@@ -244,9 +244,7 @@ void IMddCurrent::_increment_calculate(const Indicator& ind, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API MDD_CURRENT() {
-  return Indicator(make_shared<IMddCurrent>());
-}
+Indicator MDD_CURRENT() { return Indicator(make_shared<IMddCurrent>()); }
 
 }  // namespace hayaku
 
@@ -347,13 +345,13 @@ void IRSRSBeta::_calculate(const Indicator&) {
   }
 }
 
-Indicator HAYAKU_API RSRS_BETA(int n) {
+Indicator RSRS_BETA(int n) {
   auto p = make_shared<IRSRSBeta>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API RSRS_BETA(const KData& kdata, int n) {
+Indicator RSRS_BETA(const KData& kdata, int n) {
   auto p = make_shared<IRSRSBeta>();
   p->setParam<int>("n", n);
   p->setContext(kdata);
@@ -549,14 +547,14 @@ void IRSRSBull::_calculate(const Indicator&) {
   }
 }
 
-Indicator HAYAKU_API RSRS_BULL(int n, int m) {
+Indicator RSRS_BULL(int n, int m) {
   auto p = make_shared<IRSRSBull>();
   p->setParam<int>("n", n);
   p->setParam<int>("m", m);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API RSRS_BULL(const KData& kdata, int n, int m) {
+Indicator RSRS_BULL(const KData& kdata, int n, int m) {
   auto p = make_shared<IRSRSBull>();
   p->setParam<int>("n", n);
   p->setParam<int>("m", m);
@@ -710,13 +708,13 @@ void ISaftyLoss::_dyn_one_circle(const Indicator& ind, size_t curPos, int n1,
 void ISaftyLoss::_dyn_calculate(const Indicator& ind) {
   auto iter = ind_params_.find("n1");
   Indicator n1 = iter != ind_params_.end() ? Indicator(iter->second)
-                                            : CVAL(ind, getParam<int>("n1"));
+                                           : CVAL(ind, getParam<int>("n1"));
   iter = ind_params_.find("n2");
   Indicator n2 = iter != ind_params_.end() ? Indicator(iter->second)
-                                            : CVAL(ind, getParam<int>("n2"));
+                                           : CVAL(ind, getParam<int>("n2"));
   iter = ind_params_.find("p");
   Indicator p = iter != ind_params_.end() ? Indicator(iter->second)
-                                           : CVAL(ind, getParam<int>("p"));
+                                          : CVAL(ind, getParam<int>("p"));
 
   HAYAKU_CHECK(n1.size() == ind.size(),
                "ind_param(n1).size()={}, ind.size()={}!", n1.size(),
@@ -740,7 +738,7 @@ void ISaftyLoss::_dyn_calculate(const Indicator& ind) {
   updateDiscard();
 }
 
-Indicator HAYAKU_API SAFTYLOSS(int n1, int n2, double p) {
+Indicator SAFTYLOSS(int n1, int n2, double p) {
   IndicatorImpPtr result = make_shared<ISaftyLoss>();
   result->setParam<int>("n1", n1);
   result->setParam<int>("n2", n2);
@@ -748,8 +746,7 @@ Indicator HAYAKU_API SAFTYLOSS(int n1, int n2, double p) {
   return Indicator(result);
 }
 
-Indicator HAYAKU_API SAFTYLOSS(const IndParam& n1, const IndParam& n2,
-                               double p) {
+Indicator SAFTYLOSS(const IndParam& n1, const IndParam& n2, double p) {
   IndicatorImpPtr result = make_shared<ISaftyLoss>();
   result->setIndParam("n1", n1);
   result->setIndParam("n2", n2);
@@ -757,8 +754,7 @@ Indicator HAYAKU_API SAFTYLOSS(const IndParam& n1, const IndParam& n2,
   return Indicator(result);
 }
 
-Indicator HAYAKU_API SAFTYLOSS(const IndParam& n1, const IndParam& n2,
-                               const IndParam& p) {
+Indicator SAFTYLOSS(const IndParam& n1, const IndParam& n2, const IndParam& p) {
   IndicatorImpPtr result = make_shared<ISaftyLoss>();
   result->setIndParam("n1", n1);
   result->setIndParam("n2", n2);

@@ -18,17 +18,19 @@ usage() {
 Usage: ./op.sh <command> [arguments]
 
 Build and package:
-  build             Build the macOS/Linux libraries and Python 3.10 extensions
+  build             Build the C++ libraries (default development path)
   clean             Remove Bazel build outputs
+  python-build      Build and stage the optional Python 3.10 extensions
   wheel             Build a core Python wheel with native libraries and C++ headers
   wheel-ingest      Build the optional ingestion wheel
   wheel-realtime    Build the optional realtime wheel
 
 Tests:
   ci                Build all C++ targets and run the required C++ tests
-  test              Run Bazel C++ and Python package smoke tests
+  test              Run Bazel C++ tests
+  python-smoke      Test the optional Python package and native bindings
   python-test       Run the source-tree Python regression suite
-  all               Build, run Bazel tests, then run Python tests
+  all               Build and test C++
   import-test       Import the staged Python package and print its version
 
 C++ quality:
@@ -67,22 +69,29 @@ require_python310() {
 
 build() {
     require_bazel
+    "${BAZEL_BIN}" build \
+        //hayaku_cpp/src:core_shared \
+        //hayaku_cpp/src:ingest_shared \
+        //hayaku_cpp/src:realtime_shared
+}
+
+python_build() {
+    require_bazel
     require_stage_python
     "${BAZEL_BIN}" build \
         //hayaku_cpp/src:core_shared \
         //hayaku_cpp/src:ingest_shared \
         //hayaku_cpp/src:realtime_shared \
-        //hayaku_pywrap:core310 \
-        //hayaku_pywrap:ingest310 \
-        //hayaku_pywrap:realtime310
-    "${STAGE_PYTHON}" bazel/stage_python.py
+        //python/hayaku_pywrap:core310 \
+        //python/hayaku_pywrap:ingest310 \
+        //python/hayaku_pywrap:realtime310
+    "${STAGE_PYTHON}" python/tools/stage_python.py
 }
 
 bazel_test() {
     require_bazel
     "${BAZEL_BIN}" test \
         "${CPP_TEST_TARGETS[@]}" \
-        //bazel:python_package_smoke_test \
         --test_output=errors
 }
 
@@ -92,10 +101,15 @@ cpp_ci() {
     "${BAZEL_BIN}" test "${CPP_TEST_TARGETS[@]}" --test_output=errors
 }
 
+python_smoke() {
+    require_bazel
+    "${BAZEL_BIN}" test //python:python_package_smoke_test --test_output=errors
+}
+
 python_test() {
     require_python310
-    PYTHONPATH="${PROJECT_DIR}${PYTHONPATH:+:${PYTHONPATH}}" \
-        "${PYTHON_BIN}" tests/python/test.py
+    PYTHONPATH="${PROJECT_DIR}/python${PYTHONPATH:+:${PYTHONPATH}}" \
+        "${PYTHON_BIN}" python/tests/test.py
 }
 
 style_python() {
@@ -113,6 +127,9 @@ case "${1:-help}" in
     build)
         build
         ;;
+    python-build)
+        python_build
+        ;;
     clean)
         require_bazel
         "${BAZEL_BIN}" clean
@@ -120,32 +137,34 @@ case "${1:-help}" in
     test)
         bazel_test
         ;;
+    python-smoke)
+        python_smoke
+        ;;
     python-test)
         python_test
         ;;
     all)
         build
         bazel_test
-        python_test
         ;;
     import-test)
         require_python310
-        PYTHONPATH="${PROJECT_DIR}${PYTHONPATH:+:${PYTHONPATH}}" \
+        PYTHONPATH="${PROJECT_DIR}/python${PYTHONPATH:+:${PYTHONPATH}}" \
             "${PYTHON_BIN}" -c 'import hayaku; print(hayaku.__version__)'
         ;;
     wheel|wheel-ingest|wheel-realtime)
         require_python310
-        build
+        python_build
         case "$1" in
             wheel)
-                "${STAGE_PYTHON}" bazel/stage_python.py --headers
-                "${PYTHON_BIN}" setup.py bdist_wheel
+                "${STAGE_PYTHON}" python/tools/stage_python.py --headers
+                (cd python && "${PYTHON_BIN}" setup.py bdist_wheel)
                 ;;
             wheel-ingest)
-                "${PYTHON_BIN}" tools/wheels/ingest_setup.py bdist_wheel
+                "${PYTHON_BIN}" python/wheels/ingest_setup.py bdist_wheel
                 ;;
             wheel-realtime)
-                "${PYTHON_BIN}" tools/wheels/realtime_setup.py bdist_wheel
+                "${PYTHON_BIN}" python/wheels/realtime_setup.py bdist_wheel
                 ;;
         esac
         ;;

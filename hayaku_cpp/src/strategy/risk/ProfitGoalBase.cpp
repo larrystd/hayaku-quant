@@ -9,13 +9,12 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const ProfitGoalBase& pg) {
+std::ostream& operator<<(std::ostream& os, const ProfitGoalBase& pg) {
   os << "ProfitGoal(" << pg.name() << ", " << pg.getParameter() << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const ProfitGoalPtr& pg) {
+std::ostream& operator<<(std::ostream& os, const ProfitGoalPtr& pg) {
   if (pg) {
     os << *pg;
   } else {

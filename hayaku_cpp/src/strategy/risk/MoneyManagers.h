@@ -24,7 +24,7 @@ namespace hayaku {
  * @param capital
  * @return MoneyManagerPtr
  */
-MoneyManagerPtr HAYAKU_API MM_FixedCapital(double capital = 10000.00);
+MoneyManagerPtr MM_FixedCapital(double capital = 10000.00);
 
 } /* namespace hayaku */
 
@@ -43,7 +43,7 @@ namespace hayaku {
  * @param capital
  * @return MoneyManagerPtr
  */
-MoneyManagerPtr HAYAKU_API MM_FixedCapitalFunds(double capital = 10000.00);
+MoneyManagerPtr MM_FixedCapitalFunds(double capital = 10000.00);
 
 } /* namespace hayaku */
 
@@ -69,7 +69,7 @@ namespace hayaku {
  * the System itself
  * @ingroup MoneyManager
  */
-MoneyManagerPtr HAYAKU_API MM_FixedCount(double n = 100);
+MoneyManagerPtr MM_FixedCount(double n = 100);
 
 }  // namespace hayaku
 
@@ -89,8 +89,8 @@ namespace hayaku {
  * @param sell_counts the sell quantities in turn
  * @return MoneyManagerPtr
  */
-MoneyManagerPtr HAYAKU_API MM_FixedCountTps(const vector<double>& buy_counts,
-                                            const vector<double>& sell_counts);
+MoneyManagerPtr MM_FixedCountTps(const vector<double>& buy_counts,
+                                 const vector<double>& sell_counts);
 
 } /* namespace hayaku */
 
@@ -112,7 +112,7 @@ namespace hayaku {
  * e.g. 0.02 means 2% of the total assets
  * @ingroup MoneyManager
  */
-MoneyManagerPtr HAYAKU_API MM_FixedPercent(double p);
+MoneyManagerPtr MM_FixedPercent(double p);
 
 }  // namespace hayaku
 
@@ -132,7 +132,7 @@ namespace hayaku {
  * @param risk
  * @return MoneyManagerPtr
  */
-MoneyManagerPtr HAYAKU_API MM_FixedRisk(double risk = 1000.00);
+MoneyManagerPtr MM_FixedRisk(double risk = 1000.00);
 
 } /* namespace hayaku */
 
@@ -151,7 +151,7 @@ namespace hayaku {
  * @param n
  * @return MoneyManagerPtr
  */
-MoneyManagerPtr HAYAKU_API MM_FixedUnits(int n = 33);
+MoneyManagerPtr MM_FixedUnits(int n = 33);
 
 }  // namespace hayaku
 
@@ -168,7 +168,7 @@ namespace hayaku {
  * No money management is done, it buys as much as the available money allows
  * @ingroup MoneyManager
  */
-MoneyManagerPtr HAYAKU_API MM_Nothing();
+MoneyManagerPtr MM_Nothing();
 
 }  // namespace hayaku
 
@@ -189,7 +189,6 @@ namespace hayaku {
  * @param max_loss maximum loss
  * @return MoneyManagerPtr
  */
-MoneyManagerPtr HAYAKU_API MM_WilliamsFixedRisk(double p = 0.1,
-                                                price_t max_loss = 1000.0);
+MoneyManagerPtr MM_WilliamsFixedRisk(double p = 0.1, price_t max_loss = 1000.0);
 
 }  // namespace hayaku

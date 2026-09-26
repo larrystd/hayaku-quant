@@ -69,8 +69,8 @@ void TwoLineEnvironment::_calculate() {
   }
 }
 
-EVPtr HAYAKU_API EV_TwoLine(const Indicator& fast, const Indicator& slow,
-                            const string& market) {
+EVPtr EV_TwoLine(const Indicator& fast, const Indicator& slow,
+                 const string& market) {
   EVPtr ptr = make_shared<TwoLineEnvironment>(fast, slow);
   ptr->setParam<string>("market", market);
   return ptr;

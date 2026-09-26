@@ -31,7 +31,6 @@ struct DataRuntimeState {
   std::mutex mutex;
   std::unique_ptr<DataRuntime> runtime;
   std::atomic<DataRuntime*> active{nullptr};
-  std::string language_path;
 };
 
 DataRuntimeState& dataRuntimeState() {
@@ -61,9 +60,6 @@ DataRuntime& createDataRuntime() {
   std::lock_guard<std::mutex> lock(state.mutex);
   if (!state.runtime) {
     state.runtime = std::make_unique<DataRuntime>();
-    if (!state.language_path.empty()) {
-      state.runtime->setLanguagePath(state.language_path);
-    }
   }
   state.active.store(state.runtime.get(), std::memory_order_release);
   return *state.runtime;
@@ -80,15 +76,6 @@ void releaseDataRuntime() noexcept {
     std::lock_guard<std::mutex> lock(state.mutex);
     state.active.store(nullptr, std::memory_order_release);
     runtime = std::move(state.runtime);
-  }
-}
-
-void setDataRuntimeLanguagePath(const std::string& path) noexcept {
-  auto& state = dataRuntimeState();
-  std::lock_guard<std::mutex> lock(state.mutex);
-  state.language_path = path;
-  if (state.runtime) {
-    state.runtime->setLanguagePath(path);
   }
 }
 
@@ -131,12 +118,6 @@ void DataRuntime::init(const Parameter& baseInfoParam,
   thread_id_ = std::this_thread::get_id();
   HAYAKU_CHECK(!context.empty(),
                "No stock code list is included in the context!");
-
-  if (i18n_path_.empty()) {
-    loadLocalLanguage(fmt::format("{}/i18n", getDllSelfDir()));
-  } else {
-    loadLocalLanguage(i18n_path_);
-  }
 
   base_info_driver_param_ = baseInfoParam;
   block_driver_param_ = blockParam;
@@ -200,7 +181,7 @@ void DataRuntime::loadData() {
   loadAllZhBond10();
   loadHistoryFinanceField();
 
-  HAYAKU_INFO(htr("Loading block..."));
+  HAYAKU_INFO("Loading block...");
   block_driver_->load();
   // The blocks are loaded, dispatch the BLOCKS_LOADED event: the plugin
   // refreshes the block cache of the IPC service accordingly (the former
@@ -208,7 +189,7 @@ void DataRuntime::loadData() {
   _fireLoadEvent(LoadEvent::BLOCKS_LOADED);
 
   // Get the K-line data driver and preload the given data
-  HAYAKU_INFO(htr("Loading KData..."));
+  HAYAKU_INFO("Loading KData...");
 
   // Load the K-lines and the historical financial information
   loadAllKData();
@@ -216,7 +197,7 @@ void DataRuntime::loadData() {
   std::chrono::duration<double> sec =
       std::chrono::system_clock::now() - start_time;
   auto seconds = sec.count();
-  HAYAKU_INFO(htr("{:<.2f}s Loaded Data.", seconds));
+  HAYAKU_INFO(fmt::format("{:<.2f}s Loaded Data.", seconds));
 }
 
 KDataDriverConnectPoolPtr DataRuntime::_getKDataDriverPool() {
@@ -247,8 +228,7 @@ void DataRuntime::_negotiateShmServer() {
   auto wait_timeout =
       hayaku_param_.tryGet<int64_t>("shm_server_wait_timeout", 600);
   HAYAKU_WARN_IF_RETURN(
-      !source->connect(datadir_,
-                       wait_timeout < 0 ? 0 : (uint64_t)wait_timeout),
+      !source->connect(datadir_, wait_timeout < 0 ? 0 : (uint64_t)wait_timeout),
       void(),
       "Failed connect to hayaku shm server, fallback to standalone mode!");
 
@@ -372,17 +352,16 @@ void DataRuntime::loadAllKData() {
       preload_param_.set<int64_t>(preload_key, preload_max_num);
       HAYAKU_INFO_IF(
           preload_param_.tryGet<bool>(back, false),
-          htr("Preloading {} kdata to buffer (max: no limit)!", back));
+          fmt::format("Preloading {} kdata to buffer (max: no limit)!", back));
     } else {
       HAYAKU_INFO_IF(preload_param_.tryGet<bool>(back, false),
-                     htr("Preloading {} kdata to buffer (max: {})!", back,
-                         preload_max_num));
+                     fmt::format("Preloading {} kdata to buffer (max: {})!",
+                                 back, preload_max_num));
     }
   }
 
   bool lazy_preload = hayaku_param_.tryGet<bool>("lazy_preload", false);
-  HAYAKU_INFO_IF(lazy_preload && canLazyLoad(KQuery::MIN),
-                 htr("Use lazy preload!"));
+  HAYAKU_INFO_IF(lazy_preload && canLazyLoad(KQuery::MIN), "Use lazy preload!");
 
   // Load the K-lines of the same kind first (the preload is only a cache
   // warm-up, it always runs asynchronously in the background and does not block
@@ -678,7 +657,7 @@ void DataRuntime::reloadWith(const StrategyContext& context) {
   if (!context.empty()) {
     context_ = context;
   } else {
-    HAYAKU_INFO(htr("The new context is empty, use the original context"));
+    HAYAKU_INFO("The new context is empty, use the original context");
   }
 
   HAYAKU_INFO("start reload ...");
@@ -898,7 +877,7 @@ bool DataRuntime::isTradingHours(const Datetime& d,
   auto hour = d - d.startOfDay();
   MarketInfo marketinfo = getMarketInfo(market);
   HAYAKU_CHECK(marketinfo != Null<MarketInfo>(), "{}: {}!",
-               htr("Not found market info"), market);
+               "Not found market info", market);
   HAYAKU_IF_RETURN(
       (hour >= marketinfo.openTime1() && hour <= marketinfo.closeTime1()) ||
           (hour >= marketinfo.openTime2() && hour <= marketinfo.closeTime2()),
@@ -956,7 +935,7 @@ void DataRuntime::removeStock(const string& market_code) {
 }
 
 void DataRuntime::loadAllStocks() {
-  HAYAKU_INFO(htr("Loading stock information..."));
+  HAYAKU_INFO("Loading stock information...");
   vector<StockInfo> stockInfos;
   if (context_.isAll()) {
     stockInfos = base_info_driver_->getAllStockInfo();
@@ -1059,7 +1038,7 @@ void DataRuntime::loadAllStocks() {
 }
 
 void DataRuntime::loadAllMarketInfos() {
-  HAYAKU_INFO(htr("Loading market information..."));
+  HAYAKU_INFO("Loading market information...");
   auto marketInfos = base_info_driver_->getAllMarketInfo();
   market_info_dict_.clear();
   market_info_dict_.reserve(marketInfos.size());
@@ -1076,7 +1055,7 @@ void DataRuntime::loadAllMarketInfos() {
 }
 
 void DataRuntime::loadAllStockTypeInfo() {
-  HAYAKU_INFO(htr("Loading stock type information..."));
+  HAYAKU_INFO("Loading stock type information...");
   auto stkTypeInfos = base_info_driver_->getAllStockTypeInfo();
   stock_type_info_.clear();
   stock_type_info_.reserve(stkTypeInfos.size());
@@ -1182,7 +1161,7 @@ void DataRuntime::loadAllStockWeights() {
   // ex-rights/ex-dividend data; the securities not materialized (the config
   // off, added by addStock or newly constructed) are still handled by the
   // on-demand lazy loading fallback of Stock::getWeight.
-  HAYAKU_INFO(htr("Loading stock weight..."));
+  HAYAKU_INFO("Loading stock weight...");
   if (context_.isAll()) {
     auto all_stkweight_dict = base_info_driver_->getAllStockWeightList();
     for (auto& item : all_stkweight_dict) {
@@ -1229,7 +1208,7 @@ void DataRuntime::releaseShmServerBaseInfoCache() {
   HAYAKU_IF_RETURN(!isBaseInfoCacheEvictionEnabled() || isIpcClientMode(),
                    void());
   HAYAKU_DEBUG(
-      htr("Release stock weight/finance cache after shm base info published"));
+      "Release stock weight/finance cache after shm base info published");
   std::shared_lock<std::shared_mutex> lock1(*stock_dict_mutex_);
   for (auto iter = stock_dict_.begin(); iter != stock_dict_.end(); ++iter) {
     Stock& stock = iter->second;
@@ -1280,7 +1259,7 @@ vector<std::pair<size_t, string>> DataRuntime::getHistoryFinanceAllFields()
 
 void DataRuntime::waitDataReady() const {
   HAYAKU_INFO_IF(!dataReady(),
-                 htr("Waiting for preload data loading to complete..."));
+                 "Waiting for preload data loading to complete...");
   while (!dataReady()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }

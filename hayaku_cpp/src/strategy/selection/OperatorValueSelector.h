@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API OperatorValueSelector : public SelectorBase {
+class OperatorValueSelector : public SelectorBase {
  public:
   OperatorValueSelector();
   explicit OperatorValueSelector(const string& name);
@@ -74,10 +74,10 @@ class HAYAKU_API OperatorValueSelector : public SelectorBase {
                                                                    \
   virtual SelectorPtr _clone() override {                          \
     auto p = std::make_shared<classname>();                        \
-    if (se_) {                                                    \
-      p->se_ = se_->clone();                                     \
+    if (se_) {                                                     \
+      p->se_ = se_->clone();                                       \
     }                                                              \
-    p->value_ = value_;                                          \
+    p->value_ = value_;                                            \
     return p;                                                      \
   }
 

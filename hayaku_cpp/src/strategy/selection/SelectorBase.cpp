@@ -11,12 +11,12 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const SelectorBase& st) {
+std::ostream& operator<<(std::ostream& os, const SelectorBase& st) {
   os << st.str();
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const SelectorPtr& st) {
+std::ostream& operator<<(std::ostream& os, const SelectorPtr& st) {
   if (st) {
     os << st->str();
   } else {

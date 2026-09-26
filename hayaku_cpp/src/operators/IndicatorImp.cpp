@@ -55,7 +55,7 @@ void IndicatorImp::releaseEngine() {
 #endif
 }
 
-string HAYAKU_API getOPTypeName(IndicatorImp::OPType op) {
+string getOPTypeName(IndicatorImp::OPType op) {
   string name;
   switch (op) {
     case IndicatorImp::LEAF:
@@ -133,13 +133,12 @@ string HAYAKU_API getOPTypeName(IndicatorImp::OPType op) {
   return name;
 }
 
-HAYAKU_API std::ostream &operator<<(std::ostream &os, const IndicatorImp &imp) {
+std::ostream &operator<<(std::ostream &os, const IndicatorImp &imp) {
   os << imp.str();
   return os;
 }
 
-HAYAKU_API std::ostream &operator<<(std::ostream &os,
-                                    const IndicatorImpPtr &imp) {
+std::ostream &operator<<(std::ostream &os, const IndicatorImpPtr &imp) {
   if (!imp) {
     os << "Indicator {}";
   } else {

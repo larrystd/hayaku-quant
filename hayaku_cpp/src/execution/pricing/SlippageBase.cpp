@@ -9,12 +9,12 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const SlippageBase& sp) {
+std::ostream& operator<<(std::ostream& os, const SlippageBase& sp) {
   os << "Slippage(" << sp.name() << ", " << sp.getParameter() << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const SlippagePtr& sp) {
+std::ostream& operator<<(std::ostream& os, const SlippagePtr& sp) {
   if (sp) {
     os << *sp;
   } else {

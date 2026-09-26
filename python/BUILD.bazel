@@ -1,0 +1,24 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+exports_files([
+    "hayaku/core.py",
+    "hayaku_ingest_native/__init__.py",
+    "hayaku_realtime_native/__init__.py",
+])
+
+py_test(
+    name = "python_package_smoke_test",
+    srcs = ["python_package_smoke_test.py"],
+    data = [
+        "hayaku/core.py",
+        "hayaku_ingest_native/__init__.py",
+        "hayaku_realtime_native/__init__.py",
+        "//hayaku_cpp/src:core_shared",
+        "//hayaku_cpp/src:ingest_shared",
+        "//hayaku_cpp/src:realtime_shared",
+        "//python/hayaku_pywrap:core310",
+        "//python/hayaku_pywrap:ingest310",
+        "//python/hayaku_pywrap:realtime310",
+    ],
+    size = "large",
+)

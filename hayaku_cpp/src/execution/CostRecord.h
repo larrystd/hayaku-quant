@@ -20,7 +20,7 @@ namespace hayaku {
  * total cost, and it does not guarantee that the above formula holds
  * @ingroup TradeCost
  */
-class HAYAKU_API CostRecord {
+class CostRecord {
  public:
   CostRecord();
   CostRecord(price_t commission, price_t stamptax, price_t transferfee,
@@ -52,9 +52,9 @@ class HAYAKU_API CostRecord {
  * Output the cost information
  * @ingroup TradeCost
  */
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const CostRecord&);
+std::ostream& operator<<(std::ostream& os, const CostRecord&);
 
-bool HAYAKU_API operator==(const CostRecord& d1, const CostRecord& d2);
+bool operator==(const CostRecord& d1, const CostRecord& d2);
 
 } /* namespace hayaku */
 

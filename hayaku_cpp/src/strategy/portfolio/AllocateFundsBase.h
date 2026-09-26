@@ -20,8 +20,7 @@ namespace hayaku {
  * management algorithm.
  * @ingroup AllocateFunds
  */
-class HAYAKU_API AllocateFundsBase
-    : public enable_shared_from_this<AllocateFundsBase> {
+class AllocateFundsBase : public enable_shared_from_this<AllocateFundsBase> {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -204,8 +203,8 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(AllocateFundsBase)
 typedef shared_ptr<AllocateFundsBase> AllocateFundsPtr;
 typedef shared_ptr<AllocateFundsBase> AFPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const AllocateFundsBase&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const AFPtr&);
+std::ostream& operator<<(std::ostream&, const AllocateFundsBase&);
+std::ostream& operator<<(std::ostream&, const AFPtr&);
 
 inline const string& AllocateFundsBase::name() const { return name_; }
 
@@ -233,9 +232,7 @@ AllocateFundsBase::getCashAccount() const {
 
 inline const KQuery& AllocateFundsBase::getQuery() const { return query_; }
 
-inline void AllocateFundsBase::setQuery(const KQuery& query) {
-  query_ = query;
-}
+inline void AllocateFundsBase::setQuery(const KQuery& query) { query_ = query; }
 
 } /* namespace hayaku */
 

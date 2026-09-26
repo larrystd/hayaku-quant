@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API AddEnvironment : public EnvironmentBase {
+class AddEnvironment : public EnvironmentBase {
  public:
   AddEnvironment();
   AddEnvironment(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
@@ -50,7 +50,7 @@ class HAYAKU_API AddEnvironment : public EnvironmentBase {
 
 namespace hayaku {
 
-class HAYAKU_API AndEnvironment : public EnvironmentBase {
+class AndEnvironment : public EnvironmentBase {
  public:
   AndEnvironment();
   AndEnvironment(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
@@ -89,7 +89,7 @@ class HAYAKU_API AndEnvironment : public EnvironmentBase {
 
 namespace hayaku {
 
-class HAYAKU_API DivEnvironment : public EnvironmentBase {
+class DivEnvironment : public EnvironmentBase {
  public:
   DivEnvironment();
   DivEnvironment(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
@@ -128,7 +128,7 @@ class HAYAKU_API DivEnvironment : public EnvironmentBase {
 
 namespace hayaku {
 
-class HAYAKU_API MultiEnvironment : public EnvironmentBase {
+class MultiEnvironment : public EnvironmentBase {
  public:
   MultiEnvironment();
   MultiEnvironment(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
@@ -167,7 +167,7 @@ class HAYAKU_API MultiEnvironment : public EnvironmentBase {
 
 namespace hayaku {
 
-class HAYAKU_API OrEnvironment : public EnvironmentBase {
+class OrEnvironment : public EnvironmentBase {
  public:
   OrEnvironment();
   OrEnvironment(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
@@ -206,7 +206,7 @@ class HAYAKU_API OrEnvironment : public EnvironmentBase {
 
 namespace hayaku {
 
-class HAYAKU_API SubEnvironment : public EnvironmentBase {
+class SubEnvironment : public EnvironmentBase {
  public:
   SubEnvironment();
   SubEnvironment(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);

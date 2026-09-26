@@ -16,7 +16,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API HayakuSession {
+class HayakuSession {
  public:
   HayakuSession(const HayakuSession&) = delete;
   HayakuSession& operator=(const HayakuSession&) = delete;

@@ -15,7 +15,7 @@ namespace hayaku {
  * Query condition for K-line (candlestick) data by index
  * @ingroup StockManage
  */
-class HAYAKU_API KQuery {
+class KQuery {
  public:
   /// Query mode: by index or by date
   enum QueryType : uint8_t {
@@ -225,10 +225,9 @@ class HAYAKU_API KQuery {
  * @see KQuery
  * @ingroup StockManage*
  */
-KQuery HAYAKU_API
-KQueryByIndex(int64_t start = 0, int64_t end = Null<int64_t>(),
-              const KQuery::KType& dataType = KQuery::DAY,
-              KQuery::RecoverType recoverType = KQuery::NO_RECOVER);
+KQuery KQueryByIndex(int64_t start = 0, int64_t end = Null<int64_t>(),
+                     const KQuery::KType& dataType = KQuery::DAY,
+                     KQuery::RecoverType recoverType = KQuery::NO_RECOVER);
 
 inline KQuery KQueryByIndex(int64_t start, int64_t end,
                             const KQuery::KType& dataType,
@@ -245,11 +244,10 @@ inline KQuery KQueryByIndex(int64_t start, int64_t end,
  * @see KQuery
  * @ingroup StockManage
  */
-KQuery HAYAKU_API
-KQueryByDate(const Datetime& start = Datetime::min(),
-             const Datetime& end = Null<Datetime>(),
-             const KQuery::KType& dataType = KQuery::DAY,
-             KQuery::RecoverType recoverType = KQuery::NO_RECOVER);
+KQuery KQueryByDate(const Datetime& start = Datetime::min(),
+                    const Datetime& end = Null<Datetime>(),
+                    const KQuery::KType& dataType = KQuery::DAY,
+                    KQuery::RecoverType recoverType = KQuery::NO_RECOVER);
 
 inline KQuery KQueryByDate(const Datetime& start, const Datetime& end,
                            const KQuery::KType& dataType,
@@ -262,7 +260,7 @@ inline KQuery KQueryByDate(const Datetime& start, const Datetime& end,
  * recoverType)
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const KQuery& query);
+std::ostream& operator<<(std::ostream& os, const KQuery& query);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -270,8 +268,8 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const KQuery& query);
 // that Null<>() == d is supported, i.e. Null can be placed on the left side
 //
 ///////////////////////////////////////////////////////////////////////////////
-bool HAYAKU_API operator==(const KQuery&, const KQuery&) noexcept;
-bool HAYAKU_API operator!=(const KQuery&, const KQuery&) noexcept;
+bool operator==(const KQuery&, const KQuery&) noexcept;
+bool operator!=(const KQuery&, const KQuery&) noexcept;
 
 /**
  * Provide the Null value of KQuery

@@ -9,12 +9,12 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const StoplossBase& sl) {
+std::ostream& operator<<(std::ostream& os, const StoplossBase& sl) {
   os << "Stoploss(" << sl.name() << ", " << sl.getParameter() << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const StoplossPtr& sl) {
+std::ostream& operator<<(std::ostream& os, const StoplossPtr& sl) {
   if (sl) {
     os << *sl;
   } else {

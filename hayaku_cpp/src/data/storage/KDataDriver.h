@@ -26,15 +26,15 @@ namespace hayaku {
 struct KRecordView {
   const KRecord* data{nullptr};  ///< Pointer of the first record of the range
                                  ///< (count consecutive records)
-  size_t count{0};       ///< Number of the records in the range
-  shared_ptr<void> pin;  ///< Holds the mapping alive (type-erased)
+  size_t count{0};               ///< Number of the records in the range
+  shared_ptr<void> pin;          ///< Holds the mapping alive (type-erased)
 };
 
 /**
  * Base class of the K-line data driver
  * @ingroup DataDriver
  */
-class HAYAKU_API KDataDriver {
+class KDataDriver {
   PARAMETER_SUPPORT
 
  public:
@@ -178,8 +178,8 @@ class HAYAKU_API KDataDriver {
 
 typedef shared_ptr<KDataDriver> KDataDriverPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const KDataDriver&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const KDataDriverPtr&);
+std::ostream& operator<<(std::ostream&, const KDataDriver&);
+std::ostream& operator<<(std::ostream&, const KDataDriverPtr&);
 
 inline const string& KDataDriver::name() const { return name_; }
 
@@ -188,8 +188,7 @@ class KDataDriverConnect {
   typedef KDataDriver DriverType;
   typedef KDataDriverPtr DriverTypePtr;
 
-  explicit KDataDriverConnect(const KDataDriverPtr& driver)
-      : driver_(driver) {}
+  explicit KDataDriverConnect(const KDataDriverPtr& driver) : driver_(driver) {}
   ~KDataDriverConnect() = default;
 
   KDataDriverConnect(const KDataDriverConnect&) = delete;
@@ -214,7 +213,7 @@ class KDataDriverConnect {
                            const KQuery& query, size_t& out_start,
                            size_t& out_end) {
     return driver_->getIndexRangeByDate(market, code, query, out_start,
-                                         out_end);
+                                        out_end);
   }
 
   KRecordList getKRecordList(const string& market, const string& code,
@@ -226,7 +225,7 @@ class KDataDriverConnect {
                          const KQuery::KType& kType, size_t start_ix,
                          size_t end_ix, KRecordView& out) {
     return driver_->tryGetKRecordView(market, code, kType, start_ix, end_ix,
-                                       out);
+                                      out);
   }
 
   TimeLineList getTimeLineList(const string& market, const string& code,

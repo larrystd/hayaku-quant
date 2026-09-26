@@ -17,10 +17,7 @@ namespace hayaku {
 BandSignal::BandSignal() : SignalBase("SG_Band") {}
 
 BandSignal::BandSignal(const Indicator& ind, price_t lower, price_t upper)
-    : SignalBase("SG_Band"),
-      ind_(ind.clone()),
-      lower_(lower),
-      upper_(upper) {
+    : SignalBase("SG_Band"), ind_(ind.clone()), lower_(lower), upper_(upper) {
   HAYAKU_CHECK(lower < upper,
                "BandSignal: lower track is greater than upper track");
 }
@@ -51,8 +48,7 @@ void BandSignal::_calculate(const KData& kdata) {
   }
 }
 
-SignalPtr HAYAKU_API SG_Band(const Indicator& sig, price_t lower,
-                             price_t upper) {
+SignalPtr SG_Band(const Indicator& sig, price_t lower, price_t upper) {
   return make_shared<BandSignal>(sig, lower, upper);
 }
 

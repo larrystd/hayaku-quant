@@ -53,7 +53,7 @@ StrategyWeightList FixedAmountFunds ::_allocateWeight(
   return result;
 }
 
-AFPtr HAYAKU_API AF_FixedAmount(double amount) {
+AFPtr AF_FixedAmount(double amount) {
   auto p = make_shared<FixedAmountFunds>();
   p->setParam<double>("amount", amount);
   return p;

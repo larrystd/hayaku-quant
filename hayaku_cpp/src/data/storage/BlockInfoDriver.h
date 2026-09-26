@@ -16,7 +16,7 @@ namespace hayaku {
  * Block data driver
  * @ingroup DataDriver
  */
-class HAYAKU_API BlockInfoDriver {
+class BlockInfoDriver {
   PARAMETER_SUPPORT
 
  public:
@@ -101,8 +101,8 @@ class HAYAKU_API BlockInfoDriver {
 
 typedef shared_ptr<BlockInfoDriver> BlockInfoDriverPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const BlockInfoDriver&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const BlockInfoDriverPtr&);
+std::ostream& operator<<(std::ostream&, const BlockInfoDriver&);
+std::ostream& operator<<(std::ostream&, const BlockInfoDriverPtr&);
 
 inline const string& BlockInfoDriver::name() const { return name_; }
 

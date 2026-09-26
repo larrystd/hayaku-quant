@@ -47,10 +47,10 @@ void SignalSelector::_calculate() {
   }
 }
 
-SEPtr HAYAKU_API SE_Signal() { return make_shared<SignalSelector>(); }
+SEPtr SE_Signal() { return make_shared<SignalSelector>(); }
 
-SEPtr HAYAKU_API SE_Signal(const StockList& stock_list,
-                           const internal::StrategyRuntimePtr& sys) {
+SEPtr SE_Signal(const StockList& stock_list,
+                const internal::StrategyRuntimePtr& sys) {
   SelectorPtr p = make_shared<SignalSelector>();
   p->addStockList(stock_list, sys);
   return p;

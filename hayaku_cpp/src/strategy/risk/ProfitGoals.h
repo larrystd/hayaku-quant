@@ -25,7 +25,7 @@ namespace hayaku {
  * @return PGPtr
  * @ingroup ProfitGoal
  */
-ProfitGoalPtr HAYAKU_API PG_FixedHoldDays(int days = 5);
+ProfitGoalPtr PG_FixedHoldDays(int days = 5);
 
 } /* namespace hayaku */
 
@@ -43,7 +43,7 @@ namespace hayaku {
  * @param p percentage
  * @return PGPtr
  */
-ProfitGoalPtr HAYAKU_API PG_FixedPercent(double p = 0.2);
+ProfitGoalPtr PG_FixedPercent(double p = 0.2);
 
 } /* namespace hayaku */
 
@@ -60,6 +60,6 @@ namespace hayaku {
  * No profit goal strategy, it is usually used for the testing or the comparison
  * @return PGPtr
  */
-ProfitGoalPtr HAYAKU_API PG_NoGoal();
+ProfitGoalPtr PG_NoGoal();
 
 } /* namespace hayaku */

@@ -31,7 +31,7 @@ class StrategyRuntime;
  * boundary. The facade does not expose the mutable strategy runtime or account
  * implementation.
  */
-class HAYAKU_API StrategyEngine {
+class StrategyEngine {
  public:
   StrategyEngine(StrategyDefinition definition, ExecutionEngine& execution);
   ~StrategyEngine();

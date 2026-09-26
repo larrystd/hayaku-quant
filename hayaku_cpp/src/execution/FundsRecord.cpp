@@ -9,8 +9,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const FundsRecord& funds) {
+std::ostream& operator<<(std::ostream& os, const FundsRecord& funds) {
   os << std::fixed;
   (void)os.precision(4);
 
@@ -60,7 +59,7 @@ FundsRecord& FundsRecord::operator+=(const FundsRecord& other) {
   return *this;
 }
 
-bool HAYAKU_API operator==(const FundsRecord& d1, const FundsRecord& d2) {
+bool operator==(const FundsRecord& d1, const FundsRecord& d2) {
   return (std::fabs(d1.cash - d2.cash) < 0.0001 &&
           std::fabs(d1.market_value - d2.market_value) < 0.0001 &&
           std::fabs(d1.short_market_value - d2.short_market_value) < 0.0001 &&

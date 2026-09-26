@@ -205,7 +205,7 @@ void ICeil::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API CEILING() { return Indicator(make_shared<ICeil>()); }
+Indicator CEILING() { return Indicator(make_shared<ICeil>()); }
 
 } /* namespace hayaku */
 
@@ -247,7 +247,7 @@ void IFloor::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API FLOOR() { return Indicator(make_shared<IFloor>()); }
+Indicator FLOOR() { return Indicator(make_shared<IFloor>()); }
 
 } /* namespace hayaku */
 
@@ -289,7 +289,7 @@ void IIntpart::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API INTPART() { return Indicator(make_shared<IIntpart>()); }
+Indicator INTPART() { return Indicator(make_shared<IIntpart>()); }
 
 } /* namespace hayaku */
 
@@ -338,7 +338,7 @@ void IRound::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ROUND(int ndigits) {
+Indicator ROUND(int ndigits) {
   IndicatorImpPtr p = make_shared<IRound>();
   p->setParam<int>("ndigits", ndigits);
   return Indicator(p);
@@ -393,7 +393,7 @@ void IRoundDown::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ROUNDDOWN(int ndigits) {
+Indicator ROUNDDOWN(int ndigits) {
   IndicatorImpPtr p = make_shared<IRoundDown>();
   p->setParam<int>("ndigits", ndigits);
   return Indicator(p);
@@ -448,7 +448,7 @@ void IRoundUp::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ROUNDUP(int ndigits) {
+Indicator ROUNDUP(int ndigits) {
   IndicatorImpPtr p = make_shared<IRoundUp>();
   p->setParam<int>("ndigits", ndigits);
   return Indicator(p);

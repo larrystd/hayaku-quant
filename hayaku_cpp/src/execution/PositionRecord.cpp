@@ -61,8 +61,7 @@ PositionRecord& PositionRecord::operator=(PositionRecord&& rhs) {
   return *this;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const PositionRecord& record) {
+std::ostream& operator<<(std::ostream& os, const PositionRecord& record) {
   os << record.str();
   return os;
 }
@@ -106,7 +105,7 @@ price_t PositionRecord::totalProfit() const {
   return sellMoney - buyMoney - totalCost;
 }
 
-bool HAYAKU_API operator==(const PositionRecord& d1, const PositionRecord& d2) {
+bool operator==(const PositionRecord& d1, const PositionRecord& d2) {
   return d1.stock == d2.stock && d1.takeDatetime == d2.takeDatetime &&
          d1.cleanDatetime == d2.cleanDatetime &&
          fabs(d1.number - d2.number) < 0.00001 &&

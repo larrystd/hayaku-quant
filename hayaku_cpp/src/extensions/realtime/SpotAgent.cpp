@@ -12,7 +12,6 @@
 
 #include <chrono>
 
-#include "common/Lang.h"
 #include "extensions/realtime/RealtimePort.h"
 #include "extensions/realtime/spot_generated.h"
 
@@ -58,7 +57,7 @@ void SpotAgent::start() {
                "Cannot restart SpotAgent from its own callback");
   HAYAKU_CHECK(work_num_ > 0,
                "SpotAgent worker count must be greater than zero");
-  HAYAKU_INFO(htr("Start spot agent."));
+  HAYAKU_INFO("Start spot agent.");
   stop();
 
   std::lock_guard<std::mutex> lock(run_mutex_);
@@ -346,7 +345,7 @@ void SpotAgent::work_thread() {
             std::shared_ptr<char[]> data_buf(new char[length]);
             memcpy(data_buf.get(), buf, length);
             receive_data_tg_->submit([this, length, startReceiveTime,
-                                       new_buf = std::move(data_buf)]() {
+                                      new_buf = std::move(data_buf)]() {
               try {
                 this->parseSpotData(new_buf.get(), length, startReceiveTime);
               } catch (const std::exception& e) {

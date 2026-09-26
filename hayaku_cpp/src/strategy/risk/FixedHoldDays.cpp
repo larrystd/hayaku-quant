@@ -45,7 +45,7 @@ price_t FixedHoldDays::getGoal(const Datetime& datetime, price_t price) {
   return Null<price_t>();
 }
 
-ProfitGoalPtr HAYAKU_API PG_FixedHoldDays(int days) {
+ProfitGoalPtr PG_FixedHoldDays(int days) {
   ProfitGoalPtr ptr = make_shared<FixedHoldDays>();
   ptr->setParam<int>("days", days);
   return ptr;

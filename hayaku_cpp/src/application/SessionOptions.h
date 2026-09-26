@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API SessionOptions {
+class SessionOptions {
  public:
   SessionOptions() = default;
 

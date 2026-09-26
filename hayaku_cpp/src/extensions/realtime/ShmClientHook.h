@@ -71,20 +71,19 @@ struct ShmClientForwarders {
  * follows the plugin instance, and it must be unregistered before the plugin is
  * destroyed
  */
-HAYAKU_API void registerShmClient(ShmClientForwarders fwd) noexcept;
+void registerShmClient(ShmClientForwarders fwd) noexcept;
 
 /** Whether the client forwarding is currently registered; false is returned
  * when it is not registered (standalone mode / the plugin is not installed) */
-HAYAKU_API bool shmClient() noexcept;
+bool shmClient() noexcept;
 
 /**
  * Client realtime update forwarding (called by Stock::realtimeUpdate)
  * @return true the server has applied it | false the client is not registered,
  * the communication failed or the server did not apply it
  */
-HAYAKU_API bool forwardRealtimeUpdate(const std::string& market_code,
-                                      const KQuery::KType& ktype,
-                                      const KRecord& record);
+bool forwardRealtimeUpdate(const std::string& market_code,
+                           const KQuery::KType& ktype, const KRecord& record);
 
 /**
  * The client queries the service process for the last update moment of the
@@ -93,8 +92,8 @@ HAYAKU_API bool forwardRealtimeUpdate(const std::string& market_code,
  * returned when the client is not registered, the communication failed or the
  * security does not exist
  */
-HAYAKU_API Datetime forwardGetLastUpdateTime(const std::string& market_code,
-                                             const KQuery::KType& ktype);
+Datetime forwardGetLastUpdateTime(const std::string& market_code,
+                                  const KQuery::KType& ktype);
 
 /**
  * The client asks the service process to pull the latest K-line from the market
@@ -102,9 +101,9 @@ HAYAKU_API Datetime forwardGetLastUpdateTime(const std::string& market_code,
  * @return true the server has accepted it | false the client is not registered
  * or the communication failed (the caller only logs it, without interrupting)
  */
-HAYAKU_API bool forwardPullFromBufferServer(
-    const std::string& addr, const std::vector<std::string>& codes,
-    const KQuery::KType& ktype);
+bool forwardPullFromBufferServer(const std::string& addr,
+                                 const std::vector<std::string>& codes,
+                                 const KQuery::KType& ktype);
 
 /**
  * Set the interruption checker during a long blocking wait (such as waiting for
@@ -115,11 +114,11 @@ HAYAKU_API bool forwardPullFromBufferServer(
  * waiting logic is entirely inside the plugin, and the plugin calls back the
  * implementation registered here through ipc::checkInterrupted().
  */
-HAYAKU_API void setInterruptChecker(std::function<bool()> checker);
+void setInterruptChecker(std::function<bool()> checker);
 
 /** Call the registered interruption checker; false is returned when none is
  * registered */
-HAYAKU_API bool checkInterrupted();
+bool checkInterrupted();
 
 }  // namespace ipc
 }  // namespace hayaku

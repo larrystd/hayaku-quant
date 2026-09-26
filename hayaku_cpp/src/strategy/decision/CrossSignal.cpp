@@ -50,7 +50,7 @@ void CrossSignal::_calculate(const KData& kdata) {
   }
 }
 
-SignalPtr HAYAKU_API SG_Cross(const Indicator& fast, const Indicator& slow) {
+SignalPtr SG_Cross(const Indicator& fast, const Indicator& slow) {
   return make_shared<CrossSignal>(fast, slow);
 }
 

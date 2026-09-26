@@ -31,26 +31,25 @@ struct RealtimePort {
  * session/service has stopped and unregisterRealtimePort returns true;
  * concurrent unload is not supported.
  */
-bool HAYAKU_API registerRealtimePort(const RealtimePort* port) noexcept;
+bool registerRealtimePort(const RealtimePort* port) noexcept;
 
 /** Reject registration removal while a callback, service or port call remains
  * active. */
-bool HAYAKU_API unregisterRealtimePort(const RealtimePort* port) noexcept;
+bool unregisterRealtimePort(const RealtimePort* port) noexcept;
 
 /** A no-op without live; only Strategy::start(true) requires an installed port.
  */
-void HAYAKU_API stopRealtimeForStrategy();
-void HAYAKU_API startRealtimeForStrategy(const RealtimeSpotProcess& process,
-                                         const RealtimePostProcess& postProcess,
-                                         size_t workerNum,
-                                         const string& address);
-void HAYAKU_API reloadWithRealtimePaused(void (*reload)());
-void HAYAKU_API shutdownRealtimeRuntime() noexcept;
+void stopRealtimeForStrategy();
+void startRealtimeForStrategy(const RealtimeSpotProcess& process,
+                              const RealtimePostProcess& postProcess,
+                              size_t workerNum, const string& address);
+void reloadWithRealtimePaused(void (*reload)());
+void shutdownRealtimeRuntime() noexcept;
 
 namespace detail {
-void HAYAKU_API enterRealtimeCallback() noexcept;
-void HAYAKU_API leaveRealtimeCallback() noexcept;
-bool HAYAKU_API spotAgentCallbackActive() noexcept;
+void enterRealtimeCallback() noexcept;
+void leaveRealtimeCallback() noexcept;
+bool spotAgentCallbackActive() noexcept;
 }  // namespace detail
 
 }  // namespace hayaku

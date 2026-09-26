@@ -13,7 +13,7 @@ namespace hayaku {
 // Extended position information (it is suitable for the one-buy-one-sell case
 // only; for the one-buy-multiple-sell case some statistics are inaccurate and
 // are for reference only)
-struct HAYAKU_API PositionExtInfo final {
+struct PositionExtInfo final {
   PositionRecord position;
   price_t maxHighPrice{0.};       // Maximum of the high prices in the period
   price_t minLowPrice{0.0};       // Minimum of the low prices in the period

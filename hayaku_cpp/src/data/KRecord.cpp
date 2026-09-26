@@ -11,7 +11,7 @@ namespace hayaku {
 
 const KRecord KRecord::NullKRecord;
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const KRecord& record) {
+std::ostream& operator<<(std::ostream& os, const KRecord& record) {
   string strip(", ");
   os << std::fixed;
   (void)os.precision(4);
@@ -24,7 +24,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const KRecord& record) {
   return os;
 }
 
-bool HAYAKU_API operator==(const KRecord& d1, const KRecord& d2) {
+bool operator==(const KRecord& d1, const KRecord& d2) {
   return (d1.datetime == d2.datetime &&
           (std::fabs(d1.openPrice - d2.openPrice) < 0.0001) &&
           (std::fabs(d1.highPrice - d2.highPrice) < 0.0001) &&
@@ -34,8 +34,6 @@ bool HAYAKU_API operator==(const KRecord& d1, const KRecord& d2) {
           (std::fabs(d1.transCount - d2.transCount) < 0.0001));
 }
 
-bool HAYAKU_API operator!=(const KRecord& d1, const KRecord& d2) {
-  return !(d1 == d2);
-}
+bool operator!=(const KRecord& d1, const KRecord& d2) { return !(d1 == d2); }
 
 }  // namespace hayaku

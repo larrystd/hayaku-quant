@@ -15,13 +15,13 @@
 
 namespace hayaku {
 
-class HAYAKU_API Portfolio;
+class Portfolio;
 
 /**
  * Trading object selection module
  * @ingroup Selector
  */
-class HAYAKU_API SelectorBase : public enable_shared_from_this<SelectorBase> {
+class SelectorBase : public enable_shared_from_this<SelectorBase> {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -189,8 +189,8 @@ class HAYAKU_API SelectorBase : public enable_shared_from_this<SelectorBase> {
   internal::StrategyRuntimeList pro_sys_list_;  // Prototype system list
   internal::StrategyRuntimeList
       real_sys_list_;  // The systems actually run in the PF portfolio, set
-                        // when PF executes, in the same order as the prototype
-                        // list
+                       // when PF executes, in the same order as the prototype
+                       // list
 
   std::weak_ptr<Portfolio>
       pf_;  // Stored but not serialized, the reference to PF
@@ -270,8 +270,8 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(SelectorBase)
 typedef shared_ptr<SelectorBase> SelectorPtr;
 typedef shared_ptr<SelectorBase> SEPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const SelectorBase&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const SelectorPtr&);
+std::ostream& operator<<(std::ostream&, const SelectorBase&);
+std::ostream& operator<<(std::ostream&, const SelectorPtr&);
 
 inline const string& SelectorBase::name() const { return name_; }
 

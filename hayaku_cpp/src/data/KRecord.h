@@ -15,7 +15,7 @@ namespace hayaku {
  * K-line data record
  * @ingroup StockManage
  */
-class HAYAKU_API KRecord {
+class KRecord {
  public:
   Datetime datetime;    ///< Date, format: YYYYMMDDHHMM, e.g. 200901010930
   price_t openPrice;    ///< Open price
@@ -74,19 +74,19 @@ typedef shared_ptr<KRecordList> KRecordListPtr;
  * close, transAmount, count)
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream&, const KRecord&);
+std::ostream& operator<<(std::ostream&, const KRecord&);
 
 /**
  * Compare whether two KRecord are equal, generally used in tests only
  * @ingroup StockManage
  */
-bool HAYAKU_API operator==(const KRecord& d1, const KRecord& d2);
+bool operator==(const KRecord& d1, const KRecord& d2);
 
 /**
  * Unequal comparison of two KRecord
  * @ingroup StockManage
  */
-bool HAYAKU_API operator!=(const KRecord& d1, const KRecord& d2);
+bool operator!=(const KRecord& d1, const KRecord& d2);
 
 }  // namespace hayaku
 

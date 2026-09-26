@@ -13,7 +13,7 @@
 
 namespace hayaku {
 
-string HAYAKU_API getBusinessName(BUSINESS business) {
+string getBusinessName(BUSINESS business) {
   switch (business) {
     case BUSINESS_INIT:
       return "INIT";
@@ -52,7 +52,7 @@ string HAYAKU_API getBusinessName(BUSINESS business) {
   }
 }
 
-BUSINESS HAYAKU_API getBusinessEnum(const string& arg) {
+BUSINESS getBusinessEnum(const string& arg) {
   BUSINESS business;
   string business_name(arg);
   to_upper(business_name);
@@ -158,8 +158,7 @@ TradeRecord& TradeRecord::operator=(TradeRecord&& rhs) {
   return *this;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const TradeRecord& record) {
+std::ostream& operator<<(std::ostream& os, const TradeRecord& record) {
   os << record.toString();
   return os;
 }
@@ -179,7 +178,7 @@ string TradeRecord::toString() const {
 
 bool TradeRecord::isNull() const { return business == BUSINESS_INVALID; }
 
-bool HAYAKU_API operator==(const TradeRecord& d1, const TradeRecord& d2) {
+bool operator==(const TradeRecord& d1, const TradeRecord& d2) {
   return d1.business == d2.business && d1.stock == d2.stock &&
          d1.datetime == d2.datetime &&
          fabs(d1.planPrice - d2.planPrice) < 0.0001 &&

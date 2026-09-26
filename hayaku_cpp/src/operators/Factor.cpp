@@ -14,7 +14,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const Factor& factor) {
+std::ostream& operator<<(std::ostream& os, const Factor& factor) {
   os << factor.str();
   return os;
 }
@@ -60,9 +60,9 @@ Factor::Factor(const string& name, const Indicator& formula,
   if (need_save_value && !name.empty()) {
     HAYAKU_CHECK(
         isValidFactorName(name), "{}",
-        htr("When saving factor values, factor names must consist of English "
-            "letters, "
-            "numbers and underscores, and cannot start with a number!"));
+        "When saving factor values, factor names must consist of English "
+        "letters, "
+        "numbers and underscores, and cannot start with a number!");
   }
 }
 
@@ -70,9 +70,9 @@ void Factor::name(const string& name) {
   if (data_->need_save_value && !name.empty()) {
     HAYAKU_CHECK(
         isValidFactorName(name), "{}",
-        htr("When saving factor values, factor names must consist of English "
-            "letters, "
-            "numbers and underscores, and cannot start with a number!"));
+        "When saving factor values, factor names must consist of English "
+        "letters, "
+        "numbers and underscores, and cannot start with a number!");
   }
   data_->name = utf8_to_upper(name);
   data_->formula.name(data_->name);
@@ -84,9 +84,9 @@ void Factor::needSaveValue(bool flag) {
     // letters, digits and _ and must not start with a digit
     HAYAKU_CHECK(
         isValidFactorName(data_->name), "{}",
-        htr("When saving factor values, factor names must consist of English "
-            "letters, "
-            "numbers and underscores, and cannot start with a number!"));
+        "When saving factor values, factor names must consist of English "
+        "letters, "
+        "numbers and underscores, and cannot start with a number!");
   }
   data_->need_save_value = flag;
 }

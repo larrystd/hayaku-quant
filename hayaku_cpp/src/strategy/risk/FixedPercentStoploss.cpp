@@ -35,7 +35,7 @@ price_t FixedPercentStoploss ::getPrice(const Datetime& datetime,
 
 void FixedPercentStoploss::_calculate() {}
 
-StoplossPtr HAYAKU_API ST_FixedPercent(double p) {
+StoplossPtr ST_FixedPercent(double p) {
   StoplossPtr result = make_shared<FixedPercentStoploss>();
   result->setParam<double>("p", p);
   return result;

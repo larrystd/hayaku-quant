@@ -21,10 +21,6 @@
 
 #include "data/MarketTypes.h"
 
-#ifndef HAYAKU_API
-#define HAYAKU_API
-#endif
-
 namespace hayaku {
 
 /**
@@ -32,7 +28,7 @@ namespace hayaku {
  * compatible with malloc and mi_malloc; it provides a std::vector-like
  * interface to the outside
  */
-class HAYAKU_API IndicatorImpBuffer {
+class IndicatorImpBuffer {
  public:
 // Type definitions
 #if HAYAKU_USE_LOW_PRECISION
@@ -130,8 +126,7 @@ class HAYAKU_API IndicatorImpBuffer {
   IndicatorImpBuffer(std::initializer_list<value_type> init_list) {
     if (init_list.size() > 0) {
       reserve(init_list.size());
-      std::uninitialized_copy(init_list.begin(), init_list.end(),
-                              buffer_.data);
+      std::uninitialized_copy(init_list.begin(), init_list.end(), buffer_.data);
       buffer_.size = init_list.size();
     }
   }
@@ -163,8 +158,8 @@ class HAYAKU_API IndicatorImpBuffer {
         destroy_elements(buffer_.data, buffer_.data + buffer_.size);
 
         // Copy the new elements
-        std::copy(other.buffer_.data,
-                  other.buffer_.data + other.buffer_.size, buffer_.data);
+        std::copy(other.buffer_.data, other.buffer_.data + other.buffer_.size,
+                  buffer_.data);
         buffer_.size = other.buffer_.size;
       }
     }
@@ -241,8 +236,8 @@ class HAYAKU_API IndicatorImpBuffer {
       if (count > buffer_.capacity) {
         reserve(count);
       }
-      std::uninitialized_fill(buffer_.data + buffer_.size,
-                              buffer_.data + count, value);
+      std::uninitialized_fill(buffer_.data + buffer_.size, buffer_.data + count,
+                              value);
       buffer_.size = count;
     }
   }

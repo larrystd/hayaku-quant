@@ -14,13 +14,13 @@
 #if HAYAKU_ENABLE_TA_LIB
 
 #define TA_IN1_OUT_CRT(func)                                          \
-  Indicator HAYAKU_API func();                                        \
+  Indicator func();                                                   \
   inline Indicator func(const Indicator& ind) { return func()(ind); } \
   inline Indicator func(Indicator::value_t val) { return func(CVAL(val)); }
 
 #define TA_IN1_OUT_N_CRT(func, period)                               \
-  Indicator HAYAKU_API func(int n = period);                         \
-  Indicator HAYAKU_API func(const IndParam& n);                      \
+  Indicator func(int n = period);                                    \
+  Indicator func(const IndParam& n);                                 \
   inline Indicator func(const Indicator& ind, int n = period) {      \
     return func(n)(ind);                                             \
   }                                                                  \
@@ -31,27 +31,27 @@
     return func(IndParam(n))(data);                                  \
   }
 
-#define TA_IN2_OUT_CRT(func)                                              \
-  Indicator HAYAKU_API func(const Indicator& ind1, const Indicator& ind2, \
-                            bool fill_null = true);                       \
-  Indicator HAYAKU_API func(bool fill_null = true);
+#define TA_IN2_OUT_CRT(func)                                   \
+  Indicator func(const Indicator& ind1, const Indicator& ind2, \
+                 bool fill_null = true);                       \
+  Indicator func(bool fill_null = true);
 
-#define TA_IN2_OUT_N_CRT(func, period)                                    \
-  Indicator HAYAKU_API func(const Indicator& ind1, const Indicator& ind2, \
-                            int n = period, bool fill_null = true);       \
-  Indicator HAYAKU_API func(int n = period, bool fill_null = true);
+#define TA_IN2_OUT_N_CRT(func, period)                                         \
+  Indicator func(const Indicator& ind1, const Indicator& ind2, int n = period, \
+                 bool fill_null = true);                                       \
+  Indicator func(int n = period, bool fill_null = true);
 
-#define TA_K_OUT_CRT(func)     \
-  Indicator HAYAKU_API func(); \
-  Indicator HAYAKU_API func(const KData& k);
+#define TA_K_OUT_CRT(func) \
+  Indicator func();        \
+  Indicator func(const KData& k);
 
-#define TA_K_OUT_N_CRT(func, period)         \
-  Indicator HAYAKU_API func(int n = period); \
-  Indicator HAYAKU_API func(const KData& k, int n = period);
+#define TA_K_OUT_N_CRT(func, period) \
+  Indicator func(int n = period);    \
+  Indicator func(const KData& k, int n = period);
 
-#define TA_K_OUT_P_D_CRT(func, param_val)          \
-  Indicator HAYAKU_API func(double p = param_val); \
-  Indicator HAYAKU_API func(const KData& k, double p = param_val);
+#define TA_K_OUT_P_D_CRT(func, param_val) \
+  Indicator func(double p = param_val);   \
+  Indicator func(const KData& k, double p = param_val);
 
 namespace hayaku {
 
@@ -60,13 +60,13 @@ TA_IN1_OUT_CRT(TA_ACOS)
 TA_K_OUT_CRT(TA_AD)
 TA_IN2_OUT_CRT(TA_ADD)
 
-Indicator HAYAKU_API TA_ADOSC(int fast_n = 3, int slow_n = 10);
-Indicator HAYAKU_API TA_ADOSC(const KData& k, int fast_n = 3, int slow_n = 10);
+Indicator TA_ADOSC(int fast_n = 3, int slow_n = 10);
+Indicator TA_ADOSC(const KData& k, int fast_n = 3, int slow_n = 10);
 
 TA_K_OUT_N_CRT(TA_ADX, 14)
 TA_K_OUT_N_CRT(TA_ADXR, 14)
 
-Indicator HAYAKU_API TA_APO(int fast_n = 12, int slow_n = 26, int matype = 0);
+Indicator TA_APO(int fast_n = 12, int slow_n = 26, int matype = 0);
 inline Indicator TA_APO(const Indicator& ind, int fast_n = 12, int slow_n = 26,
                         int matype = 0) {
   return TA_APO(fast_n, slow_n, matype)(ind);
@@ -82,11 +82,11 @@ TA_K_OUT_N_CRT(TA_ATR, 14)
 TA_IN1_OUT_N_CRT(TA_AVGDEV, 14)
 TA_K_OUT_CRT(TA_AVGPRICE)
 
-Indicator HAYAKU_API TA_AVGPRICE();
-Indicator HAYAKU_API TA_AVGPRICE(const KData& k);
+Indicator TA_AVGPRICE();
+Indicator TA_AVGPRICE(const KData& k);
 
-Indicator HAYAKU_API TA_BBANDS(int n = 5, double nbdevup = 2.,
-                               double nbdevdn = 2., int matype = 0);
+Indicator TA_BBANDS(int n = 5, double nbdevup = 2., double nbdevdn = 2.,
+                    int matype = 0);
 inline Indicator TA_BBANDS(const Indicator& ind, int n = 5, double nbdevup = 2.,
                            double nbdevdn = 2., int matype = 0) {
   return TA_BBANDS(n, nbdevup, nbdevdn, matype)(ind);
@@ -183,21 +183,20 @@ TA_IN1_OUT_N_CRT(TA_LINEARREG, 14)
 TA_IN1_OUT_CRT(TA_LN)
 TA_IN1_OUT_CRT(TA_LOG10)
 
-Indicator HAYAKU_API TA_MA(int n = 30, int matype = 0);
+Indicator TA_MA(int n = 30, int matype = 0);
 inline Indicator TA_MA(const Indicator& ind, int n = 30, int matype = 0) {
   return TA_MA(n, matype)(ind);
 }
 
-Indicator HAYAKU_API TA_MACD(int fast_n = 12, int slow_n = 26,
-                             int signal_n = 9);
+Indicator TA_MACD(int fast_n = 12, int slow_n = 26, int signal_n = 9);
 inline Indicator TA_MACD(const Indicator& ind, int fast_n = 12, int slow_n = 26,
                          int signal_n = 9) {
   return TA_MACD(fast_n, slow_n, signal_n)(ind);
 }
 
-Indicator HAYAKU_API TA_MACDEXT(int fast_n = 12, int slow_n = 26,
-                                int signal_n = 9, int fast_matype = 0,
-                                int slow_matype = 0, int signal_matype = 0);
+Indicator TA_MACDEXT(int fast_n = 12, int slow_n = 26, int signal_n = 9,
+                     int fast_matype = 0, int slow_matype = 0,
+                     int signal_matype = 0);
 inline Indicator TA_MACDEXT(const Indicator& ind, int fast_n = 12,
                             int slow_n = 26, int signal_n = 9,
                             int fast_matype = 0, int slow_matype = 0,
@@ -208,16 +207,15 @@ inline Indicator TA_MACDEXT(const Indicator& ind, int fast_n = 12,
 
 TA_IN1_OUT_N_CRT(TA_MACDFIX, 9)
 
-Indicator HAYAKU_API TA_MAMA(double fast_limit = 5.000000e-1,
-                             double slow_limit = 5.000000e-2);
+Indicator TA_MAMA(double fast_limit = 5.000000e-1,
+                  double slow_limit = 5.000000e-2);
 inline Indicator TA_MAMA(const Indicator& ind, double fast_limit = 5.000000e-1,
                          double slow_limit = 5.000000e-2) {
   return TA_MAMA(fast_limit, slow_limit)(ind);
 }
 
-Indicator HAYAKU_API TA_MAVP(const Indicator& ref_ind, int min_n = 2,
-                             int max_n = 30, int matype = 0,
-                             bool fill_null = true);
+Indicator TA_MAVP(const Indicator& ref_ind, int min_n = 2, int max_n = 30,
+                  int matype = 0, bool fill_null = true);
 inline Indicator TA_MAVP(const Indicator& ind1, const Indicator& ind2,
                          int min_n = 2, int max_n = 30, int matype = 0,
                          bool fill_null = true) {
@@ -231,8 +229,8 @@ TA_K_OUT_CRT(TA_MEDPRICE)
 TA_K_OUT_N_CRT(TA_MFI, 14)
 TA_IN1_OUT_N_CRT(TA_MIDPOINT, 14)
 
-Indicator HAYAKU_API TA_MIDPRICE(int n = 14);
-Indicator HAYAKU_API TA_MIDPRICE(const KData& k, int n = 14);
+Indicator TA_MIDPRICE(int n = 14);
+Indicator TA_MIDPRICE(const KData& k, int n = 14);
 
 TA_IN1_OUT_N_CRT(TA_MIN, 30)
 TA_IN1_OUT_N_CRT(TA_MININDEX, 30)
@@ -248,7 +246,7 @@ TA_K_OUT_CRT(TA_OBV)
 TA_K_OUT_N_CRT(TA_PLUS_DI, 14)
 TA_K_OUT_N_CRT(TA_PLUS_DM, 14)
 
-Indicator HAYAKU_API TA_PPO(int fast_n = 12, int slow_n = 26, int matype = 0);
+Indicator TA_PPO(int fast_n = 12, int slow_n = 26, int matype = 0);
 inline Indicator TA_PPO(const Indicator& ind, int fast_n = 12, int slow_n = 26,
                         int matype = 0) {
   return TA_PPO(fast_n, slow_n, matype)(ind);
@@ -260,46 +258,45 @@ TA_IN1_OUT_N_CRT(TA_ROCR, 10)
 TA_IN1_OUT_N_CRT(TA_ROCR100, 10)
 TA_IN1_OUT_N_CRT(TA_RSI, 14)
 
-Indicator HAYAKU_API TA_SAR(double acceleration = 0.02, double maximum = 0.2);
-Indicator HAYAKU_API TA_SAR(const KData& k, double acceleration = 0.02,
-                            double maximum = 0.2);
+Indicator TA_SAR(double acceleration = 0.02, double maximum = 0.2);
+Indicator TA_SAR(const KData& k, double acceleration = 0.02,
+                 double maximum = 0.2);
 
-Indicator HAYAKU_API
-TA_SAREXT(double startvalue = 0.0, double offsetonreverse = 0.0,
-          double accelerationinitlong = 0.02, double accelerationlong = 0.02,
-          double accelerationmaxlong = 0.2, double accelerationinitshort = 0.02,
-          double accelerationshort = 0.02, double accelerationmaxshort = 0.2);
-Indicator HAYAKU_API
-TA_SAREXT(const KData& k, double startvalue = 0.0, double offsetonreverse = 0.0,
-          double accelerationinitlong = 0.02, double accelerationlong = 0.02,
-          double accelerationmaxlong = 0.2, double accelerationinitshort = 0.02,
-          double accelerationshort = 0.02, double accelerationmaxshort = 0.2);
+Indicator TA_SAREXT(double startvalue = 0.0, double offsetonreverse = 0.0,
+                    double accelerationinitlong = 0.02,
+                    double accelerationlong = 0.02,
+                    double accelerationmaxlong = 0.2,
+                    double accelerationinitshort = 0.02,
+                    double accelerationshort = 0.02,
+                    double accelerationmaxshort = 0.2);
+Indicator TA_SAREXT(
+    const KData& k, double startvalue = 0.0, double offsetonreverse = 0.0,
+    double accelerationinitlong = 0.02, double accelerationlong = 0.02,
+    double accelerationmaxlong = 0.2, double accelerationinitshort = 0.02,
+    double accelerationshort = 0.02, double accelerationmaxshort = 0.2);
 
 TA_IN1_OUT_CRT(TA_SIN)
 TA_IN1_OUT_CRT(TA_SINH)
 TA_IN1_OUT_N_CRT(TA_SMA, 30)
 TA_IN1_OUT_CRT(TA_SQRT)
 
-Indicator HAYAKU_API TA_STDDEV(int n = 5, double nbdev = 1.0);
+Indicator TA_STDDEV(int n = 5, double nbdev = 1.0);
 inline Indicator TA_STDDEV(const Indicator& ind, int n = 5,
                            double nbdev = 1.0) {
   return TA_STDDEV(n, nbdev)(ind);
 }
 
-Indicator HAYAKU_API TA_STOCH(int fastk_n = 5, int slowk_n = 3,
-                              int slowk_matype = 0, int slowd_n = 3,
-                              int slowd_matype = 0);
-Indicator HAYAKU_API TA_STOCH(const KData& k, int fastk_n = 5, int slowk_n = 3,
-                              int slowk_matype = 0, int slowd_n = 3,
-                              int slowd_matype = 0);
+Indicator TA_STOCH(int fastk_n = 5, int slowk_n = 3, int slowk_matype = 0,
+                   int slowd_n = 3, int slowd_matype = 0);
+Indicator TA_STOCH(const KData& k, int fastk_n = 5, int slowk_n = 3,
+                   int slowk_matype = 0, int slowd_n = 3, int slowd_matype = 0);
 
-Indicator HAYAKU_API TA_STOCHF(int fastk_n = 5, int fastd_n = 3,
-                               int fastd_matype = 0);
-Indicator HAYAKU_API TA_STOCHF(const KData& k, int fastk_n = 5, int fastd_n = 3,
-                               int fastd_matype = 0);
+Indicator TA_STOCHF(int fastk_n = 5, int fastd_n = 3, int fastd_matype = 0);
+Indicator TA_STOCHF(const KData& k, int fastk_n = 5, int fastd_n = 3,
+                    int fastd_matype = 0);
 
-Indicator HAYAKU_API TA_STOCHRSI(int n = 14, int fastk_n = 5, int fastd_n = 3,
-                                 int matype = 0);
+Indicator TA_STOCHRSI(int n = 14, int fastk_n = 5, int fastd_n = 3,
+                      int matype = 0);
 inline Indicator TA_STOCHRSI(const Indicator& ind, int n = 14, int fastk_n = 5,
                              int fastd_n = 3, int matype = 0) {
   return TA_STOCHRSI(n, fastk_n, fastd_n, matype)(ind);
@@ -308,7 +305,7 @@ inline Indicator TA_STOCHRSI(const Indicator& ind, int n = 14, int fastk_n = 5,
 TA_IN2_OUT_CRT(TA_SUB)
 TA_IN1_OUT_N_CRT(TA_SUM, 30)
 
-Indicator HAYAKU_API TA_T3(int n = 5, double vfactor = 7.000000e-1);
+Indicator TA_T3(int n = 5, double vfactor = 7.000000e-1);
 inline Indicator TA_T3(const Indicator& ind, int n = 5,
                        double vfactor = 7.000000e-1) {
   return TA_T3(n, vfactor)(ind);
@@ -323,11 +320,10 @@ TA_IN1_OUT_N_CRT(TA_TRIX, 30)
 TA_IN1_OUT_N_CRT(TA_TSF, 14)
 TA_K_OUT_CRT(TA_TYPPRICE)
 
-Indicator HAYAKU_API TA_ULTOSC(int n1 = 7, int n2 = 14, int n3 = 28);
-Indicator HAYAKU_API TA_ULTOSC(const KData& k, int n1 = 7, int n2 = 14,
-                               int n3 = 28);
+Indicator TA_ULTOSC(int n1 = 7, int n2 = 14, int n3 = 28);
+Indicator TA_ULTOSC(const KData& k, int n1 = 7, int n2 = 14, int n3 = 28);
 
-Indicator HAYAKU_API TA_VAR(int n = 5, double nbdev = 1.0);
+Indicator TA_VAR(int n = 5, double nbdev = 1.0);
 inline Indicator TA_VAR(const Indicator& ind, int n = 5, double nbdev = 1.0) {
   return TA_VAR(n, nbdev)(ind);
 }

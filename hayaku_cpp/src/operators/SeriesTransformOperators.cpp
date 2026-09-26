@@ -371,20 +371,20 @@ void IAlign::_calculate(const Indicator& ind) {
   updateDiscard();
 }
 
-Indicator HAYAKU_API ALIGN(bool fill_null) {
+Indicator ALIGN(bool fill_null) {
   IndicatorImpPtr p = make_shared<IAlign>();
   p->setParam<bool>("fill_null", fill_null);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API ALIGN(const DatetimeList& ref, bool fill_null) {
+Indicator ALIGN(const DatetimeList& ref, bool fill_null) {
   IndicatorImpPtr p = make_shared<IAlign>();
   p->setParam<DatetimeList>("align_date_list", ref);
   p->setParam<bool>("fill_null", fill_null);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API ALIGN(DatetimeList&& ref, bool fill_null) {
+Indicator ALIGN(DatetimeList&& ref, bool fill_null) {
   IndicatorImpPtr p = make_shared<IAlign>();
   p->setParam<DatetimeList>("align_date_list", std::move(ref));
   p->setParam<bool>("fill_null", fill_null);
@@ -484,13 +484,13 @@ void IBackset::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   }
 }
 
-Indicator HAYAKU_API BACKSET(int n) {
+Indicator BACKSET(int n) {
   IndicatorImpPtr p = make_shared<IBackset>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API BACKSET(const IndParam& n) {
+Indicator BACKSET(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IBackset>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -546,7 +546,7 @@ void IDiscard::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API DISCARD(int discard) {
+Indicator DISCARD(int discard) {
   auto p = make_shared<IDiscard>();
   p->setParam<int>("discard", discard);
   return Indicator(p);
@@ -631,7 +631,7 @@ void IDropna::_calculate(const Indicator& ind) {
   setParam<DatetimeList>("align_date_list", dates);
 }
 
-Indicator HAYAKU_API DROPNA() { return Indicator(make_shared<IDropna>()); }
+Indicator DROPNA() { return Indicator(make_shared<IDropna>()); }
 
 } /* namespace hayaku */
 
@@ -694,8 +694,7 @@ void IReplace::_calculate(const Indicator& data) {
   updateDiscard();
 }
 
-Indicator HAYAKU_API REPLACE(double old_value, double new_value,
-                             bool ignore_discard) {
+Indicator REPLACE(double old_value, double new_value, bool ignore_discard) {
   Indicator::value_t epsilon =
       std::numeric_limits<Indicator::value_t>::epsilon();
   HAYAKU_WARN_IF(std::fabs(old_value - new_value) < epsilon,
@@ -748,7 +747,7 @@ void IReverse::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API REVERSE() { return Indicator(make_shared<IReverse>()); }
+Indicator REVERSE() { return Indicator(make_shared<IReverse>()); }
 
 } /* namespace hayaku */
 
@@ -865,11 +864,11 @@ void ISlice::_calculate(const Indicator& data) {
   discard_ = data.discard() <= size_t(startix) ? 0 : data.discard() - startix;
 }
 
-Indicator HAYAKU_API SLICE(const PriceList& data, int64_t start, int64_t end) {
+Indicator SLICE(const PriceList& data, int64_t start, int64_t end) {
   return make_shared<ISlice>(data, start, end)->calculate();
 }
 
-Indicator HAYAKU_API SLICE(int64_t start, int64_t end, int result_index) {
+Indicator SLICE(int64_t start, int64_t end, int result_index) {
   IndicatorImpPtr p = make_shared<ISlice>();
   p->setParam<int>("result_index", result_index);
   p->setParam<int64_t>("start", start);

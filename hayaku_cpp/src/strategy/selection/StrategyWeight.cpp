@@ -9,8 +9,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const StrategyWeight& item) {
+std::ostream& operator<<(std::ostream& os, const StrategyWeight& item) {
   os << std::fixed;
   (void)os.precision(4);
 

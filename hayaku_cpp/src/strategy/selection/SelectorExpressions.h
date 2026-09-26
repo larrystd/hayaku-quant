@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API OperatorAddSelector : public OperatorSelector {
+class OperatorAddSelector : public OperatorSelector {
   OPERATOR_SELECTOR_IMP(OperatorAddSelector, "SE_Add")
   OPERATOR_SELECTOR_SERIALIZATION
 };
@@ -29,7 +29,7 @@ class HAYAKU_API OperatorAddSelector : public OperatorSelector {
 
 namespace hayaku {
 
-class HAYAKU_API OperatorAddValueSelector : public OperatorValueSelector {
+class OperatorAddValueSelector : public OperatorValueSelector {
   OPERATOR_VALUE_SELECTOR_IMP(OperatorAddValueSelector, "SE_AddValue")
   OPERATOR_VALUE_SELECTOR_SERIALIZATION
 };
@@ -45,7 +45,7 @@ class HAYAKU_API OperatorAddValueSelector : public OperatorValueSelector {
 
 namespace hayaku {
 
-class HAYAKU_API OperatorDivSelector : public OperatorSelector {
+class OperatorDivSelector : public OperatorSelector {
   OPERATOR_SELECTOR_IMP(OperatorDivSelector, "SE_Div")
   OPERATOR_SELECTOR_SERIALIZATION
 };
@@ -61,7 +61,7 @@ class HAYAKU_API OperatorDivSelector : public OperatorSelector {
 
 namespace hayaku {
 
-class HAYAKU_API OperatorDivValueSelector : public OperatorValueSelector {
+class OperatorDivValueSelector : public OperatorValueSelector {
   OPERATOR_VALUE_SELECTOR_IMP(OperatorDivValueSelector, "SE_DivValue")
   OPERATOR_VALUE_SELECTOR_SERIALIZATION
 };
@@ -77,7 +77,7 @@ class HAYAKU_API OperatorDivValueSelector : public OperatorValueSelector {
 
 namespace hayaku {
 
-class HAYAKU_API OperatorInvertDivValueSelector : public OperatorValueSelector {
+class OperatorInvertDivValueSelector : public OperatorValueSelector {
   OPERATOR_VALUE_SELECTOR_IMP(OperatorInvertDivValueSelector, "SE_DivValue")
   OPERATOR_VALUE_SELECTOR_SERIALIZATION
 };
@@ -93,7 +93,7 @@ class HAYAKU_API OperatorInvertDivValueSelector : public OperatorValueSelector {
 
 namespace hayaku {
 
-class HAYAKU_API OperatorInvertSubValueSelector : public OperatorValueSelector {
+class OperatorInvertSubValueSelector : public OperatorValueSelector {
   OPERATOR_VALUE_SELECTOR_IMP(OperatorInvertSubValueSelector, "SE_SubValue")
   OPERATOR_VALUE_SELECTOR_SERIALIZATION
 };
@@ -109,7 +109,7 @@ class HAYAKU_API OperatorInvertSubValueSelector : public OperatorValueSelector {
 
 namespace hayaku {
 
-class HAYAKU_API OperatorMulSelector : public OperatorSelector {
+class OperatorMulSelector : public OperatorSelector {
   OPERATOR_SELECTOR_IMP(OperatorMulSelector, "SE_Multi")
   OPERATOR_SELECTOR_SERIALIZATION
 };
@@ -125,7 +125,7 @@ class HAYAKU_API OperatorMulSelector : public OperatorSelector {
 
 namespace hayaku {
 
-class HAYAKU_API OperatorMulValueSelector : public OperatorValueSelector {
+class OperatorMulValueSelector : public OperatorValueSelector {
   OPERATOR_VALUE_SELECTOR_IMP(OperatorMulValueSelector, "SE_MultiValue")
   OPERATOR_VALUE_SELECTOR_SERIALIZATION
 };
@@ -141,7 +141,7 @@ class HAYAKU_API OperatorMulValueSelector : public OperatorValueSelector {
 
 namespace hayaku {
 
-class HAYAKU_API OperatorSubSelector : public OperatorSelector {
+class OperatorSubSelector : public OperatorSelector {
   OPERATOR_SELECTOR_IMP(OperatorSubSelector, "SE_Sub")
   OPERATOR_SELECTOR_SERIALIZATION
 };
@@ -157,7 +157,7 @@ class HAYAKU_API OperatorSubSelector : public OperatorSelector {
 
 namespace hayaku {
 
-class HAYAKU_API OperatorSubValueSelector : public OperatorValueSelector {
+class OperatorSubValueSelector : public OperatorValueSelector {
   OPERATOR_VALUE_SELECTOR_IMP(OperatorSubValueSelector, "SE_SubValue")
   OPERATOR_VALUE_SELECTOR_SERIALIZATION
 };

@@ -86,15 +86,12 @@ void TaBbands::_calculate(const Indicator& data) {
 
   int outBegIdx;
   int outNbElement;
-  ::TA_BBANDS(discard_, total - 1, src, n, nbdevup, nbdevdn, matype,
-              &outBegIdx, &outNbElement, dst0 + discard_, dst1 + discard_,
-              dst2 + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  ::TA_BBANDS(discard_, total - 1, src, n, nbdevup, nbdevdn, matype, &outBegIdx,
+              &outNbElement, dst0 + discard_, dst1 + discard_, dst2 + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_BBANDS(int n, double nbdevup, double nbdevdn,
-                               int matype) {
+Indicator TA_BBANDS(int n, double nbdevup, double nbdevdn, int matype) {
   auto p = make_shared<TaBbands>();
   p->setParam<int>("n", n);
   p->setParam<double>("nbdevup", nbdevup);
@@ -181,11 +178,10 @@ void TaStddev::_calculate(const Indicator& data) {
   int outNbElement;
   ::TA_STDDEV(discard_, total - 1, src, n, nbdev, &outBegIdx, &outNbElement,
               dst + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_STDDEV(int n, double nbdev) {
+Indicator TA_STDDEV(int n, double nbdev) {
   auto p = make_shared<TaStddev>();
   p->setParam<int>("n", n);
   p->setParam<double>("nbdev", nbdev);
@@ -270,11 +266,10 @@ void TaVar::_calculate(const Indicator& data) {
   int outNbElement;
   ::TA_VAR(discard_, total - 1, src, n, nbdev, &outBegIdx, &outNbElement,
            dst + discard_);
-  HAYAKU_ASSERT((outBegIdx == discard_) &&
-                (outBegIdx + outNbElement) <= total);
+  HAYAKU_ASSERT((outBegIdx == discard_) && (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_VAR(int n, double nbdev) {
+Indicator TA_VAR(int n, double nbdev) {
   auto p = make_shared<TaVar>();
   p->setParam<int>("n", n);
   p->setParam<double>("nbdev", nbdev);

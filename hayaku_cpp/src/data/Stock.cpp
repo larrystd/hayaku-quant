@@ -33,7 +33,7 @@ const int Stock::default_precision = 2;
 const size_t Stock::default_minTradeNumber = 100;
 const size_t Stock::default_maxTradeNumber = 1000000;
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const Stock& stock) {
+std::ostream& operator<<(std::ostream& os, const Stock& stock) {
   string strip(", ");
   const DataRuntime& sm = getDataRuntime();
   StockTypeInfo typeInfo(sm.getStockTypeInfo(stock.type()));
@@ -164,9 +164,9 @@ Stock& Stock::operator=(Stock&& x) noexcept {
 
 Stock::Stock(const string& market, const string& code, const string& name) {
   data_ = make_shared<Data>(market, code, name, default_type, default_valid,
-                             default_startDate, default_lastDate, default_tick,
-                             default_tickValue, default_precision,
-                             default_minTradeNumber, default_maxTradeNumber);
+                            default_startDate, default_lastDate, default_tick,
+                            default_tickValue, default_precision,
+                            default_minTradeNumber, default_maxTradeNumber);
 }
 
 Stock::Stock(const string& market, const string& code, const string& name,
@@ -183,8 +183,8 @@ Stock::Stock(const string& market, const string& code, const string& name,
              const Datetime& lastDate, price_t tick, price_t tickValue,
              int precision, size_t minTradeNumber, size_t maxTradeNumber)
     : data_(make_shared<Data>(market, code, name, type, valid, startDate,
-                               lastDate, tick, tickValue, precision,
-                               minTradeNumber, maxTradeNumber)) {}
+                              lastDate, tick, tickValue, precision,
+                              minTradeNumber, maxTradeNumber)) {}
 
 bool Stock::operator==(const Stock& stock) const {
   return this == &stock || data_ == stock.data_ ||
@@ -378,10 +378,10 @@ void Stock::tickValue(price_t val) {
 
 void Stock::minTradeNumber(double num) {
   if (!data_) {
-    data_ = make_shared<Data>(
-        default_market, default_code, default_name, default_type, default_valid,
-        default_startDate, default_lastDate, default_tick, default_tickValue,
-        default_precision, num, default_maxTradeNumber);
+    data_ = make_shared<Data>(default_market, default_code, default_name,
+                              default_type, default_valid, default_startDate,
+                              default_lastDate, default_tick, default_tickValue,
+                              default_precision, num, default_maxTradeNumber);
   } else {
     data_->min_trade_number_ = num;
   }
@@ -389,10 +389,10 @@ void Stock::minTradeNumber(double num) {
 
 void Stock::maxTradeNumber(double num) {
   if (!data_) {
-    data_ = make_shared<Data>(
-        default_market, default_code, default_name, default_type, default_valid,
-        default_startDate, default_lastDate, default_tick, default_tickValue,
-        default_precision, default_minTradeNumber, num);
+    data_ = make_shared<Data>(default_market, default_code, default_name,
+                              default_type, default_valid, default_startDate,
+                              default_lastDate, default_tick, default_tickValue,
+                              default_precision, default_minTradeNumber, num);
   } else {
     data_->max_trade_number_ = num;
   }
@@ -1143,8 +1143,8 @@ KRecordList Stock::_getKRecordList(const KQuery& query) const {
 
   } else {
     if (query.queryType() == KQuery::DATE) {
-      result = kdata_driver_->getConnect()->getKRecordList(
-          data_->market_, data_->code_, query);
+      result = kdata_driver_->getConnect()->getKRecordList(data_->market_,
+                                                           data_->code_, query);
     } else {
       size_t start_ix = 0, end_ix = 0;
       if (query.queryType() == KQuery::INDEX) {
@@ -1537,7 +1537,7 @@ DatetimeList Stock::getTradingCalendar(const KQuery& query) const {
   return getDataRuntime().getTradingCalendar(query, market());
 }
 
-Stock HAYAKU_API getStock(const string& querystr) {
+Stock getStock(const string& querystr) {
   const DataRuntime& sm = getDataRuntime();
   return sm.getStock(querystr);
 }

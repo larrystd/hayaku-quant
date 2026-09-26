@@ -16,9 +16,9 @@
 namespace hayaku {
 
 /** Judge whether there is a newer version to upgrade to. */
-bool HAYAKU_API CanUpgrade();
+bool CanUpgrade();
 
-struct HAYAKU_API LatestVersionInfo {
+struct LatestVersionInfo {
   int version{1003001};
   Datetime release_date;
   std::string remark;
@@ -39,17 +39,17 @@ struct HAYAKU_API LatestVersionInfo {
   }
 };
 
-LatestVersionInfo HAYAKU_API getLatestVersionInfo();
+LatestVersionInfo getLatestVersionInfo();
 
 void updateSysInfoExpiredTime(Datetime time);
 
 /** License expiration reminder. */
-void HAYAKU_API reminderLicenseExpiration();
+void reminderLicenseExpiration();
 
 /** Send the feedback information. */
-void HAYAKU_API sendFeedback();
+void sendFeedback();
 
 /** Send the Python version information. */
-void HAYAKU_API sendPythonVersionFeedBack(int major, int minor, int micro);
+void sendPythonVersionFeedBack(int major, int minor, int micro);
 
 }  // namespace hayaku

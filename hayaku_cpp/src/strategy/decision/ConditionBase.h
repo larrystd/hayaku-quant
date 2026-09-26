@@ -20,7 +20,7 @@ namespace hayaku {
  * traded, so the setTradeObj interface is kept
  * @ingroup Condition
  */
-class HAYAKU_API ConditionBase : public enable_shared_from_this<ConditionBase> {
+class ConditionBase : public enable_shared_from_this<ConditionBase> {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -193,8 +193,8 @@ typedef shared_ptr<ConditionBase> CNPtr;
   }                                        \
   virtual void _calculate() override;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const ConditionPtr&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const ConditionBase&);
+std::ostream& operator<<(std::ostream&, const ConditionPtr&);
+std::ostream& operator<<(std::ostream&, const ConditionBase&);
 
 inline const string& ConditionBase::name() const { return name_; }
 

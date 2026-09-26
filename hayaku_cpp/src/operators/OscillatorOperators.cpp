@@ -119,13 +119,13 @@ void IRoc::_dyn_run_one_step(const Indicator& ind, size_t curPos, size_t step) {
        curPos);
 }
 
-Indicator HAYAKU_API ROC(int n) {
+Indicator ROC(int n) {
   IndicatorImpPtr p = make_shared<IRoc>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API ROC(const IndParam& n) {
+Indicator ROC(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IRoc>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -250,13 +250,13 @@ void IRocp::_dyn_run_one_step(const Indicator& ind, size_t curPos,
        curPos);
 }
 
-Indicator HAYAKU_API ROCP(int n) {
+Indicator ROCP(int n) {
   IndicatorImpPtr p = make_shared<IRocp>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API ROCP(const IndParam& n) {
+Indicator ROCP(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IRocp>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -380,13 +380,13 @@ void IRocr::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(ind[start] != 0.0 ? ind[curPos] / ind[start] : 0.0, curPos);
 }
 
-Indicator HAYAKU_API ROCR(int n) {
+Indicator ROCR(int n) {
   IndicatorImpPtr p = make_shared<IRocr>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API ROCR(const IndParam& n) {
+Indicator ROCR(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IRocr>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -512,13 +512,13 @@ void IRocr100::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(ind[start] != 0.0 ? ind[curPos] / ind[start] * 100.0 : 0.0, curPos);
 }
 
-Indicator HAYAKU_API ROCR100(int n) {
+Indicator ROCR100(int n) {
   IndicatorImpPtr p = make_shared<IRocr100>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API ROCR100(const IndParam& n) {
+Indicator ROCR100(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IRocr100>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -541,7 +541,7 @@ namespace hayaku {
  * Relative Strength Index
  * @ingroup Indicator
  */
-Indicator HAYAKU_API RSI(int n) {
+Indicator RSI(int n) {
   // Indicator data = Indicator();
   // Indicator diff = REF(data, 0) - REF(data, 1);
   Indicator diff = REF(0) - REF(1);
@@ -558,7 +558,7 @@ Indicator HAYAKU_API RSI(int n) {
   return rsi;
 }
 
-Indicator HAYAKU_API RSI(const Indicator& data, int n) {
+Indicator RSI(const Indicator& data, int n) {
   return RSI(n)(data)(data.getContext());
 }
 
@@ -651,13 +651,13 @@ void IVigor::_calculate(const Indicator& ind) {
   }
 }
 
-Indicator HAYAKU_API VIGOR(int n) {
+Indicator VIGOR(int n) {
   IndicatorImpPtr p = make_shared<IVigor>();
   p->setParam<int>("n", n);
   return p->calculate();
 }
 
-Indicator HAYAKU_API VIGOR(const KData& k, int n) {
+Indicator VIGOR(const KData& k, int n) {
   Indicator v = VIGOR(n);
   v.setContext(k);
   return v;

@@ -9,12 +9,12 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const SignalBase& sg) {
+std::ostream& operator<<(std::ostream& os, const SignalBase& sg) {
   os << "Signal(" << sg.name() << ", " << sg.getParameter() << ")";
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const SignalPtr& sg) {
+std::ostream& operator<<(std::ostream& os, const SignalPtr& sg) {
   if (sg) {
     os << *sg;
   } else {

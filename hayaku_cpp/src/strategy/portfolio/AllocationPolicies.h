@@ -24,7 +24,7 @@ namespace hayaku {
  * @return AFPtr
  * @ingroup AllocateFunds
  */
-AFPtr HAYAKU_API AF_EqualWeight();
+AFPtr AF_EqualWeight();
 
 } /* namespace hayaku */
 
@@ -44,7 +44,7 @@ namespace hayaku {
  * @return AFPtr
  * @ingroup AllocateFunds
  */
-AFPtr HAYAKU_API AF_FixedAmount(double amount = 20000.0);
+AFPtr AF_FixedAmount(double amount = 20000.0);
 
 } /* namespace hayaku */
 
@@ -64,7 +64,7 @@ namespace hayaku {
  * @return AFPtr
  * @ingroup AllocateFunds
  */
-AFPtr HAYAKU_API AF_FixedWeight(double weight = 0.1);
+AFPtr AF_FixedWeight(double weight = 0.1);
 
 } /* namespace hayaku */
 
@@ -83,7 +83,7 @@ namespace hayaku {
  * @return AFPtr
  * @ingroup AllocateFunds
  */
-AFPtr HAYAKU_API AF_FixedWeightList(const vector<double>& weights);
+AFPtr AF_FixedWeightList(const vector<double>& weights);
 
 } /* namespace hayaku */
 
@@ -102,6 +102,6 @@ namespace hayaku {
  * @return AFPtr
  * @ingroup AllocateFunds
  */
-AFPtr HAYAKU_API AF_MultiFactor();
+AFPtr AF_MultiFactor();
 
 }  // namespace hayaku

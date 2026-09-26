@@ -19,8 +19,6 @@ StrategyWeightList MultiFactorAllocaterFunds::_allocateWeight(
   return se_list;
 }
 
-AFPtr HAYAKU_API AF_MultiFactor() {
-  return make_shared<MultiFactorAllocaterFunds>();
-}
+AFPtr AF_MultiFactor() { return make_shared<MultiFactorAllocaterFunds>(); }
 
 }  // namespace hayaku

@@ -310,10 +310,6 @@ class DataRuntime {
   /** Only used when the program exits!!! */
   ThreadPool* getLoadTaskGroup() { return load_tg_.get(); }
 
-  /** Set the multi-language support path (only effective before initialization)
-   */
-  void setLanguagePath(const std::string& path) noexcept;
-
   /** Cancel the loading, used when exiting */
   void cancelLoad() { cancel_load_ = true; }
 
@@ -451,7 +447,7 @@ class DataRuntime {
               // has not been initialized
   std::thread::id
       thread_id_;  // Records the thread id, used to tell whether a Strategy
-                    // runs as a separate process or as a thread
+                   // runs as a separate process or as a thread
   string tmpdir_;
   string datadir_;
   BaseInfoDriverPtr base_info_driver_;
@@ -489,9 +485,7 @@ class DataRuntime {
   std::unique_ptr<ThreadPool>
       load_tg_;  // Auxiliary thread group for asynchronous data loading
   std::thread preload_thread_;  // Background preload thread (joinable,
-                                 // reclaimed by joinPreloadThread when exiting)
-
-  std::string i18n_path_;
+                                // reclaimed by joinPreloadThread when exiting)
 
   // Whether this process acts as a client of the shm data service (set after a
   // successful connection and the assembly of the proxy driver). The forwarding
@@ -510,7 +504,6 @@ DataRuntime& getDataRuntime();
 DataRuntime& createDataRuntime();
 DataRuntime* getDataRuntimeIfExists() noexcept;
 void releaseDataRuntime() noexcept;
-void setDataRuntimeLanguagePath(const std::string& path) noexcept;
 
 /** Data loading event callback type */
 using LoadEventCallback = std::function<void(LoadEvent)>;
@@ -522,11 +515,11 @@ using LoadEventCallback = std::function<void(LoadEvent)>;
  * released, so this function and its inverse are safe to call during the static
  * destruction phase as well
  */
-HAYAKU_API size_t registerLoadEventCallback(LoadEventCallback&& cb);
+size_t registerLoadEventCallback(LoadEventCallback&& cb);
 
 /** Unregister a data loading event callback (called when a plugin stop()s); a
  * no-op when the id does not exist */
-HAYAKU_API void unregisterLoadEventCallback(size_t id);
+void unregisterLoadEventCallback(size_t id);
 
 inline size_t DataRuntime::size() const noexcept { return stock_dict_.size(); }
 
@@ -580,18 +573,14 @@ inline size_t DataRuntime::getHistoryFinanceFieldIndex(
 inline vector<HistoryFinanceInfo> DataRuntime::getHistoryFinance(
     const Stock& stk, Datetime start, Datetime end) {
   return base_info_driver_->getHistoryFinance(stk.market(), stk.code(), start,
-                                             end);
+                                              end);
 }
 
 inline StockWeightList DataRuntime::getStockWeightList(const Stock& stk,
                                                        Datetime start,
                                                        Datetime end) {
   return base_info_driver_->getStockWeightList(stk.market(), stk.code(), start,
-                                              end);
-}
-
-inline void DataRuntime::setLanguagePath(const std::string& path) noexcept {
-  i18n_path_ = path;
+                                               end);
 }
 
 }  // namespace hayaku

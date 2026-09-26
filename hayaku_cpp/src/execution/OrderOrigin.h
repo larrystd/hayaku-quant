@@ -26,7 +26,7 @@ enum class OrderOrigin : std::uint8_t {
   UNSPECIFIED = 10,
 };
 
-[[nodiscard]] string HAYAKU_API getOrderOriginName(OrderOrigin origin);
-[[nodiscard]] OrderOrigin HAYAKU_API getOrderOriginEnum(const string& name);
+[[nodiscard]] string getOrderOriginName(OrderOrigin origin);
+[[nodiscard]] OrderOrigin getOrderOriginEnum(const string& name);
 
 }  // namespace hayaku

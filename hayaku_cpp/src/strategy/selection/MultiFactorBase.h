@@ -21,14 +21,12 @@ namespace hayaku {
  * simple score board
  * @ingroup MultiFactor
  */
-class HAYAKU_API MultiFactorBase
-    : public enable_shared_from_this<MultiFactorBase> {
+class MultiFactorBase : public enable_shared_from_this<MultiFactorBase> {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
   typedef Indicator::value_t value_t;
-  friend HAYAKU_API std::ostream& operator<<(std::ostream&,
-                                             const MultiFactorBase&);
+  friend std::ostream& operator<<(std::ostream&, const MultiFactorBase&);
 
  public:
   MultiFactorBase();
@@ -226,31 +224,31 @@ class HAYAKU_API MultiFactorBase
   FactorSet factorset_;  // The input original factor set
   StockList stks_;       // Security portfolio
   Stock ref_stk_;  // The given reference security, it is used to align the
-                    // dates only
+                   // dates only
   KQuery query_;   // The date range condition of the calculation
 
   NormPtr norm_;  // Global standardization / normalization
-                   // operation
+                  // operation
   unordered_map<string, NormPtr>
       special_norms_;  // The specific standardization operation
-                        // performed on a specific indicator
+                       // performed on a specific indicator
   unordered_map<string, string>
       special_category_;  // The block category given when the industry
-                           // neutralization is performed on a specific
-                           // indicator
+                          // neutralization is performed on a specific
+                          // indicator
   unordered_map<string, IndicatorList>
       special_style_inds_;  // The style factors given when the style factor
-                             // neutralization is performed on a specific
-                             // indicator
+                            // neutralization is performed on a specific
+                            // indicator
 
   // The following variables are generated after the calculation
   DatetimeList ref_dates_;  // The reference dates calculated from the
-                             // reference security and the query, the
-                             // synthesized factor is aligned to these dates
+                            // reference security and the query, the
+                            // synthesized factor is aligned to these dates
   unordered_map<Stock, size_t> stk_map_;  // Security -> the position index of
-                                           // the synthesized factor
+                                          // the synthesized factor
   IndicatorList all_factors_;  // Saves the new factors synthesized from all
-                                // the securities
+                               // the securities
   unordered_map<Datetime, size_t> date_index_;
   vector<ScoreRecordList> stk_factor_by_date_;
   Indicator ic_;
@@ -277,13 +275,16 @@ class HAYAKU_API MultiFactorBase
     ar& boost::serialization::make_nvp("m_norm", norm_);
     ar& boost::serialization::make_nvp("m_special_norms", special_norms_);
     ar& boost::serialization::make_nvp("m_special_category", special_category_);
-    ar& boost::serialization::make_nvp("m_special_style_inds", special_style_inds_);
+    ar& boost::serialization::make_nvp("m_special_style_inds",
+                                       special_style_inds_);
     // The following do not need to be saved, they are recalculated after
     // loading ar& boost::serialization::make_nvp("m_stk_map", stk_map_); ar&
     // boost::serialization::make_nvp("m_all_factors", all_factors_); ar&
-    // boost::serialization::make_nvp("m_date_index", date_index_); ar& boost::serialization::make_nvp("m_ic", ic_);
-    // ar& boost::serialization::make_nvp("m_calculated", calculated_);
-    // ar& boost::serialization::make_nvp("m_stk_factor_by_date", stk_factor_by_date_);
+    // boost::serialization::make_nvp("m_date_index", date_index_); ar&
+    // boost::serialization::make_nvp("m_ic", ic_); ar&
+    // boost::serialization::make_nvp("m_calculated", calculated_); ar&
+    // boost::serialization::make_nvp("m_stk_factor_by_date",
+    // stk_factor_by_date_);
   }
 
   template <class Archive>
@@ -298,13 +299,15 @@ class HAYAKU_API MultiFactorBase
     ar& boost::serialization::make_nvp("m_norm", norm_);
     ar& boost::serialization::make_nvp("m_special_norms", special_norms_);
     ar& boost::serialization::make_nvp("m_special_category", special_category_);
-    ar& boost::serialization::make_nvp("m_special_style_inds", special_style_inds_);
+    ar& boost::serialization::make_nvp("m_special_style_inds",
+                                       special_style_inds_);
     // ar& boost::serialization::make_nvp("m_stk_map", stk_map_);
     // ar& boost::serialization::make_nvp("m_all_factors", all_factors_);
     // ar& boost::serialization::make_nvp("m_date_index", date_index_);
     // ar& boost::serialization::make_nvp("m_ic", ic_);
     // ar& boost::serialization::make_nvp("m_calculated", calculated_);
-    // ar& boost::serialization::make_nvp("m_stk_factor_by_date", stk_factor_by_date_);
+    // ar& boost::serialization::make_nvp("m_stk_factor_by_date",
+    // stk_factor_by_date_);
     calculated_.store(false, std::memory_order_relaxed);
   }
 
@@ -353,8 +356,8 @@ typedef std::shared_ptr<MultiFactorBase> MFPtr;
   }                                          \
   virtual IndicatorList _calculate(const vector<IndicatorList>&) override;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const MultiFactorBase&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const MultiFactorPtr&);
+std::ostream& operator<<(std::ostream&, const MultiFactorBase&);
+std::ostream& operator<<(std::ostream&, const MultiFactorPtr&);
 
 }  // namespace hayaku
 

@@ -17,7 +17,7 @@ namespace hayaku {
  * Base class of the trade cost algorithm interface
  * @ingroup TradeCost
  */
-class HAYAKU_API TradeCostBase {
+class TradeCostBase {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -165,8 +165,8 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(TradeCostBase)
  */
 typedef shared_ptr<TradeCostBase> TradeCostPtr;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const TradeCostBase&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const TradeCostPtr&);
+std::ostream& operator<<(std::ostream&, const TradeCostBase&);
+std::ostream& operator<<(std::ostream&, const TradeCostPtr&);
 
 } /* namespace hayaku */
 

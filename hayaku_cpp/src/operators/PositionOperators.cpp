@@ -247,9 +247,7 @@ void IBarsCount::_calculate(const Indicator& ind) {
   return;
 }
 
-Indicator HAYAKU_API BARSCOUNT() {
-  return Indicator(make_shared<IBarsCount>());
-}
+Indicator BARSCOUNT() { return Indicator(make_shared<IBarsCount>()); }
 
 } /* namespace hayaku */
 
@@ -311,7 +309,7 @@ void IBarsLast::_calculate(const Indicator& ind) {
   }
 }
 
-Indicator HAYAKU_API BARSLAST() { return Indicator(make_shared<IBarsLast>()); }
+Indicator BARSLAST() { return Indicator(make_shared<IBarsLast>()); }
 
 } /* namespace hayaku */
 
@@ -357,9 +355,7 @@ void IBarsLastCount::_calculate(const Indicator& ind) {
   }
 }
 
-Indicator HAYAKU_API BARSLASTCOUNT() {
-  return Indicator(make_shared<IBarsLastCount>());
-}
+Indicator BARSLASTCOUNT() { return Indicator(make_shared<IBarsLastCount>()); }
 
 } /* namespace hayaku */
 
@@ -522,13 +518,13 @@ void IBarsLasts::_dyn_calculate(const Indicator& ind) {
   updateDiscard();
 }
 
-Indicator HAYAKU_API BARSLASTS(int n) {
+Indicator BARSLASTS(int n) {
   auto p = make_shared<IBarsLasts>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API BARSLASTS(const IndParam& n) {
+Indicator BARSLASTS(const IndParam& n) {
   auto p = make_shared<IBarsLasts>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -622,11 +618,9 @@ void IBarsSince::_calculate(const Indicator& ind) {
   updateDiscard();
 }
 
-Indicator HAYAKU_API BARSSINCE() {
-  return Indicator(make_shared<IBarsSince>());
-}
+Indicator BARSSINCE() { return Indicator(make_shared<IBarsSince>()); }
 
-Indicator HAYAKU_API BARSSINCEN(int n) {
+Indicator BARSSINCEN(int n) {
   auto p = make_shared<IBarsSince>();
   p->setParam<int>("n", n);
   return Indicator(p);
@@ -749,13 +743,13 @@ void ISumBars::_dyn_calculate(const Indicator& ind) {
   }
 }
 
-Indicator HAYAKU_API SUMBARS(double a) {
+Indicator SUMBARS(double a) {
   IndicatorImpPtr p = make_shared<ISumBars>();
   p->setParam<double>("a", a);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API SUMBARS(const IndParam& a) {
+Indicator SUMBARS(const IndParam& a) {
   IndicatorImpPtr p = make_shared<ISumBars>();
   p->setIndParam("a", a);
   return Indicator(p);

@@ -38,7 +38,7 @@ ScoreRecordList IgnoreLessOrEqualValueSCFilter::_filter(
   return ret;
 }
 
-ScoresFilterPtr HAYAKU_API SCFilter_LessOrEqualValue(double value) {
+ScoresFilterPtr SCFilter_LessOrEqualValue(double value) {
   auto p = std::make_shared<IgnoreLessOrEqualValueSCFilter>();
   p->setParam<double>("value", value);
   return p;

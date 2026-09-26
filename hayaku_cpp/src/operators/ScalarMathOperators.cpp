@@ -238,7 +238,7 @@ void IAbs::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API ABS() { return Indicator(make_shared<IAbs>()); }
+Indicator ABS() { return Indicator(make_shared<IAbs>()); }
 
 } /* namespace hayaku */
 
@@ -278,7 +278,7 @@ void IExp::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API EXP() { return Indicator(make_shared<IExp>()); }
+Indicator EXP() { return Indicator(make_shared<IExp>()); }
 
 } /* namespace hayaku */
 
@@ -318,7 +318,7 @@ void ILn::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API LN() { return Indicator(make_shared<ILn>()); }
+Indicator LN() { return Indicator(make_shared<ILn>()); }
 
 } /* namespace hayaku */
 
@@ -358,7 +358,7 @@ void ILog::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API LOG() { return Indicator(make_shared<ILog>()); }
+Indicator LOG() { return Indicator(make_shared<ILog>()); }
 
 } /* namespace hayaku */
 
@@ -407,13 +407,13 @@ void IPow::_dyn_run_one_step(const Indicator& ind, size_t curPos, size_t step) {
   _set(std::pow(ind[curPos], step), curPos);
 }
 
-Indicator HAYAKU_API POW(int n) {
+Indicator POW(int n) {
   IndicatorImpPtr p = make_shared<IPow>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API POW(const IndParam& n) {
+Indicator POW(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IPow>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -459,7 +459,7 @@ void ISqrt::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API SQRT() { return Indicator(make_shared<ISqrt>()); }
+Indicator SQRT() { return Indicator(make_shared<ISqrt>()); }
 
 } /* namespace hayaku */
 
@@ -507,7 +507,7 @@ void ISign::_increment_calculate(const Indicator& ind, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API SGN() { return Indicator(make_shared<ISign>()); }
+Indicator SGN() { return Indicator(make_shared<ISign>()); }
 
 } /* namespace hayaku */
 
@@ -561,13 +561,13 @@ void ISignedPower::_dyn_run_one_step(const Indicator& ind, size_t curPos,
        curPos);
 }
 
-Indicator HAYAKU_API SIGNED_POWER(int n) {
+Indicator SIGNED_POWER(int n) {
   IndicatorImpPtr p = make_shared<ISignedPower>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API SIGNED_POWER(const IndParam& n) {
+Indicator SIGNED_POWER(const IndParam& n) {
   IndicatorImpPtr p = make_shared<ISignedPower>();
   p->setIndParam("n", n);
   return Indicator(p);

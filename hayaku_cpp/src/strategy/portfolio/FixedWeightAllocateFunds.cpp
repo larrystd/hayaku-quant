@@ -46,7 +46,7 @@ StrategyWeightList FixedWeightAllocateFunds ::_allocateWeight(
   return result;
 }
 
-AFPtr HAYAKU_API AF_FixedWeight(double weight) {
+AFPtr AF_FixedWeight(double weight) {
   auto p = make_shared<FixedWeightAllocateFunds>();
   p->setParam<double>("weight", weight);
   return p;

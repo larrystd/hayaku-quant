@@ -13,7 +13,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API RunSystemInStrategy {
+class RunSystemInStrategy {
  public:
   RunSystemInStrategy() = default;
   RunSystemInStrategy(const internal::StrategyRuntimePtr& strategy,
@@ -36,7 +36,7 @@ class HAYAKU_API RunSystemInStrategy {
   internal::PendingOrder sell_request_;
 };
 
-StrategyPtr HAYAKU_API crtSysStrategy(
+StrategyPtr crtSysStrategy(
     const internal::StrategyRuntimePtr& strategy, const string& stk_market_code,
     const KQuery& query, const OrderBrokerPtr& broker,
     const TradeCostPtr& costfunc, const string& name = "SYSStrategy",
@@ -56,7 +56,7 @@ StrategyPtr HAYAKU_API crtSysStrategy(
 
 namespace hayaku {
 
-class HAYAKU_API RunPortfolioInStrategy {
+class RunPortfolioInStrategy {
  public:
   RunPortfolioInStrategy() = default;
   RunPortfolioInStrategy(const PFPtr& pf, const KQuery& query,
@@ -74,10 +74,11 @@ class HAYAKU_API RunPortfolioInStrategy {
   std::unordered_set<Stock> stocks_;
 };
 
-StrategyPtr HAYAKU_API crtPFStrategy(
-    const PFPtr& pf, const KQuery& query, const OrderBrokerPtr& broker,
-    const TradeCostPtr& costfunc, const string& name = "PFStrategy",
-    const std::vector<OrderBrokerPtr>& other_brokers = {},
-    const string& config_file = "");
+StrategyPtr crtPFStrategy(const PFPtr& pf, const KQuery& query,
+                          const OrderBrokerPtr& broker,
+                          const TradeCostPtr& costfunc,
+                          const string& name = "PFStrategy",
+                          const std::vector<OrderBrokerPtr>& other_brokers = {},
+                          const string& config_file = "");
 
 }  // namespace hayaku

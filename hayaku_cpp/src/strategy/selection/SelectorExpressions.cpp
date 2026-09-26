@@ -17,8 +17,7 @@ StrategyWeightList OperatorAddSelector::_getSelected(Datetime date) {
   return getUnionSelected(date, [](double w1, double w2) { return w1 + w2; });
 }
 
-HAYAKU_API SelectorPtr operator+(const SelectorPtr& se1,
-                                 const SelectorPtr& se2) {
+SelectorPtr operator+(const SelectorPtr& se1, const SelectorPtr& se2) {
   return make_shared<OperatorAddSelector>(se1, se2);
 }
 
@@ -49,7 +48,7 @@ StrategyWeightList OperatorAddValueSelector::_getSelected(Datetime date) {
   return ret;
 }
 
-HAYAKU_API SelectorPtr operator+(const SelectorPtr& se, double value) {
+SelectorPtr operator+(const SelectorPtr& se, double value) {
   return make_shared<OperatorAddValueSelector>(se, value);
 }
 
@@ -73,8 +72,7 @@ StrategyWeightList OperatorDivSelector::_getSelected(Datetime date) {
                                  [](double w1, double w2) { return w1 / w2; });
 }
 
-HAYAKU_API SelectorPtr operator/(const SelectorPtr& se1,
-                                 const SelectorPtr& se2) {
+SelectorPtr operator/(const SelectorPtr& se1, const SelectorPtr& se2) {
   return make_shared<OperatorDivSelector>(se1, se2);
 }
 
@@ -105,7 +103,7 @@ StrategyWeightList OperatorDivValueSelector::_getSelected(Datetime date) {
   return ret;
 }
 
-HAYAKU_API SelectorPtr operator/(const SelectorPtr& se, double value) {
+SelectorPtr operator/(const SelectorPtr& se, double value) {
   return make_shared<OperatorDivValueSelector>(se, value);
 }
 
@@ -136,7 +134,7 @@ StrategyWeightList OperatorInvertDivValueSelector::_getSelected(Datetime date) {
   return ret;
 }
 
-HAYAKU_API SelectorPtr operator/(double value, const SelectorPtr& se) {
+SelectorPtr operator/(double value, const SelectorPtr& se) {
   return make_shared<OperatorInvertDivValueSelector>(se, value);
 }
 
@@ -167,7 +165,7 @@ StrategyWeightList OperatorInvertSubValueSelector::_getSelected(Datetime date) {
   return ret;
 }
 
-HAYAKU_API SelectorPtr operator-(double value, const SelectorPtr& se) {
+SelectorPtr operator-(double value, const SelectorPtr& se) {
   return make_shared<OperatorInvertSubValueSelector>(se, value);
 }
 
@@ -191,8 +189,7 @@ StrategyWeightList OperatorMulSelector::_getSelected(Datetime date) {
                                  [](double w1, double w2) { return w1 * w2; });
 }
 
-HAYAKU_API SelectorPtr operator*(const SelectorPtr& se1,
-                                 const SelectorPtr& se2) {
+SelectorPtr operator*(const SelectorPtr& se1, const SelectorPtr& se2) {
   return make_shared<OperatorMulSelector>(se1, se2);
 }
 
@@ -223,7 +220,7 @@ StrategyWeightList OperatorMulValueSelector::_getSelected(Datetime date) {
   return ret;
 }
 
-HAYAKU_API SelectorPtr operator*(const SelectorPtr& se, double value) {
+SelectorPtr operator*(const SelectorPtr& se, double value) {
   return make_shared<OperatorMulValueSelector>(se, value);
 }
 
@@ -246,8 +243,7 @@ StrategyWeightList OperatorSubSelector::_getSelected(Datetime date) {
   return getUnionSelected(date, [](double w1, double w2) { return w1 - w2; });
 }
 
-HAYAKU_API SelectorPtr operator-(const SelectorPtr& se1,
-                                 const SelectorPtr& se2) {
+SelectorPtr operator-(const SelectorPtr& se1, const SelectorPtr& se2) {
   return make_shared<OperatorSubSelector>(se1, se2);
 }
 
@@ -278,7 +274,7 @@ StrategyWeightList OperatorSubValueSelector::_getSelected(Datetime date) {
   return ret;
 }
 
-HAYAKU_API SelectorPtr operator-(const SelectorPtr& se, double value) {
+SelectorPtr operator-(const SelectorPtr& se, double value) {
   return make_shared<OperatorSubValueSelector>(se, value);
 }
 

@@ -15,7 +15,7 @@ namespace hayaku {
  * Data structure of the 10-year Chinese treasury bond
  * @ingroup StockManage
  */
-struct HAYAKU_API ZhBond10 {
+struct ZhBond10 {
   Datetime date;  ///< Date
   price_t value;  ///< Yield
 };
@@ -26,7 +26,7 @@ typedef vector<ZhBond10> ZhBond10List;
  * Output ZhBond10: ZhBond10(date, value)
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream&, const ZhBond10&);
+std::ostream& operator<<(std::ostream&, const ZhBond10&);
 
 }  // namespace hayaku
 

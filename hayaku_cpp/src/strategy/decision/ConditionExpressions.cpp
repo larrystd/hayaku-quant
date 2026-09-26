@@ -88,8 +88,7 @@ ConditionPtr AddCondition::_clone() {
   return p;
 }
 
-HAYAKU_API ConditionPtr operator+(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2) {
+ConditionPtr operator+(const ConditionPtr& cond1, const ConditionPtr& cond2) {
   return make_shared<AddCondition>(cond1, cond2);
 }
 
@@ -161,8 +160,7 @@ ConditionPtr AndCondition::_clone() {
   return p;
 }
 
-HAYAKU_API ConditionPtr operator&(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2) {
+ConditionPtr operator&(const ConditionPtr& cond1, const ConditionPtr& cond2) {
   return make_shared<AndCondition>(cond1, cond2);
 }
 
@@ -221,7 +219,7 @@ void DivCondition::_calculate() {
   auto const* data2 = cond2_->data();
   for (size_t i = 0; i < total; i++) {
     values_[i] = data2[i] == 0.0 || std::isnan(data2[i]) ? null_price
-                                                          : data1[i] / data2[i];
+                                                         : data1[i] / data2[i];
   }
 }
 
@@ -245,8 +243,7 @@ ConditionPtr DivCondition::_clone() {
   return p;
 }
 
-HAYAKU_API ConditionPtr operator/(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2) {
+ConditionPtr operator/(const ConditionPtr& cond1, const ConditionPtr& cond2) {
   return make_shared<DivCondition>(cond1, cond2);
 }
 
@@ -320,8 +317,7 @@ ConditionPtr MultiCondition::_clone() {
   return p;
 }
 
-HAYAKU_API ConditionPtr operator*(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2) {
+ConditionPtr operator*(const ConditionPtr& cond1, const ConditionPtr& cond2) {
   return make_shared<MultiCondition>(cond1, cond2);
 }
 
@@ -421,8 +417,7 @@ ConditionPtr OrCondition::_clone() {
   return p;
 }
 
-HAYAKU_API ConditionPtr operator|(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2) {
+ConditionPtr operator|(const ConditionPtr& cond1, const ConditionPtr& cond2) {
   return make_shared<OrCondition>(cond1, cond2);
 }
 
@@ -516,8 +511,7 @@ ConditionPtr SubCondition::_clone() {
   return p;
 }
 
-HAYAKU_API ConditionPtr operator-(const ConditionPtr& cond1,
-                                  const ConditionPtr& cond2) {
+ConditionPtr operator-(const ConditionPtr& cond1, const ConditionPtr& cond2) {
   return make_shared<SubCondition>(cond1, cond2);
 }
 

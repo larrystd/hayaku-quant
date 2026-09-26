@@ -1131,7 +1131,7 @@ ${HOME}/.local/bin/xmake r small-test
 - TA-Lib 适配最终收敛为 7 个生产文件；C API 调用显式使用全局命名空间，避免聚合后与 `hayaku::TA_*` 公共工厂重名。
 - `SystemInfo` 只保留本地版本与 Python/Jupyter 状态；联网升级检查、反馈和授权提醒迁入 `extensions/telemetry/Telemetry`，公共函数名与签名不变。
 - 109 个 Strategy/Execution 序列化导出注册全部保持唯一；全量 API inventory 的 363 个规范化条目与执行前完全一致。
-- 339 个最终生产头均恰好包含一个 `#pragma once`；机械移除 276 组传统保护宏，保留 `HAYAKU_API`、`HAYAKU_UTILS_API`、`NOMINMAX` 等功能条件块。
+- 339 个最终生产头均恰好包含一个 `#pragma once`；机械移除 276 组传统保护宏，保留当时仍需使用的功能条件块。
 
 ### 10.5 批次 5～6 执行记录
 

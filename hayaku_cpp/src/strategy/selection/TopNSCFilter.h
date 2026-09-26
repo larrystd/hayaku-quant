@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API TopNSCFilter : public ScoresFilterBase {
+class TopNSCFilter : public ScoresFilterBase {
   SCORESFILTER_IMP(TopNSCFilter)
   SCORESFILTER_NO_PRIVATE_MEMBER_SERIALIZATION
 

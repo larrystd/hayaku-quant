@@ -25,17 +25,17 @@ class DriverConnectPool;
 
 typedef DriverConnectPool<KDataDriverConnect> KDataDriverConnectPool;
 typedef shared_ptr<KDataDriverConnectPool> KDataDriverConnectPoolPtr;
-class HAYAKU_API KData;
-class HAYAKU_API Parameter;
-class HAYAKU_API Block;
-class HAYAKU_API KDataSharedBufferImp;
+class KData;
+class Parameter;
+class Block;
+class KDataSharedBufferImp;
 
 /**
  * Base class of a security (Stock). Applications usually operate on it through
  * StockPtr.
  * @ingroup StockManage
  */
-class HAYAKU_API Stock {
+class Stock {
   friend class DataRuntime;
   friend class KDataSharedBufferImp;
 
@@ -332,18 +332,18 @@ class HAYAKU_API Stock {
   void setHistoryFinance(vector<HistoryFinanceInfo>&&);
 
  private:
-  struct HAYAKU_API Data;
+  struct Data;
   shared_ptr<Data> data_;
   KDataDriverConnectPoolPtr kdata_driver_;
 };
 
-struct HAYAKU_API Stock::Data {
-  string market_;       // The market abbreviation it belongs to
-  string code_;         // Security code
-  string market_code_;  // Market abbreviation + security code
-  string name_;         // Security name
-  uint32_t type_;       // Security type
-  bool valid_;          // Whether the security is currently valid
+struct Stock::Data {
+  string market_;        // The market abbreviation it belongs to
+  string code_;          // Security code
+  string market_code_;   // Market abbreviation + security code
+  string name_;          // Security name
+  uint32_t type_;        // Security type
+  bool valid_;           // Whether the security is currently valid
   Datetime start_date_;  // Start date of the security
   Datetime last_date_;   // Last date of the security
 
@@ -367,7 +367,7 @@ struct HAYAKU_API Stock::Data {
 
   mutable vector<HistoryFinanceInfo>
       history_finance_;  // Historical financial info [report date, field 1,
-                          // field 2, ...]
+                         // field 2, ...]
   // Whether the historical finance data has been initialized (set when the main
   // process preloads it at startup; set to false after it is released by
   // releaseShmServerBaseInfoCache(), and set again after the next access lazily
@@ -385,7 +385,7 @@ struct HAYAKU_API Stock::Data {
 
   std::unordered_set<string>
       ktype_preload_;  // Records whether the K-line data of this security
-                        // needs to be preloaded
+                       // needs to be preloaded
   unordered_map<string, KRecordList*> pKData;
   unordered_map<string, std::shared_mutex*> pMutex;
   unordered_map<string, Datetime>
@@ -405,7 +405,7 @@ struct HAYAKU_API Stock::Data {
  * startDatetime, lastDatetime)
  * @ingroup StockManage
  */
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const Stock& stock);
+std::ostream& operator<<(std::ostream& os, const Stock& stock);
 
 /** @ingroup StockManage */
 typedef vector<Stock> StockList;
@@ -418,7 +418,7 @@ typedef vector<Stock> StockList;
  * exist, no exception is thrown
  * @ingroup StockManage
  */
-Stock HAYAKU_API getStock(const string& querystr);
+Stock getStock(const string& querystr);
 
 /* Used to take a Stock instance as a map key; it is generally recommended to
  * use stock.id as the key, otherwise the map has to build a new object through

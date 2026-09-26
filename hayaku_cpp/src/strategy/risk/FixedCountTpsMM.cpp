@@ -66,8 +66,8 @@ double FixedCountTpsMM::_getSellNumber(const Datetime& datetime,
              : 0.0;
 }
 
-MoneyManagerPtr HAYAKU_API MM_FixedCountTps(const vector<double>& buy_counts,
-                                            const vector<double>& sell_counts) {
+MoneyManagerPtr MM_FixedCountTps(const vector<double>& buy_counts,
+                                 const vector<double>& sell_counts) {
   return make_shared<FixedCountTpsMM>(buy_counts, sell_counts);
 }
 

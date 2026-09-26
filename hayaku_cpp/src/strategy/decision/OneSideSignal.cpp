@@ -62,7 +62,7 @@ void OneSideSignal::_calculate(const KData& kdata) {
   }
 }
 
-SignalPtr HAYAKU_API SG_OneSide(const Indicator& ind, bool is_buy) {
+SignalPtr SG_OneSide(const Indicator& ind, bool is_buy) {
   return make_shared<OneSideSignal>(ind, is_buy);
 }
 

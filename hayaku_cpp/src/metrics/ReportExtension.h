@@ -26,7 +26,7 @@ class ReportExtension {
 
 using ReportExtensionResolver = std::function<ReportExtension*()>;
 
-HAYAKU_API void setReportExtensionResolver(ReportExtensionResolver resolver);
-[[nodiscard]] HAYAKU_API ReportExtension* getReportExtension() noexcept;
+void setReportExtensionResolver(ReportExtensionResolver resolver);
+[[nodiscard]] ReportExtension* getReportExtension() noexcept;
 
 }  // namespace hayaku

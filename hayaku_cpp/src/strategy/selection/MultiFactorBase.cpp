@@ -19,8 +19,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out,
-                                    const MultiFactorBase& mf) {
+std::ostream& operator<<(std::ostream& out, const MultiFactorBase& mf) {
   out << "MultiFactor{" << "\n  name: " << mf.name()
       << "\n  params: " << mf.getParameter() << "\n  query: " << mf.getQuery()
       << "\n  ref stock: " << mf.ref_stk_;
@@ -79,8 +78,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out,
-                                    const MultiFactorPtr& mf) {
+std::ostream& operator<<(std::ostream& out, const MultiFactorPtr& mf) {
   if (mf) {
     out << *mf;
   } else {
@@ -452,9 +450,9 @@ const vector<ScoreRecordList>& MultiFactorBase::getAllScores() {
 
 Indicator MultiFactorBase::getIC(int ndays) {
   HAYAKU_WARN_IF_RETURN(!getParam<bool>("save_all_factors"), Indicator(),
-                        htr("mf param \"save_all_factors\" is false, can't get "
-                            "all factors!, please "
-                            "set it to true if you want to get IC/ICIR!"));
+                        "mf param \"save_all_factors\" is false, can't get "
+                        "all factors!, please "
+                        "set it to true if you want to get IC/ICIR!");
 
   calculate();
 
@@ -502,8 +500,7 @@ MultiFactorBase::_buildDummyIndex() {
   // industry membership labels
   unordered_map<string, std::pair<PriceList, size_t>> stock_dummy_index;
   for (const auto& [ind_name, catefory] : special_category_) {
-    stock_dummy_index[ind_name] = {PriceList(stks_.size(), Null<price_t>()),
-                                   0};
+    stock_dummy_index[ind_name] = {PriceList(stks_.size(), Null<price_t>()), 0};
     auto blks = getDataRuntime().getBlockList(catefory);
     if (blks.empty()) {
       HAYAKU_WARN("Block list ({}) is empty, please check your block category!",
@@ -567,13 +564,12 @@ vector<IndicatorList> MultiFactorBase::getAllSrcFactors() {
   HAYAKU_IF_RETURN(ind_count == 0, all_stk_inds);
 
   size_t days_total = ref_dates_.size();
-  auto null_ind =
-      PRICELIST(PriceList(days_total, Null<price_t>()), ref_dates_);
+  auto null_ind = PRICELIST(PriceList(days_total, Null<price_t>()), ref_dates_);
 
   bool fill_null = getParam<bool>("fill_null");
 
   all_stk_inds = factorset_.getValues(stks_, query_, true, fill_null, true,
-                                       true, ref_dates_);
+                                      true, ref_dates_);
 
   // The style factors are stored in three dimensions [style factor name][style
   // factor][stock] (vector<IndicatorList>).

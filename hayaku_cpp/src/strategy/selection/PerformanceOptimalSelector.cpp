@@ -175,8 +175,8 @@ void PerformanceOptimalSelector::_calculate_parallel(
             RunRanges(dates[train_start], dates[test_start], dates[test_end]));
       } else {
         run_ranges_.emplace_back(RunRanges(dates[train_start],
-                                            dates[test_start],
-                                            dates[test_end - 1] + Minutes(1)));
+                                           dates[test_start],
+                                           dates[test_end - 1] + Minutes(1)));
       }
 
       CLS_INFO_IF(trace, "iteration: {}, selected_sys: {}", i + 1,
@@ -185,7 +185,7 @@ void PerformanceOptimalSelector::_calculate_parallel(
   }
 }
 
-SEPtr HAYAKU_API SE_PerformanceOptimal(const string& key, int mode) {
+SEPtr SE_PerformanceOptimal(const string& key, int mode) {
   PerformanceOptimalSelector* p = new PerformanceOptimalSelector();
   p->setParam<string>("key", key);
   p->setParam<int>("mode", mode);

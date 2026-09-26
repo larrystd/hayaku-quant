@@ -276,11 +276,11 @@ void ICval::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API CVAL(double value, size_t discard) {
+Indicator CVAL(double value, size_t discard) {
   return make_shared<ICval>(value, discard)->calculate();
 }
 
-Indicator HAYAKU_API CVAL(const Indicator& ind, double value, int discard) {
+Indicator CVAL(const Indicator& ind, double value, int discard) {
   auto p = make_shared<ICval>(value, discard);
   if (ind.getContext() == Null<KData>()) {
     // When the passed ind has no context and the ignored data length equals the
@@ -402,56 +402,56 @@ void IKData::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API KDATA(const KData& kdata) {
+Indicator KDATA(const KData& kdata) {
   auto p = make_shared<IKData>();
   p->setParam<string>("kpart", "KDATA");
   p->setContext(kdata);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API OPEN(const KData& kdata) {
+Indicator OPEN(const KData& kdata) {
   auto p = make_shared<IKData>();
   p->setParam<string>("kpart", "OPEN");
   p->setContext(kdata);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API HIGH(const KData& kdata) {
+Indicator HIGH(const KData& kdata) {
   auto p = make_shared<IKData>();
   p->setParam<string>("kpart", "HIGH");
   p->setContext(kdata);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API LOW(const KData& kdata) {
+Indicator LOW(const KData& kdata) {
   auto p = make_shared<IKData>();
   p->setParam<string>("kpart", "LOW");
   p->setContext(kdata);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API CLOSE(const KData& kdata) {
+Indicator CLOSE(const KData& kdata) {
   auto p = make_shared<IKData>();
   p->setParam<string>("kpart", "CLOSE");
   p->setContext(kdata);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API AMO(const KData& kdata) {
+Indicator AMO(const KData& kdata) {
   auto p = make_shared<IKData>();
   p->setParam<string>("kpart", "AMO");
   p->setContext(kdata);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API VOL(const KData& kdata) {
+Indicator VOL(const KData& kdata) {
   auto p = make_shared<IKData>();
   p->setParam<string>("kpart", "VOL");
   p->setContext(kdata);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API KDATA_PART(const KData& kdata, const string& part) {
+Indicator KDATA_PART(const KData& kdata, const string& part) {
   auto p = make_shared<IKData>();
   p->setParam<string>("kpart", part);
   p->setContext(kdata);
@@ -459,56 +459,56 @@ Indicator HAYAKU_API KDATA_PART(const KData& kdata, const string& part) {
 }
 
 //-----------------------------------------------------------
-Indicator HAYAKU_API KDATA() {
+Indicator KDATA() {
   IndicatorImpPtr p = make_shared<IKData>();
   p->setParam<string>("kpart", "KDATA");
   p->name("KDATA");
   return p->calculate();
 }
 
-Indicator HAYAKU_API OPEN() {
+Indicator OPEN() {
   IndicatorImpPtr p = make_shared<IKData>();
   p->setParam<string>("kpart", "OPEN");
   p->name("OPEN");
   return p->calculate();
 }
 
-Indicator HAYAKU_API HIGH() {
+Indicator HIGH() {
   IndicatorImpPtr p = make_shared<IKData>();
   p->setParam<string>("kpart", "HIGH");
   p->name("HIGH");
   return p->calculate();
 }
 
-Indicator HAYAKU_API LOW() {
+Indicator LOW() {
   IndicatorImpPtr p = make_shared<IKData>();
   p->setParam<string>("kpart", "LOW");
   p->name("LOW");
   return p->calculate();
 }
 
-Indicator HAYAKU_API CLOSE() {
+Indicator CLOSE() {
   IndicatorImpPtr p = make_shared<IKData>();
   p->setParam<string>("kpart", "CLOSE");
   p->name("CLOSE");
   return p->calculate();
 }
 
-Indicator HAYAKU_API AMO() {
+Indicator AMO() {
   IndicatorImpPtr p = make_shared<IKData>();
   p->setParam<string>("kpart", "AMO");
   p->name("AMO");
   return p->calculate();
 }
 
-Indicator HAYAKU_API VOL() {
+Indicator VOL() {
   IndicatorImpPtr p = make_shared<IKData>();
   p->setParam<string>("kpart", "VOL");
   p->name("VOL");
   return p->calculate();
 }
 
-Indicator HAYAKU_API KDATA_PART(const string& part) {
+Indicator KDATA_PART(const string& part) {
   IndicatorImpPtr p = make_shared<IKData>();
   p->setParam<string>("kpart", part);
   p->name("KDATA_PART");
@@ -620,16 +620,16 @@ void IPriceList::_calculate(const Indicator& data) {
   return;
 }
 
-Indicator HAYAKU_API PRICELIST(const PriceList& data, int discard) {
+Indicator PRICELIST(const PriceList& data, int discard) {
   return make_shared<IPriceList>(data, discard)->calculate();
 }
 
-Indicator HAYAKU_API PRICELIST(PriceList&& data, int discard) {
+Indicator PRICELIST(PriceList&& data, int discard) {
   return make_shared<IPriceList>(std::move(data), discard)->calculate();
 }
 
-Indicator HAYAKU_API PRICELIST(const PriceList& data, const DatetimeList& ds,
-                               int discard) {
+Indicator PRICELIST(const PriceList& data, const DatetimeList& ds,
+                    int discard) {
   HAYAKU_CHECK(data.size() == ds.size(),
                "The data length must be the same as the length of the "
                "reference date list");
@@ -638,8 +638,7 @@ Indicator HAYAKU_API PRICELIST(const PriceList& data, const DatetimeList& ds,
   return ret;
 }
 
-Indicator HAYAKU_API PRICELIST(PriceList&& data, const DatetimeList&& ds,
-                               int discard) {
+Indicator PRICELIST(PriceList&& data, const DatetimeList&& ds, int discard) {
   HAYAKU_CHECK(data.size() == ds.size(),
                "The data length must be the same as the length of the "
                "reference date list");
@@ -648,24 +647,22 @@ Indicator HAYAKU_API PRICELIST(PriceList&& data, const DatetimeList&& ds,
   return ret;
 }
 
-Indicator HAYAKU_API PRICELIST() {
+Indicator PRICELIST() {
   auto p = make_shared<IPriceList>();
   return Indicator(p);
 }
 
-Indicator HAYAKU_API PRICELIST(size_t size, double value, int discard) {
+Indicator PRICELIST(size_t size, double value, int discard) {
   return make_shared<IPriceList>(size, value, discard)->calculate();
 }
 
-Indicator HAYAKU_API PRICELIST(const DatetimeList& dates, double value,
-                               int discard) {
+Indicator PRICELIST(const DatetimeList& dates, double value, int discard) {
   IndicatorImpPtr ptr = make_shared<IPriceList>(dates.size(), value, discard);
   ptr->setParam<DatetimeList>("align_date_list", dates);
   return ptr->calculate();
 }
 
-Indicator HAYAKU_API PRICELIST(DatetimeList&& dates, double value,
-                               int discard) {
+Indicator PRICELIST(DatetimeList&& dates, double value, int discard) {
   IndicatorImpPtr ptr = make_shared<IPriceList>(dates.size(), value, discard);
   ptr->setParam<DatetimeList>("align_date_list", std::move(dates));
   return ptr->calculate();
@@ -822,8 +819,8 @@ void IContext::_calculate(const Indicator& ind) {
   }
 }
 
-Indicator HAYAKU_API CONTEXT(bool fill_null, bool use_self_ktype,
-                             bool use_self_recover_type) {
+Indicator CONTEXT(bool fill_null, bool use_self_ktype,
+                  bool use_self_recover_type) {
   auto p = make_shared<IContext>();
   p->setParam<bool>("fill_null", fill_null);
   p->setParam<bool>("use_self_ktype", use_self_ktype);
@@ -831,8 +828,8 @@ Indicator HAYAKU_API CONTEXT(bool fill_null, bool use_self_ktype,
   return Indicator(p);
 }
 
-Indicator HAYAKU_API CONTEXT(const Indicator& ind, bool fill_null,
-                             bool use_self_ktype, bool use_self_recover_type) {
+Indicator CONTEXT(const Indicator& ind, bool fill_null, bool use_self_ktype,
+                  bool use_self_recover_type) {
   auto p = make_shared<IContext>(ind);
   p->setParam<bool>("fill_null", fill_null);
   p->setParam<bool>("use_self_ktype", use_self_ktype);
@@ -840,8 +837,7 @@ Indicator HAYAKU_API CONTEXT(const Indicator& ind, bool fill_null,
   return p->calculate();
 }
 
-Indicator HAYAKU_API CONTEXT(const Indicator& ind, const Stock& stk,
-                             bool fill_null) {
+Indicator CONTEXT(const Indicator& ind, const Stock& stk, bool fill_null) {
   HAYAKU_WARN_IF(ind.getContext() != Null<KData>(),
                  "The context of input indicator will be ignored!");
   KData kdata = stk.isNull() ? Null<KData>() : stk.getKData(KQuery(0, 0));
@@ -854,7 +850,7 @@ Indicator HAYAKU_API CONTEXT(const Indicator& ind, const Stock& stk,
   return p->calculate();
 }
 
-KData HAYAKU_API CONTEXT_K(const Indicator& ind) {
+KData CONTEXT_K(const Indicator& ind) {
   auto imp = ind.getImp();
   IContext const* p = dynamic_cast<IContext const*>(imp.get());
   if (p != nullptr) {
@@ -863,7 +859,7 @@ KData HAYAKU_API CONTEXT_K(const Indicator& ind) {
   return ind.getContext();
 }
 
-bool HAYAKU_API is_standalone_context(const Indicator& ind) {
+bool is_standalone_context(const Indicator& ind) {
   auto imp = ind.getImp();
   IContext const* p = dynamic_cast<IContext const*>(imp.get());
   return p != nullptr;
@@ -925,7 +921,7 @@ void IResult::_increment_calculate(const Indicator& ind, size_t start_pos) {
          sizeof(value_t) * (ind.size() - start_pos));
 }
 
-Indicator HAYAKU_API RESULT(int result_ix) {
+Indicator RESULT(int result_ix) {
   return Indicator(make_shared<IResult>(result_ix));
 }
 

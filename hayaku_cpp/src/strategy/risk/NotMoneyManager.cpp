@@ -30,8 +30,6 @@ double NotMoneyManager ::_getBuyNumber(const Datetime& datetime,
   return account_->currentCash() / price;
 }
 
-MoneyManagerPtr HAYAKU_API MM_Nothing() {
-  return make_shared<NotMoneyManager>();
-}
+MoneyManagerPtr MM_Nothing() { return make_shared<NotMoneyManager>(); }
 
 } /* namespace hayaku */

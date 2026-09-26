@@ -28,7 +28,7 @@ namespace hayaku {
  * @details Create an empty equal weight multi-factor model; the factor set
  * needs to be set afterwards
  */
-MultiFactorPtr HAYAKU_API MF_EqualWeight();
+MultiFactorPtr MF_EqualWeight();
 
 /**
  * @brief Create an equal weight multi-factor model instance (the full parameter
@@ -54,11 +54,9 @@ MultiFactorPtr HAYAKU_API MF_EqualWeight();
  * false);
  * </pre>
  */
-MultiFactorPtr HAYAKU_API MF_EqualWeight(const StockList& stks,
-                                         const KQuery& query,
-                                         const Stock& ref_stk, int ic_n,
-                                         bool spearman, int mode,
-                                         bool save_all_factors);
+MultiFactorPtr MF_EqualWeight(const StockList& stks, const KQuery& query,
+                              const Stock& ref_stk, int ic_n, bool spearman,
+                              int mode, bool save_all_factors);
 
 /**
  * @brief Create an equal weight multi-factor model instance (the factor set
@@ -149,7 +147,7 @@ namespace hayaku {
  * @details Create an empty rolling ICIR weight multi-factor model; the factor
  * set needs to be set afterwards
  */
-MultiFactorPtr HAYAKU_API MF_ICIRWeight();
+MultiFactorPtr MF_ICIRWeight();
 
 /**
  * @brief Create a rolling ICIR weight multi-factor model instance (the full
@@ -178,12 +176,10 @@ MultiFactorPtr HAYAKU_API MF_ICIRWeight();
  * false);
  * </pre>
  */
-MultiFactorPtr HAYAKU_API MF_ICIRWeight(const StockList& stks,
-                                        const KQuery& query,
-                                        const Stock& ref_stk = Stock(),
-                                        int ic_n = 5, int ic_rolling_n = 120,
-                                        bool spearman = true, int mode = 0,
-                                        bool save_all_factors = false);
+MultiFactorPtr MF_ICIRWeight(const StockList& stks, const KQuery& query,
+                             const Stock& ref_stk = Stock(), int ic_n = 5,
+                             int ic_rolling_n = 120, bool spearman = true,
+                             int mode = 0, bool save_all_factors = false);
 
 /**
  * @brief Create a rolling ICIR weight multi-factor model instance (the factor
@@ -281,7 +277,7 @@ namespace hayaku {
  * @details Create an empty rolling IC weight multi-factor model; the factor set
  * needs to be set afterwards
  */
-MultiFactorPtr HAYAKU_API MF_ICWeight();
+MultiFactorPtr MF_ICWeight();
 
 /**
  * @brief Create a rolling IC weight multi-factor model instance (the full
@@ -310,12 +306,10 @@ MultiFactorPtr HAYAKU_API MF_ICWeight();
  * false);
  * </pre>
  */
-MultiFactorPtr HAYAKU_API MF_ICWeight(const StockList& stks,
-                                      const KQuery& query,
-                                      const Stock& ref_stk = Stock(),
-                                      int ic_n = 5, int ic_rolling_n = 120,
-                                      bool spearman = true, int mode = 0,
-                                      bool save_all_factors = false);
+MultiFactorPtr MF_ICWeight(const StockList& stks, const KQuery& query,
+                           const Stock& ref_stk = Stock(), int ic_n = 5,
+                           int ic_rolling_n = 120, bool spearman = true,
+                           int mode = 0, bool save_all_factors = false);
 
 /**
  * @brief Create a rolling IC weight multi-factor model instance (the factor set
@@ -412,7 +406,7 @@ namespace hayaku {
  * @details Create an empty given weight multi-factor model; the factor set and
  * the weights need to be set afterwards
  */
-MultiFactorPtr HAYAKU_API MF_Weight();
+MultiFactorPtr MF_Weight();
 
 /**
  * @brief Create a given weight multi-factor model instance (the full parameter
@@ -443,12 +437,10 @@ MultiFactorPtr HAYAKU_API MF_Weight();
  * true, 0, false);
  * </pre>
  */
-MultiFactorPtr HAYAKU_API MF_Weight(const PriceList& weights,
-                                    const StockList& stks, const KQuery& query,
-                                    const Stock& ref_stk = Stock(),
-                                    int ic_n = 5, bool spearman = true,
-                                    int mode = 0,
-                                    bool save_all_factors = false);
+MultiFactorPtr MF_Weight(const PriceList& weights, const StockList& stks,
+                         const KQuery& query, const Stock& ref_stk = Stock(),
+                         int ic_n = 5, bool spearman = true, int mode = 0,
+                         bool save_all_factors = false);
 
 /**
  * @brief Create a given weight multi-factor model instance (the factor set

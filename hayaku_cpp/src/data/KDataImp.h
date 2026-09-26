@@ -11,7 +11,7 @@
 
 namespace hayaku {
 
-class HAYAKU_API KDataImp : public enable_shared_from_this<KDataImp> {
+class KDataImp : public enable_shared_from_this<KDataImp> {
  public:
   KDataImp() = default;
   KDataImp(const Stock& stock, const KQuery& query);

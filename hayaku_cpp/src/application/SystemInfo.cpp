@@ -48,21 +48,19 @@ std::string getVersionWithBuild() {
 
 std::string getVersionWithGit() { return HAYAKU_VERSION_GIT; }
 
-bool HAYAKU_API runningInPython() { return sysInfo().runningInPython; }
+bool runningInPython() { return sysInfo().runningInPython; }
 
-void HAYAKU_API setRunningInPython(bool inpython) {
-  sysInfo().runningInPython = inpython;
-}
+void setRunningInPython(bool inpython) { sysInfo().runningInPython = inpython; }
 
-bool HAYAKU_API pythonInInteractive() { return sysInfo().pythonInInteractive; }
+bool pythonInInteractive() { return sysInfo().pythonInInteractive; }
 
-void HAYAKU_API setPythonInInteractive(bool interactive) {
+void setPythonInInteractive(bool interactive) {
   sysInfo().pythonInInteractive = interactive;
 }
 
-bool HAYAKU_API pythonInJupyter() { return sysInfo().pythonInJupyter; }
+bool pythonInJupyter() { return sysInfo().pythonInJupyter; }
 
-void HAYAKU_API setPythonInJupyter(bool injupyter) {
+void setPythonInJupyter(bool injupyter) {
   sysInfo().pythonInJupyter = injupyter;
   if (createDir(fmt::format("{}/.hayaku", getUserDir()))) {
     initLogger(injupyter, fmt::format("{}/.hayaku/hayaku.log", getUserDir()));

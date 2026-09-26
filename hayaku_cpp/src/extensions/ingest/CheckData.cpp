@@ -13,13 +13,14 @@
 
 namespace hayaku {
 
-std::pair<std::string, vector<std::string>> HAYAKU_API
-checkData(const StockList& stock_list, const Datetime& start_date,
-          const Datetime& end_date, const KQuery::KType& check_ktype) {
+std::pair<std::string, vector<std::string>> checkData(
+    const StockList& stock_list, const Datetime& start_date,
+    const Datetime& end_date, const KQuery::KType& check_ktype) {
   std::pair<std::string, vector<std::string>> ret;
   auto* plugin = getPlugin<CheckDataPluginInterface>(HAYAKU_PLUGIN_CHECK_DATA);
   HAYAKU_ERROR_IF_RETURN(
-      !plugin, ret, htr("Can't find {} plugin!", HAYAKU_PLUGIN_CHECK_DATA));
+      !plugin, ret,
+      fmt::format("Can't find {} plugin!", HAYAKU_PLUGIN_CHECK_DATA));
   return plugin->checkData(stock_list, start_date, end_date, check_ktype);
 }
 

@@ -101,8 +101,7 @@ EnvironmentPtr AddEnvironment::_clone() {
   return p;
 }
 
-HAYAKU_API EnvironmentPtr operator+(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2) {
+EnvironmentPtr operator+(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2) {
   return make_shared<AddEnvironment>(ev1, ev2);
 }
 
@@ -185,8 +184,7 @@ EnvironmentPtr AndEnvironment::_clone() {
   return p;
 }
 
-HAYAKU_API EnvironmentPtr operator&(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2) {
+EnvironmentPtr operator&(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2) {
   return make_shared<AndEnvironment>(ev1, ev2);
 }
 
@@ -269,8 +267,7 @@ EnvironmentPtr DivEnvironment::_clone() {
   return p;
 }
 
-HAYAKU_API EnvironmentPtr operator/(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2) {
+EnvironmentPtr operator/(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2) {
   return make_shared<DivEnvironment>(ev1, ev2);
 }
 
@@ -353,8 +350,7 @@ EnvironmentPtr MultiEnvironment::_clone() {
   return p;
 }
 
-HAYAKU_API EnvironmentPtr operator*(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2) {
+EnvironmentPtr operator*(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2) {
   return make_shared<MultiEnvironment>(ev1, ev2);
 }
 
@@ -471,8 +467,7 @@ EnvironmentPtr OrEnvironment::_clone() {
   return p;
 }
 
-HAYAKU_API EnvironmentPtr operator|(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2) {
+EnvironmentPtr operator|(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2) {
   return make_shared<OrEnvironment>(ev1, ev2);
 }
 
@@ -579,8 +574,7 @@ EnvironmentPtr SubEnvironment::_clone() {
   return p;
 }
 
-HAYAKU_API EnvironmentPtr operator-(const EnvironmentPtr& ev1,
-                                    const EnvironmentPtr& ev2) {
+EnvironmentPtr operator-(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2) {
   return make_shared<SubEnvironment>(ev1, ev2);
 }
 

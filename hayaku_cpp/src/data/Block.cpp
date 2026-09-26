@@ -12,7 +12,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const Block& blk) {
+std::ostream& operator<<(std::ostream& os, const Block& blk) {
   string strip(", ");
   os << "Block(" << blk.category() << strip << blk.name() << strip << blk.size()
      << ")";
@@ -231,7 +231,7 @@ bool Block::operator==(const Block& blk) const noexcept {
   return true;
 }
 
-HAYAKU_API Block getBlock(const string& category, const string& name) {
+Block getBlock(const string& category, const string& name) {
   auto& sm = getDataRuntime();
   return sm.getBlock(category, name);
 }

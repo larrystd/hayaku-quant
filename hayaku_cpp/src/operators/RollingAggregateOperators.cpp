@@ -200,13 +200,13 @@ void ICount::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(count, curPos);
 }
 
-Indicator HAYAKU_API COUNT(int n) {
+Indicator COUNT(int n) {
   IndicatorImpPtr p = make_shared<ICount>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API COUNT(const IndParam& n) {
+Indicator COUNT(const IndParam& n) {
   IndicatorImpPtr p = make_shared<ICount>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -308,13 +308,13 @@ void ISum::_dyn_run_one_step(const Indicator& ind, size_t curPos, size_t step) {
   _set(sum, curPos);
 }
 
-Indicator HAYAKU_API SUM(int n) {
+Indicator SUM(int n) {
   IndicatorImpPtr p = make_shared<ISum>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API SUM(const IndParam& n) {
+Indicator SUM(const IndParam& n) {
   IndicatorImpPtr p = make_shared<ISum>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -415,13 +415,13 @@ void IDevsq::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(sum, curPos);
 }
 
-Indicator HAYAKU_API DEVSQ(int n) {
+Indicator DEVSQ(int n) {
   IndicatorImpPtr p = make_shared<IDevsq>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API DEVSQ(const IndParam& n) {
+Indicator DEVSQ(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IDevsq>();
   p->setIndParam("n", n);
   return Indicator(p);

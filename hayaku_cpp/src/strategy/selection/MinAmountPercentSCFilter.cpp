@@ -76,8 +76,7 @@ ScoreRecordList MinAmountPercentSCFilter::_filter(const ScoreRecordList& scores,
   return ret;
 }
 
-ScoresFilterPtr HAYAKU_API
-SCFilter_AmountLimit(double min_amount_percent_limit) {
+ScoresFilterPtr SCFilter_AmountLimit(double min_amount_percent_limit) {
   auto p = std::make_shared<MinAmountPercentSCFilter>();
   p->setParam<double>("min_amount_percent_limit", min_amount_percent_limit);
   return p;

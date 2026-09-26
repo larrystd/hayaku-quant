@@ -15,7 +15,7 @@
 namespace hayaku {
 
 /** Immutable construction parameters for an execution account. */
-class HAYAKU_API AccountConfig {
+class AccountConfig {
  public:
   explicit AccountConfig(Datetime initDatetime = Datetime(199001010000LL),
                          price_t initialCash = 100000.0,
@@ -34,8 +34,7 @@ class HAYAKU_API AccountConfig {
         support_borrow_stock_(supportBorrowStock),
         account_id_(accountId),
         brokers_(std::move(brokers)) {
-    HAYAKU_CHECK(precision_ > 0,
-                 "Account precision must be greater than zero");
+    HAYAKU_CHECK(precision_ > 0, "Account precision must be greater than zero");
   }
 
   [[nodiscard]] Datetime initDatetime() const noexcept {

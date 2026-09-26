@@ -24,7 +24,7 @@ namespace hayaku {
  * @param p percentage (0,1]
  * @ingroup Stoploss
  */
-StoplossPtr HAYAKU_API ST_FixedPercent(double p = 0.03);
+StoplossPtr ST_FixedPercent(double p = 0.03);
 
 }  // namespace hayaku
 
@@ -39,7 +39,7 @@ StoplossPtr HAYAKU_API ST_FixedPercent(double p = 0.03);
 
 namespace hayaku {
 
-StoplossPtr HAYAKU_API ST_Indicator(const Indicator& ind);
+StoplossPtr ST_Indicator(const Indicator& ind);
 
 } /* namespace hayaku */
 
@@ -77,6 +77,6 @@ namespace hayaku {
  * @param p the noise coefficient, 2 by default
  * @ingroup Stoploss
  */
-StoplossPtr HAYAKU_API ST_Saftyloss(int n1 = 10, int n2 = 3, double p = 2.0);
+StoplossPtr ST_Saftyloss(int n1 = 10, int n2 = 3, double p = 2.0);
 
 }  // namespace hayaku

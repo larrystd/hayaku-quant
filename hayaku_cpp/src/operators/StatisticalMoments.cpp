@@ -492,13 +492,13 @@ void IKurtosis::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   }
 }
 
-Indicator HAYAKU_API KURT(int n) {
+Indicator KURT(int n) {
   IndicatorImpPtr p = make_shared<IKurtosis>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API KURT(const IndParam& n) {
+Indicator KURT(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IKurtosis>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -643,7 +643,7 @@ void IMrr::_increment_calculate(const Indicator& ind, size_t start_pos) {
   }
 }
 
-Indicator HAYAKU_API MRR(int n) {
+Indicator MRR(int n) {
   IndicatorImpPtr p = make_shared<IMrr>();
   p->setParam<int>("n", n);
   return Indicator(p);
@@ -844,13 +844,13 @@ void ISkewness::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   }
 }
 
-Indicator HAYAKU_API SKEW(int n) {
+Indicator SKEW(int n) {
   IndicatorImpPtr p = make_shared<ISkewness>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API SKEW(const IndParam& n) {
+Indicator SKEW(const IndParam& n) {
   IndicatorImpPtr p = make_shared<ISkewness>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -1106,13 +1106,13 @@ void IStdev::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   }
 }
 
-Indicator HAYAKU_API STDEV(int n) {
+Indicator STDEV(int n) {
   IndicatorImpPtr p = make_shared<IStdev>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API STDEV(const IndParam& n) {
+Indicator STDEV(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IStdev>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -1239,13 +1239,13 @@ void IStdp::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set(num == 0 ? 0.0 : std::sqrt((ex2 - std::pow(ex, 2) / num) / num), curPos);
 }
 
-Indicator HAYAKU_API STDP(int n) {
+Indicator STDP(int n) {
   IndicatorImpPtr p = make_shared<IStdp>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API STDP(const IndParam& n) {
+Indicator STDP(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IStdp>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -1382,13 +1382,13 @@ void IVar::_dyn_run_one_step(const Indicator& ind, size_t curPos, size_t step) {
   _set((ex2 - ex * ex / step) / (step - 1), curPos);
 }
 
-Indicator HAYAKU_API VAR(int n) {
+Indicator VAR(int n) {
   IndicatorImpPtr p = make_shared<IVar>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API VAR(const IndParam& n) {
+Indicator VAR(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IVar>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -1528,13 +1528,13 @@ void IVarp::_dyn_run_one_step(const Indicator& ind, size_t curPos,
   _set((ex2 - ex * ex / step) / step, curPos);
 }
 
-Indicator HAYAKU_API VARP(int n) {
+Indicator VARP(int n) {
   IndicatorImpPtr p = make_shared<IVarp>();
   p->setParam<int>("n", n);
   return Indicator(p);
 }
 
-Indicator HAYAKU_API VARP(const IndParam& n) {
+Indicator VARP(const IndParam& n) {
   IndicatorImpPtr p = make_shared<IVarp>();
   p->setIndParam("n", n);
   return Indicator(p);
@@ -1654,7 +1654,7 @@ void IZScore::_calculate(const Indicator& data) {
   }
 }
 
-Indicator HAYAKU_API ZSCORE(bool outExtreme, double nsigma, bool recursive) {
+Indicator ZSCORE(bool outExtreme, double nsigma, bool recursive) {
   return Indicator(make_shared<IZScore>(outExtreme, nsigma, recursive));
 }
 

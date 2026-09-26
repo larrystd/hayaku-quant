@@ -9,16 +9,14 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out,
-                                    const NormalizeBase& norm) {
+std::ostream& operator<<(std::ostream& out, const NormalizeBase& norm) {
   out << "Normalize{" << "\n  name: " << norm.name()
       << "\n  params: " << norm.getParameter();
   out << "\n}";
   return out;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& out,
-                                    const NormalizePtr& norm) {
+std::ostream& operator<<(std::ostream& out, const NormalizePtr& norm) {
   if (norm) {
     out << *norm;
   } else {

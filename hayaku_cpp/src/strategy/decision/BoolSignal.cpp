@@ -47,8 +47,7 @@ void BoolSignal::_calculate(const KData& kdata) {
   }
 }
 
-SignalPtr HAYAKU_API SG_Bool(const Indicator& buy, const Indicator& sell,
-                             bool alternate) {
+SignalPtr SG_Bool(const Indicator& buy, const Indicator& sell, bool alternate) {
   auto p = make_shared<BoolSignal>(buy, sell);
   p->setParam<bool>("alternate", alternate);
   return p;

@@ -10,9 +10,8 @@
 
 namespace hayaku {
 
-void HAYAKU_API getConfigFromIni(const string& configFileName,
-                                 Parameter& baseParam, Parameter& blockParam,
-                                 Parameter& kdataParam, Parameter& preloadParam,
-                                 Parameter& hayakuParam);
+void getConfigFromIni(const string& configFileName, Parameter& baseParam,
+                      Parameter& blockParam, Parameter& kdataParam,
+                      Parameter& preloadParam, Parameter& hayakuParam);
 
 }  // namespace hayaku

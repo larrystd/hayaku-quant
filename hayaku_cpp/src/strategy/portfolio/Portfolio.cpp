@@ -17,12 +17,12 @@ BOOST_CLASS_EXPORT(hayaku::Portfolio)
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const Portfolio& pf) {
+std::ostream& operator<<(std::ostream& os, const Portfolio& pf) {
   os << pf.str();
   return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const PortfolioPtr& pf) {
+std::ostream& operator<<(std::ostream& os, const PortfolioPtr& pf) {
   if (pf) {
     os << pf->str();
   } else {
@@ -109,7 +109,7 @@ void Portfolio::baseCheckParam(const string& name) const {
 
   } else if ("trace" == name) {
     if (getParam<bool>("trace") && pythonInJupyter()) {
-      HAYAKU_THROW("{}", htr("You can't trace in jupyter!"));
+      HAYAKU_THROW("{}", "You can't trace in jupyter!");
     }
   }
 }
@@ -387,11 +387,11 @@ void Portfolio::runMoment(const Datetime& date, const Datetime& nextCycle,
     if (adjust) {
       HAYAKU_INFO("****************************************************");
       HAYAKU_INFO("**                                                **");
-      HAYAKU_INFO(htr("**  [PF] Position adjustment will be made today.  **"));
+      HAYAKU_INFO("**  [PF] Position adjustment will be made today.  **");
       HAYAKU_INFO("**                                                **");
       HAYAKU_INFO("****************************************************");
     }
-    HAYAKU_INFO("{}: {}", htr("[PF] current running system size"),
+    HAYAKU_INFO("{}: {}", "[PF] current running system size",
                 running_sys_set_.size());
   }
 
@@ -407,9 +407,9 @@ void Portfolio::runMoment(const Datetime& date, const Datetime& nextCycle,
   // Print the current account assets for the trace
   if (trace) {
     FundsRecord funds = account_->getFunds(date, query_.kType());
-    HAYAKU_INFO("[PF] {}: {:.2f}, {}: {:<.2f}, {}: {:<.2f}", htr("total asset"),
-                funds.total_assets(), htr("current cash"), funds.cash,
-                htr("market value"), funds.market_value);
+    HAYAKU_INFO("[PF] {}: {:.2f}, {}: {:<.2f}, {}: {:<.2f}", "total asset",
+                funds.total_assets(), "current cash", funds.cash,
+                "market value", funds.market_value);
   }
 }
 
@@ -421,7 +421,7 @@ void Portfolio::run(const KQuery& query, bool force) {
   if (mode != "query") {
     HAYAKU_CHECK(
         query.kType() == KQuery::DAY, "{} {}", query.kType(),
-        htr("kType of query must be DAY when adjust_mode is not \"query\"!"));
+        "kType of query must be DAY when adjust_mode is not \"query\"!");
   }
 
   setQuery(query);
@@ -434,7 +434,7 @@ void Portfolio::run(const KQuery& query, bool force) {
   readyForRun();
 
   if (real_sys_list_.empty()) {
-    HAYAKU_WARN(htr("There is no system in portfolio!"));
+    HAYAKU_WARN("There is no system in portfolio!");
     need_calculate_ = true;
     return;
   }

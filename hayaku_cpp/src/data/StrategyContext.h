@@ -18,7 +18,7 @@ namespace hayaku {
  * @ingroup Strategy
  *
  */
-class HAYAKU_API StrategyContext {
+class StrategyContext {
  public:
   StrategyContext() = default;
   virtual ~StrategyContext() = default;
@@ -119,7 +119,6 @@ class HAYAKU_API StrategyContext {
   unordered_map<string, int64_t> preload_num_;
 };
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const StrategyContext& context);
+std::ostream& operator<<(std::ostream& os, const StrategyContext& context);
 
 }  // namespace hayaku

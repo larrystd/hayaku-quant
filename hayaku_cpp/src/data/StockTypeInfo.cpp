@@ -9,8 +9,7 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os,
-                                    const StockTypeInfo& stockTypeInfo) {
+std::ostream& operator<<(std::ostream& os, const StockTypeInfo& stockTypeInfo) {
   if (Null<StockTypeInfo>() == stockTypeInfo) {
     os << "StockTypeInfo()";
     return os;

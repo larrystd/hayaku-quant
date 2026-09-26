@@ -17,8 +17,7 @@ namespace hayaku {
  * Base class of the money management
  * @ingroup MoneyManager
  */
-class HAYAKU_API MoneyManagerBase
-    : public enable_shared_from_this<MoneyManagerBase> {
+class MoneyManagerBase : public enable_shared_from_this<MoneyManagerBase> {
   PARAMETER_SUPPORT_WITH_CHECK
 
  public:
@@ -179,8 +178,8 @@ class HAYAKU_API MoneyManagerBase
     ar& boost::serialization::make_nvp("m_params", params_);
     ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
     // m_query and m_account are set temporarily when the strategy runs, they do
-    // not need to be serialized ar & boost::serialization::make_nvp("m_query", query_); ar &
-    // boost::serialization::make_nvp("m_account", account_);
+    // not need to be serialized ar & boost::serialization::make_nvp("m_query",
+    // query_); ar & boost::serialization::make_nvp("m_account", account_);
   }
 
   template <class Archive>
@@ -240,8 +239,8 @@ typedef shared_ptr<MoneyManagerBase> MMPtr;
                                price_t price, price_t risk,                  \
                                OrderOrigin origin) override;
 
-HAYAKU_API std::ostream& operator<<(std::ostream&, const MoneyManagerBase&);
-HAYAKU_API std::ostream& operator<<(std::ostream&, const MoneyManagerPtr&);
+std::ostream& operator<<(std::ostream&, const MoneyManagerBase&);
+std::ostream& operator<<(std::ostream&, const MoneyManagerPtr&);
 
 } /* namespace hayaku */
 

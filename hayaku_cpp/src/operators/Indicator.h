@@ -26,16 +26,16 @@ namespace hayaku {
  *     virtual string toString() { retun "Indicator(MA)"; }
  * };
  *
- * Indicator HAYAKU_API MA(size_t n = 30) {
+ * Indicator MA(size_t n = 30) {
  *     return Indicator(IndicatorImpPtr(new MA(n)));
  * }
  *
- * Indicator HAYAKU_API MA(const Indicator& indicator, size_t n = 30);
+ * Indicator MA(const Indicator& indicator, size_t n = 30);
  * </pre>
  * @ingroup Indicator
  */
-class HAYAKU_API Indicator {
-  HAYAKU_API friend std::ostream& operator<<(std::ostream&, const Indicator&);
+class Indicator {
+  friend std::ostream& operator<<(std::ostream&, const Indicator&);
 
  public:
   typedef IndicatorImp::value_t value_t;
@@ -405,60 +405,60 @@ inline bool Indicator::isPythonObject() const noexcept {
 //--------------------------------------------------------------
 // Indicator operations
 //-------------------------------------------------------------
-HAYAKU_API Indicator operator+(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator-(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator*(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator/(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator%(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator==(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator!=(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator>(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator<(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator>=(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator<=(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator&(const Indicator&, const Indicator&);
-HAYAKU_API Indicator operator|(const Indicator&, const Indicator&);
+Indicator operator+(const Indicator&, const Indicator&);
+Indicator operator-(const Indicator&, const Indicator&);
+Indicator operator*(const Indicator&, const Indicator&);
+Indicator operator/(const Indicator&, const Indicator&);
+Indicator operator%(const Indicator&, const Indicator&);
+Indicator operator==(const Indicator&, const Indicator&);
+Indicator operator!=(const Indicator&, const Indicator&);
+Indicator operator>(const Indicator&, const Indicator&);
+Indicator operator<(const Indicator&, const Indicator&);
+Indicator operator>=(const Indicator&, const Indicator&);
+Indicator operator<=(const Indicator&, const Indicator&);
+Indicator operator&(const Indicator&, const Indicator&);
+Indicator operator|(const Indicator&, const Indicator&);
 
-HAYAKU_API Indicator operator+(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator+(Indicator::value_t, const Indicator&);
+Indicator operator+(const Indicator&, Indicator::value_t);
+Indicator operator+(Indicator::value_t, const Indicator&);
 inline Indicator operator+(const Indicator& ind) { return ind; }
 
-HAYAKU_API Indicator operator-(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator-(Indicator::value_t, const Indicator&);
-HAYAKU_API Indicator operator-(const Indicator& ind);
+Indicator operator-(const Indicator&, Indicator::value_t);
+Indicator operator-(Indicator::value_t, const Indicator&);
+Indicator operator-(const Indicator& ind);
 
-HAYAKU_API Indicator operator*(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator*(Indicator::value_t, const Indicator&);
+Indicator operator*(const Indicator&, Indicator::value_t);
+Indicator operator*(Indicator::value_t, const Indicator&);
 
-HAYAKU_API Indicator operator/(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator/(Indicator::value_t, const Indicator&);
+Indicator operator/(const Indicator&, Indicator::value_t);
+Indicator operator/(Indicator::value_t, const Indicator&);
 
-HAYAKU_API Indicator operator%(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator%(Indicator::value_t, const Indicator&);
+Indicator operator%(const Indicator&, Indicator::value_t);
+Indicator operator%(Indicator::value_t, const Indicator&);
 
-HAYAKU_API Indicator operator==(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator==(Indicator::value_t, const Indicator&);
+Indicator operator==(const Indicator&, Indicator::value_t);
+Indicator operator==(Indicator::value_t, const Indicator&);
 
-HAYAKU_API Indicator operator!=(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator!=(Indicator::value_t, const Indicator&);
+Indicator operator!=(const Indicator&, Indicator::value_t);
+Indicator operator!=(Indicator::value_t, const Indicator&);
 
-HAYAKU_API Indicator operator>(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator>(Indicator::value_t, const Indicator&);
+Indicator operator>(const Indicator&, Indicator::value_t);
+Indicator operator>(Indicator::value_t, const Indicator&);
 
-HAYAKU_API Indicator operator<(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator<(Indicator::value_t, const Indicator&);
+Indicator operator<(const Indicator&, Indicator::value_t);
+Indicator operator<(Indicator::value_t, const Indicator&);
 
-HAYAKU_API Indicator operator>=(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator>=(Indicator::value_t, const Indicator&);
+Indicator operator>=(const Indicator&, Indicator::value_t);
+Indicator operator>=(Indicator::value_t, const Indicator&);
 
-HAYAKU_API Indicator operator<=(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator<=(Indicator::value_t, const Indicator&);
+Indicator operator<=(const Indicator&, Indicator::value_t);
+Indicator operator<=(Indicator::value_t, const Indicator&);
 
-HAYAKU_API Indicator operator&(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator&(Indicator::value_t, const Indicator&);
+Indicator operator&(const Indicator&, Indicator::value_t);
+Indicator operator&(Indicator::value_t, const Indicator&);
 
-HAYAKU_API Indicator operator|(const Indicator&, Indicator::value_t);
-HAYAKU_API Indicator operator|(Indicator::value_t, const Indicator&);
+Indicator operator|(const Indicator&, Indicator::value_t);
+Indicator operator|(Indicator::value_t, const Indicator&);
 
 /**
  * Combine the results of ind1 and ind2 into one Indicator. For example, for ind
@@ -468,7 +468,7 @@ HAYAKU_API Indicator operator|(Indicator::value_t, const Indicator&);
  * @param ind2 indicator 2
  * @ingroup Indicator
  */
-Indicator HAYAKU_API WEAVE(const Indicator& ind1, const Indicator& ind2);
+Indicator WEAVE(const Indicator& ind1, const Indicator& ind2);
 
 template <typename... Args>
 inline Indicator WEAVE(const Indicator& ind1, const Indicator& ind2,
@@ -491,14 +491,10 @@ inline Indicator WEAVE(const Indicator& ind1, const Indicator& ind2,
  * @param b candidate indicator b
  * @ingroup Indicator
  */
-Indicator HAYAKU_API IF(const Indicator& x, const Indicator& a,
-                        const Indicator& b);
-Indicator HAYAKU_API IF(const Indicator& x, Indicator::value_t a,
-                        const Indicator& b);
-Indicator HAYAKU_API IF(const Indicator& x, const Indicator& a,
-                        Indicator::value_t b);
-Indicator HAYAKU_API IF(const Indicator& x, Indicator::value_t a,
-                        Indicator::value_t b);
+Indicator IF(const Indicator& x, const Indicator& a, const Indicator& b);
+Indicator IF(const Indicator& x, Indicator::value_t a, const Indicator& b);
+Indicator IF(const Indicator& x, const Indicator& a, Indicator::value_t b);
+Indicator IF(const Indicator& x, Indicator::value_t a, Indicator::value_t b);
 
 /**
  * Combine and calculate multiple indicators
@@ -528,8 +524,9 @@ Indicator HAYAKU_API IF(const Indicator& x, Indicator::value_t a,
  * @return IndicatorList the calculated indicator result list
  * @ingroup Indicator
  */
-IndicatorList HAYAKU_API combineCalculateIndicators(
-    const IndicatorList& indicators, const KData& kdata, bool tovalue = false);
+IndicatorList combineCalculateIndicators(const IndicatorList& indicators,
+                                         const KData& kdata,
+                                         bool tovalue = false);
 
 } /* namespace hayaku */
 

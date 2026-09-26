@@ -17,7 +17,7 @@ namespace hayaku {
  * Read the historical financial information
  * @ingroup DataDriver
  */
-class HAYAKU_API HistoryFinanceReader {
+class HistoryFinanceReader {
  public:
   HistoryFinanceReader() = delete;
   explicit HistoryFinanceReader(const string& dir);
@@ -28,7 +28,7 @@ class HAYAKU_API HistoryFinanceReader {
 
  private:
   string dir_;  // The directory where the historical financial information
-                 // files are stored
+                // files are stored
 };
 
 }  // namespace hayaku

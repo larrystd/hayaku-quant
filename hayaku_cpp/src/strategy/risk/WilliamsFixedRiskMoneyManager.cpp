@@ -41,7 +41,7 @@ double WilliamsFixedRiskMoneyManager::_getBuyNumber(const Datetime& datetime,
          max_loss;
 }
 
-MoneyManagerPtr HAYAKU_API MM_WilliamsFixedRisk(double p, price_t max_loss) {
+MoneyManagerPtr MM_WilliamsFixedRisk(double p, price_t max_loss) {
   MoneyManagerPtr ptr = make_shared<WilliamsFixedRiskMoneyManager>();
   ptr->setParam<double>("p", p);
   ptr->setParam<price_t>("max_loss", max_loss);

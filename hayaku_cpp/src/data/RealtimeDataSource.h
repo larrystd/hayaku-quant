@@ -38,8 +38,7 @@ class RealtimeDataSource {
 
 using RealtimeDataSourceResolver = std::function<RealtimeDataSource*()>;
 
-HAYAKU_API void setRealtimeDataSourceResolver(
-    RealtimeDataSourceResolver resolver);
-[[nodiscard]] HAYAKU_API RealtimeDataSource* getRealtimeDataSource() noexcept;
+void setRealtimeDataSourceResolver(RealtimeDataSourceResolver resolver);
+[[nodiscard]] RealtimeDataSource* getRealtimeDataSource() noexcept;
 
 }  // namespace hayaku
