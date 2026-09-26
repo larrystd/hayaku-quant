@@ -165,6 +165,7 @@ TEST_CASE("test_DataRuntime_getBlock") {
 /** @par Test points */
 TEST_CASE("test_DataRuntime_TempCsvStock") {
   DataRuntime& sm = getDataRuntime();
+  constexpr size_t kMinuteFixtureRows = 578;
 
   string day_filename(fmt::format("{}/test_day_data.csv", sm.datadir()));
   string min_filename(fmt::format("{}/test_min_data.csv", sm.datadir()));
@@ -176,7 +177,7 @@ TEST_CASE("test_DataRuntime_TempCsvStock") {
   CHECK_EQ(stk.code(), "TEST");
   CHECK_EQ(stk.market_code(), "TMPTEST");
   CHECK_EQ(stk.getCount(KQuery::DAY), 100);
-  CHECK_EQ(stk.getCount(KQuery::MIN), 24000);
+  CHECK_EQ(stk.getCount(KQuery::MIN), kMinuteFixtureRows);
 
   /** @arg Read KRecord[0] (the first record) of the temporarily added Stock */
   KRecord record;
@@ -217,7 +218,7 @@ TEST_CASE("test_DataRuntime_TempCsvStock") {
   CHECK_EQ(stk.code(), "TEST");
   CHECK_EQ(stk.market_code(), "TMPTEST");
   CHECK_EQ(stk.getCount(KQuery::DAY), 100);
-  CHECK_EQ(stk.getCount(KQuery::MIN), 24000);
+  CHECK_EQ(stk.getCount(KQuery::MIN), kMinuteFixtureRows);
 
   /** @arg Read KRecord[10] of the temporarily added Stock obtained with
    * getStock */
