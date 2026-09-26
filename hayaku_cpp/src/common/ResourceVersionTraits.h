@@ -9,15 +9,14 @@
  *      Author: fasiondog
  */
 
-
 #include <type_traits>
 
 namespace hayaku {
 
 /**
  * @brief Detection utility of the resource version interface traits
- * @details It provides a compile-time type check, used to verify whether the resource type supports
- *          the version management interfaces
+ * @details It provides a compile-time type check, used to verify whether the
+ * resource type supports the version management interfaces
  * @ingroup Utilities
  */
 namespace detail {
@@ -28,11 +27,12 @@ namespace detail {
  */
 template <typename T>
 struct has_resource_getVersion {
-    template <typename U>
-    static auto test(int) -> decltype(std::declval<U>().getVersion(), std::true_type{});
-    template <typename>
-    static std::false_type test(...);
-    static constexpr bool value = decltype(test<T>(0))::value;
+  template <typename U>
+  static auto test(int)
+      -> decltype(std::declval<U>().getVersion(), std::true_type{});
+  template <typename>
+  static std::false_type test(...);
+  static constexpr bool value = decltype(test<T>(0))::value;
 };
 
 /**
@@ -41,12 +41,13 @@ struct has_resource_getVersion {
  */
 template <typename T>
 struct has_resource_setVersion {
-    template <typename U>
-    static auto test(int)
-      -> decltype(std::declval<U>().setVersion(std::declval<int>()), std::true_type{});
-    template <typename>
-    static std::false_type test(...);
-    static constexpr bool value = decltype(test<T>(0))::value;
+  template <typename U>
+  static auto test(int)
+      -> decltype(std::declval<U>().setVersion(std::declval<int>()),
+                  std::true_type{});
+  template <typename>
+  static std::false_type test(...);
+  static constexpr bool value = decltype(test<T>(0))::value;
 };
 
 /**
@@ -54,14 +55,16 @@ struct has_resource_setVersion {
  * @tparam T the resource type to be detected
  */
 template <typename T>
-static constexpr bool has_resource_getVersion_v = has_resource_getVersion<T>::value;
+static constexpr bool has_resource_getVersion_v =
+    has_resource_getVersion<T>::value;
 
 /**
  * @brief A convenient alias of the setVersion detection
  * @tparam T the resource type to be detected
  */
 template <typename T>
-static constexpr bool has_resource_setVersion_v = has_resource_setVersion<T>::value;
+static constexpr bool has_resource_setVersion_v =
+    has_resource_setVersion<T>::value;
 
 }  // namespace detail
 

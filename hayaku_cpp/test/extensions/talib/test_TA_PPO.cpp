@@ -5,12 +5,13 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <extensions/talib/TalibOperators.h>
 #include <operators/SeriesOperators.h>
-#include <operators/SeriesOperators.h>
+
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -22,35 +23,35 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_TA_PPO") {
-    KData kdata = getKData("sh000001", KQuery(-30));
-    Indicator c = CLOSE(kdata);
+  KData kdata = getKData("sh000001", KQuery(-30));
+  Indicator c = CLOSE(kdata);
 
-    /** @arg Invalid parameters */
-    CHECK_THROWS(TA_PPO(c, 1, 26, 0));
-    CHECK_THROWS(TA_PPO(c, 100001, 26, 0));
-    CHECK_THROWS(TA_PPO(c, 12, 1, 0));
-    CHECK_THROWS(TA_PPO(c, 12, 100001, 0));
-    CHECK_THROWS(TA_PPO(c, 12, 26, -1));
-    CHECK_THROWS(TA_PPO(c, 12, 26, 9));
+  /** @arg Invalid parameters */
+  CHECK_THROWS(TA_PPO(c, 1, 26, 0));
+  CHECK_THROWS(TA_PPO(c, 100001, 26, 0));
+  CHECK_THROWS(TA_PPO(c, 12, 1, 0));
+  CHECK_THROWS(TA_PPO(c, 12, 100001, 0));
+  CHECK_THROWS(TA_PPO(c, 12, 26, -1));
+  CHECK_THROWS(TA_PPO(c, 12, 26, 9));
 
-    // /** @arg The normal case */
-    Indicator result = TA_PPO(CLOSE(kdata));
-    CHECK_EQ(result.name(), "TA_PPO");
-    CHECK_EQ(result.discard(), 25);
-    CHECK_EQ(result.size(), kdata.size());
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result[25], doctest::Approx(-1.571039).epsilon(0.0001));
-    CHECK_EQ(result[29], doctest::Approx(-2.557277).epsilon(0.0001));
+  // /** @arg The normal case */
+  Indicator result = TA_PPO(CLOSE(kdata));
+  CHECK_EQ(result.name(), "TA_PPO");
+  CHECK_EQ(result.discard(), 25);
+  CHECK_EQ(result.size(), kdata.size());
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result[25], doctest::Approx(-1.571039).epsilon(0.0001));
+  CHECK_EQ(result[29], doctest::Approx(-2.557277).epsilon(0.0001));
 
-    // /** @arg The discard of the calculated data is not 0 */
-    auto data = TA_MA(c, 3);
-    CHECK_EQ(data.discard(), 2);
-    result = TA_PPO(data);
-    CHECK_EQ(result.size(), kdata.size());
-    CHECK_EQ(result.discard(), 27);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result[27], doctest::Approx(-1.93459).epsilon(0.0001));
-    CHECK_EQ(result[29], doctest::Approx(-2.42093).epsilon(0.0001));
+  // /** @arg The discard of the calculated data is not 0 */
+  auto data = TA_MA(c, 3);
+  CHECK_EQ(data.discard(), 2);
+  result = TA_PPO(data);
+  CHECK_EQ(result.size(), kdata.size());
+  CHECK_EQ(result.discard(), 27);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result[27], doctest::Approx(-1.93459).epsilon(0.0001));
+  CHECK_EQ(result[29], doctest::Approx(-2.42093).epsilon(0.0001));
 }
 
 //-----------------------------------------------------------------------------
@@ -60,33 +61,33 @@ TEST_CASE("test_TA_PPO") {
 
 /** @par Test points */
 TEST_CASE("test_TA_PPO_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/TA_PPO.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/TA_PPO.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-30));
-    Indicator x1 = TA_PPO(CLOSE(kdata));
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-30));
+  Indicator x1 = TA_PPO(CLOSE(kdata));
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x1.name(), x2.name());
-    CHECK_UNARY(x1.size() == x2.size());
-    CHECK_UNARY(x1.discard() == x2.discard());
-    CHECK_UNARY(x1.getResultNumber() == x2.getResultNumber());
-    for (size_t i = x1.discard(); i < x1.size(); ++i) {
-        CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
-    }
+  CHECK_EQ(x1.name(), x2.name());
+  CHECK_UNARY(x1.size() == x2.size());
+  CHECK_UNARY(x1.discard() == x2.discard());
+  CHECK_UNARY(x1.getResultNumber() == x2.getResultNumber());
+  for (size_t i = x1.discard(); i < x1.size(); ++i) {
+    CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

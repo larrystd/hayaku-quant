@@ -13,67 +13,74 @@ BOOST_CLASS_EXPORT(hayaku::MinAmountPercentSCFilter)
 
 namespace hayaku {
 
-MinAmountPercentSCFilter::MinAmountPercentSCFilter() : ScoresFilterBase("SCFilter_AmountLimit") {
-    setParam<double>("min_amount_percent_limit", 0.1);
+MinAmountPercentSCFilter::MinAmountPercentSCFilter()
+    : ScoresFilterBase("SCFilter_AmountLimit") {
+  setParam<double>("min_amount_percent_limit", 0.1);
 }
 
 void MinAmountPercentSCFilter::_checkParam(const string& name) const {
-    if (name == "min_amount_percent_limit") {
-        double min_amount_percent_limit = getParam<double>("min_amount_percent_limit");
-        HAYAKU_CHECK(min_amount_percent_limit >= 0.0 && min_amount_percent_limit <= 1.0,
-                  "min_amount_percent_limit must in [0.0, 1.0]!");
-    }
+  if (name == "min_amount_percent_limit") {
+    double min_amount_percent_limit =
+        getParam<double>("min_amount_percent_limit");
+    HAYAKU_CHECK(
+        min_amount_percent_limit >= 0.0 && min_amount_percent_limit <= 1.0,
+        "min_amount_percent_limit must in [0.0, 1.0]!");
+  }
 }
 
 ScoreRecordList MinAmountPercentSCFilter::_filter(const ScoreRecordList& scores,
-                                                  const Datetime& date, const KQuery& query) {
-    ScoreRecordList ret;
-    const auto& ktype = query.kType();
+                                                  const Datetime& date,
+                                                  const KQuery& query) {
+  ScoreRecordList ret;
+  const auto& ktype = query.kType();
 
-    std::vector<std::pair<size_t, price_t>> amount_list;
-    for (size_t i = 0; i < scores.size(); ++i) {
-        if (scores[i].stock.isNull()) {
-            continue;
-        }
-
-        auto kr = scores[i].stock.getKRecord(date, ktype);
-        if (!kr.isValid()) {
-            continue;
-        }
-
-        amount_list.emplace_back(i, kr.transAmount);
+  std::vector<std::pair<size_t, price_t>> amount_list;
+  for (size_t i = 0; i < scores.size(); ++i) {
+    if (scores[i].stock.isNull()) {
+      continue;
     }
 
-    std::sort(amount_list.begin(), amount_list.end(),
-              [](const std::pair<size_t, price_t>& a, const std::pair<size_t, price_t>& b) {
-                  return a.second > b.second;
-              });
-
-    // Calculate the number to keep (the last 10% is filtered out)
-    size_t total = amount_list.size();
-    if (total == 0) {
-        return ret;
+    auto kr = scores[i].stock.getKRecord(date, ktype);
+    if (!kr.isValid()) {
+      continue;
     }
 
-    double min_amount_percent_limit = getParam<double>("min_amount_percent_limit");
-    size_t keep_count = total * (1 - min_amount_percent_limit);  // Keep the first 90%
-    if (keep_count == 0) {
-        keep_count = 1;  // Keep at least one
-    }
+    amount_list.emplace_back(i, kr.transAmount);
+  }
 
-    // Add the first keep_count records into the result
-    for (size_t i = 0; i < keep_count && i < amount_list.size(); ++i) {
-        size_t index = amount_list[i].first;
-        ret.emplace_back(scores[index]);
-    }
+  std::sort(
+      amount_list.begin(), amount_list.end(),
+      [](const std::pair<size_t, price_t>& a,
+         const std::pair<size_t, price_t>& b) { return a.second > b.second; });
 
+  // Calculate the number to keep (the last 10% is filtered out)
+  size_t total = amount_list.size();
+  if (total == 0) {
     return ret;
+  }
+
+  double min_amount_percent_limit =
+      getParam<double>("min_amount_percent_limit");
+  size_t keep_count =
+      total * (1 - min_amount_percent_limit);  // Keep the first 90%
+  if (keep_count == 0) {
+    keep_count = 1;  // Keep at least one
+  }
+
+  // Add the first keep_count records into the result
+  for (size_t i = 0; i < keep_count && i < amount_list.size(); ++i) {
+    size_t index = amount_list[i].first;
+    ret.emplace_back(scores[index]);
+  }
+
+  return ret;
 }
 
-ScoresFilterPtr HAYAKU_API SCFilter_AmountLimit(double min_amount_percent_limit) {
-    auto p = std::make_shared<MinAmountPercentSCFilter>();
-    p->setParam<double>("min_amount_percent_limit", min_amount_percent_limit);
-    return p;
+ScoresFilterPtr HAYAKU_API
+SCFilter_AmountLimit(double min_amount_percent_limit) {
+  auto p = std::make_shared<MinAmountPercentSCFilter>();
+  p->setParam<double>("min_amount_percent_limit", min_amount_percent_limit);
+  return p;
 }
 
 }  // namespace hayaku

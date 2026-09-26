@@ -7,20 +7,19 @@
  *      Author: fasiondog
  */
 
-
 #include "SignalBase.h"
 
 namespace hayaku {
 
 class AllwaysBuySignal : public SignalBase {
-    SIGNAL_IMP(AllwaysBuySignal)
-    SIGNAL_NO_PRIVATE_MEMBER_SERIALIZATION
+  SIGNAL_IMP(AllwaysBuySignal)
+  SIGNAL_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    AllwaysBuySignal();
-    virtual ~AllwaysBuySignal() = default;
+ public:
+  AllwaysBuySignal();
+  virtual ~AllwaysBuySignal() = default;
 
-    virtual void _checkParam(const string& name) const override;
+  virtual void _checkParam(const string& name) const override;
 };
 
 }  // namespace hayaku

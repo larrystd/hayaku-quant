@@ -7,9 +7,13 @@
  *      Author: fasiondog
  */
 
-
 #include <string>
+
 #include "common/Config.h"
+
+#ifndef HAYAKU_API
+#define HAYAKU_API
+#endif
 
 namespace hayaku {
 

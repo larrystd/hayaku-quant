@@ -17,8 +17,6 @@ ManualCondition::ManualCondition() : ConditionBase("CN_Manual") {}
 
 void ManualCondition::_calculate() {}
 
-CNPtr HAYAKU_API CN_Manual() {
-    return make_shared<ManualCondition>();
-}
+CNPtr HAYAKU_API CN_Manual() { return make_shared<ManualCondition>(); }
 
 }  // namespace hayaku

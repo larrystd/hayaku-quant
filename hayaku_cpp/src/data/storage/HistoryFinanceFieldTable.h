@@ -7,14 +7,13 @@
  *      Author: fasiondog
  */
 
-
 #include "common/database/TableMacro.h"
 
 namespace hayaku {
 
 struct HistoryFinanceFieldTable {
-    TABLE_BIND1(HistoryFinanceFieldTable, HistoryFinanceField, name)
-    std::string name;
+  TABLE_BIND1(HistoryFinanceFieldTable, HistoryFinanceField, name)
+  std::string name;
 };
 
 }  // namespace hayaku

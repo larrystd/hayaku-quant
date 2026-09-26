@@ -7,7 +7,6 @@
  *      Author: fasiondog
  */
 
-
 #include "ScoresFilterBase.h"
 
 namespace hayaku {
@@ -24,16 +23,17 @@ ScoresFilterPtr HAYAKU_API SCFilter_LessOrEqualValue(double value = 0.0);
 ScoresFilterPtr HAYAKU_API SCFilter_TopN(int topn = 10);
 
 /**
- * Filter out the cross-sections whose turnover amount is within the percentage range at the end of
- * the score list
+ * Filter out the cross-sections whose turnover amount is within the percentage
+ * range at the end of the score list
  * @note
- * It is related to the order of the passed cross-section score list: if it is in the descending
- * order, the system score records with a smaller turnover amount are filtered; otherwise the ones
- * with a larger amount are filtered
+ * It is related to the order of the passed cross-section score list: if it is
+ * in the descending order, the system score records with a smaller turnover
+ * amount are filtered; otherwise the ones with a larger amount are filtered
  * @param min_amount_percent_limit the minimum turnover amount percentage limit
  * @return ScoresFilterPtr
  */
-ScoresFilterPtr HAYAKU_API SCFilter_AmountLimit(double min_amount_percent_limit = 0.1);
+ScoresFilterPtr HAYAKU_API
+SCFilter_AmountLimit(double min_amount_percent_limit = 0.1);
 
 /**
  * Filter the cross-sections of the given group
@@ -49,7 +49,8 @@ ScoresFilterPtr HAYAKU_API SCFilter_Group(int group = 10, int group_index = 0);
  * @param max_price maximum price
  * @return ScoresFilterPtr
  */
-ScoresFilterPtr HAYAKU_API SCFilter_Price(double min_price = 10., double max_price = 100000.);
+ScoresFilterPtr HAYAKU_API SCFilter_Price(double min_price = 10.,
+                                          double max_price = 100000.);
 
 /* @} */
 }  // namespace hayaku

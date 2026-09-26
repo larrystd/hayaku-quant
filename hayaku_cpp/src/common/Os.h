@@ -9,14 +9,15 @@
  *      Author: fasiondog
  *
  *  Purpose: the cross-system function encapsulation
- *  Note: unless otherwise specified, the input and output strings are UTF8 encoded
+ *  Note: unless otherwise specified, the input and output strings are UTF8
+ * encoded
  */
 
-
-#include <string>
-#include "Null.h"
-#include "Arithmetic.h"
 #include <cstdint>
+#include <string>
+
+#include "Arithmetic.h"
+#include "Null.h"
 
 #ifndef HAYAKU_UTILS_API
 #define HAYAKU_UTILS_API
@@ -33,8 +34,8 @@ bool HAYAKU_UTILS_API existFile(const std::string &filename) noexcept;
 /**
  * Create a directory
  * @param pathname path name
- * @return true is returned if the directory already exists or is created successfully, otherwise
- *         false
+ * @return true is returned if the directory already exists or is created
+ * successfully, otherwise false
  */
 bool HAYAKU_UTILS_API createDir(const std::string &pathname) noexcept;
 
@@ -58,19 +59,21 @@ bool HAYAKU_UTILS_API removeDir(const std::string &path) noexcept;
  * @param flush whether to write to the disk immediately
  */
 bool HAYAKU_UTILS_API copyFile(const std::string &src, const std::string &dst,
-                            bool flush = false) noexcept;
+                               bool flush = false) noexcept;
 
 /**
  * Rename or move a file or a directory
  * @param oldname the old name
  * @param newname the new name
- * @param overlay forcefully overwrite when the file with the new name already exists
+ * @param overlay forcefully overwrite when the file with the new name already
+ * exists
  * @return true success
- * @return false failure, caused by the non-existing file with the old name, the file being occupied
- *         or other reasons
+ * @return false failure, caused by the non-existing file with the old name, the
+ * file being occupied or other reasons
  */
-bool HAYAKU_UTILS_API renameFile(const std::string &oldname, const std::string &newname,
-                              bool overlay = false) noexcept;
+bool HAYAKU_UTILS_API renameFile(const std::string &oldname,
+                                 const std::string &newname,
+                                 bool overlay = false) noexcept;
 
 /**
  * Get the user path
@@ -84,7 +87,8 @@ std::string HAYAKU_UTILS_API getCurrentDir();
 
 /**
  * Get the directory of the dll itself
- * @note It is supported under linux/macos only. Under Windows the path of the exe is got!
+ * @note It is supported under linux/macos only. Under Windows the path of the
+ * exe is got!
  */
 std::string HAYAKU_UTILS_API getDllSelfDir();
 
@@ -95,10 +99,9 @@ bool HAYAKU_UTILS_API isColorTerminal() noexcept;
 
 /**
  * @brief Get the size of the remaining storage space of the disk
- * @note Under Windows the remaining space of the current disk is returned when the given path is
- * invalid.
- *       Under some 64-bit linux size_t is a 32-bit unsigned integer, so uint64_t must be used for
- * the return value here
+ * @note Under Windows the remaining space of the current disk is returned when
+ * the given path is invalid. Under some 64-bit linux size_t is a 32-bit
+ * unsigned integer, so uint64_t must be used for the return value here
  * @param path the given path name
  * @return uint64_t Null<uint64_t>() is returned when it fails
  */

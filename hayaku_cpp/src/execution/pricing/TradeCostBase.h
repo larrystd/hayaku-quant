@@ -7,10 +7,9 @@
  *      Author: fasiondog
  */
 
-
-#include "data/Stock.h"
-#include "common/Parameter.h"
 #include "../CostRecord.h"
+#include "common/Parameter.h"
+#include "data/Stock.h"
 
 namespace hayaku {
 
@@ -19,113 +18,114 @@ namespace hayaku {
  * @ingroup TradeCost
  */
 class HAYAKU_API TradeCostBase {
-    PARAMETER_SUPPORT_WITH_CHECK
+  PARAMETER_SUPPORT_WITH_CHECK
 
-public:
-    TradeCostBase(const string& name);
-    virtual ~TradeCostBase();
+ public:
+  TradeCostBase(const string& name);
+  virtual ~TradeCostBase();
 
-    typedef shared_ptr<TradeCostBase> TradeCostPtr;
-    /** Clone operation   */
-    TradeCostPtr clone();
+  typedef shared_ptr<TradeCostBase> TradeCostPtr;
+  /** Clone operation   */
+  TradeCostPtr clone();
 
-    /** Get the name */
-    const string& name() const {
-        return m_name;
-    }
+  /** Get the name */
+  const string& name() const { return m_name; }
 
-    /**
-     * Calculate the buy cost
-     * @param datetime trade date
-     * @param stock the traded security object
-     * @param price buy price
-     * @param num buy quantity
-     * @return CostRecord the trade cost record
-     */
-    virtual CostRecord getBuyCost(const Datetime& datetime, const Stock& stock, price_t price,
-                                  double num) const = 0;
+  /**
+   * Calculate the buy cost
+   * @param datetime trade date
+   * @param stock the traded security object
+   * @param price buy price
+   * @param num buy quantity
+   * @return CostRecord the trade cost record
+   */
+  virtual CostRecord getBuyCost(const Datetime& datetime, const Stock& stock,
+                                price_t price, double num) const = 0;
 
-    /**
-     * Calculate the sell cost
-     * @param datetime trade date
-     * @param stock the traded security object
-     * @param price sell price
-     * @param num sell quantity
-     * @return CostRecord the trade cost record
-     */
-    virtual CostRecord getSellCost(const Datetime& datetime, const Stock& stock, price_t price,
-                                   double num) const = 0;
+  /**
+   * Calculate the sell cost
+   * @param datetime trade date
+   * @param stock the traded security object
+   * @param price sell price
+   * @param num sell quantity
+   * @return CostRecord the trade cost record
+   */
+  virtual CostRecord getSellCost(const Datetime& datetime, const Stock& stock,
+                                 price_t price, double num) const = 0;
 
-    /**
-     * Calculate the cost of borrowing cash
-     * @param datetime borrow date
-     * @param cash borrowed funds
-     */
-    virtual CostRecord getBorrowCashCost(const Datetime& datetime, price_t cash) const {
-        return CostRecord();
-    }
+  /**
+   * Calculate the cost of borrowing cash
+   * @param datetime borrow date
+   * @param cash borrowed funds
+   */
+  virtual CostRecord getBorrowCashCost(const Datetime& datetime,
+                                       price_t cash) const {
+    return CostRecord();
+  }
 
-    /**
-     * Calculate the cost of returning the margin financing
-     * @param borrow_datetime the date the funds were borrowed
-     * @param return_datetime return date
-     * @param cash returned amount
-     */
-    virtual CostRecord getReturnCashCost(const Datetime& borrow_datetime,
-                                         const Datetime& return_datetime, price_t cash) const {
-        return CostRecord();
-    }
+  /**
+   * Calculate the cost of returning the margin financing
+   * @param borrow_datetime the date the funds were borrowed
+   * @param return_datetime return date
+   * @param cash returned amount
+   */
+  virtual CostRecord getReturnCashCost(const Datetime& borrow_datetime,
+                                       const Datetime& return_datetime,
+                                       price_t cash) const {
+    return CostRecord();
+  }
 
-    /**
-     * Calculate the cost of borrowing securities
-     * @param datetime the date of the securities lending
-     * @param stock the borrowed object
-     * @param price price per share
-     * @param num borrowed quantity
-     */
-    virtual CostRecord getBorrowStockCost(const Datetime& datetime, const Stock& stock,
-                                          price_t price, double num) const {
-        return CostRecord();
-    }
+  /**
+   * Calculate the cost of borrowing securities
+   * @param datetime the date of the securities lending
+   * @param stock the borrowed object
+   * @param price price per share
+   * @param num borrowed quantity
+   */
+  virtual CostRecord getBorrowStockCost(const Datetime& datetime,
+                                        const Stock& stock, price_t price,
+                                        double num) const {
+    return CostRecord();
+  }
 
-    /**
-     * Calculate the cost of returning the borrowed securities
-     * @param borrow_datetime borrow date
-     * @param return_datetime return date
-     * @param stock the returned object
-     * @param price price per share at returning
-     * @param num returned quantity
-     */
-    virtual CostRecord getReturnStockCost(const Datetime& borrow_datetime,
-                                          const Datetime& return_datetime, const Stock& stock,
-                                          price_t price, double num) const {
-        return CostRecord();
-    }
+  /**
+   * Calculate the cost of returning the borrowed securities
+   * @param borrow_datetime borrow date
+   * @param return_datetime return date
+   * @param stock the returned object
+   * @param price price per share at returning
+   * @param num returned quantity
+   */
+  virtual CostRecord getReturnStockCost(const Datetime& borrow_datetime,
+                                        const Datetime& return_datetime,
+                                        const Stock& stock, price_t price,
+                                        double num) const {
+    return CostRecord();
+  }
 
-    /** The inheriting subclass must implement the clone interface of its private variables */
-    virtual TradeCostPtr _clone() = 0;
+  /** The inheriting subclass must implement the clone interface of its private
+   * variables */
+  virtual TradeCostPtr _clone() = 0;
 
-protected:
-    bool isPythonObject() const noexcept {
-        return m_is_python_object;
-    }
+ protected:
+  bool isPythonObject() const noexcept { return m_is_python_object; }
 
-protected:
-    string m_name;
-    bool m_is_python_object{false};
+ protected:
+  string m_name;
+  bool m_is_python_object{false};
 
 //============================================
 // Serialization support
 //============================================
 #if HAYAKU_SUPPORT_SERIALIZATION
-private:
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-        ar& BOOST_SERIALIZATION_NVP(m_name);
-        ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-        ar& BOOST_SERIALIZATION_NVP(m_params);
-    }
+ private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& BOOST_SERIALIZATION_NVP(m_name);
+    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
+    ar& BOOST_SERIALIZATION_NVP(m_params);
+  }
 #endif /* HAYAKU_SUPPORT_SERIALIZATION */
 };
 
@@ -135,8 +135,8 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(TradeCostBase)
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 /**
- * For an inheriting subclass without private variables, this macro can be used directly for the
- * serialization
+ * For an inheriting subclass without private variables, this macro can be used
+ * directly for the serialization
  * @code
  * class DrivedCost: public TradeCostBase {
  *     TRADE_COST_NO_PRIVATE_MEMBER_SERIALIZATION
@@ -148,13 +148,13 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(TradeCostBase)
  * @endcode
  * @ingroup TradeCost
  */
-#define TRADE_COST_NO_PRIVATE_MEMBER_SERIALIZATION              \
-private:                                                        \
-    friend class boost::serialization::access;                  \
-    template <class Archive>                                    \
-    void serialize(Archive& ar, const unsigned int version) {   \
-        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(TradeCostBase); \
-    }
+#define TRADE_COST_NO_PRIVATE_MEMBER_SERIALIZATION          \
+ private:                                                   \
+  friend class boost::serialization::access;                \
+  template <class Archive>                                  \
+  void serialize(Archive& ar, const unsigned int version) { \
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(TradeCostBase); \
+  }
 #else
 #define TRADE_COST_NO_PRIVATE_MEMBER_SERIALIZATION
 #endif

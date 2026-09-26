@@ -7,16 +7,12 @@
  *      Author: fasiondog
  */
 
-
-
-
 /*
  *  Copyright (c) 2024 hikyuu.org
  *
  *  Created on: 2024-02-03
  *      Author: fasiondog
  */
-
 
 #include "operators/Indicator.h"
 #include "strategy/decision/EnvironmentBase.h"
@@ -25,9 +21,10 @@ namespace hayaku {
 
 /**
  * Market environment of the boolean signal
- * @param ind the boolean type indicator; a value > 0 at the corresponding position means the market
- *            is valid, otherwise it is invalid
- * @param market the given market, used to get the corresponding trading calendar
+ * @param ind the boolean type indicator; a value > 0 at the corresponding
+ * position means the market is valid, otherwise it is invalid
+ * @param market the given market, used to get the corresponding trading
+ * calendar
  * @return
  */
 EVPtr HAYAKU_API EV_Bool(const Indicator& ind, const string& market = "SH");
@@ -41,8 +38,6 @@ EVPtr HAYAKU_API EV_Bool(const Indicator& ind, const string& market = "SH");
  *      Author: fasiondog
  */
 
-
-
 namespace hayaku {
 
 /**
@@ -51,7 +46,8 @@ namespace hayaku {
  * @param ev2 market environment 2
  * @return the AndCondition instance pointer
  */
-HAYAKU_API EnvironmentPtr operator&(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
+HAYAKU_API EnvironmentPtr operator&(const EnvironmentPtr& ev1,
+                                    const EnvironmentPtr& ev2);
 
 /**
  * The OR of two market environments, equivalent to the union of the two
@@ -59,12 +55,17 @@ HAYAKU_API EnvironmentPtr operator&(const EnvironmentPtr& ev1, const Environment
  * @param ev2 market environment 2
  * @return the OrCondition instance pointer
  */
-HAYAKU_API EnvironmentPtr operator|(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
+HAYAKU_API EnvironmentPtr operator|(const EnvironmentPtr& ev1,
+                                    const EnvironmentPtr& ev2);
 
-HAYAKU_API EnvironmentPtr operator+(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
-HAYAKU_API EnvironmentPtr operator-(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
-HAYAKU_API EnvironmentPtr operator*(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
-HAYAKU_API EnvironmentPtr operator/(const EnvironmentPtr& ev1, const EnvironmentPtr& ev2);
+HAYAKU_API EnvironmentPtr operator+(const EnvironmentPtr& ev1,
+                                    const EnvironmentPtr& ev2);
+HAYAKU_API EnvironmentPtr operator-(const EnvironmentPtr& ev1,
+                                    const EnvironmentPtr& ev2);
+HAYAKU_API EnvironmentPtr operator*(const EnvironmentPtr& ev1,
+                                    const EnvironmentPtr& ev2);
+HAYAKU_API EnvironmentPtr operator/(const EnvironmentPtr& ev1,
+                                    const EnvironmentPtr& ev2);
 
 }  // namespace hayaku
 
@@ -75,14 +76,13 @@ HAYAKU_API EnvironmentPtr operator/(const EnvironmentPtr& ev1, const Environment
  *    1. 20240916 added by fasiondog
  */
 
-
 #include "EnvironmentBase.h"
 
 namespace hayaku {
 
 /**
- * An EV whose system environment validity can only be added manually, used for the testing or other
- * purposes
+ * An EV whose system environment validity can only be added manually, used for
+ * the testing or other purposes
  * @return EVPtr
  */
 EVPtr HAYAKU_API EV_Manual();
@@ -96,18 +96,17 @@ EVPtr HAYAKU_API EV_Manual();
  *      Author: Administrator
  */
 
-
-
 namespace hayaku {
 
 /**
- * Fast and slow line strategy: the market is valid when the fast line of the market index
- * is greater than the slow line, otherwise it is invalid.
+ * Fast and slow line strategy: the market is valid when the fast line of the
+ * market index is greater than the slow line, otherwise it is invalid.
  * @param fast fast line indicator
  * @param slow slow line indicator
  * @param market market name, "SH" by default
  * @return
  */
-EVPtr HAYAKU_API EV_TwoLine(const Indicator& fast, const Indicator& slow, const string& market = "SH");
+EVPtr HAYAKU_API EV_TwoLine(const Indicator& fast, const Indicator& slow,
+                            const string& market = "SH");
 
 } /* namespace hayaku */

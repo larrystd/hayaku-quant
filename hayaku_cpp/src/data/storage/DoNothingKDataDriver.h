@@ -12,25 +12,21 @@
 namespace hayaku {
 
 /**
- * A special KDataDriver that does not actually read the data, used when adding an external
- * temporary Stock
+ * A special KDataDriver that does not actually read the data, used when adding
+ * an external temporary Stock
  */
 class DoNothingKDataDriver : public KDataDriver {
-public:
-    DoNothingKDataDriver() : KDataDriver("DoNothing") {}
-    virtual ~DoNothingKDataDriver() override = default;
+ public:
+  DoNothingKDataDriver() : KDataDriver("DoNothing") {}
+  virtual ~DoNothingKDataDriver() override = default;
 
-    virtual KDataDriverPtr _clone() override {
-        return std::make_shared<DoNothingKDataDriver>();
-    }
+  virtual KDataDriverPtr _clone() override {
+    return std::make_shared<DoNothingKDataDriver>();
+  }
 
-    virtual bool isIndexFirst() override {
-        return true;
-    }
+  virtual bool isIndexFirst() override { return true; }
 
-    virtual bool canParallelLoad() override {
-        return true;
-    }
+  virtual bool canParallelLoad() override { return true; }
 };
 
 }  // namespace hayaku

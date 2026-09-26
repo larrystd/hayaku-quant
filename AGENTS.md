@@ -164,7 +164,7 @@ TEST_CASE("test_IniParser_hasSection") {
 
 | Language | Convention                                   | Key points                                                                                                                       |
 | -------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| C++      | `.clang-format` (Google style as the base) | a 4-space indent, a column width of 100, the attached braces; the warning switches such as`-Wno-sign-compare` are in xmake.lua |
+| C++      | `.clang-format` (Google style, LLVM 20) | use the pinned formatter for indentation, line length and include order; warning switches such as `-Wno-sign-compare` are in xmake.lua |
 | Python   | `hayaku/.style.yapf` (yapf) + `.flake8`  | a 4-space indent, a column width of 120 (flake8`max-line-length=120`)                                                          |
 | Lua      | `.lua-format`                              | format the build scripts                                                                                                         |
 

@@ -5,8 +5,8 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
 #include "data/StrategyContext.h"
+#include "test_config.h"
 
 /**
  * @defgroup test_hayaku_StrategyContext test_hayaku_StrategyContext
@@ -16,16 +16,16 @@
 
 /** @par Test points */
 TEST_CASE("test_StrategyContext") {
-    StrategyContext sc;
-    sc.setKTypeList(
-      {KQuery::MONTH, KQuery::MIN5, KQuery::DAY, KQuery::MIN, KQuery::WEEK, KQuery::MIN60});
+  StrategyContext sc;
+  sc.setKTypeList({KQuery::MONTH, KQuery::MIN5, KQuery::DAY, KQuery::MIN,
+                   KQuery::WEEK, KQuery::MIN60});
 
-    vector<KQuery::KType> expect{KQuery::MONTH, KQuery::MIN5, KQuery::DAY,
-                                 KQuery::MIN,   KQuery::WEEK, KQuery::MIN60};
-    const auto ktypes = sc.getKTypeList();
-    for (size_t i = 0, len = ktypes.size(); i < len; i++) {
-        CHECK_EQ(ktypes[i], expect[i]);
-    }
+  vector<KQuery::KType> expect{KQuery::MONTH, KQuery::MIN5, KQuery::DAY,
+                               KQuery::MIN,   KQuery::WEEK, KQuery::MIN60};
+  const auto ktypes = sc.getKTypeList();
+  for (size_t i = 0, len = ktypes.size(); i < len; i++) {
+    CHECK_EQ(ktypes[i], expect[i]);
+  }
 }
 
 /** @} */

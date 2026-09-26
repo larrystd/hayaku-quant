@@ -7,22 +7,22 @@
  *      Author: fasiondog
  */
 
-
 #include "MultiFactorBase.h"
 
 namespace hayaku {
 
 class ICIRMultiFactor : public MultiFactorBase {
-    MULTIFACTOR_IMP(ICIRMultiFactor)
-    MULTIFACTOR_NO_PRIVATE_MEMBER_SERIALIZATION
+  MULTIFACTOR_IMP(ICIRMultiFactor)
+  MULTIFACTOR_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    ICIRMultiFactor();
-    ICIRMultiFactor(const StockList& stks, const KQuery& query, const Stock& ref_stk, int ic_n,
-                    int ic_rolling_n, bool spearman, int mode, bool save_all_factors);
-    virtual ~ICIRMultiFactor() override = default;
+ public:
+  ICIRMultiFactor();
+  ICIRMultiFactor(const StockList& stks, const KQuery& query,
+                  const Stock& ref_stk, int ic_n, int ic_rolling_n,
+                  bool spearman, int mode, bool save_all_factors);
+  virtual ~ICIRMultiFactor() override = default;
 
-    virtual void _checkParam(const string& name) const override;
+  virtual void _checkParam(const string& name) const override;
 };
 
 }  // namespace hayaku

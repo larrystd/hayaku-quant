@@ -5,9 +5,10 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
 #include <data/DataRuntime.h>
 #include <strategy/decision/Environments.h>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -18,323 +19,323 @@ using namespace hayaku;
  */
 
 class EnvironmentTest1 : public EnvironmentBase {
-public:
-    EnvironmentTest1() : EnvironmentBase("TEST") {}
+ public:
+  EnvironmentTest1() : EnvironmentBase("TEST") {}
 
-    virtual ~EnvironmentTest1() {}
+  virtual ~EnvironmentTest1() {}
 
-    virtual void _calculate() {
-        _addValid(Datetime(20010101), 2.0);
-        _addValid(Datetime(20010102), 3.0);
-        _addValid(Datetime(20010103), 2.0);
-    }
+  virtual void _calculate() {
+    _addValid(Datetime(20010101), 2.0);
+    _addValid(Datetime(20010102), 3.0);
+    _addValid(Datetime(20010103), 2.0);
+  }
 
-    virtual EnvironmentPtr _clone() {
-        return make_shared<EnvironmentTest1>();
-    }
+  virtual EnvironmentPtr _clone() { return make_shared<EnvironmentTest1>(); }
 };
 
 class EnvironmentTest2 : public EnvironmentBase {
-public:
-    EnvironmentTest2() : EnvironmentBase("TEST") {}
+ public:
+  EnvironmentTest2() : EnvironmentBase("TEST") {}
 
-    virtual ~EnvironmentTest2() {}
+  virtual ~EnvironmentTest2() {}
 
-    virtual void _calculate() {
-        _addValid(Datetime(20010103), -4.0);
-        _addValid(Datetime(20010104), -5.0);
-    }
+  virtual void _calculate() {
+    _addValid(Datetime(20010103), -4.0);
+    _addValid(Datetime(20010104), -5.0);
+  }
 
-    virtual EnvironmentPtr _clone() {
-        return make_shared<EnvironmentTest2>();
-    }
+  virtual EnvironmentPtr _clone() { return make_shared<EnvironmentTest2>(); }
 };
 
-static void check_expect(const EVPtr& ev, const std::vector<std::pair<Datetime, price_t>>& expect) {
-    for (auto& p : expect) {
-        CHECK_EQ(ev->getValue(p.first), p.second);
-    }
+static void check_expect(
+    const EVPtr& ev, const std::vector<std::pair<Datetime, price_t>>& expect) {
+  for (auto& p : expect) {
+    CHECK_EQ(ev->getValue(p.first), p.second);
+  }
 }
 
 /** @par Test points */
 TEST_CASE("test_Environment_add") {
-    EVPtr ev1, ev2;
-    KQuery query(Datetime(20010101), Datetime(20010105));
+  EVPtr ev1, ev2;
+  KQuery query(Datetime(20010101), Datetime(20010105));
 
-    /** @arg Both ev are empty */
-    EVPtr ret = ev1 + ev2;
-    ret->setQuery(query);
-    CHECK_EQ(ret->name(), "EV_Add");
-    auto ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  /** @arg Both ev are empty */
+  EVPtr ret = ev1 + ev2;
+  ret->setQuery(query);
+  CHECK_EQ(ret->name(), "EV_Add");
+  auto ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    /** @arg One of the ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    REQUIRE((ev1 && !ev2));
-    ret->reset();
-    ret = ev1 + ev2;
-    ret->setQuery(query);
+  /** @arg One of the ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  REQUIRE((ev1 && !ev2));
+  ret->reset();
+  ret = ev1 + ev2;
+  ret->setQuery(query);
 
-    std::vector<std::pair<Datetime, price_t>> expect{
-      {Datetime(20010101), 2.0}, {Datetime(20010102), 3.0}, {Datetime(20010103), 2.0}};
-    check_expect(ret, expect);
+  std::vector<std::pair<Datetime, price_t>> expect{{Datetime(20010101), 2.0},
+                                                   {Datetime(20010102), 3.0},
+                                                   {Datetime(20010103), 2.0}};
+  check_expect(ret, expect);
 
-    ev1 = EVPtr();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((!ev1 && ev2));
-    ret->reset();
-    ret = ev1 + ev2;
-    ret->setQuery(query);
+  ev1 = EVPtr();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((!ev1 && ev2));
+  ret->reset();
+  ret = ev1 + ev2;
+  ret->setQuery(query);
 
-    expect = {{Datetime(20010103), -4.0}, {Datetime(20010104), -5.0}};
-    check_expect(ret, expect);
+  expect = {{Datetime(20010103), -4.0}, {Datetime(20010104), -5.0}};
+  check_expect(ret, expect);
 
-    /** @arg Neither ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((ev1 & ev2));
-    ret->reset();
-    ret = ev1 + ev2;
-    ret->setQuery(query);
+  /** @arg Neither ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((ev1 & ev2));
+  ret->reset();
+  ret = ev1 + ev2;
+  ret->setQuery(query);
 
-    expect = {{Datetime(20010101), 2.0},
-              {Datetime(20010102), 3.0},
-              {Datetime(20010103), -2.0},
-              {Datetime(20010104), -5.0}};
-    check_expect(ret, expect);
+  expect = {{Datetime(20010101), 2.0},
+            {Datetime(20010102), 3.0},
+            {Datetime(20010103), -2.0},
+            {Datetime(20010104), -5.0}};
+  check_expect(ret, expect);
 }
 
 /** @par Test points */
 TEST_CASE("test_Environment_sub") {
-    EVPtr ev1, ev2;
-    KQuery query(Datetime(20010101), Datetime(20010105));
+  EVPtr ev1, ev2;
+  KQuery query(Datetime(20010101), Datetime(20010105));
 
-    /** @arg Both ev are empty */
-    EVPtr ret = ev1 - ev2;
-    ret->setQuery(query);
-    CHECK_EQ(ret->name(), "EV_Sub");
-    auto ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  /** @arg Both ev are empty */
+  EVPtr ret = ev1 - ev2;
+  ret->setQuery(query);
+  CHECK_EQ(ret->name(), "EV_Sub");
+  auto ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    /** @arg One of the ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    REQUIRE((ev1 && !ev2));
-    ret->reset();
-    ret = ev1 - ev2;
-    ret->setQuery(query);
+  /** @arg One of the ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  REQUIRE((ev1 && !ev2));
+  ret->reset();
+  ret = ev1 - ev2;
+  ret->setQuery(query);
 
-    std::vector<std::pair<Datetime, price_t>> expect{
-      {Datetime(20010101), 2.0}, {Datetime(20010102), 3.0}, {Datetime(20010103), 2.0}};
-    check_expect(ret, expect);
+  std::vector<std::pair<Datetime, price_t>> expect{{Datetime(20010101), 2.0},
+                                                   {Datetime(20010102), 3.0},
+                                                   {Datetime(20010103), 2.0}};
+  check_expect(ret, expect);
 
-    ev1 = EVPtr();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((!ev1 && ev2));
-    ret->reset();
-    ret = ev1 - ev2;
-    ret->setQuery(query);
+  ev1 = EVPtr();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((!ev1 && ev2));
+  ret->reset();
+  ret = ev1 - ev2;
+  ret->setQuery(query);
 
-    expect = {{Datetime(20010103), 4.0}, {Datetime(20010104), 5.0}};
-    check_expect(ret, expect);
+  expect = {{Datetime(20010103), 4.0}, {Datetime(20010104), 5.0}};
+  check_expect(ret, expect);
 
-    /** @arg Neither ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((ev1 & ev2));
-    ret->reset();
-    ret = ev1 - ev2;
-    ret->setQuery(query);
+  /** @arg Neither ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((ev1 & ev2));
+  ret->reset();
+  ret = ev1 - ev2;
+  ret->setQuery(query);
 
-    expect = {{Datetime(20010101), 2.0},
-              {Datetime(20010102), 3.0},
-              {Datetime(20010103), 6.0},
-              {Datetime(20010104), 5.0}};
-    check_expect(ret, expect);
+  expect = {{Datetime(20010101), 2.0},
+            {Datetime(20010102), 3.0},
+            {Datetime(20010103), 6.0},
+            {Datetime(20010104), 5.0}};
+  check_expect(ret, expect);
 }
 
 /** @par Test points */
 TEST_CASE("test_Environment_multi") {
-    EVPtr ev1, ev2;
-    KQuery query(Datetime(20010101), Datetime(20010105));
-    std::vector<std::pair<Datetime, price_t>> expect{};
+  EVPtr ev1, ev2;
+  KQuery query(Datetime(20010101), Datetime(20010105));
+  std::vector<std::pair<Datetime, price_t>> expect{};
 
-    /** @arg Both ev are empty */
-    EVPtr ret = ev1 * ev2;
-    ret->setQuery(query);
-    CHECK_EQ(ret->name(), "EV_Multi");
-    auto ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  /** @arg Both ev are empty */
+  EVPtr ret = ev1 * ev2;
+  ret->setQuery(query);
+  CHECK_EQ(ret->name(), "EV_Multi");
+  auto ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    /** @arg One of the ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    REQUIRE((ev1 && !ev2));
-    ret->reset();
-    ret = ev1 * ev2;
-    ret->setQuery(query);
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  /** @arg One of the ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  REQUIRE((ev1 && !ev2));
+  ret->reset();
+  ret = ev1 * ev2;
+  ret->setQuery(query);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    ev1 = EVPtr();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((!ev1 && ev2));
-    ret->reset();
-    ret = ev1 * ev2;
-    ret->setQuery(query);
+  ev1 = EVPtr();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((!ev1 && ev2));
+  ret->reset();
+  ret = ev1 * ev2;
+  ret->setQuery(query);
 
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    /** @arg Neither ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((ev1 & ev2));
-    ret->reset();
-    ret = ev1 * ev2;
-    ret->setQuery(query);
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 1);
+  /** @arg Neither ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((ev1 & ev2));
+  ret->reset();
+  ret = ev1 * ev2;
+  ret->setQuery(query);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 1);
 
-    expect = {
+  expect = {
       {Datetime(20010103), -8.0},
-    };
-    check_expect(ret, expect);
+  };
+  check_expect(ret, expect);
 }
 
 /** @par Test points */
 TEST_CASE("test_Environment_div") {
-    EVPtr ev1, ev2;
-    KQuery query(Datetime(20010101), Datetime(20010105));
-    std::vector<std::pair<Datetime, price_t>> expect{};
+  EVPtr ev1, ev2;
+  KQuery query(Datetime(20010101), Datetime(20010105));
+  std::vector<std::pair<Datetime, price_t>> expect{};
 
-    /** @arg Both ev are empty */
-    EVPtr ret = ev1 / ev2;
-    ret->setQuery(query);
-    CHECK_EQ(ret->name(), "EV_Div");
-    auto ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  /** @arg Both ev are empty */
+  EVPtr ret = ev1 / ev2;
+  ret->setQuery(query);
+  CHECK_EQ(ret->name(), "EV_Div");
+  auto ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    /** @arg One of the ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    REQUIRE((ev1 && !ev2));
-    ret->reset();
-    ret = ev1 / ev2;
-    ret->setQuery(query);
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  /** @arg One of the ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  REQUIRE((ev1 && !ev2));
+  ret->reset();
+  ret = ev1 / ev2;
+  ret->setQuery(query);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    ev1 = EVPtr();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((!ev1 && ev2));
-    ret->reset();
-    ret = ev1 / ev2;
-    ret->setQuery(query);
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  ev1 = EVPtr();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((!ev1 && ev2));
+  ret->reset();
+  ret = ev1 / ev2;
+  ret->setQuery(query);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    /** @arg Neither ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((ev1 & ev2));
-    ret->reset();
-    ret = ev1 / ev2;
-    ret->setQuery(query);
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 1);
+  /** @arg Neither ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((ev1 & ev2));
+  ret->reset();
+  ret = ev1 / ev2;
+  ret->setQuery(query);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 1);
 
-    expect = {
+  expect = {
       {Datetime(20010103), -0.5},
-    };
-    check_expect(ret, expect);
+  };
+  check_expect(ret, expect);
 }
 
 /** @par Test points */
 TEST_CASE("test_Environment_and") {
-    EVPtr ev1, ev2;
-    KQuery query(Datetime(20010101), Datetime(20010105));
-    std::vector<std::pair<Datetime, price_t>> expect{};
+  EVPtr ev1, ev2;
+  KQuery query(Datetime(20010101), Datetime(20010105));
+  std::vector<std::pair<Datetime, price_t>> expect{};
 
-    /** @arg Both ev are empty */
-    EVPtr ret = ev1 & ev2;
-    ret->setQuery(query);
-    CHECK_EQ(ret->name(), "EV_And");
-    auto ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  /** @arg Both ev are empty */
+  EVPtr ret = ev1 & ev2;
+  ret->setQuery(query);
+  CHECK_EQ(ret->name(), "EV_And");
+  auto ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    /** @arg One of the ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    REQUIRE((ev1 && !ev2));
-    ret->reset();
-    ret = ev1 & ev2;
-    ret->setQuery(query);
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  /** @arg One of the ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  REQUIRE((ev1 && !ev2));
+  ret->reset();
+  ret = ev1 & ev2;
+  ret->setQuery(query);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    ev1 = EVPtr();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((!ev1 && ev2));
-    ret->reset();
-    ret = ev1 & ev2;
-    ret->setQuery(query);
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  ev1 = EVPtr();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((!ev1 && ev2));
+  ret->reset();
+  ret = ev1 & ev2;
+  ret->setQuery(query);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    /** @arg Neither ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((ev1 & ev2));
-    ret->reset();
-    ret = ev1 & ev2;
-    ret->setQuery(query);
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  /** @arg Neither ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((ev1 & ev2));
+  ret->reset();
+  ret = ev1 & ev2;
+  ret->setQuery(query);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 }
 
 /** @par Test points */
 TEST_CASE("test_Environment_or") {
-    EVPtr ev1, ev2;
-    KQuery query(Datetime(20010101), Datetime(20010105));
+  EVPtr ev1, ev2;
+  KQuery query(Datetime(20010101), Datetime(20010105));
 
-    /** @arg Both ev are empty */
-    EVPtr ret = ev1 | ev2;
-    ret->setQuery(query);
-    CHECK_EQ(ret->name(), "EV_Or");
-    auto ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  /** @arg Both ev are empty */
+  EVPtr ret = ev1 | ev2;
+  ret->setQuery(query);
+  CHECK_EQ(ret->name(), "EV_Or");
+  auto ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    /** @arg One of the ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    REQUIRE((ev1 && !ev2));
-    ret->reset();
-    ret = ev1 | ev2;
-    ret->setQuery(query);
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 3);
+  /** @arg One of the ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  REQUIRE((ev1 && !ev2));
+  ret->reset();
+  ret = ev1 | ev2;
+  ret->setQuery(query);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 3);
 
-    std::vector<std::pair<Datetime, price_t>> expect{
-      {Datetime(20010101), 1.0}, {Datetime(20010102), 1.0}, {Datetime(20010103), 1.0}};
-    check_expect(ret, expect);
+  std::vector<std::pair<Datetime, price_t>> expect{{Datetime(20010101), 1.0},
+                                                   {Datetime(20010102), 1.0},
+                                                   {Datetime(20010103), 1.0}};
+  check_expect(ret, expect);
 
-    ev1 = EVPtr();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((!ev1 && ev2));
-    ret->reset();
-    ret = ev1 | ev2;
-    ret->setQuery(query);
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 0);
+  ev1 = EVPtr();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((!ev1 && ev2));
+  ret->reset();
+  ret = ev1 | ev2;
+  ret->setQuery(query);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 0);
 
-    /** @arg Neither ev is empty */
-    ev1 = std::make_shared<EnvironmentTest1>();
-    ev2 = std::make_shared<EnvironmentTest2>();
-    REQUIRE((ev1 & ev2));
-    ret->reset();
-    ret = ev1 | ev2;
-    ret->setQuery(query);
-    ind = ret->getValues();
-    CHECK_EQ(ind.size(), 3);
+  /** @arg Neither ev is empty */
+  ev1 = std::make_shared<EnvironmentTest1>();
+  ev2 = std::make_shared<EnvironmentTest2>();
+  REQUIRE((ev1 & ev2));
+  ret->reset();
+  ret = ev1 | ev2;
+  ret->setQuery(query);
+  ind = ret->getValues();
+  CHECK_EQ(ind.size(), 3);
 
-    expect = {{Datetime(20010101), 1.0}, {Datetime(20010102), 1.0}};
-    check_expect(ret, expect);
+  expect = {{Datetime(20010101), 1.0}, {Datetime(20010102), 1.0}};
+  check_expect(ret, expect);
 }
 
 /** @} */

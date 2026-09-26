@@ -5,15 +5,16 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
 #include <data/DataRuntime.h>
-#include <strategy/selection/Selectors.h>
-#include <strategy/selection/MultiFactorSelector.h>
-#include <strategy/decision/Signals.h>
-#include <strategy/risk/MoneyManagers.h>
-#include "create_test_strategy.h"
 #include <operators/SeriesOperators.h>
 #include <operators/WindowOperators.h>
+#include <strategy/decision/Signals.h>
+#include <strategy/risk/MoneyManagers.h>
+#include <strategy/selection/MultiFactorSelector.h>
+#include <strategy/selection/Selectors.h>
+
+#include "create_test_strategy.h"
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -25,57 +26,59 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_SE_MultiFactor") {
-    DataRuntime& sm = getDataRuntime();
-    StockList stks{sm["sh600004"], sm["sh600005"], sm["sz000001"], sm["sz000002"]};
-    Stock ref_stk = sm["sh000001"];
-    KQuery query = KQueryByDate(Datetime(20110712) - Days(30), Datetime(20111206));
-    IndicatorList src_inds{MA(CLOSE())};
+  DataRuntime& sm = getDataRuntime();
+  StockList stks{sm["sh600004"], sm["sh600005"], sm["sz000001"],
+                 sm["sz000002"]};
+  Stock ref_stk = sm["sh000001"];
+  KQuery query =
+      KQueryByDate(Datetime(20110712) - Days(30), Datetime(20111206));
+  IndicatorList src_inds{MA(CLOSE())};
 
-    auto sys = create_test_strategy(MM_Nothing(), SG_Cycle());
-    sys->setParam<bool>("buy_delay", false);
+  auto sys = create_test_strategy(MM_Nothing(), SG_Cycle());
+  sys->setParam<bool>("buy_delay", false);
 
-    /** @arg Test trying to change a parameter into an illegal value */
-    auto ret = SE_MultiFactor(src_inds);
-    CHECK_THROWS(ret->setParam<int>("ic_n", 0));
-    CHECK_THROWS(ret->setParam<int>("ic_rolling_n", 0));
-    CHECK_THROWS(ret->setParam<string>("mode", "MF"));
+  /** @arg Test trying to change a parameter into an illegal value */
+  auto ret = SE_MultiFactor(src_inds);
+  CHECK_THROWS(ret->setParam<int>("ic_n", 0));
+  CHECK_THROWS(ret->setParam<int>("ic_rolling_n", 0));
+  CHECK_THROWS(ret->setParam<string>("mode", "MF"));
 
-    /** @arg src_inds is empty and the others are the default parameters */
-    CHECK_THROWS(SE_MultiFactor(IndicatorList{}));
+  /** @arg src_inds is empty and the others are the default parameters */
+  CHECK_THROWS(SE_MultiFactor(IndicatorList{}));
 
-    /** @arg The default parameters */
-    ret = SE_MultiFactor(src_inds, 10, 5, 120, ref_stk, "MF_ICIRWeight");
-    ret->addStockList(stks, sys);
-    auto proto_list = ret->getProtoSystemList();
-    ret->calculate(proto_list, query);
-    auto sw_list = ret->getSelected(Datetime(20110712));
-    CHECK_EQ(sw_list.size(), 3);
+  /** @arg The default parameters */
+  ret = SE_MultiFactor(src_inds, 10, 5, 120, ref_stk, "MF_ICIRWeight");
+  ret->addStockList(stks, sys);
+  auto proto_list = ret->getProtoSystemList();
+  ret->calculate(proto_list, query);
+  auto sw_list = ret->getSelected(Datetime(20110712));
+  CHECK_EQ(sw_list.size(), 3);
 
-    ret = SE_MultiFactor(src_inds, 10, 5, 120, ref_stk, "MF_EqualWeight");
-    ret->addStockList(stks, sys);
-    proto_list = ret->getProtoSystemList();
-    ret->calculate(proto_list, query);
-    sw_list = ret->getSelected(Datetime(20110712));
-    CHECK_EQ(sw_list.size(), 3);
+  ret = SE_MultiFactor(src_inds, 10, 5, 120, ref_stk, "MF_EqualWeight");
+  ret->addStockList(stks, sys);
+  proto_list = ret->getProtoSystemList();
+  ret->calculate(proto_list, query);
+  sw_list = ret->getSelected(Datetime(20110712));
+  CHECK_EQ(sw_list.size(), 3);
 
-    ret = SE_MultiFactor(src_inds, 10, 5, 120, ref_stk, "MF_ICWeight");
-    ret->addStockList(stks, sys);
-    proto_list = ret->getProtoSystemList();
-    ret->calculate(proto_list, query);
-    sw_list = ret->getSelected(Datetime(20110712));
-    CHECK_EQ(sw_list.size(), 3);
+  ret = SE_MultiFactor(src_inds, 10, 5, 120, ref_stk, "MF_ICWeight");
+  ret->addStockList(stks, sys);
+  proto_list = ret->getProtoSystemList();
+  ret->calculate(proto_list, query);
+  sw_list = ret->getSelected(Datetime(20110712));
+  CHECK_EQ(sw_list.size(), 3);
 
-    /** @arg topn = 2 */
-    ret = SE_MultiFactor(src_inds, 2, 5, 120, ref_stk);
-    ret->addStockList(stks, sys);
-    proto_list = ret->getProtoSystemList();
-    ret->calculate(proto_list, query);
-    sw_list = ret->getSelected(Datetime(20110712));
-    CHECK_EQ(sw_list.size(), 2);
+  /** @arg topn = 2 */
+  ret = SE_MultiFactor(src_inds, 2, 5, 120, ref_stk);
+  ret->addStockList(stks, sys);
+  proto_list = ret->getProtoSystemList();
+  ret->calculate(proto_list, query);
+  sw_list = ret->getSelected(Datetime(20110712));
+  CHECK_EQ(sw_list.size(), 2);
 
-    // for (const auto& sw : sw_list) {
-    //     HAYAKU_INFO("{} {}", sw.strategy->name(), sw.weight);
-    // }
+  // for (const auto& sw : sw_list) {
+  //     HAYAKU_INFO("{} {}", sw.strategy->name(), sw.weight);
+  // }
 }
 
 //-----------------------------------------------------------------------------
@@ -85,39 +88,41 @@ TEST_CASE("test_SE_MultiFactor") {
 
 /** @par Test points */
 TEST_CASE("test_SE_MultiFactor_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(fmt::format("{}/SE_MultiFactor.xml", sm.tmpdir()));
+  DataRuntime& sm = getDataRuntime();
+  string filename(fmt::format("{}/SE_MultiFactor.xml", sm.tmpdir()));
 
-    StockList stks{sm["sh600004"], sm["sh600005"], sm["sz000001"], sm["sz000002"]};
-    Stock ref_stk = sm["sh000001"];
-    KQuery query = KQueryByDate(Datetime(20110712) - Days(30), Datetime(20111206));
-    IndicatorList src_inds{MA(CLOSE())};
+  StockList stks{sm["sh600004"], sm["sh600005"], sm["sz000001"],
+                 sm["sz000002"]};
+  Stock ref_stk = sm["sh000001"];
+  KQuery query =
+      KQueryByDate(Datetime(20110712) - Days(30), Datetime(20111206));
+  IndicatorList src_inds{MA(CLOSE())};
 
-    auto sys = create_test_strategy(MM_Nothing(), SG_Cycle());
-    sys->setParam<bool>("buy_delay", false);
+  auto sys = create_test_strategy(MM_Nothing(), SG_Cycle());
+  sys->setParam<bool>("buy_delay", false);
 
-    auto x1 = SE_MultiFactor(src_inds, 10, 5, 120, ref_stk);
-    x1->addStockList(stks, sys);
+  auto x1 = SE_MultiFactor(src_inds, 10, 5, 120, ref_stk);
+  x1->addStockList(stks, sys);
 
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    SelectorPtr x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  SelectorPtr x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_UNARY(x2->getProtoSystemList().empty());
-    x2->addStockList(stks, sys);
-    auto proto_list = x2->getProtoSystemList();
-    x2->calculate(proto_list, query);
-    auto sw_list = x2->getSelected(Datetime(20110712));
-    CHECK_EQ(sw_list.size(), 3);
+  CHECK_UNARY(x2->getProtoSystemList().empty());
+  x2->addStockList(stks, sys);
+  auto proto_list = x2->getProtoSystemList();
+  x2->calculate(proto_list, query);
+  auto sw_list = x2->getSelected(Datetime(20110712));
+  CHECK_EQ(sw_list.size(), 3);
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

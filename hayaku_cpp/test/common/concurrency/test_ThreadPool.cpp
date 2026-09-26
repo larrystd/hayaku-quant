@@ -7,10 +7,11 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
 #include <common/concurrency/thread.h>
 #include <common/time/SpendTimer.h>
+
 #include "common/Log.h"
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -22,46 +23,48 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_ThreadPool") {
-    {
-        SPEND_TIME(test_ThreadPool);
-        ThreadPool tg(8);
-        HAYAKU_INFO("worker_num: {}", tg.worker_num());
-        for (int i = 0; i < 10; i++) {
+  {
+    SPEND_TIME(test_ThreadPool);
+    ThreadPool tg(8);
+    HAYAKU_INFO("worker_num: {}", tg.worker_num());
+    for (int i = 0; i < 10; i++) {
 #if FMT_VERSION >= 90000
-            tg.submit([=]() {  // fmt::print("{}: ----------------------\n", i);
-                HAYAKU_INFO("{}: ------------------- [{}]", i,
-                         fmt::streamed(std::this_thread::get_id()));
-            });
+      tg.submit([=]() {  // fmt::print("{}: ----------------------\n", i);
+        HAYAKU_INFO("{}: ------------------- [{}]", i,
+                    fmt::streamed(std::this_thread::get_id()));
+      });
 #else
-            tg.submit([=]() {  // fmt::print("{}: ----------------------\n", i);
-                HAYAKU_INFO("{}: ------------------- [{}]", i, std::this_thread::get_id());
-            });
+      tg.submit([=]() {  // fmt::print("{}: ----------------------\n", i);
+        HAYAKU_INFO("{}: ------------------- [{}]", i,
+                    std::this_thread::get_id());
+      });
 #endif
-        }
-        tg.join();
     }
+    tg.join();
+  }
 }
 
 /** @par Test points */
 TEST_CASE("test_MQThreadPool") {
-    {
-        SPEND_TIME(test_MQThreadPool);
-        MQThreadPool tg(8);
-        HAYAKU_INFO("worker_num: {}", tg.worker_num());
-        for (int i = 0; i < 10; i++) {
+  {
+    SPEND_TIME(test_MQThreadPool);
+    MQThreadPool tg(8);
+    HAYAKU_INFO("worker_num: {}", tg.worker_num());
+    for (int i = 0; i < 10; i++) {
 #if FMT_VERSION >= 90000
-            tg.submit([=]() {  // fmt::print("{}: ----------------------\n", i);
-                HAYAKU_INFO("{}: ------------------- [{}]", i,
-                         fmt::streamed(std::this_thread::get_id()));
-            });
+      tg.submit([=]() {  // fmt::print("{}: ----------------------\n", i);
+        HAYAKU_INFO("{}: ------------------- [{}]", i,
+                    fmt::streamed(std::this_thread::get_id()));
+      });
 #else
-            tg.submit([=]() {  // fmt::print("{}: ----------------------\n", i);
-                HAYAKU_INFO("{}: ------------------- [{}]", i, std::this_thread::get_id());
-            });
+      tg.submit([=]() {  // fmt::print("{}: ----------------------\n", i);
+        HAYAKU_INFO("{}: ------------------- [{}]", i,
+                    std::this_thread::get_id());
+      });
 #endif
-        }
-        tg.join();
     }
+    tg.join();
+  }
 }
 
 #if 0

@@ -7,12 +7,12 @@
  *      Author: fasiondog
  */
 
-
 #include "operators/FactorStore.h"
 
 namespace hayaku {
 
-/** Enable the ClickHouse-backed factor store bridge for the active Session configuration. */
+/** Enable the ClickHouse-backed factor store bridge for the active Session
+ * configuration. */
 void installFactorStorePluginBridge(bool enabled);
 void uninstallFactorStorePluginBridge() noexcept;
 

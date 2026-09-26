@@ -7,7 +7,6 @@
  *     Author: fasiondog
  */
 
-
 namespace hayaku {
 
 void initInnerTask();

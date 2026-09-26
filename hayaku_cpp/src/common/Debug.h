@@ -6,12 +6,12 @@
  *  Created on: 2020-2-6
  *      Author: fasiondog
  *
- * Purpose: memory leak detection; a cpp file includes this header so that the file name and other
- *          information can be printed when a memory leak is detected
+ * Purpose: memory leak detection; a cpp file includes this header so that the
+ * file name and other information can be printed when a memory leak is detected
  */
 
-
-#if ENABLE_MSVC_LEAK_DETECT && defined(_MSC_VER) && (defined(_DEBUG) || defined(DEBUG))
+#if ENABLE_MSVC_LEAK_DETECT && defined(_MSC_VER) && \
+    (defined(_DEBUG) || defined(DEBUG))
 #ifndef MSVC_LEAKER_DETECT
 #define MSVC_LEAKER_DETECT
 #endif

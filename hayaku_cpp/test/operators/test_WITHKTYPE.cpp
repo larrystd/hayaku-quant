@@ -5,15 +5,16 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
 #include <application/plugins/ExtendIndicatorsPlugin.h>
+#include <data/DataRuntime.h>
+#include <extensions/talib/TalibOperators.h>
+#include <operators/SeriesOperators.h>
+#include <operators/WindowOperators.h>
 
 #include <fstream>
-#include <data/DataRuntime.h>
-#include <operators/SeriesOperators.h>
-#include <extensions/talib/TalibOperators.h>
-#include <operators/WindowOperators.h>
+
 #include "application/plugin_fixtures/plugin_valid.h"
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -25,96 +26,97 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_WITHKTYPE_equal_ktype") {
-    HAYAKU_IF_RETURN(!pluginValid(), void());
+  HAYAKU_IF_RETURN(!pluginValid(), void());
 
-    auto k = getKData("sh000001", KQuery(-30));
-    Indicator ret;
+  auto k = getKData("sh000001", KQuery(-30));
+  Indicator ret;
 
-    ret = WITHDAY(CLOSE());
-    CHECK_EQ(ret.name(), "WITHKTYPE");
-    CHECK_EQ(ret.size(), 0);
-    CHECK_EQ(ret.discard(), 0);
+  ret = WITHDAY(CLOSE());
+  CHECK_EQ(ret.name(), "WITHKTYPE");
+  CHECK_EQ(ret.size(), 0);
+  CHECK_EQ(ret.discard(), 0);
 
-    ret = WITHDAY(CLOSE(k));
-    check_indicator(ret, k.close());
+  ret = WITHDAY(CLOSE(k));
+  check_indicator(ret, k.close());
 
-    ret = ret(k);
-    check_indicator(ret, k.close());
+  ret = ret(k);
+  check_indicator(ret, k.close());
 
-    ret = WITHDAY(CLOSE())(k);
-    check_indicator(ret, k.close());
+  ret = WITHDAY(CLOSE())(k);
+  check_indicator(ret, k.close());
 
-    auto wk = getKData("sh000001", KQuery(-30, Null<int64_t>(), KQuery::WEEK));
+  auto wk = getKData("sh000001", KQuery(-30, Null<int64_t>(), KQuery::WEEK));
 
-    ret = WITHWEEK(CLOSE());
-    CHECK_EQ(ret.name(), "WITHKTYPE");
-    CHECK_EQ(ret.size(), 0);
-    CHECK_EQ(ret.discard(), 0);
+  ret = WITHWEEK(CLOSE());
+  CHECK_EQ(ret.name(), "WITHKTYPE");
+  CHECK_EQ(ret.size(), 0);
+  CHECK_EQ(ret.discard(), 0);
 
-    ret = WITHWEEK(CLOSE(wk));
-    check_indicator(ret, wk.close());
+  ret = WITHWEEK(CLOSE(wk));
+  check_indicator(ret, wk.close());
 
-    ret = ret(wk);
-    check_indicator(ret, wk.close());
+  ret = ret(wk);
+  check_indicator(ret, wk.close());
 
-    ret = WITHWEEK(CLOSE())(wk);
-    check_indicator(ret, wk.close());
+  ret = WITHWEEK(CLOSE())(wk);
+  check_indicator(ret, wk.close());
 }
 
 /** @par Test points */
 TEST_CASE("test_WITHKTYPE_extent") {
-    HAYAKU_IF_RETURN(!pluginValid(), void());
+  HAYAKU_IF_RETURN(!pluginValid(), void());
 
-    auto k = getKData("sh000001", KQuery(-30));
-    auto wk =
-      getKData("sh000001", KQueryByDate(Datetime(20111021), Null<Datetime>(), KQuery::WEEK));
-    Indicator ret, expect;
+  auto k = getKData("sh000001", KQuery(-30));
+  auto wk = getKData("sh000001", KQueryByDate(Datetime(20111021),
+                                              Null<Datetime>(), KQuery::WEEK));
+  Indicator ret, expect;
 
-    ret = WITHWEEK(CLOSE());
-    CHECK_EQ(ret.name(), "WITHKTYPE");
-    CHECK_EQ(ret.size(), 0);
-    CHECK_EQ(ret.discard(), 0);
+  ret = WITHWEEK(CLOSE());
+  CHECK_EQ(ret.name(), "WITHKTYPE");
+  CHECK_EQ(ret.size(), 0);
+  CHECK_EQ(ret.discard(), 0);
 
-    ret = ret(k);
-    expect = ALIGN(CLOSE(wk), k, false);
-    check_indicator(ret, expect);
+  ret = ret(k);
+  expect = ALIGN(CLOSE(wk), k, false);
+  check_indicator(ret, expect);
 
-    ret = WITHWEEK(CLOSE())(k);
-    expect = ALIGN(CLOSE(wk), k, false);
-    check_indicator(ret, expect);
+  ret = WITHWEEK(CLOSE())(k);
+  expect = ALIGN(CLOSE(wk), k, false);
+  check_indicator(ret, expect);
 
-    ret = WITHWEEK(CLOSE(k));
-    expect = ALIGN(CLOSE(wk), k, false);
-    check_indicator(ret, expect);
+  ret = WITHWEEK(CLOSE(k));
+  expect = ALIGN(CLOSE(wk), k, false);
+  check_indicator(ret, expect);
 
 #if HAYAKU_ENABLE_TA_LIB
-    ret = WITHWEEK(TA_MA(CLOSE(), 3))(k);
-    expect = ALIGN(TA_MA(CLOSE(wk), 3), k, false);
-    // When the WITHKTYPE query is an INDEX it takes some data, which makes the discard differ
-    // check_indicator(ret, expect);
-    for (size_t i = expect.discard(); i < ret.size(); ++i) {
-        CHECK_EQ(ret[i], doctest::Approx(expect[i]).epsilon(0.00001));
-    }
+  ret = WITHWEEK(TA_MA(CLOSE(), 3))(k);
+  expect = ALIGN(TA_MA(CLOSE(wk), 3), k, false);
+  // When the WITHKTYPE query is an INDEX it takes some data, which makes the
+  // discard differ check_indicator(ret, expect);
+  for (size_t i = expect.discard(); i < ret.size(); ++i) {
+    CHECK_EQ(ret[i], doctest::Approx(expect[i]).epsilon(0.00001));
+  }
 
-    wk = getKData("sh000001", KQuery(-30, Null<int64_t>(), KQuery::WEEK));
-    expect = ALIGN(TA_MA(CLOSE(wk), 3), k, false);
-    check_indicator(ret, expect);
+  wk = getKData("sh000001", KQuery(-30, Null<int64_t>(), KQuery::WEEK));
+  expect = ALIGN(TA_MA(CLOSE(wk), 3), k, false);
+  check_indicator(ret, expect);
 #endif
 }
 
 /** @par Test points */
 TEST_CASE("test_WITHKTYPE_sample") {
-    HAYAKU_IF_RETURN(!pluginValid(), void());
+  HAYAKU_IF_RETURN(!pluginValid(), void());
 
-    auto wk =
-      getKData("sh000001", KQueryByDate(Datetime(20110513), Datetime(20111209), KQuery::WEEK));
-    auto k =
-      getKData("sh000001", KQueryByDate(Datetime(20110513), Datetime(20111209), KQuery::DAY));
-    Indicator ret, expect;
+  auto wk = getKData(
+      "sh000001",
+      KQueryByDate(Datetime(20110513), Datetime(20111209), KQuery::WEEK));
+  auto k = getKData("sh000001", KQueryByDate(Datetime(20110513),
+                                             Datetime(20111209), KQuery::DAY));
+  Indicator ret, expect;
 
-    ret = WITHDAY(CLOSE())(wk);
-    expect = ALIGN(CLOSE(k), wk, false);
-    check_indicator(ret, expect);
+  ret = WITHDAY(CLOSE())(wk);
+  expect = ALIGN(CLOSE(k), wk, false);
+  check_indicator(ret, expect);
 }
 
 //-----------------------------------------------------------------------------
@@ -124,34 +126,34 @@ TEST_CASE("test_WITHKTYPE_sample") {
 
 /** @par Test points */
 TEST_CASE("test_WITHKTYPE_export") {
-    HAYAKU_IF_RETURN(!pluginValid(), void());
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/WITHKTYPE.xml";
+  HAYAKU_IF_RETURN(!pluginValid(), void());
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/WITHKTYPE.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator x1 = WITHDAY(CLOSE())(kdata);
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator x1 = WITHDAY(CLOSE())(kdata);
 
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_UNARY(x1.size() == x2.size());
-    CHECK_UNARY(x1.discard() == x2.discard());
-    CHECK_UNARY(x1.getResultNumber() == x2.getResultNumber());
-    for (size_t i = 0; i < x1.size(); ++i) {
-        CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
-    }
+  CHECK_UNARY(x1.size() == x2.size());
+  CHECK_UNARY(x1.discard() == x2.discard());
+  CHECK_UNARY(x1.getResultNumber() == x2.getResultNumber());
+  for (size_t i = 0; i < x1.size(); ++i) {
+    CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

@@ -5,11 +5,13 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/SeriesOperators.h>
 #include <operators/WindowOperators.h>
+
+#include <fstream>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -21,22 +23,22 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_MAX") {
-    /** @arg n > 0 */
-    KData k = getStock("sh600004").getKData(KQuery(-8));
-    Indicator C = CLOSE(k);
-    Indicator O = OPEN(k);
-    Indicator x = MAX(C, O);
-    CHECK_EQ(x.name(), "MAX");
-    CHECK_EQ(x.size(), 8);
-    CHECK_EQ(x.discard(), 0);
-    size_t total = x.size();
-    for (int i = 0; i < total; i++) {
-        if (C[i] > O[i]) {
-            CHECK_EQ(x[i], C[i]);
-        } else {
-            CHECK_EQ(x[i], O[i]);
-        }
+  /** @arg n > 0 */
+  KData k = getStock("sh600004").getKData(KQuery(-8));
+  Indicator C = CLOSE(k);
+  Indicator O = OPEN(k);
+  Indicator x = MAX(C, O);
+  CHECK_EQ(x.name(), "MAX");
+  CHECK_EQ(x.size(), 8);
+  CHECK_EQ(x.discard(), 0);
+  size_t total = x.size();
+  for (int i = 0; i < total; i++) {
+    if (C[i] > O[i]) {
+      CHECK_EQ(x[i], C[i]);
+    } else {
+      CHECK_EQ(x[i], O[i]);
     }
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -46,33 +48,33 @@ TEST_CASE("test_MAX") {
 
 /** @par Test points */
 TEST_CASE("test_MAX_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/MAX.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/MAX.xml";
 
-    Indicator x1 = MAX(CLOSE(), OPEN());
-    x1.setContext(getStock("sh600004"), KQuery(-8));
+  Indicator x1 = MAX(CLOSE(), OPEN());
+  x1.setContext(getStock("sh600004"), KQuery(-8));
 
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x1.name(), x2.name());
-    CHECK_EQ(x1.size(), x2.size());
-    CHECK_EQ(x1.discard(), x2.discard());
-    CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
-    for (size_t i = 0; i < x1.size(); ++i) {
-        CHECK_EQ(x1[i], doctest::Approx(x2[i]));
-    }
+  CHECK_EQ(x1.name(), x2.name());
+  CHECK_EQ(x1.size(), x2.size());
+  CHECK_EQ(x1.discard(), x2.discard());
+  CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
+  for (size_t i = 0; i < x1.size(); ++i) {
+    CHECK_EQ(x1[i], doctest::Approx(x2[i]));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

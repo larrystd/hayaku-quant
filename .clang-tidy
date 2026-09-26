@@ -1,5 +1,5 @@
-# Start with checks that do not require renaming the existing public C++ API.
-# Formatting is governed by .clang-format (Google base, project-specific 4/100).
-Checks: '-*,clang-analyzer-core.*,bugprone-infinite-loop,bugprone-suspicious-memory-comparison,bugprone-use-after-move,performance-for-range-copy,performance-unnecessary-copy-initialization,google-build-using-namespace,google-readability-casting'
+# Check project code for defects and avoid rules that rename established public APIs.
+# Google formatting is governed solely by .clang-format.
+Checks: '-*,clang-analyzer-*,bugprone-*,performance-*,google-build-using-namespace,google-readability-casting'
 WarningsAsErrors: ''
 FormatStyle: file

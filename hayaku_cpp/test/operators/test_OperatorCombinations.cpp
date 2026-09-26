@@ -5,9 +5,9 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-
 #include <operators/OperatorCombinations.h>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -19,62 +19,63 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_combinateIndex") {
-    std::vector<float> nums;
-    std::vector<std::vector<size_t>> result;
-    std::vector<std::vector<size_t>> expect;
+  std::vector<float> nums;
+  std::vector<std::vector<size_t>> result;
+  std::vector<std::vector<size_t>> expect;
 
-    /** @arg The input sequence length is 0 */
-    result = combinateIndex(nums);
-    CHECK_UNARY(result.empty());
+  /** @arg The input sequence length is 0 */
+  result = combinateIndex(nums);
+  CHECK_UNARY(result.empty());
 
-    /** @arg The input sequence length is 1 */
-    nums.push_back(0.1f);
-    result = combinateIndex(nums);
-    expect = {{0}};
-    CHECK_EQ(result.size(), expect.size());
-    for (size_t i = 0, total = result.size(); i < total; i++) {
-        CHECK_EQ(result[i].size(), expect[i].size());
-        for (size_t j = 0, len = result[i].size(); j < len; j++) {
-            CHECK_EQ(result[i][j], expect[i][j]);
-        }
+  /** @arg The input sequence length is 1 */
+  nums.push_back(0.1f);
+  result = combinateIndex(nums);
+  expect = {{0}};
+  CHECK_EQ(result.size(), expect.size());
+  for (size_t i = 0, total = result.size(); i < total; i++) {
+    CHECK_EQ(result[i].size(), expect[i].size());
+    for (size_t j = 0, len = result[i].size(); j < len; j++) {
+      CHECK_EQ(result[i][j], expect[i][j]);
     }
+  }
 
-    /** @arg The input sequence length is 2 */
-    nums.push_back(0.2f);
-    result = combinateIndex(nums);
-    expect = {{0}, {0, 1}, {1}};
-    CHECK_EQ(result.size(), expect.size());
-    for (size_t i = 0, total = result.size(); i < total; i++) {
-        CHECK_EQ(result[i].size(), expect[i].size());
-        for (size_t j = 0, len = result[i].size(); j < len; j++) {
-            CHECK_EQ(result[i][j], expect[i][j]);
-        }
+  /** @arg The input sequence length is 2 */
+  nums.push_back(0.2f);
+  result = combinateIndex(nums);
+  expect = {{0}, {0, 1}, {1}};
+  CHECK_EQ(result.size(), expect.size());
+  for (size_t i = 0, total = result.size(); i < total; i++) {
+    CHECK_EQ(result[i].size(), expect[i].size());
+    for (size_t j = 0, len = result[i].size(); j < len; j++) {
+      CHECK_EQ(result[i][j], expect[i][j]);
     }
+  }
 
-    /** @arg The input sequence length is 3 */
-    nums.push_back(0.3f);
-    result = combinateIndex(nums);
-    expect = {{0}, {0, 1}, {1}, {0, 2}, {0, 1, 2}, {1, 2}, {2}};
-    CHECK_EQ(result.size(), expect.size());
-    for (size_t i = 0, total = result.size(); i < total; i++) {
-        CHECK_EQ(result[i].size(), expect[i].size());
-        for (size_t j = 0, len = result[i].size(); j < len; j++) {
-            CHECK_EQ(result[i][j], expect[i][j]);
-        }
+  /** @arg The input sequence length is 3 */
+  nums.push_back(0.3f);
+  result = combinateIndex(nums);
+  expect = {{0}, {0, 1}, {1}, {0, 2}, {0, 1, 2}, {1, 2}, {2}};
+  CHECK_EQ(result.size(), expect.size());
+  for (size_t i = 0, total = result.size(); i < total; i++) {
+    CHECK_EQ(result[i].size(), expect[i].size());
+    for (size_t j = 0, len = result[i].size(); j < len; j++) {
+      CHECK_EQ(result[i][j], expect[i][j]);
     }
+  }
 
-    /** @arg The input sequence length is 4 */
-    nums.push_back(0.4f);
-    result = combinateIndex(nums);
-    expect = {{0},       {0, 1}, {1},       {0, 2},       {0, 1, 2}, {1, 2}, {2}, {0, 3},
-              {0, 1, 3}, {1, 3}, {0, 2, 3}, {0, 1, 2, 3}, {1, 2, 3}, {2, 3}, {3}};
-    CHECK_EQ(result.size(), expect.size());
-    for (size_t i = 0, total = result.size(); i < total; i++) {
-        CHECK_EQ(result[i].size(), expect[i].size());
-        for (size_t j = 0, len = result[i].size(); j < len; j++) {
-            CHECK_EQ(result[i][j], expect[i][j]);
-        }
+  /** @arg The input sequence length is 4 */
+  nums.push_back(0.4f);
+  result = combinateIndex(nums);
+  expect = {{0},       {0, 1},       {1},       {0, 2},    {0, 1, 2},
+            {1, 2},    {2},          {0, 3},    {0, 1, 3}, {1, 3},
+            {0, 2, 3}, {0, 1, 2, 3}, {1, 2, 3}, {2, 3},    {3}};
+  CHECK_EQ(result.size(), expect.size());
+  for (size_t i = 0, total = result.size(); i < total; i++) {
+    CHECK_EQ(result[i].size(), expect[i].size());
+    for (size_t j = 0, len = result[i].size(); j < len; j++) {
+      CHECK_EQ(result[i][j], expect[i][j]);
     }
+  }
 }
 
 /** @} */

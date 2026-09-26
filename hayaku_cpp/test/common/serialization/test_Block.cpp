@@ -4,12 +4,14 @@
  *  Created on: 2015-2-9
  *      Author: fasiondog
  */
-#include "doctest/doctest.h"
-#include <fstream>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <data/DataRuntime.h>
 #include <common/serialization/Block_serialization.h>
+#include <data/DataRuntime.h>
+
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <fstream>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -23,45 +25,45 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_Block_serialize") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/Block.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/Block.xml";
 
-    Block blk1("test", "test_1");
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(blk1);
-    }
+  Block blk1("test", "test_1");
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(blk1);
+  }
 
-    Block blk2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(blk2);
-    }
+  Block blk2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(blk2);
+  }
 
-    CHECK_EQ(blk1.category(), blk2.category());
-    CHECK_EQ(blk1.name(), blk2.name());
-    CHECK_EQ(blk1.size(), blk2.size());
+  CHECK_EQ(blk1.category(), blk2.category());
+  CHECK_EQ(blk1.name(), blk2.name());
+  CHECK_EQ(blk1.size(), blk2.size());
 
-    blk1.add("sh000001");
-    blk1.add("sz000001");
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(blk1);
-    }
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(blk2);
-    }
-    CHECK_EQ(blk1.category(), blk2.category());
-    CHECK_EQ(blk1.name(), blk2.name());
-    CHECK_EQ(blk1.size(), blk2.size());
-    CHECK_UNARY(blk2.have("sh000001"));
-    CHECK_UNARY(blk2.have("sz000001"));
+  blk1.add("sh000001");
+  blk1.add("sz000001");
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(blk1);
+  }
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(blk2);
+  }
+  CHECK_EQ(blk1.category(), blk2.category());
+  CHECK_EQ(blk1.name(), blk2.name());
+  CHECK_EQ(blk1.size(), blk2.size());
+  CHECK_UNARY(blk2.have("sh000001"));
+  CHECK_UNARY(blk2.have("sz000001"));
 }
 
 /** @} */

@@ -7,7 +7,6 @@
  *      Author: fasiondog
  */
 
-
 #include "MarketTypes.h"
 
 namespace hayaku {
@@ -23,7 +22,8 @@ namespace hayaku {
 #define STOCKTYPE_GEM 8      /// ChiNext (Growth Enterprise Market)
 #define STOCKTYPE_START 9    /// STAR Market
 #define STOCKTYPE_CRYPTO 10  /// Cryptocurrency
-#define STOCKTYPE_A_BJ 11    /// Beijing Stock Exchange (its minimum trading unit is not 100 shares)
+#define STOCKTYPE_A_BJ \
+  11  /// Beijing Stock Exchange (its minimum trading unit is not 100 shares)
 
 #define STOCKTYPE_TMP 999  /// Used for a temporary Stock
 
@@ -32,74 +32,59 @@ namespace hayaku {
  * @ingroup StockManage
  */
 class HAYAKU_API StockTypeInfo {
-public:
-    /** Default constructor, returns Null<StockTypeInfo>() */
-    StockTypeInfo();
-    StockTypeInfo(uint32_t, const string&, price_t, price_t, int, double, double);
+ public:
+  /** Default constructor, returns Null<StockTypeInfo>() */
+  StockTypeInfo();
+  StockTypeInfo(uint32_t, const string&, price_t, price_t, int, double, double);
 
-    StockTypeInfo(const StockTypeInfo&) = default;
-    StockTypeInfo& operator=(const StockTypeInfo&) = default;
+  StockTypeInfo(const StockTypeInfo&) = default;
+  StockTypeInfo& operator=(const StockTypeInfo&) = default;
 
-    StockTypeInfo(StockTypeInfo&&) noexcept;
-    StockTypeInfo& operator=(StockTypeInfo&&) noexcept;
+  StockTypeInfo(StockTypeInfo&&) noexcept;
+  StockTypeInfo& operator=(StockTypeInfo&&) noexcept;
 
-    /** Get the security type */
-    uint32_t type() const noexcept {
-        return m_type;
-    }
+  /** Get the security type */
+  uint32_t type() const noexcept { return m_type; }
 
-    /** Get the description of the security type */
-    const string& description() const noexcept {
-        return m_description;
-    }
+  /** Get the description of the security type */
+  const string& description() const noexcept { return m_description; }
 
-    /** Get the minimum tick size */
-    price_t tick() const noexcept {
-        return m_tick;
-    }
+  /** Get the minimum tick size */
+  price_t tick() const noexcept { return m_tick; }
 
-    /** Price per tick */
-    price_t tickValue() const noexcept {
-        return m_tickValue;
-    }
+  /** Price per tick */
+  price_t tickValue() const noexcept { return m_tickValue; }
 
-    /** Price per unit = tickValue / tick */
-    price_t unit() const noexcept {
-        return m_unit;
-    }
+  /** Price per unit = tickValue / tick */
+  price_t unit() const noexcept { return m_unit; }
 
-    /** Get the price precision */
-    int precision() const noexcept {
-        return m_precision;
-    }
+  /** Get the price precision */
+  int precision() const noexcept { return m_precision; }
 
-    /** Get the minimum trade quantity per order */
-    double minTradeNumber() const noexcept {
-        return m_minTradeNumber;
-    }
+  /** Get the minimum trade quantity per order */
+  double minTradeNumber() const noexcept { return m_minTradeNumber; }
 
-    /** Get the maximum trade quantity per order */
-    double maxTradeNumber() const noexcept {
-        return m_maxTradeNumber;
-    }
+  /** Get the maximum trade quantity per order */
+  double maxTradeNumber() const noexcept { return m_maxTradeNumber; }
 
-    /** Used by __str__ of python only */
-    string toString() const;
+  /** Used by __str__ of python only */
+  string toString() const;
 
-private:
-    uint32_t m_type;          // Security type
-    string m_description;     // Description
-    price_t m_tick;           // Minimum tick size
-    price_t m_tickValue;      // Price of every tick
-    price_t m_unit;           // Price per minimum change, i.e. unit price = tickValue / tick
-    int m_precision;          // Price precision
-    double m_minTradeNumber;  // Minimum trade quantity per order
-    double m_maxTradeNumber;  // Maximum trade quantity per order
+ private:
+  uint32_t m_type;       // Security type
+  string m_description;  // Description
+  price_t m_tick;        // Minimum tick size
+  price_t m_tickValue;   // Price of every tick
+  price_t
+      m_unit;  // Price per minimum change, i.e. unit price = tickValue / tick
+  int m_precision;          // Price precision
+  double m_minTradeNumber;  // Minimum trade quantity per order
+  double m_maxTradeNumber;  // Maximum trade quantity per order
 };
 
 /**
- * Output the security type information, e.g. StockTypeInfo(type, description, tick, precision,
- * minTradeNumber, maxTradeNumber)
+ * Output the security type information, e.g. StockTypeInfo(type, description,
+ * tick, precision, minTradeNumber, maxTradeNumber)
  * @ingroup StockManage
  */
 HAYAKU_API std::ostream& operator<<(std::ostream&, const StockTypeInfo&);
@@ -114,12 +99,12 @@ bool operator!=(const StockTypeInfo&, const StockTypeInfo&);
 
 /** Equal comparison */
 inline bool operator==(const StockTypeInfo& m1, const StockTypeInfo& m2) {
-    return m1.type() == m2.type();
+  return m1.type() == m2.type();
 }
 
 /** Unequal comparison */
 inline bool operator!=(const StockTypeInfo& m1, const StockTypeInfo& m2) {
-    return m1.type() != m2.type();
+  return m1.type() != m2.type();
 }
 
 }  // namespace hayaku

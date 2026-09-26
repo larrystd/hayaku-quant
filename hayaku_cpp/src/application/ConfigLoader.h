@@ -6,13 +6,13 @@
  * INI configuration loading shared by the application boundary.
  */
 
-
 #include "common/Parameter.h"
 
 namespace hayaku {
 
-void HAYAKU_API getConfigFromIni(const string& configFileName, Parameter& baseParam,
-                              Parameter& blockParam, Parameter& kdataParam,
-                              Parameter& preloadParam, Parameter& hayakuParam);
+void HAYAKU_API getConfigFromIni(const string& configFileName,
+                                 Parameter& baseParam, Parameter& blockParam,
+                                 Parameter& kdataParam, Parameter& preloadParam,
+                                 Parameter& hayakuParam);
 
 }  // namespace hayaku

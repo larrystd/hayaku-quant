@@ -4,56 +4,6 @@
 Global Variables and Constants
 ==============================
 
-Global Variables
-----------------
-
-.. note:: The following global variables exist only in the hayaku interactive tools; they are not defined in the hayaku library.
-
-.. py:data:: sm
-
-    An instance of :py:class:`StockManager`
-    
-.. py:data:: blocka
-
-    A :py:class:`Block` instance, containing all the A-shares
-    
-.. py:data:: blocksh
-
-    A :py:class:`Block` instance, containing all the Shanghai stocks
-    
-.. py:data:: blocksz
-
-    A :py:class:`Block` instance, containing all the Shenzhen stocks
-    
-.. py:data:: blockg
-
-    A :py:class:`Block` instance, containing all the ChiNext (GEM) stocks
-
-.. py:data:: blockstart
-
-    A :py:class:`Block` instance, the STAR Market
-
-.. py:data:: blockzxb
-
-    A :py:class:`Block` instance, the SME Board
-
-.. py:data:: zsbk_sh50
-
-    A :py:class:`Block` instance, the SSE 50
-
-.. py:data:: zsbk_sh180
-
-    A :py:class:`Block` instance, the SSE 180
-
-.. py:data:: zsbk_hs300
-
-    A :py:class:`Block` instance, the CSI 300
-
-.. py:data:: zsbk_zz100
-
-    A :py:class:`Block` instance, the CSI 100
-
-
 Null Values and Security Types
 ------------------------------
 

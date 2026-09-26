@@ -10,17 +10,17 @@
 namespace hayaku {
 
 HAYAKU_API std::ostream& operator<<(std::ostream& os, const SlippageBase& sp) {
-    os << "Slippage(" << sp.name() << ", " << sp.getParameter() << ")";
-    return os;
+  os << "Slippage(" << sp.name() << ", " << sp.getParameter() << ")";
+  return os;
 }
 
 HAYAKU_API std::ostream& operator<<(std::ostream& os, const SlippagePtr& sp) {
-    if (sp) {
-        os << *sp;
-    } else {
-        os << "Slippage(NULL)";
-    }
-    return os;
+  if (sp) {
+    os << *sp;
+  } else {
+    os << "Slippage(NULL)";
+  }
+  return os;
 }
 
 SlippageBase::SlippageBase() : m_name("SlippageBase") {}
@@ -31,37 +31,37 @@ void SlippageBase::baseCheckParam(const string& name) const {}
 void SlippageBase::paramChanged() {}
 
 void SlippageBase::reset() {
-    m_kdata = Null<KData>();
-    _reset();
+  m_kdata = Null<KData>();
+  _reset();
 }
 
 SlippagePtr SlippageBase::clone() {
-    SlippagePtr p;
-    try {
-        p = _clone();
-    } catch (...) {
-        HAYAKU_ERROR("Subclass _clone failed!");
-        p = SlippagePtr();
-    }
+  SlippagePtr p;
+  try {
+    p = _clone();
+  } catch (...) {
+    HAYAKU_ERROR("Subclass _clone failed!");
+    p = SlippagePtr();
+  }
 
-    if (!p || p.get() == this) {
-        HAYAKU_ERROR("Failed clone! Will use self-ptr!");
-        return shared_from_this();
-    }
+  if (!p || p.get() == this) {
+    HAYAKU_ERROR("Failed clone! Will use self-ptr!");
+    return shared_from_this();
+  }
 
-    p->m_params = m_params;
-    p->m_name = m_name;
-    p->m_is_python_object = m_is_python_object;
-    p->m_kdata = m_kdata;
-    return p;
+  p->m_params = m_params;
+  p->m_name = m_name;
+  p->m_is_python_object = m_is_python_object;
+  p->m_kdata = m_kdata;
+  return p;
 }
 
 void SlippageBase::setTO(const KData& kdata) {
-    HAYAKU_IF_RETURN(m_kdata == kdata, void());
-    m_kdata = kdata;
-    if (!kdata.empty()) {
-        _calculate();
-    }
+  HAYAKU_IF_RETURN(m_kdata == kdata, void());
+  m_kdata = kdata;
+  if (!kdata.empty()) {
+    _calculate();
+  }
 }
 
 } /* namespace hayaku */

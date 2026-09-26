@@ -9,11 +9,11 @@
  *  Style factor neutralization regression helpers.
  */
 
-
 #include "data/MarketTypes.h"
 
 namespace hayaku {
 
-HAYAKU_API PriceList calculate_style_residuals(const PriceList& y, const vector<PriceList>& x);
+HAYAKU_API PriceList calculate_style_residuals(const PriceList& y,
+                                               const vector<PriceList>& x);
 
 }  // namespace hayaku

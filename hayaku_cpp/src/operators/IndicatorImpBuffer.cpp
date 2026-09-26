@@ -5,9 +5,10 @@
  *      Author: fasiondog
  */
 
+#include "IndicatorImpBuffer.h"
+
 #include <algorithm>
 #include <stdexcept>
-#include "IndicatorImpBuffer.h"
 
 #if HAYAKU_ENABLE_MIMALLOC
 #include <mimalloc.h>
@@ -20,119 +21,123 @@ namespace hayaku {
 // Overload the new and delete operators
 void* IndicatorImpBuffer::operator new(size_t size) {
 #if HAYAKU_ENABLE_MIMALLOC
-    void* ptr = mi_malloc_aligned(size, HAYAKU_IND_ALIGN_SIZE);
-    if (!ptr) {
-        throw std::bad_alloc();
-    }
-    return ptr;
+  void* ptr = mi_malloc_aligned(size, HAYAKU_IND_ALIGN_SIZE);
+  if (!ptr) {
+    throw std::bad_alloc();
+  }
+  return ptr;
 #else
-    void* ptr = std::malloc(size);
-    if (!ptr) {
-        throw std::bad_alloc();
-    }
-    return ptr;
+  void* ptr = std::malloc(size);
+  if (!ptr) {
+    throw std::bad_alloc();
+  }
+  return ptr;
 #endif
 }
 
 void IndicatorImpBuffer::operator delete(void* ptr) noexcept {
 #if HAYAKU_ENABLE_MIMALLOC
-    if (ptr) {
-        mi_free(ptr);
-    }
+  if (ptr) {
+    mi_free(ptr);
+  }
 #else
-    if (ptr) {
-        std::free(ptr);
-    }
+  if (ptr) {
+    std::free(ptr);
+  }
 #endif
 }
 
 void* IndicatorImpBuffer::operator new[](size_t size) {
 #if HAYAKU_ENABLE_MIMALLOC
-    void* ptr = mi_malloc_aligned(size, HAYAKU_IND_ALIGN_SIZE);
-    if (!ptr) {
-        throw std::bad_alloc();
-    }
-    return ptr;
+  void* ptr = mi_malloc_aligned(size, HAYAKU_IND_ALIGN_SIZE);
+  if (!ptr) {
+    throw std::bad_alloc();
+  }
+  return ptr;
 #else
-    void* ptr = std::malloc(size);
-    if (!ptr) {
-        throw std::bad_alloc();
-    }
-    return ptr;
+  void* ptr = std::malloc(size);
+  if (!ptr) {
+    throw std::bad_alloc();
+  }
+  return ptr;
 #endif
 }
 
 void IndicatorImpBuffer::operator delete[](void* ptr) noexcept {
 #if HAYAKU_ENABLE_MIMALLOC
-    if (ptr) {
-        mi_free(ptr);
-    }
+  if (ptr) {
+    mi_free(ptr);
+  }
 #else
-    if (ptr) {
-        std::free(ptr);
-    }
+  if (ptr) {
+    std::free(ptr);
+  }
 #endif
 }
 
 // Implementation of the Buffer member functions
-void IndicatorImpBuffer::Buffer::allocate(IndicatorImpBuffer::size_type new_capacity) {
-    if (new_capacity == 0) {
-        data = nullptr;
-        size = 0;
-        capacity = 0;
-        return;
-    }
+void IndicatorImpBuffer::Buffer::allocate(
+    IndicatorImpBuffer::size_type new_capacity) {
+  if (new_capacity == 0) {
+    data = nullptr;
+    size = 0;
+    capacity = 0;
+    return;
+  }
 
 #if HAYAKU_ENABLE_MIMALLOC
-    data = static_cast<value_type*>(
-      mi_malloc_aligned(new_capacity * sizeof(value_type), HAYAKU_IND_ALIGN_SIZE));
+  data = static_cast<value_type*>(mi_malloc_aligned(
+      new_capacity * sizeof(value_type), HAYAKU_IND_ALIGN_SIZE));
 #else
-    data = static_cast<value_type*>(std::malloc(new_capacity * sizeof(value_type)));
+  data =
+      static_cast<value_type*>(std::malloc(new_capacity * sizeof(value_type)));
 #endif
 
-    if (!data) {
-        throw std::bad_alloc();
-    }
-    capacity = new_capacity;
-    size = 0;
+  if (!data) {
+    throw std::bad_alloc();
+  }
+  capacity = new_capacity;
+  size = 0;
 }
 
 void IndicatorImpBuffer::Buffer::deallocate() {
-    if (data) {
+  if (data) {
 #if HAYAKU_ENABLE_MIMALLOC
-        mi_free(data);
+    mi_free(data);
 #else
-        std::free(data);
+    std::free(data);
 #endif
-        data = nullptr;
-        size = 0;
-        capacity = 0;
-    }
+    data = nullptr;
+    size = 0;
+    capacity = 0;
+  }
 }
 
-void IndicatorImpBuffer::Buffer::reallocate(IndicatorImpBuffer::size_type new_capacity) {
-    if (new_capacity == 0) {
-        deallocate();
-        return;
-    }
+void IndicatorImpBuffer::Buffer::reallocate(
+    IndicatorImpBuffer::size_type new_capacity) {
+  if (new_capacity == 0) {
+    deallocate();
+    return;
+  }
 
-    value_type* new_data;
+  value_type* new_data;
 #if HAYAKU_ENABLE_MIMALLOC
-    new_data = static_cast<value_type*>(
-      mi_realloc_aligned(data, new_capacity * sizeof(value_type), HAYAKU_IND_ALIGN_SIZE));
+  new_data = static_cast<value_type*>(mi_realloc_aligned(
+      data, new_capacity * sizeof(value_type), HAYAKU_IND_ALIGN_SIZE));
 #else
-    new_data = static_cast<value_type*>(std::realloc(data, new_capacity * sizeof(value_type)));
+  new_data = static_cast<value_type*>(
+      std::realloc(data, new_capacity * sizeof(value_type)));
 #endif
 
-    if (!new_data) {
-        throw std::bad_alloc();
-    }
+  if (!new_data) {
+    throw std::bad_alloc();
+  }
 
-    data = new_data;
-    capacity = new_capacity;
-    if (size > capacity) {
-        size = capacity;
-    }
+  data = new_data;
+  capacity = new_capacity;
+  if (size > capacity) {
+    size = capacity;
+  }
 }
 
 }  // namespace hayaku

@@ -6,7 +6,6 @@
  * Internal account capabilities used by portfolio capital allocation.
  */
 
-
 #include "ExecutionAccountPort.h"
 
 namespace hayaku::internal {
@@ -14,16 +13,17 @@ namespace hayaku::internal {
 class PortfolioAccountPort;
 using PortfolioAccountPortPtr = std::shared_ptr<PortfolioAccountPort>;
 
-/** Portfolio-only account operations, kept out of the strategy hot-path contract. */
+/** Portfolio-only account operations, kept out of the strategy hot-path
+ * contract. */
 class PortfolioAccountPort : public ExecutionAccountPort {
-public:
-    ~PortfolioAccountPort() override = default;
+ public:
+  ~PortfolioAccountPort() override = default;
 
-    [[nodiscard]] virtual PortfolioAccountPortPtr cloneAccount() const = 0;
-    [[nodiscard]] virtual PortfolioAccountPortPtr createChildAccount(
+  [[nodiscard]] virtual PortfolioAccountPortPtr cloneAccount() const = 0;
+  [[nodiscard]] virtual PortfolioAccountPortPtr createChildAccount(
       string name, price_t initialCash = 0.0) const = 0;
-    virtual bool checkout(const Datetime& datetime, price_t cash) = 0;
-    virtual bool addTradeRecord(const TradeRecord& record) = 0;
+  virtual bool checkout(const Datetime& datetime, price_t cash) = 0;
+  virtual bool addTradeRecord(const TradeRecord& record) = 0;
 };
 
 }  // namespace hayaku::internal

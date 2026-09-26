@@ -9,20 +9,22 @@
 
 namespace hayaku {
 
-HistoryFinanceInfo& HistoryFinanceInfo::operator=(const HistoryFinanceInfo& other) noexcept {
-    HAYAKU_IF_RETURN(this == &other, *this);
-    fileDate = other.fileDate;
-    reportDate = other.reportDate;
-    values = other.values;
-    return *this;
+HistoryFinanceInfo& HistoryFinanceInfo::operator=(
+    const HistoryFinanceInfo& other) noexcept {
+  HAYAKU_IF_RETURN(this == &other, *this);
+  fileDate = other.fileDate;
+  reportDate = other.reportDate;
+  values = other.values;
+  return *this;
 }
 
-HistoryFinanceInfo& HistoryFinanceInfo::operator=(HistoryFinanceInfo&& other) noexcept {
-    HAYAKU_IF_RETURN(this == &other, *this);
-    fileDate = std::move(other.fileDate);
-    reportDate = std::move(other.reportDate);
-    values = std::move(other.values);
-    return *this;
+HistoryFinanceInfo& HistoryFinanceInfo::operator=(
+    HistoryFinanceInfo&& other) noexcept {
+  HAYAKU_IF_RETURN(this == &other, *this);
+  fileDate = std::move(other.fileDate);
+  reportDate = std::move(other.reportDate);
+  values = std::move(other.values);
+  return *this;
 }
 
 }  // namespace hayaku

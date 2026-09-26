@@ -26,7 +26,7 @@ The operation rules of TimeDelta are basically the same as datetime.timedelta.
     
     To get the date list, see: :py:func:`getDateRange`
     
-    To get the trading dates, see: :py:meth:`StockManager.getTradingCalendar` 
+    To get trading dates, call ``session.data.get_trading_calendar`` in an open session.
 
     .. py:attribute:: year Year; an exception is raised if it is Null
     .. py:attribute:: month Month; an exception is raised if it is Null

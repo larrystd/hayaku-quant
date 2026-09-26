@@ -7,38 +7,40 @@
  *      Author: fasiondog
  */
 
-
 /******************************************************************************
  * This file is used by doxygen to generate the documentation only
  *****************************************************************************/
 
 /**
  * @mainpage Hayaku Quant Framework
- * Hayaku Quant Framework is an open-source C++/Python quantitative trading research framework for
- * strategy analysis and backtesting (currently aimed at the domestic securities market). Its core
- * idea is based on the current mature systematic trading method: the whole systematic trading is
- * abstracted into seven parts, namely the market environment strategy, the system
- * valid condition, the signal generator, the stop-loss / take-profit strategy, the money management
- * strategy, the profit goal strategy and the slippage algorithm. You can build the strategy asset
- * library of these parts separately and combine them freely in practical research to observe
- * the effectiveness and stability of the system as well as the effect of a single kind of strategy.
+ * Hayaku Quant Framework is an open-source C++/Python quantitative trading
+ * research framework for strategy analysis and backtesting (currently aimed at
+ * the domestic securities market). Its core idea is based on the current mature
+ * systematic trading method: the whole systematic trading is abstracted into
+ * seven parts, namely the market environment strategy, the system valid
+ * condition, the signal generator, the stop-loss / take-profit strategy, the
+ * money management strategy, the profit goal strategy and the slippage
+ * algorithm. You can build the strategy asset library of these parts separately
+ * and combine them freely in practical research to observe the effectiveness
+ * and stability of the system as well as the effect of a single kind of
+ * strategy.
  *
  * For more information, please visit:
  * <a href="https://github.com/larrystd/hayaku-quant">Hayaku Quant</a>
  */
 
 /**
- * The core library, it contains the stock data management, the indicator implementation, the
- * trading system framework, etc.
+ * The core library, it contains the stock data management, the indicator
+ * implementation, the trading system framework, etc.
  * @defgroup Hayaku Hayaku core engine library
- * @note Boost is used here as the basic C++ library, so it may depend heavily on Boost, which needs
- *       attention when porting
+ * @note Boost is used here as the basic C++ library, so it may depend heavily
+ * on Boost, which needs attention when porting
  *
  * @defgroup Base Base infrastructure
- * The base library, responsible for the Stock instance management, the K-line data reading, the
- * block management, etc.
- * @details The base library, responsible for the Stock instance management, the K-line data
- * reading, the block management, etc.
+ * The base library, responsible for the Stock instance management, the K-line
+ * data reading, the block management, etc.
+ * @details The base library, responsible for the Stock instance management, the
+ * K-line data reading, the block management, etc.
  * @ingroup Hayaku
  *
  * @defgroup DataType DataType basic data type definitions
@@ -52,40 +54,49 @@
  * @ingroup Base
  *
  * @defgroup DataDriver Data-Driver data driver engine
- * Read the market information, the security information, the block data, the K-line data, etc.
- * @details Read the market information, the security information, the block data, the K-line data,
- *          etc.; a custom data driver engine can be implemented as needed.
+ * Read the market information, the security information, the block data, the
+ * K-line data, etc.
+ * @details Read the market information, the security information, the block
+ * data, the K-line data, etc.; a custom data driver engine can be implemented
+ * as needed.
  * @ingroup Base
  *
  * @defgroup Indicator Indicator indicator library
- * The built-in common indicators and the infrastructure for defining and implementing new
- * indicators
- * @details It contains the indicator base class definition, some common indicators and the
- * indicator creation functions
+ * The built-in common indicators and the infrastructure for defining and
+ * implementing new indicators
+ * @details It contains the indicator base class definition, some common
+ * indicators and the indicator creation functions
  * @note
- * In a client program it is recommended to use the indicator creation functions as much as possible
- * to create the concrete indicator to be called, so as to avoid wrong memory allocation and release
- * \n Example: \n Indicator ma = MA(); \n std::cout << ma.name() << std::endl; \n
+ * In a client program it is recommended to use the indicator creation functions
+ * as much as possible to create the concrete indicator to be called, so as to
+ * avoid wrong memory allocation and release
+ * \n Example: \n Indicator ma = MA(); \n std::cout << ma.name() << std::endl;
+ * \n
  * @ingroup Hayaku
  *
  * @defgroup Execution Execution management
- * Trade management, responsible for recording every trade record and the current positions
- * @details Trade management, responsible for recording every trade record and the current positions
+ * Trade management, responsible for recording every trade record and the
+ * current positions
+ * @details Trade management, responsible for recording every trade record and
+ * the current positions
  * @ingroup Hayaku
  *
  * @defgroup TradeCost TradeCost trade cost algorithm
- * The trade cost algorithms, such as the A-share cost calculation (stamp duty / commission, etc.)
- * @details The trade cost algorithms, such as the A-share cost calculation (stamp duty /
+ * The trade cost algorithms, such as the A-share cost calculation (stamp duty /
  * commission, etc.)
+ * @details The trade cost algorithms, such as the A-share cost calculation
+ * (stamp duty / commission, etc.)
  * @ingroup Execution
  *
  * @defgroup ExecutionAccount Execution account value types
- * Execution management can be understood as an account ledger for simulated trading.
- * ExecutionEngine constructed with AccountConfig is the public account entry point.
+ * Execution management can be understood as an account ledger for simulated
+ * trading. ExecutionEngine constructed with AccountConfig is the public account
+ * entry point.
  * @ingroup Execution
  *
  * @defgroup OrderBroker OrderBroker order broker
- * The order broker, it implements the actual order operations and the programmatic orders
+ * The order broker, it implements the actual order operations and the
+ * programmatic orders
  * @ingroup Execution
  *
  * @defgroup Performance Performance performance statistics
@@ -109,45 +120,50 @@
  * @ingroup Portfolio
  *
  * @defgroup Environment Environment market environment
- * @details The market environment module, used to judge whether the current market
- *          environment is valid; a buy operation happens only when the market is in a valid state.
- *          When the market enters an invalid state, the general strategy of the system is to
- *          immediately force a liquidation.
+ * @details The market environment module, used to judge whether the current
+ * market environment is valid; a buy operation happens only when the market is
+ * in a valid state. When the market enters an invalid state, the general
+ * strategy of the system is to immediately force a liquidation.
  * @ingroup TradeSystem
  *
  * @defgroup Condition Condition system valid condition
- * @details It judges the precondition for the current system to be valid; when the system is in an
- *          invalid state no buy is suggested, and the held stocks are generally forced to be
- *          liquidated (the concrete behavior is decided by the concrete system strategy)
+ * @details It judges the precondition for the current system to be valid; when
+ * the system is in an invalid state no buy is suggested, and the held stocks
+ * are generally forced to be liquidated (the concrete behavior is decided by
+ * the concrete system strategy)
  * @ingroup TradeSystem
  *
  * @defgroup MoneyManager MoneyManager money management strategy
- * @details The money management strategy, it decides the quantity of every trade
+ * @details The money management strategy, it decides the quantity of every
+ * trade
  * @ingroup TradeSystem
  *
  * @defgroup Signal Signal signal generator
- * @details The signal generator module, including the various signal generator constructors. \n
- *          The signal generator is responsible for producing the buy and sell signals.
+ * @details The signal generator module, including the various signal generator
+ * constructors. \n The signal generator is responsible for producing the buy
+ * and sell signals.
  * @ingroup TradeSystem
  *
  * @defgroup Stoploss Stoploss stop-loss / take-profit strategy
- * @details A strategy that stops the loss in time when the market trend goes against the direction
- *          predicted by the signal generator.
+ * @details A strategy that stops the loss in time when the market trend goes
+ * against the direction predicted by the signal generator.
  * @ingroup TradeSystem
  *
  * @defgroup ProfitGoal ProfitGoal profit goal strategy
- * @details Before every trade is executed the trading goal is determined, so that the system
- *          suggests a sell trade after the price reaches the goal price
+ * @details Before every trade is executed the trading goal is determined, so
+ * that the system suggests a sell trade after the price reaches the goal price
  * @ingroup TradeSystem
  *
  * @defgroup Slippage Slippage slippage algorithm
  * @details
- * The price indicated by a buy or sell signal generated by the system usually cannot be used to
- * actually buy or sell at exactly that price in a real environment, due to the operation delay, the
- * jump of the quoted price, and so on. The deviation between such a theoretical price and the price
- * at which the buy may actually happen is called "slippage". In a system simulation the influence
- * of the slippage should be fully considered, and it is also a test of the system stability, i.e. a
- * small deviation does not have a large influence on the final return of the system.
+ * The price indicated by a buy or sell signal generated by the system usually
+ * cannot be used to actually buy or sell at exactly that price in a real
+ * environment, due to the operation delay, the jump of the quoted price, and so
+ * on. The deviation between such a theoretical price and the price at which the
+ * buy may actually happen is called "slippage". In a system simulation the
+ * influence of the slippage should be fully considered, and it is also a test
+ * of the system stability, i.e. a small deviation does not have a large
+ * influence on the final return of the system.
  * @ingroup TradeSystem
  *
  * @defgroup System System trading system
@@ -184,7 +200,7 @@
  */
 
 /**
- * The Hayaku core namespace, it contains the stock data management, the indicator implementation,
- * the trading system framework, etc.
+ * The Hayaku core namespace, it contains the stock data management, the
+ * indicator implementation, the trading system framework, etc.
  */
 namespace hayaku {}

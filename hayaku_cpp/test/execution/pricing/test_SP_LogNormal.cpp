@@ -5,9 +5,10 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
 #include <data/DataRuntime.h>
 #include <execution/pricing/SlippageModels.h>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -19,11 +20,11 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_LogNormalSlippage") {
-    auto sp = SP_LogNormal(0.0, 0.1);
-    CHECK_EQ(sp->name(), "SP_LogNormal");
+  auto sp = SP_LogNormal(0.0, 0.1);
+  CHECK_EQ(sp->name(), "SP_LogNormal");
 
-    CHECK_GE(sp->getRealBuyPrice(Datetime(202201010930), 10.0), 10.0);
-    CHECK_LE(sp->getRealSellPrice(Datetime(202201010930), 10.0), 10.0);
+  CHECK_GE(sp->getRealBuyPrice(Datetime(202201010930), 10.0), 10.0);
+  CHECK_LE(sp->getRealSellPrice(Datetime(202201010930), 10.0), 10.0);
 }
 
 /** @} */

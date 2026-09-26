@@ -7,20 +7,19 @@
  *      Author: fasiondog
  */
 
-
 #include "SignalBase.h"
 
 namespace hayaku {
 
 class CycleSignal : public SignalBase {
-    SIGNAL_IMP(CycleSignal)
-    SIGNAL_NO_PRIVATE_MEMBER_SERIALIZATION
+  SIGNAL_IMP(CycleSignal)
+  SIGNAL_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    CycleSignal();
-    virtual ~CycleSignal() = default;
+ public:
+  CycleSignal();
+  virtual ~CycleSignal() = default;
 
-    virtual void _checkParam(const string& name) const override;
+  virtual void _checkParam(const string& name) const override;
 };
 
-}
+}  // namespace hayaku

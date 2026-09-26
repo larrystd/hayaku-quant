@@ -7,6 +7,7 @@ PYTHON_PREFIX="${PYTHON_PREFIX:-/opt/homebrew/opt/python@3.10}"
 PYTHON_BIN="${PYTHON_BIN:-${PYTHON_PREFIX}/bin/python3.10}"
 PYTHON_LIBEXEC="${PYTHON_LIBEXEC:-${PYTHON_PREFIX}/libexec/bin}"
 XMAKE_BIN="${XMAKE_BIN:-${HOME}/.local/bin/xmake}"
+STYLE_PYTHON="${STYLE_PYTHON:-$(command -v python3 || true)}"
 BUILD_KIND="${BUILD_KIND:-shared}"
 BUILD_LIB="${PROJECT_DIR}/build/release/macosx/arm64/lib"
 
@@ -23,6 +24,7 @@ fi
 export PATH="${PYTHON_LIBEXEC}:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 export SDKROOT
 export PYTHONPATH="${PROJECT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
+export HAYAKU_PYTHON="${HAYAKU_PYTHON:-${PYTHON_BIN}}"
 
 cd "${PROJECT_DIR}"
 
@@ -33,15 +35,24 @@ Usage: ./op.sh <command> [arguments]
 Build commands:
   configure [shared|static]  Configure a release build (default: shared)
   build                      Build the C++ core and Python 3.10 extension
+  build-optional             Build the ingest and realtime Python extensions
   rebuild [shared|static]    Configure, then build
   clean                      Remove xmake build outputs (keeps downloaded packages)
 
 Test commands:
   small-test                 Build and run the small C++ test suite
   unit-test                  Build and run the complete C++ test suite
-  python-test                Run the Python 3.10 test suite
+  python-test                Run the Python 3.10 test suite (build optional modules first)
   test                       Run all three test suites
   all [shared|static]        Configure, build, and run all tests
+  asan-test                  Build and run C++ tests in an isolated ASan configuration
+
+C++ quality commands (LLVM 20):
+  fmt-check [files...]      Check named files, or all tracked handwritten C/C++ files
+  fmt <files...>             Format only the named files
+  fmt-all                    Format all tracked handwritten C/C++ files
+  tidy <files...>            Inspect named compilation units without applying fixes
+  tidy-strict <files...>     Fail on clang-tidy warnings in named units
 
 Other commands:
   import-test                Import hayaku with Python 3.10 and print its version
@@ -54,15 +65,21 @@ Environment overrides:
   PYTHON_PREFIX              Homebrew Python prefix
   PYTHON_BIN                 Python executable
   PYTHON_LIBEXEC             Directory containing the `python` command
+  HAYAKU_PYTHON              Python used by Xmake native extension targets
   XMAKE_BIN                  xmake executable (CI-compatible 3.0.8 recommended)
   BUILD_KIND                 Default library kind: shared or static
+  STYLE_PYTHON               Python 3 executable for C++ quality commands
+  HAYAKU_LLVM_BIN            Directory containing clang-format and clang-tidy 20
 
 Examples:
   ./op.sh configure
   ./op.sh build
+  ./op.sh build-optional
   ./op.sh small-test
   ./op.sh test
   ./op.sh all
+  ./op.sh fmt-check
+  ./op.sh fmt hayaku_cpp/src/execution/OrderOrigin.cpp
 EOF
 }
 
@@ -89,6 +106,11 @@ configure() {
 
 build() {
     "${XMAKE_BIN}" -b core
+}
+
+build_optional() {
+    "${XMAKE_BIN}" -b ingest
+    "${XMAKE_BIN}" -b realtime
 }
 
 small_test() {
@@ -125,9 +147,17 @@ doctor() {
     echo "Architecture:  $(uname -m)"
     echo "SDKROOT:       ${SDKROOT}"
     echo "Python:        ${PYTHON_BIN}"
-    "${PYTHON_BIN}" --version
+    if [[ -x "${PYTHON_BIN}" ]]; then "${PYTHON_BIN}" --version; fi
     echo "xmake:         ${XMAKE_BIN}"
-    "${XMAKE_BIN}" --version | head -n 1
+    if [[ -n "${XMAKE_BIN}" && -x "${XMAKE_BIN}" ]]; then
+        "${XMAKE_BIN}" --version | head -n 1
+    fi
+    echo "LLVM tools:"
+    if [[ -n "${STYLE_PYTHON}" ]]; then
+        "${STYLE_PYTHON}" tools/cpp_style.py doctor
+    else
+        echo "  Python 3 not found"
+    fi
     echo "Build kind:    ${BUILD_KIND}"
     echo "Build output:  ${BUILD_LIB}"
     if [[ -f "${PROJECT_DIR}/hayaku/cpp/core310.so" ]]; then
@@ -137,10 +167,49 @@ doctor() {
     fi
 }
 
-require_tools
+style_python() {
+    if [[ -z "${STYLE_PYTHON}" || ! -x "${STYLE_PYTHON}" ]]; then
+        echo "Error: Python 3 was not found. Set STYLE_PYTHON." >&2
+        exit 1
+    fi
+    "${STYLE_PYTHON}" tools/cpp_style.py "$@"
+}
+
+asan_test() (
+    if [[ "$(uname -s)" != "Darwin" && "$(uname -s)" != "Linux" ]]; then
+        echo "Error: asan-test currently supports macOS and Linux." >&2
+        exit 2
+    fi
+    local saved_config
+    saved_config="$(mktemp)"
+    "${XMAKE_BIN}" f --export="${saved_config}" -y >/dev/null
+    restore_config() {
+        "${XMAKE_BIN}" f --import="${saved_config}" -y >/dev/null
+        rm -f "${saved_config}"
+    }
+    trap restore_config EXIT
+    "${XMAKE_BIN}" f -m release -k shared --leak_check=y --builddir=build/asan -y --feedback=n
+    local target
+    for target in small-test unit-test ingest realtime core; do
+        "${XMAKE_BIN}" -b "${target}"
+    done
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        export ASAN_OPTIONS="${ASAN_OPTIONS:-detect_leaks=0}"
+    else
+        export ASAN_OPTIONS="${ASAN_OPTIONS:-detect_leaks=1}"
+    fi
+    "${XMAKE_BIN}" r small-test
+    "${XMAKE_BIN}" r unit-test
+)
 
 command_name="${1:-help}"
 shift || true
+
+case "${command_name}" in
+    configure|build|build-optional|rebuild|clean|small-test|unit-test|python-test|test|all|import-test|run-small-binary|run-unit-binary|asan-test)
+        require_tools
+        ;;
+esac
 
 case "${command_name}" in
     configure)
@@ -148,6 +217,9 @@ case "${command_name}" in
         ;;
     build)
         build
+        ;;
+    build-optional)
+        build_optional
         ;;
     rebuild)
         configure "${1:-${BUILD_KIND}}"
@@ -168,6 +240,7 @@ case "${command_name}" in
     test)
         small_test
         unit_test
+        build_optional
         python_test
         ;;
     all)
@@ -175,7 +248,34 @@ case "${command_name}" in
         build
         small_test
         unit_test
+        build_optional
         python_test
+        ;;
+    fmt-check)
+        if [[ $# -eq 0 ]]; then
+            style_python format --all
+        else
+            style_python format "$@"
+        fi
+        ;;
+    fmt)
+        if [[ $# -eq 0 ]]; then echo "Error: fmt requires explicit files." >&2; exit 2; fi
+        style_python format --write "$@"
+        ;;
+    fmt-all)
+        if [[ $# -ne 0 ]]; then echo "Error: fmt-all takes no files." >&2; exit 2; fi
+        style_python format --all --write
+        ;;
+    tidy)
+        if [[ $# -eq 0 ]]; then echo "Error: tidy requires explicit files." >&2; exit 2; fi
+        style_python tidy "$@"
+        ;;
+    tidy-strict)
+        if [[ $# -eq 0 ]]; then echo "Error: tidy-strict requires explicit files." >&2; exit 2; fi
+        style_python tidy --strict "$@"
+        ;;
+    asan-test)
+        asan_test
         ;;
     import-test)
         import_test

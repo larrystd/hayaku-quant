@@ -6,12 +6,12 @@
  * Application-side assembly of optional data capabilities.
  */
 
-
 #include "SessionOptions.h"
 
 namespace hayaku {
 
-/** Prepare optional adapters before DataRuntime::init. Called for the first active Session only. */
+/** Prepare optional adapters before DataRuntime::init. Called for the first
+ * active Session only. */
 void prepareDataRuntimeAssembly(const SessionOptions& options);
 
 /** Stop bridges that can call back into a released DataRuntime. */

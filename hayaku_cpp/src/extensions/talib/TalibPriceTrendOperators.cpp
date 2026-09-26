@@ -8,19 +8,18 @@
  *      Author: fasiondog
  */
 
-
 #include "operators/Indicator.h"
 
 namespace hayaku {
 
 class TaSar : public IndicatorImp {
-    INDICATOR_IMP(TaSar)
-    INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
+  INDICATOR_IMP(TaSar)
+  INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    TaSar();
-    virtual ~TaSar() = default;
-    virtual void _checkParam(const string& name) const override;
+ public:
+  TaSar();
+  virtual ~TaSar() = default;
+  virtual void _checkParam(const string& name) const override;
 };
 
 }  // namespace hayaku
@@ -41,68 +40,71 @@ BOOST_CLASS_EXPORT(hayaku::TaSar)
 namespace hayaku {
 
 TaSar::TaSar() : IndicatorImp("TA_SAR", 1) {
-    m_need_context = true;
-    setParam<double>("acceleration", 0.02);
-    setParam<double>("maximum", 0.2);
+  m_need_context = true;
+  setParam<double>("acceleration", 0.02);
+  setParam<double>("maximum", 0.2);
 }
 
 void TaSar::_checkParam(const string& name) const {
-    if (name == "acceleration" || name == "maximum") {
-        double p = getParam<double>(name);
-        HAYAKU_CHECK(p >= 0.0 && p <= 3.000000e+37, "{} must >= 0!", name);
-    }
+  if (name == "acceleration" || name == "maximum") {
+    double p = getParam<double>(name);
+    HAYAKU_CHECK(p >= 0.0 && p <= 3.000000e+37, "{} must >= 0!", name);
+  }
 }
 
 void TaSar::_calculate(const Indicator& data) {
-    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
-                "The input is ignored because {} depends on the context!", m_name);
+  HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
+                 "The input is ignored because {} depends on the context!",
+                 m_name);
 
-    const KData& k = getContext();
-    size_t total = k.size();
-    HAYAKU_IF_RETURN(total == 0, void());
+  const KData& k = getContext();
+  size_t total = k.size();
+  HAYAKU_IF_RETURN(total == 0, void());
 
-    _readyBuffer(total, 1);
+  _readyBuffer(total, 1);
 
-    double acceleration = getParam<double>("acceleration");
-    double maximum = getParam<double>("maximum");
-    int back = TA_SAR_Lookback(acceleration, maximum);
-    if (back < 0 || back >= total) {
-        m_discard = total;
-        return;
-    }
+  double acceleration = getParam<double>("acceleration");
+  double maximum = getParam<double>("maximum");
+  int back = TA_SAR_Lookback(acceleration, maximum);
+  if (back < 0 || back >= total) {
+    m_discard = total;
+    return;
+  }
 
-    const KRecord* kptr = k.data();
-    std::unique_ptr<double[]> buf = std::make_unique<double[]>(2 * total);
-    double* high = buf.get();
-    double* low = high + total;
-    for (size_t i = 0; i < total; ++i) {
-        high[i] = kptr[i].highPrice;
-        low[i] = kptr[i].lowPrice;
-    }
+  const KRecord* kptr = k.data();
+  std::unique_ptr<double[]> buf = std::make_unique<double[]>(2 * total);
+  double* high = buf.get();
+  double* low = high + total;
+  for (size_t i = 0; i < total; ++i) {
+    high[i] = kptr[i].highPrice;
+    low[i] = kptr[i].lowPrice;
+  }
 
-    auto* dst = this->data();
-    m_discard = back;
-    int outBegIdx;
-    int outNbElement;
-    ::TA_SAR(m_discard, total - 1, high, low, acceleration, maximum, &outBegIdx, &outNbElement,
-           dst + m_discard);
-    HAYAKU_ASSERT((outBegIdx == m_discard) && (outBegIdx + outNbElement) <= total);
+  auto* dst = this->data();
+  m_discard = back;
+  int outBegIdx;
+  int outNbElement;
+  ::TA_SAR(m_discard, total - 1, high, low, acceleration, maximum, &outBegIdx,
+           &outNbElement, dst + m_discard);
+  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+                (outBegIdx + outNbElement) <= total);
 }
 
 Indicator HAYAKU_API TA_SAR(double acceleration, double maximum) {
-    auto p = make_shared<TaSar>();
-    p->setParam<double>("acceleration", acceleration);
-    p->setParam<double>("maximum", maximum);
-    p->calculate();
-    return Indicator(p);
+  auto p = make_shared<TaSar>();
+  p->setParam<double>("acceleration", acceleration);
+  p->setParam<double>("maximum", maximum);
+  p->calculate();
+  return Indicator(p);
 }
 
-Indicator HAYAKU_API TA_SAR(const KData& k, double acceleration, double maximum) {
-    auto p = make_shared<TaSar>();
-    p->setParam<double>("acceleration", acceleration);
-    p->setParam<double>("maximum", maximum);
-    p->setContext(k);
-    return Indicator(p);
+Indicator HAYAKU_API TA_SAR(const KData& k, double acceleration,
+                            double maximum) {
+  auto p = make_shared<TaSar>();
+  p->setParam<double>("acceleration", acceleration);
+  p->setParam<double>("maximum", maximum);
+  p->setContext(k);
+  return Indicator(p);
 }
 
 } /* namespace hayaku */
@@ -114,22 +116,22 @@ Indicator HAYAKU_API TA_SAR(const KData& k, double acceleration, double maximum)
  *      Author: fasiondog
  */
 
-
 #include "operators/Indicator.h"
 
 namespace hayaku {
 
 class TaSarext : public IndicatorImp {
-    INDICATOR_IMP(TaSarext)
-    INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
+  INDICATOR_IMP(TaSarext)
+  INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    TaSarext();
-    TaSarext(double startvalue, double offsetonreverse, double accelerationinitlong,
-             double accelerationlong, double accelerationmaxlong, double accelerationinitshort,
-             double accelerationshort, double accelerationmaxshort);
-    virtual ~TaSarext() = default;
-    virtual void _checkParam(const string& name) const override;
+ public:
+  TaSarext();
+  TaSarext(double startvalue, double offsetonreverse,
+           double accelerationinitlong, double accelerationlong,
+           double accelerationmaxlong, double accelerationinitshort,
+           double accelerationshort, double accelerationmaxshort);
+  virtual ~TaSarext() = default;
+  virtual void _checkParam(const string& name) const override;
 };
 
 }  // namespace hayaku
@@ -150,108 +152,118 @@ BOOST_CLASS_EXPORT(hayaku::TaSarext)
 namespace hayaku {
 
 TaSarext::TaSarext() : IndicatorImp("TA_SAREXT", 1) {
-    m_need_context = true;
-    setParam<double>("startvalue", 0.0);
-    setParam<double>("offsetonreverse", 0.0);
-    setParam<double>("accelerationinitlong", 0.02);
-    setParam<double>("accelerationlong", 0.02);
-    setParam<double>("accelerationmaxlong", 0.2);
-    setParam<double>("accelerationinitshort", 0.02);
-    setParam<double>("accelerationshort", 0.02);
-    setParam<double>("accelerationmaxshort", 0.2);
+  m_need_context = true;
+  setParam<double>("startvalue", 0.0);
+  setParam<double>("offsetonreverse", 0.0);
+  setParam<double>("accelerationinitlong", 0.02);
+  setParam<double>("accelerationlong", 0.02);
+  setParam<double>("accelerationmaxlong", 0.2);
+  setParam<double>("accelerationinitshort", 0.02);
+  setParam<double>("accelerationshort", 0.02);
+  setParam<double>("accelerationmaxshort", 0.2);
 }
 
-TaSarext::TaSarext(double startvalue, double offsetonreverse, double accelerationinitlong,
-                   double accelerationlong, double accelerationmaxlong,
-                   double accelerationinitshort, double accelerationshort,
-                   double accelerationmaxshort)
-: IndicatorImp("TA_SAREXT", 1) {
-    m_need_context = true;
-    setParam<double>("startvalue", startvalue);
-    setParam<double>("offsetonreverse", offsetonreverse);
-    setParam<double>("accelerationinitlong", accelerationinitlong);
-    setParam<double>("accelerationlong", accelerationlong);
-    setParam<double>("accelerationmaxlong", accelerationmaxlong);
-    setParam<double>("accelerationinitshort", accelerationinitshort);
-    setParam<double>("accelerationshort", accelerationshort);
-    setParam<double>("accelerationmaxshort", accelerationmaxshort);
+TaSarext::TaSarext(double startvalue, double offsetonreverse,
+                   double accelerationinitlong, double accelerationlong,
+                   double accelerationmaxlong, double accelerationinitshort,
+                   double accelerationshort, double accelerationmaxshort)
+    : IndicatorImp("TA_SAREXT", 1) {
+  m_need_context = true;
+  setParam<double>("startvalue", startvalue);
+  setParam<double>("offsetonreverse", offsetonreverse);
+  setParam<double>("accelerationinitlong", accelerationinitlong);
+  setParam<double>("accelerationlong", accelerationlong);
+  setParam<double>("accelerationmaxlong", accelerationmaxlong);
+  setParam<double>("accelerationinitshort", accelerationinitshort);
+  setParam<double>("accelerationshort", accelerationshort);
+  setParam<double>("accelerationmaxshort", accelerationmaxshort);
 }
 
 void TaSarext::_checkParam(const string& name) const {
-    if (name == "startvalue") {
-        HAYAKU_ASSERT(!std::isnan(getParam<double>(name)));
-    } else if (name == "offsetonreverse" || name == "accelerationlong" ||
-               name == "accelerationshort" || name == "accelerationmaxshort" ||
-               name == "accelerationinitlong" || name == "accelerationmaxlong" ||
-               name == "accelerationinitshort") {
-        double p = getParam<double>(name);
-        HAYAKU_CHECK(p >= 0, "{} must >= 0!", name);
-    }
+  if (name == "startvalue") {
+    HAYAKU_ASSERT(!std::isnan(getParam<double>(name)));
+  } else if (name == "offsetonreverse" || name == "accelerationlong" ||
+             name == "accelerationshort" || name == "accelerationmaxshort" ||
+             name == "accelerationinitlong" || name == "accelerationmaxlong" ||
+             name == "accelerationinitshort") {
+    double p = getParam<double>(name);
+    HAYAKU_CHECK(p >= 0, "{} must >= 0!", name);
+  }
 }
 
 void TaSarext::_calculate(const Indicator& data) {
-    HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
-                "The input is ignored because {} depends on the context!", m_name);
+  HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
+                 "The input is ignored because {} depends on the context!",
+                 m_name);
 
-    const KData& k = getContext();
-    size_t total = k.size();
-    HAYAKU_IF_RETURN(total == 0, void());
+  const KData& k = getContext();
+  size_t total = k.size();
+  HAYAKU_IF_RETURN(total == 0, void());
 
-    _readyBuffer(total, 1);
+  _readyBuffer(total, 1);
 
-    double startvalue = getParam<double>("startvalue");
-    double offsetonreverse = getParam<double>("offsetonreverse");
-    double accelerationinitlong = getParam<double>("accelerationinitlong");
-    double accelerationlong = getParam<double>("accelerationlong");
-    double accelerationmaxlong = getParam<double>("accelerationmaxlong");
-    double accelerationinitshort = getParam<double>("accelerationinitshort");
-    double accelerationshort = getParam<double>("accelerationshort");
-    double accelerationmaxshort = getParam<double>("accelerationmaxshort");
-    int back = TA_SAREXT_Lookback(startvalue, offsetonreverse, accelerationinitlong,
-                                  accelerationlong, accelerationmaxlong, accelerationinitshort,
-                                  accelerationshort, accelerationmaxshort);
-    if (back < 0 || back >= total) {
-        m_discard = total;
-        return;
-    }
+  double startvalue = getParam<double>("startvalue");
+  double offsetonreverse = getParam<double>("offsetonreverse");
+  double accelerationinitlong = getParam<double>("accelerationinitlong");
+  double accelerationlong = getParam<double>("accelerationlong");
+  double accelerationmaxlong = getParam<double>("accelerationmaxlong");
+  double accelerationinitshort = getParam<double>("accelerationinitshort");
+  double accelerationshort = getParam<double>("accelerationshort");
+  double accelerationmaxshort = getParam<double>("accelerationmaxshort");
+  int back = TA_SAREXT_Lookback(startvalue, offsetonreverse,
+                                accelerationinitlong, accelerationlong,
+                                accelerationmaxlong, accelerationinitshort,
+                                accelerationshort, accelerationmaxshort);
+  if (back < 0 || back >= total) {
+    m_discard = total;
+    return;
+  }
 
-    const KRecord* kptr = k.data();
-    std::unique_ptr<double[]> buf = std::make_unique<double[]>(2 * total);
-    double* high = buf.get();
-    double* low = high + total;
-    for (size_t i = 0; i < total; ++i) {
-        high[i] = kptr[i].highPrice;
-        low[i] = kptr[i].lowPrice;
-    }
+  const KRecord* kptr = k.data();
+  std::unique_ptr<double[]> buf = std::make_unique<double[]>(2 * total);
+  double* high = buf.get();
+  double* low = high + total;
+  for (size_t i = 0; i < total; ++i) {
+    high[i] = kptr[i].highPrice;
+    low[i] = kptr[i].lowPrice;
+  }
 
-    auto* dst = this->data();
-    m_discard = back;
-    int outBegIdx;
-    int outNbElement;
-    ::TA_SAREXT(m_discard, total - 1, high, low, startvalue, offsetonreverse, accelerationinitlong,
-              accelerationlong, accelerationmaxlong, accelerationinitshort, accelerationshort,
-              accelerationmaxshort, &outBegIdx, &outNbElement, dst + m_discard);
-    HAYAKU_ASSERT((outBegIdx == m_discard) && (outBegIdx + outNbElement) <= total);
+  auto* dst = this->data();
+  m_discard = back;
+  int outBegIdx;
+  int outNbElement;
+  ::TA_SAREXT(m_discard, total - 1, high, low, startvalue, offsetonreverse,
+              accelerationinitlong, accelerationlong, accelerationmaxlong,
+              accelerationinitshort, accelerationshort, accelerationmaxshort,
+              &outBegIdx, &outNbElement, dst + m_discard);
+  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+                (outBegIdx + outNbElement) <= total);
 }
 
-Indicator HAYAKU_API TA_SAREXT(double startvalue, double offsetonreverse, double accelerationinitlong,
-                            double accelerationlong, double accelerationmaxlong,
-                            double accelerationinitshort, double accelerationshort,
-                            double accelerationmaxshort) {
-    return Indicator(make_shared<TaSarext>(
-      startvalue, offsetonreverse, accelerationinitlong, accelerationlong, accelerationmaxlong,
-      accelerationinitshort, accelerationshort, accelerationmaxshort));
+Indicator HAYAKU_API TA_SAREXT(double startvalue, double offsetonreverse,
+                               double accelerationinitlong,
+                               double accelerationlong,
+                               double accelerationmaxlong,
+                               double accelerationinitshort,
+                               double accelerationshort,
+                               double accelerationmaxshort) {
+  return Indicator(make_shared<TaSarext>(
+      startvalue, offsetonreverse, accelerationinitlong, accelerationlong,
+      accelerationmaxlong, accelerationinitshort, accelerationshort,
+      accelerationmaxshort));
 }
 
-Indicator HAYAKU_API TA_SAREXT(const KData& k, double startvalue, double offsetonreverse,
-                            double accelerationinitlong, double accelerationlong,
-                            double accelerationmaxlong, double accelerationinitshort,
-                            double accelerationshort, double accelerationmaxshort) {
-    auto p = make_shared<TaSarext>(startvalue, offsetonreverse, accelerationinitlong,
-                                   accelerationlong, accelerationmaxlong, accelerationinitshort,
-                                   accelerationshort, accelerationmaxshort);
-    p->setContext(k);
-    return Indicator(p);
+Indicator HAYAKU_API
+TA_SAREXT(const KData& k, double startvalue, double offsetonreverse,
+          double accelerationinitlong, double accelerationlong,
+          double accelerationmaxlong, double accelerationinitshort,
+          double accelerationshort, double accelerationmaxshort) {
+  auto p = make_shared<TaSarext>(startvalue, offsetonreverse,
+                                 accelerationinitlong, accelerationlong,
+                                 accelerationmaxlong, accelerationinitshort,
+                                 accelerationshort, accelerationmaxshort);
+  p->setContext(k);
+  return Indicator(p);
 }
 
 } /* namespace hayaku */

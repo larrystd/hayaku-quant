@@ -5,12 +5,14 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
-#include <fstream>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <data/DataRuntime.h>
 #include <common/serialization/StockWeight_serialization.h>
+#include <data/DataRuntime.h>
+
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <fstream>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -24,38 +26,38 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_StockWeight_serialize") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/StockWeight.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/StockWeight.xml";
 
-    Stock stock = sm.getStock("sh600000");
-    StockWeightList weight_list_1 = stock.getWeight();
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(weight_list_1);
-    }
+  Stock stock = sm.getStock("sh600000");
+  StockWeightList weight_list_1 = stock.getWeight();
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(weight_list_1);
+  }
 
-    StockWeightList weight_list_2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(weight_list_2);
-    }
+  StockWeightList weight_list_2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(weight_list_2);
+  }
 
-    CHECK_EQ(weight_list_1.size(), weight_list_2.size());
-    CHECK_NE(weight_list_1.size(), 0);
-    size_t total = weight_list_2.size();
-    for (size_t i = 0; i < total; ++i) {
-        CHECK_EQ(weight_list_1[i].datetime(), weight_list_2[i].datetime());
-        CHECK_EQ(weight_list_1[i].countAsGift(), weight_list_2[i].countAsGift());
-        CHECK_EQ(weight_list_1[i].countForSell(), weight_list_2[i].countForSell());
-        CHECK_EQ(weight_list_1[i].priceForSell(), weight_list_2[i].priceForSell());
-        CHECK_EQ(weight_list_1[i].bonus(), weight_list_2[i].bonus());
-        CHECK_EQ(weight_list_1[i].increasement(), weight_list_2[i].increasement());
-        CHECK_EQ(weight_list_1[i].totalCount(), weight_list_2[i].totalCount());
-        CHECK_EQ(weight_list_1[i].freeCount(), weight_list_2[i].freeCount());
-    }
+  CHECK_EQ(weight_list_1.size(), weight_list_2.size());
+  CHECK_NE(weight_list_1.size(), 0);
+  size_t total = weight_list_2.size();
+  for (size_t i = 0; i < total; ++i) {
+    CHECK_EQ(weight_list_1[i].datetime(), weight_list_2[i].datetime());
+    CHECK_EQ(weight_list_1[i].countAsGift(), weight_list_2[i].countAsGift());
+    CHECK_EQ(weight_list_1[i].countForSell(), weight_list_2[i].countForSell());
+    CHECK_EQ(weight_list_1[i].priceForSell(), weight_list_2[i].priceForSell());
+    CHECK_EQ(weight_list_1[i].bonus(), weight_list_2[i].bonus());
+    CHECK_EQ(weight_list_1[i].increasement(), weight_list_2[i].increasement());
+    CHECK_EQ(weight_list_1[i].totalCount(), weight_list_2[i].totalCount());
+    CHECK_EQ(weight_list_1[i].freeCount(), weight_list_2[i].freeCount());
+  }
 }
 
 /** @} */

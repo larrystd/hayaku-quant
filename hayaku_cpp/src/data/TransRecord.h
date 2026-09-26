@@ -7,7 +7,6 @@
  *      Author: fasiondog
  */
 
-
 #include "MarketTypes.h"
 
 namespace hayaku {
@@ -17,16 +16,18 @@ namespace hayaku {
  * @ingroup StockManage
  */
 class HAYAKU_API TransRecord {
-public:
-    Datetime datetime;  // Time
-    price_t price;      // Average transaction price
-    price_t vol;        // Trading volume
-    int32_t direct;     // Order direction: 1 -- sell, 0 -- buy, 2 -- call auction, others unknown
+ public:
+  Datetime datetime;  // Time
+  price_t price;      // Average transaction price
+  price_t vol;        // Trading volume
+  int32_t direct;  // Order direction: 1 -- sell, 0 -- buy, 2 -- call auction,
+                   // others unknown
 
-    TransRecord();
-    TransRecord(const Datetime& datetime, price_t price, price_t vol, int32_t direct);
+  TransRecord();
+  TransRecord(const Datetime& datetime, price_t price, price_t vol,
+              int32_t direct);
 
-    bool isValid() const noexcept;
+  bool isValid() const noexcept;
 };
 
 /**
@@ -37,7 +38,8 @@ typedef vector<TransRecord> TransList;
 typedef vector<TransRecord> TransRecordList;
 
 /**
- * Output the TransRecord information, e.g. TimeSharingRecord(datetime, price, vol)
+ * Output the TransRecord information, e.g. TimeSharingRecord(datetime, price,
+ * vol)
  * @ingroup StockManage
  */
 HAYAKU_API std::ostream& operator<<(std::ostream&, const TransRecord&);

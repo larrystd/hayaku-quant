@@ -5,10 +5,12 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/MomentumOperators.h>
+
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -20,29 +22,29 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_VIGOR") {
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KData kdata;
-    Indicator vigor;
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KData kdata;
+  Indicator vigor;
 
-    /** @arg When kdata is empty */
-    vigor = VIGOR(kdata, 1);
-    CHECK_EQ(vigor.size(), 0);
-    CHECK_EQ(vigor.empty(), true);
+  /** @arg When kdata is empty */
+  vigor = VIGOR(kdata, 1);
+  CHECK_EQ(vigor.size(), 0);
+  CHECK_EQ(vigor.empty(), true);
 
-    /** @arg The normal case */
-    KQuery query = KQuery(0, 10);
-    kdata = stock.getKData(query);
-    CHECK_EQ(kdata.size(), 10);
-    vigor = VIGOR(kdata, 1);
-    CHECK_EQ(vigor.discard(), 1);
-    CHECK_EQ(vigor.size(), 10);
-    CHECK_UNARY_FALSE(vigor.empty());
-    CHECK_UNARY(std::isnan(vigor[0]));
-    CHECK_EQ(vigor[1], doctest::Approx(-11761.36));
+  /** @arg The normal case */
+  KQuery query = KQuery(0, 10);
+  kdata = stock.getKData(query);
+  CHECK_EQ(kdata.size(), 10);
+  vigor = VIGOR(kdata, 1);
+  CHECK_EQ(vigor.discard(), 1);
+  CHECK_EQ(vigor.size(), 10);
+  CHECK_UNARY_FALSE(vigor.empty());
+  CHECK_UNARY(std::isnan(vigor[0]));
+  CHECK_EQ(vigor[1], doctest::Approx(-11761.36));
 
-    vigor = VIGOR(kdata, 2);
-    CHECK_EQ(vigor.discard(), 1);
+  vigor = VIGOR(kdata, 2);
+  CHECK_EQ(vigor.discard(), 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -50,19 +52,20 @@ TEST_CASE("test_VIGOR") {
 //-----------------------------------------------------------------------------
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_VIGOR_benchemark") {
-    Stock stock = getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(0));
-    Indicator c = kdata.close();
-    int cycle = 1000;  // Test loop count
+  Stock stock = getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(0));
+  Indicator c = kdata.close();
+  int cycle = 1000;  // Test loop count
 
-    {
-        BENCHMARK_TIME_MSG(test_VIGOR_benchemark, cycle, fmt::format("data len: {}", c.size()));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            Indicator ind = VIGOR();
-            Indicator result = ind(kdata);
-        }
+  {
+    BENCHMARK_TIME_MSG(test_VIGOR_benchemark, cycle,
+                       fmt::format("data len: {}", c.size()));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      Indicator ind = VIGOR();
+      Indicator result = ind(kdata);
     }
+  }
 }
 #endif
 
@@ -73,32 +76,32 @@ TEST_CASE("test_VIGOR_benchemark") {
 
 /** @par Test points */
 TEST_CASE("test_VIGOR_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/VIGOR.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/VIGOR.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator ma1 = VIGOR(kdata, 10);
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(ma1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator ma1 = VIGOR(kdata, 10);
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(ma1);
+  }
 
-    Indicator ma2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(ma2);
-    }
+  Indicator ma2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(ma2);
+  }
 
-    CHECK_EQ(ma1.size(), ma2.size());
-    CHECK_EQ(ma1.discard(), ma2.discard());
-    CHECK_EQ(ma1.getResultNumber(), ma2.getResultNumber());
-    for (size_t i = ma1.discard(); i < ma1.size(); ++i) {
-        CHECK_EQ(ma1[i], doctest::Approx(ma2[i]).epsilon(0.00001));
-    }
+  CHECK_EQ(ma1.size(), ma2.size());
+  CHECK_EQ(ma1.discard(), ma2.discard());
+  CHECK_EQ(ma1.getResultNumber(), ma2.getResultNumber());
+  for (size_t i = ma1.discard(); i < ma1.size(); ++i) {
+    CHECK_EQ(ma1[i], doctest::Approx(ma2[i]).epsilon(0.00001));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

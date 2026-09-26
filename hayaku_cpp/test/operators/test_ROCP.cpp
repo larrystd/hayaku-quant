@@ -7,11 +7,13 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/MomentumOperators.h>
 #include <operators/SeriesOperators.h>
+
+#include <fstream>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -23,86 +25,86 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_ROCP") {
-    Indicator result;
+  Indicator result;
 
-    PriceList a;
-    for (int i = 0; i < 10; ++i) {
-        a.push_back(i);
-    }
+  PriceList a;
+  for (int i = 0; i < 10; ++i) {
+    a.push_back(i);
+  }
 
-    Indicator data = PRICELIST(a);
-    result = ROCP(data, 1);
-    CHECK_EQ(result.name(), "ROCP");
-    CHECK_EQ(result.size(), data.size());
-    CHECK_EQ(result.discard(), 1);
-    CHECK_UNARY(std::isnan(result[0]));
-    CHECK_EQ(result[1], 0);
-    CHECK_EQ(result[2], 1);
-    CHECK_EQ(result[3], 0.5);
-    CHECK_EQ(result[5], 0.25);
-    CHECK_EQ(result[9], 0.125);
+  Indicator data = PRICELIST(a);
+  result = ROCP(data, 1);
+  CHECK_EQ(result.name(), "ROCP");
+  CHECK_EQ(result.size(), data.size());
+  CHECK_EQ(result.discard(), 1);
+  CHECK_UNARY(std::isnan(result[0]));
+  CHECK_EQ(result[1], 0);
+  CHECK_EQ(result[2], 1);
+  CHECK_EQ(result[3], 0.5);
+  CHECK_EQ(result[5], 0.25);
+  CHECK_EQ(result[9], 0.125);
 
-    result = ROCP(data, 2);
-    CHECK_EQ(result.name(), "ROCP");
-    CHECK_EQ(result.size(), data.size());
-    CHECK_EQ(result.discard(), 2);
-    CHECK_UNARY(std::isnan(result[0]));
-    CHECK_UNARY(std::isnan(result[1]));
-    CHECK_EQ(result[2], 0);
-    CHECK_EQ(result[3], 2);
-    CHECK_EQ(result[4], 1);
+  result = ROCP(data, 2);
+  CHECK_EQ(result.name(), "ROCP");
+  CHECK_EQ(result.size(), data.size());
+  CHECK_EQ(result.discard(), 2);
+  CHECK_UNARY(std::isnan(result[0]));
+  CHECK_UNARY(std::isnan(result[1]));
+  CHECK_EQ(result[2], 0);
+  CHECK_EQ(result[3], 2);
+  CHECK_EQ(result[4], 1);
 
-    // n = 0
-    for (int i = 0; i < 10; ++i) {
-        a[i] = i + 1;
-    }
-    data = PRICELIST(a);
-    result = ROCP(data, 0);
-    CHECK_EQ(data.discard(), result.discard());
-    CHECK_EQ(data.size(), result.size());
-    CHECK_EQ(result[0], 0.0);
-    for (size_t i = 1; i < result.size(); i++) {
-        CHECK_EQ((data[i] - data[0]) / data[0], result[i]);
-    }
+  // n = 0
+  for (int i = 0; i < 10; ++i) {
+    a[i] = i + 1;
+  }
+  data = PRICELIST(a);
+  result = ROCP(data, 0);
+  CHECK_EQ(data.discard(), result.discard());
+  CHECK_EQ(data.size(), result.size());
+  CHECK_EQ(result[0], 0.0);
+  for (size_t i = 1; i < result.size(); i++) {
+    CHECK_EQ((data[i] - data[0]) / data[0], result[i]);
+  }
 }
 
 /** @par Test points */
 TEST_CASE("test_ROCP_dyn") {
-    Stock stock = getDataRuntime().getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-30));
-    // KData kdata = stock.getKData(KQuery(0, Null<size_t>(), KQuery::MIN));
-    Indicator c = CLOSE(kdata);
-    Indicator expect = ROCP(c, 10);
-    Indicator result = ROCP(c, CVAL(c, 10));
-    CHECK_EQ(expect.size(), result.size());
-    // CHECK_EQ(expect.discard(), result.discard());
-    for (size_t i = 0; i < result.discard(); i++) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
-    for (size_t i = expect.discard(); i < expect.size(); i++) {
-        CHECK_EQ(expect[i], doctest::Approx(result[i]));
-    }
+  Stock stock = getDataRuntime().getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-30));
+  // KData kdata = stock.getKData(KQuery(0, Null<size_t>(), KQuery::MIN));
+  Indicator c = CLOSE(kdata);
+  Indicator expect = ROCP(c, 10);
+  Indicator result = ROCP(c, CVAL(c, 10));
+  CHECK_EQ(expect.size(), result.size());
+  // CHECK_EQ(expect.discard(), result.discard());
+  for (size_t i = 0; i < result.discard(); i++) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
+  for (size_t i = expect.discard(); i < expect.size(); i++) {
+    CHECK_EQ(expect[i], doctest::Approx(result[i]));
+  }
 
-    result = ROCP(c, IndParam(CVAL(c, 10)));
-    CHECK_EQ(expect.size(), result.size());
-    // CHECK_EQ(expect.discard(), result.discard());
-    for (size_t i = 0; i < result.discard(); i++) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
-    for (size_t i = expect.discard(); i < expect.size(); i++) {
-        CHECK_EQ(expect[i], doctest::Approx(result[i]));
-    }
+  result = ROCP(c, IndParam(CVAL(c, 10)));
+  CHECK_EQ(expect.size(), result.size());
+  // CHECK_EQ(expect.discard(), result.discard());
+  for (size_t i = 0; i < result.discard(); i++) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
+  for (size_t i = expect.discard(); i < expect.size(); i++) {
+    CHECK_EQ(expect[i], doctest::Approx(result[i]));
+  }
 
-    expect = ROCP(c, 0);
-    result = ROCP(c, CVAL(c, 0));
-    CHECK_EQ(expect.size(), result.size());
-    // CHECK_EQ(expect.discard(), result.discard());
-    for (size_t i = 0; i < result.discard(); i++) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
-    for (size_t i = expect.discard(); i < expect.size(); i++) {
-        CHECK_EQ(expect[i], doctest::Approx(result[i]));
-    }
+  expect = ROCP(c, 0);
+  result = ROCP(c, CVAL(c, 0));
+  CHECK_EQ(expect.size(), result.size());
+  // CHECK_EQ(expect.discard(), result.discard());
+  for (size_t i = 0; i < result.discard(); i++) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
+  for (size_t i = expect.discard(); i < expect.size(); i++) {
+    CHECK_EQ(expect[i], doctest::Approx(result[i]));
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -112,33 +114,33 @@ TEST_CASE("test_ROCP_dyn") {
 
 /** @par Test points */
 TEST_CASE("test_ROCP_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/ROCP.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/ROCP.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator x1 = ROCP(CLOSE(kdata));
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator x1 = ROCP(CLOSE(kdata));
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x2.name(), "ROCP");
-    CHECK_EQ(x1.size(), x2.size());
-    CHECK_EQ(x1.discard(), x2.discard());
-    CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
-    for (size_t i = x1.discard(); i < x1.size(); ++i) {
-        CHECK_EQ(x1[i], doctest::Approx(x2[i]));
-    }
+  CHECK_EQ(x2.name(), "ROCP");
+  CHECK_EQ(x1.size(), x2.size());
+  CHECK_EQ(x1.discard(), x2.discard());
+  CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
+  for (size_t i = x1.discard(); i < x1.size(); ++i) {
+    CHECK_EQ(x1[i], doctest::Approx(x2[i]));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

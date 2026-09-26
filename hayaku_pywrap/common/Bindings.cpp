@@ -1,6 +1,7 @@
 #include "Bindings.h"
-#include <common/Lang.h>
+
 #include <application/SystemInfo.h>
+#include <common/Lang.h>
 #include <extensions/telemetry/Telemetry.h>
 #include <hayaku.h>
 
@@ -727,10 +728,9 @@ void export_util(py::module& m) {
  *    1. 20231231 added by fasiondog
  */
 
-#include "AnyConversion.h"
-
 #include <hayaku.h>
 
+#include "AnyConversion.h"
 #include "common/PybindSupport.h"
 
 using namespace hayaku;
@@ -765,9 +765,9 @@ void export_bind_stl(py::module& m) {
  *      Author: fasiondog
  */
 
-#include "PybindSupport.h"
-
 #include <pybind11/iostream.h>
+
+#include "PybindSupport.h"
 
 namespace hayaku {
 
@@ -793,7 +793,7 @@ void close_ostream_to_python() {
 namespace py = pybind11;
 using namespace hayaku;
 
-void export_io_redirect(py::module &m) {
+void export_io_redirect(py::module& m) {
   m.def("open_ostream_to_python", open_ostream_to_python);
   m.def("close_ostream_to_python", close_ostream_to_python);
 }
@@ -852,5 +852,4 @@ void bindCommon(py::module_& m) {
     :param str key: the text in English (the msgid)
     :return: the translated text; the original text is returned when no translation exists
     :rtype: str)");
-
 }

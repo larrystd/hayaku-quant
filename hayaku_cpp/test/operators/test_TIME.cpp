@@ -5,10 +5,12 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/MarketOperators.h>
+
+#include <fstream>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -20,191 +22,192 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_TIME") {
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh000001");
-    KData kdata;
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh000001");
+  KData kdata;
 
-    /** @arg No input parameter */
-    Indicator date = hayaku::DATE(), time = TIME(), year = YEAR(), month = MONTH(), week = WEEK(),
-              day = DAY(), hour = HOUR(), minute = MINUTE();
-    CHECK_EQ(date.size(), 0);
-    CHECK_EQ(date.empty(), true);
-    CHECK_EQ(date.name(), "DATE");
+  /** @arg No input parameter */
+  Indicator date = hayaku::DATE(), time = TIME(), year = YEAR(),
+            month = MONTH(), week = WEEK(), day = DAY(), hour = HOUR(),
+            minute = MINUTE();
+  CHECK_EQ(date.size(), 0);
+  CHECK_EQ(date.empty(), true);
+  CHECK_EQ(date.name(), "DATE");
 
-    CHECK_EQ(time.size(), 0);
-    CHECK_EQ(time.empty(), true);
-    CHECK_EQ(time.name(), "TIME");
+  CHECK_EQ(time.size(), 0);
+  CHECK_EQ(time.empty(), true);
+  CHECK_EQ(time.name(), "TIME");
 
-    CHECK_EQ(year.size(), 0);
-    CHECK_EQ(year.empty(), true);
-    CHECK_EQ(year.name(), "YEAR");
+  CHECK_EQ(year.size(), 0);
+  CHECK_EQ(year.empty(), true);
+  CHECK_EQ(year.name(), "YEAR");
 
-    CHECK_EQ(month.size(), 0);
-    CHECK_EQ(month.empty(), true);
-    CHECK_EQ(month.name(), "MONTH");
+  CHECK_EQ(month.size(), 0);
+  CHECK_EQ(month.empty(), true);
+  CHECK_EQ(month.name(), "MONTH");
 
-    CHECK_EQ(week.size(), 0);
-    CHECK_EQ(week.empty(), true);
-    CHECK_EQ(week.name(), "WEEK");
+  CHECK_EQ(week.size(), 0);
+  CHECK_EQ(week.empty(), true);
+  CHECK_EQ(week.name(), "WEEK");
 
-    CHECK_EQ(day.size(), 0);
-    CHECK_EQ(day.empty(), true);
-    CHECK_EQ(day.name(), "DAY");
+  CHECK_EQ(day.size(), 0);
+  CHECK_EQ(day.empty(), true);
+  CHECK_EQ(day.name(), "DAY");
 
-    CHECK_EQ(hour.size(), 0);
-    CHECK_EQ(hour.empty(), true);
-    CHECK_EQ(hour.name(), "HOUR");
+  CHECK_EQ(hour.size(), 0);
+  CHECK_EQ(hour.empty(), true);
+  CHECK_EQ(hour.name(), "HOUR");
 
-    CHECK_EQ(minute.size(), 0);
-    CHECK_EQ(minute.empty(), true);
-    CHECK_EQ(minute.name(), "MINUTE");
+  CHECK_EQ(minute.size(), 0);
+  CHECK_EQ(minute.empty(), true);
+  CHECK_EQ(minute.name(), "MINUTE");
 
-    /** @arg The corresponding KData is empty */
-    CHECK_EQ(kdata.empty(), true);
+  /** @arg The corresponding KData is empty */
+  CHECK_EQ(kdata.empty(), true);
 
-    date = hayaku::DATE(kdata);
-    CHECK_EQ(date.size(), 0);
-    CHECK_EQ(date.empty(), true);
-    CHECK_EQ(date.name(), "DATE");
+  date = hayaku::DATE(kdata);
+  CHECK_EQ(date.size(), 0);
+  CHECK_EQ(date.empty(), true);
+  CHECK_EQ(date.name(), "DATE");
 
-    time = TIME(kdata);
-    CHECK_EQ(time.size(), 0);
-    CHECK_EQ(time.empty(), true);
-    CHECK_EQ(time.name(), "TIME");
+  time = TIME(kdata);
+  CHECK_EQ(time.size(), 0);
+  CHECK_EQ(time.empty(), true);
+  CHECK_EQ(time.name(), "TIME");
 
-    year = YEAR(kdata);
-    CHECK_EQ(year.size(), 0);
-    CHECK_EQ(year.empty(), true);
-    CHECK_EQ(year.name(), "YEAR");
+  year = YEAR(kdata);
+  CHECK_EQ(year.size(), 0);
+  CHECK_EQ(year.empty(), true);
+  CHECK_EQ(year.name(), "YEAR");
 
-    month = MONTH(kdata);
-    CHECK_EQ(month.size(), 0);
-    CHECK_EQ(month.empty(), true);
-    CHECK_EQ(month.name(), "MONTH");
+  month = MONTH(kdata);
+  CHECK_EQ(month.size(), 0);
+  CHECK_EQ(month.empty(), true);
+  CHECK_EQ(month.name(), "MONTH");
 
-    week = WEEK(kdata);
-    CHECK_EQ(week.size(), 0);
-    CHECK_EQ(week.empty(), true);
-    CHECK_EQ(week.name(), "WEEK");
+  week = WEEK(kdata);
+  CHECK_EQ(week.size(), 0);
+  CHECK_EQ(week.empty(), true);
+  CHECK_EQ(week.name(), "WEEK");
 
-    day = DAY(kdata);
-    CHECK_EQ(day.size(), 0);
-    CHECK_EQ(day.empty(), true);
-    CHECK_EQ(day.name(), "DAY");
+  day = DAY(kdata);
+  CHECK_EQ(day.size(), 0);
+  CHECK_EQ(day.empty(), true);
+  CHECK_EQ(day.name(), "DAY");
 
-    hour = HOUR(kdata);
-    CHECK_EQ(hour.size(), 0);
-    CHECK_EQ(hour.empty(), true);
-    CHECK_EQ(hour.name(), "HOUR");
+  hour = HOUR(kdata);
+  CHECK_EQ(hour.size(), 0);
+  CHECK_EQ(hour.empty(), true);
+  CHECK_EQ(hour.name(), "HOUR");
 
-    minute = MINUTE(kdata);
-    CHECK_EQ(minute.size(), 0);
-    CHECK_EQ(minute.empty(), true);
-    CHECK_EQ(minute.name(), "MINUTE");
+  minute = MINUTE(kdata);
+  CHECK_EQ(minute.size(), 0);
+  CHECK_EQ(minute.empty(), true);
+  CHECK_EQ(minute.name(), "MINUTE");
 
-    /** @arg A non-empty KData */
-    KQuery query(-10);
-    kdata = stock.getKData(query);
-    size_t total = kdata.size();
+  /** @arg A non-empty KData */
+  KQuery query(-10);
+  kdata = stock.getKData(query);
+  size_t total = kdata.size();
 
-    date = hayaku::DATE(kdata);
-    CHECK_EQ(date.name(), "DATE");
-    CHECK_EQ(date.size(), kdata.size());
+  date = hayaku::DATE(kdata);
+  CHECK_EQ(date.name(), "DATE");
+  CHECK_EQ(date.size(), kdata.size());
 
-    time = TIME(kdata);
-    CHECK_EQ(time.name(), "TIME");
-    CHECK_EQ(time.size(), kdata.size());
+  time = TIME(kdata);
+  CHECK_EQ(time.name(), "TIME");
+  CHECK_EQ(time.size(), kdata.size());
 
-    year = YEAR(kdata);
-    CHECK_EQ(year.name(), "YEAR");
-    CHECK_EQ(year.size(), kdata.size());
+  year = YEAR(kdata);
+  CHECK_EQ(year.name(), "YEAR");
+  CHECK_EQ(year.size(), kdata.size());
 
-    month = MONTH(kdata);
-    CHECK_EQ(month.name(), "MONTH");
-    CHECK_EQ(month.size(), kdata.size());
+  month = MONTH(kdata);
+  CHECK_EQ(month.name(), "MONTH");
+  CHECK_EQ(month.size(), kdata.size());
 
-    week = WEEK(kdata);
-    CHECK_EQ(week.name(), "WEEK");
-    CHECK_EQ(week.size(), kdata.size());
+  week = WEEK(kdata);
+  CHECK_EQ(week.name(), "WEEK");
+  CHECK_EQ(week.size(), kdata.size());
 
-    day = DAY(kdata);
-    CHECK_EQ(day.name(), "DAY");
-    CHECK_EQ(day.size(), kdata.size());
+  day = DAY(kdata);
+  CHECK_EQ(day.name(), "DAY");
+  CHECK_EQ(day.size(), kdata.size());
 
-    hour = HOUR(kdata);
-    CHECK_EQ(hour.name(), "HOUR");
-    CHECK_EQ(hour.size(), kdata.size());
+  hour = HOUR(kdata);
+  CHECK_EQ(hour.name(), "HOUR");
+  CHECK_EQ(hour.size(), kdata.size());
 
-    minute = MINUTE(kdata);
-    CHECK_EQ(minute.name(), "MINUTE");
-    CHECK_EQ(minute.size(), kdata.size());
+  minute = MINUTE(kdata);
+  CHECK_EQ(minute.name(), "MINUTE");
+  CHECK_EQ(minute.size(), kdata.size());
 
-    for (size_t i = 0; i < total; ++i) {
-        auto d = kdata[i].datetime;
-        CHECK_EQ(date[i], (d.year() - 1900) * 10000 + d.month() * 100 + d.day());
-        CHECK_EQ(time[i], d.hour() * 10000 + d.minute() * 100 + d.second());
-        CHECK_EQ(year[i], d.year());
-        CHECK_EQ(month[i], d.month());
-        CHECK_EQ(week[i], d.dayOfWeek());
-        CHECK_EQ(day[i], d.day());
-        CHECK_EQ(hour[i], d.hour());
-        CHECK_EQ(minute[i], d.minute());
-    }
+  for (size_t i = 0; i < total; ++i) {
+    auto d = kdata[i].datetime;
+    CHECK_EQ(date[i], (d.year() - 1900) * 10000 + d.month() * 100 + d.day());
+    CHECK_EQ(time[i], d.hour() * 10000 + d.minute() * 100 + d.second());
+    CHECK_EQ(year[i], d.year());
+    CHECK_EQ(month[i], d.month());
+    CHECK_EQ(week[i], d.dayOfWeek());
+    CHECK_EQ(day[i], d.day());
+    CHECK_EQ(hour[i], d.hour());
+    CHECK_EQ(minute[i], d.minute());
+  }
 
-    /** @arg A non-empty KData */
-    date = hayaku::DATE();
-    time = TIME();
-    year = YEAR();
-    month = MONTH();
-    week = WEEK();
-    day = DAY();
-    hour = HOUR();
-    minute = MINUTE();
+  /** @arg A non-empty KData */
+  date = hayaku::DATE();
+  time = TIME();
+  year = YEAR();
+  month = MONTH();
+  week = WEEK();
+  day = DAY();
+  hour = HOUR();
+  minute = MINUTE();
 
-    date.setContext(stock, query);
-    time.setContext(stock, query);
-    year.setContext(stock, query);
-    month.setContext(stock, query);
-    week.setContext(stock, query);
-    day.setContext(stock, query);
-    hour.setContext(stock, query);
-    minute.setContext(stock, query);
+  date.setContext(stock, query);
+  time.setContext(stock, query);
+  year.setContext(stock, query);
+  month.setContext(stock, query);
+  week.setContext(stock, query);
+  day.setContext(stock, query);
+  hour.setContext(stock, query);
+  minute.setContext(stock, query);
 
-    CHECK_EQ(date.name(), "DATE");
-    CHECK_EQ(date.size(), kdata.size());
+  CHECK_EQ(date.name(), "DATE");
+  CHECK_EQ(date.size(), kdata.size());
 
-    CHECK_EQ(time.name(), "TIME");
-    CHECK_EQ(time.size(), kdata.size());
+  CHECK_EQ(time.name(), "TIME");
+  CHECK_EQ(time.size(), kdata.size());
 
-    CHECK_EQ(year.name(), "YEAR");
-    CHECK_EQ(year.size(), kdata.size());
+  CHECK_EQ(year.name(), "YEAR");
+  CHECK_EQ(year.size(), kdata.size());
 
-    CHECK_EQ(month.name(), "MONTH");
-    CHECK_EQ(month.size(), kdata.size());
+  CHECK_EQ(month.name(), "MONTH");
+  CHECK_EQ(month.size(), kdata.size());
 
-    CHECK_EQ(week.name(), "WEEK");
-    CHECK_EQ(week.size(), kdata.size());
+  CHECK_EQ(week.name(), "WEEK");
+  CHECK_EQ(week.size(), kdata.size());
 
-    CHECK_EQ(day.name(), "DAY");
-    CHECK_EQ(day.size(), kdata.size());
+  CHECK_EQ(day.name(), "DAY");
+  CHECK_EQ(day.size(), kdata.size());
 
-    CHECK_EQ(hour.name(), "HOUR");
-    CHECK_EQ(hour.size(), kdata.size());
+  CHECK_EQ(hour.name(), "HOUR");
+  CHECK_EQ(hour.size(), kdata.size());
 
-    CHECK_EQ(minute.name(), "MINUTE");
-    CHECK_EQ(minute.size(), kdata.size());
+  CHECK_EQ(minute.name(), "MINUTE");
+  CHECK_EQ(minute.size(), kdata.size());
 
-    for (size_t i = 0; i < total; ++i) {
-        auto d = kdata[i].datetime;
-        CHECK_EQ(date[i], (d.year() - 1900) * 10000 + d.month() * 100 + d.day());
-        CHECK_EQ(time[i], d.hour() * 10000 + d.minute() * 100 + d.second());
-        CHECK_EQ(year[i], d.year());
-        CHECK_EQ(month[i], d.month());
-        CHECK_EQ(week[i], d.dayOfWeek());
-        CHECK_EQ(day[i], d.day());
-        CHECK_EQ(hour[i], d.hour());
-        CHECK_EQ(minute[i], d.minute());
-    }
+  for (size_t i = 0; i < total; ++i) {
+    auto d = kdata[i].datetime;
+    CHECK_EQ(date[i], (d.year() - 1900) * 10000 + d.month() * 100 + d.day());
+    CHECK_EQ(time[i], d.hour() * 10000 + d.minute() * 100 + d.second());
+    CHECK_EQ(year[i], d.year());
+    CHECK_EQ(month[i], d.month());
+    CHECK_EQ(week[i], d.dayOfWeek());
+    CHECK_EQ(day[i], d.day());
+    CHECK_EQ(hour[i], d.hour());
+    CHECK_EQ(minute[i], d.minute());
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -214,32 +217,32 @@ TEST_CASE("test_TIME") {
 
 /** @par Test points */
 TEST_CASE("test_TIME_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/TIME.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/TIME.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator ma1 = hayaku::DATE(kdata);
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(ma1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator ma1 = hayaku::DATE(kdata);
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(ma1);
+  }
 
-    Indicator ma2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(ma2);
-    }
+  Indicator ma2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(ma2);
+  }
 
-    CHECK_EQ(ma1.size(), ma2.size());
-    CHECK_EQ(ma1.discard(), ma2.discard());
-    CHECK_EQ(ma1.getResultNumber(), ma2.getResultNumber());
-    for (size_t i = 0; i < ma1.size(); ++i) {
-        CHECK_EQ(ma1.get(i, 0), doctest::Approx(ma2.get(i, 0)));
-    }
+  CHECK_EQ(ma1.size(), ma2.size());
+  CHECK_EQ(ma1.discard(), ma2.discard());
+  CHECK_EQ(ma1.getResultNumber(), ma2.getResultNumber());
+  for (size_t i = 0; i < ma1.size(); ++i) {
+    CHECK_EQ(ma1.get(i, 0), doctest::Approx(ma2.get(i, 0)));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

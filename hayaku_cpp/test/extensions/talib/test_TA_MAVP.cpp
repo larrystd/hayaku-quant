@@ -5,19 +5,15 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
-#include <ta-lib/ta_libc.h>
 #include <data/DataRuntime.h>
 #include <extensions/talib/TalibOperators.h>
 #include <operators/SeriesOperators.h>
-#include <operators/SeriesOperators.h>
-#include <operators/SeriesOperators.h>
-#include <operators/SeriesOperators.h>
-#include <operators/SeriesOperators.h>
-#include <operators/SeriesOperators.h>
 #include <operators/WindowOperators.h>
-#include <operators/WindowOperators.h>
+#include <ta-lib/ta_libc.h>
+
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -27,1607 +23,1697 @@ using namespace hayaku;
  * @{
  */
 
-static Indicator expect_output(const Indicator& in1, const Indicator& in2, int min_n = 2,
-                               int max_n = 30, int matype = 0) {
-    HAYAKU_CHECK(in1.size() == in2.size(), "in1 size: {}, in2 size: {}", in1.size(), in2.size());
-    size_t total = in1.size();
-    PriceList buf(total, Null<double>());
-    const auto* src0 = in1.data();
-    const auto* src1 = in2.data();
-    int lookback = TA_MAVP_Lookback(min_n, max_n, (TA_MAType)matype);
-    int discard = lookback + std::max(in1.discard(), in2.discard());
-    int outBegIdx;
-    int outNbElement;
-    TA_MAVP(discard, total - 1, src0, src1, min_n, max_n, (TA_MAType)matype, &outBegIdx,
-            &outNbElement, buf.data() + discard);
-    return PRICELIST(buf, discard);
+static Indicator expect_output(const Indicator& in1, const Indicator& in2,
+                               int min_n = 2, int max_n = 30, int matype = 0) {
+  HAYAKU_CHECK(in1.size() == in2.size(), "in1 size: {}, in2 size: {}",
+               in1.size(), in2.size());
+  size_t total = in1.size();
+  PriceList buf(total, Null<double>());
+  const auto* src0 = in1.data();
+  const auto* src1 = in2.data();
+  int lookback = TA_MAVP_Lookback(min_n, max_n, (TA_MAType)matype);
+  int discard = lookback + std::max(in1.discard(), in2.discard());
+  int outBegIdx;
+  int outNbElement;
+  TA_MAVP(discard, total - 1, src0, src1, min_n, max_n, (TA_MAType)matype,
+          &outBegIdx, &outNbElement, buf.data() + discard);
+  return PRICELIST(buf, discard);
 }
 
-static void check_output(const Indicator& result, const Indicator& in1, const Indicator& in2) {
-    Indicator expect = expect_output(in1, in2);
-    // for (size_t i = expect.discard(); i < expect.size(); i++) {
-    //     HAYAKU_INFO("{}: {} {}", i, result[i], expect[i]);
-    // }
-    for (size_t i = 0; i < result.discard(); i++) {
-        CHECK_UNARY(std::isnan(result.get(i)));
+static void check_output(const Indicator& result, const Indicator& in1,
+                         const Indicator& in2) {
+  Indicator expect = expect_output(in1, in2);
+  // for (size_t i = expect.discard(); i < expect.size(); i++) {
+  //     HAYAKU_INFO("{}: {} {}", i, result[i], expect[i]);
+  // }
+  for (size_t i = 0; i < result.discard(); i++) {
+    CHECK_UNARY(std::isnan(result.get(i)));
+  }
+  for (size_t i = result.discard(), total = result.size(); i < total; i++) {
+    // HAYAKU_INFO("{}: {}", i, result[i]);
+    if (std::isnan(result.get(i))) {
+      CHECK_UNARY(std::isnan(expect.get(i)));
+    } else {
+      CHECK_EQ(result.get(i), expect.get(i));
     }
-    for (size_t i = result.discard(), total = result.size(); i < total; i++) {
-        // HAYAKU_INFO("{}: {}", i, result[i]);
-        if (std::isnan(result.get(i))) {
-            CHECK_UNARY(std::isnan(expect.get(i)));
-        } else {
-            CHECK_EQ(result.get(i), expect.get(i));
-        }
-    }
-    CHECK_EQ(result.size(), expect.size());
-    CHECK_EQ(result.discard(), expect.discard());
+  }
+  CHECK_EQ(result.size(), expect.size());
+  CHECK_EQ(result.discard(), expect.discard());
 }
 
 /** @par Test points */
 TEST_CASE("test_TA_MAVP_params") {
-    KData k1 = getKData("sz000001", KQuery(-35));
-    KData k2 = getKData("sz000002", KQuery(-35));
-    Indicator result, a, b, expect;
+  KData k1 = getKData("sz000001", KQuery(-35));
+  KData k2 = getKData("sz000002", KQuery(-35));
+  Indicator result, a, b, expect;
 
-    /** @arg Invalid parameters */
-    CHECK_THROWS(TA_MAVP(CVAL(1), 1));
-    CHECK_THROWS(TA_MAVP(CVAL(1), 100001));
-    CHECK_THROWS(TA_MAVP(CVAL(1), 2, 1));
-    CHECK_THROWS(TA_MAVP(CVAL(1), 2, 100001));
+  /** @arg Invalid parameters */
+  CHECK_THROWS(TA_MAVP(CVAL(1), 1));
+  CHECK_THROWS(TA_MAVP(CVAL(1), 100001));
+  CHECK_THROWS(TA_MAVP(CVAL(1), 2, 1));
+  CHECK_THROWS(TA_MAVP(CVAL(1), 2, 100001));
 
-    /** @arg Two empty indicators, without a context */
-    result = TA_MAVP(Indicator(), Indicator());
-    CHECK_EQ(result.size(), 0);
-    CHECK_EQ(result.discard(), 0);
-    // CHECK_EQ(result.name(), "TA_MAVP(Indicator)");
+  /** @arg Two empty indicators, without a context */
+  result = TA_MAVP(Indicator(), Indicator());
+  CHECK_EQ(result.size(), 0);
+  CHECK_EQ(result.discard(), 0);
+  // CHECK_EQ(result.name(), "TA_MAVP(Indicator)");
 
-    /** @arg Two empty indicators, with a context */
-    result = TA_MAVP(Indicator(), Indicator())(k1);
-    CHECK_EQ(result.size(), k1.size());
-    CHECK_EQ(result.discard(), k1.size());
-    // CHECK_EQ(result.name(), "TA_MAVP(Indicator)");
+  /** @arg Two empty indicators, with a context */
+  result = TA_MAVP(Indicator(), Indicator())(k1);
+  CHECK_EQ(result.size(), k1.size());
+  CHECK_EQ(result.discard(), k1.size());
+  // CHECK_EQ(result.name(), "TA_MAVP(Indicator)");
 }
 
 /** @par Test points */
 TEST_CASE("test_TA_MAVP_all_not_time_without_context") {
-    //-------------------------------------------------------
-    // Without a context, both inputs are time independent; a is calculated with b as the reference
-    //-------------------------------------------------------
-    Indicator result, a, b, expect;
-    double nan = Null<double>();
+  //-------------------------------------------------------
+  // Without a context, both inputs are time independent; a is calculated with b
+  // as the reference
+  //-------------------------------------------------------
+  Indicator result, a, b, expect;
+  double nan = Null<double>();
 
-    /** @arg Both a and b are of length 1 (equal and less than 2), without a context */
-    a = PRICELIST(PriceList{1.});
-    b = PRICELIST(PriceList{2.});
-    CHECK_EQ(a.size(), 1);
-    CHECK_EQ(b.size(), 1);
-    result = TA_MAVP(a, b);
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 1);
-    // CHECK_EQ(result.name(), "TA_MAVP(PRICELIST)");
-    CHECK_UNARY(std::isnan(result[0]));
+  /** @arg Both a and b are of length 1 (equal and less than 2), without a
+   * context */
+  a = PRICELIST(PriceList{1.});
+  b = PRICELIST(PriceList{2.});
+  CHECK_EQ(a.size(), 1);
+  CHECK_EQ(b.size(), 1);
+  result = TA_MAVP(a, b);
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 1);
+  // CHECK_EQ(result.name(), "TA_MAVP(PRICELIST)");
+  CHECK_UNARY(std::isnan(result[0]));
 
-    /** @arg The length of a is 0 and that of b is 1, without a context */
-    a = PRICELIST();
-    b = PRICELIST(PriceList{1.});
-    CHECK_EQ(a.size(), 0);
-    CHECK_EQ(b.size(), 1);
-    result = TA_MAVP(a, b);
-    CHECK_EQ(result.size(), 0);
-    CHECK_EQ(result.discard(), 0);
+  /** @arg The length of a is 0 and that of b is 1, without a context */
+  a = PRICELIST();
+  b = PRICELIST(PriceList{1.});
+  CHECK_EQ(a.size(), 0);
+  CHECK_EQ(b.size(), 1);
+  result = TA_MAVP(a, b);
+  CHECK_EQ(result.size(), 0);
+  CHECK_EQ(result.discard(), 0);
 
-    /** @arg The lengths of a and b are both 2, without a context */
-    a = PRICELIST(PriceList{1., 2.});
-    b = PRICELIST(PriceList{1., 2.});
-    CHECK_EQ(a.size(), 2);
-    CHECK_EQ(b.size(), 2);
-    result = TA_MAVP(a, b);
-    check_output(result, a, b);
-    CHECK_EQ(result.size(), 2);
-    CHECK_EQ(result.discard(), 2);
+  /** @arg The lengths of a and b are both 2, without a context */
+  a = PRICELIST(PriceList{1., 2.});
+  b = PRICELIST(PriceList{1., 2.});
+  CHECK_EQ(a.size(), 2);
+  CHECK_EQ(b.size(), 2);
+  result = TA_MAVP(a, b);
+  check_output(result, a, b);
+  CHECK_EQ(result.size(), 2);
+  CHECK_EQ(result.discard(), 2);
 
-    /** @arg a is of length 29 and b of 20, without a context */
-    a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29});
-    b = PRICELIST(PriceList{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20});
-    CHECK_EQ(a.size(), 29);
-    CHECK_EQ(b.size(), 20);
-    result = TA_MAVP(a, b);
-    check_output(
+  /** @arg a is of length 29 and b of 20, without a context */
+  a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                          21, 22, 23, 24, 25, 26, 27, 28, 29});
+  b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20});
+  CHECK_EQ(a.size(), 29);
+  CHECK_EQ(b.size(), 20);
+  result = TA_MAVP(a, b);
+  check_output(
       result, a,
-      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, 1,  2,  3,  4,  5, 6,
-                          7,   8,   9,   10,  11,  12,  13,  14,  15,  16, 17, 18, 19, 20},
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, 1,
+                          2,   3,   4,   5,   6,   7,   8,   9,   10,  11,
+                          12,  13,  14,  15,  16,  17,  18,  19,  20},
                 9));
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg a is of length 20 and b of 29, without a context */
-    a = PRICELIST(PriceList{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20});
-    b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29});
-    CHECK_EQ(a.size(), 20);
-    CHECK_EQ(b.size(), 29);
-    result = TA_MAVP(a, b);
-    check_output(result, a, PRICELIST(PriceList{10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-                                                20, 21, 22, 23, 24, 25, 26, 27, 28, 29}));
-    CHECK_EQ(result.size(), 20);
-    CHECK_EQ(result.discard(), 20);
+  /** @arg a is of length 20 and b of 29, without a context */
+  a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20});
+  b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                          21, 22, 23, 24, 25, 26, 27, 28, 29});
+  CHECK_EQ(a.size(), 20);
+  CHECK_EQ(b.size(), 29);
+  result = TA_MAVP(a, b);
+  check_output(result, a,
+               PRICELIST(PriceList{10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                   20, 21, 22, 23, 24, 25, 26, 27, 28, 29}));
+  CHECK_EQ(result.size(), 20);
+  CHECK_EQ(result.discard(), 20);
 
-    /** @arg a is of length 30 and b of 30, without a context */
-    a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
-    b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
-    CHECK_EQ(a.size(), 30);
-    CHECK_EQ(b.size(), 30);
-    result = TA_MAVP(a, b);
-    check_output(result, a, b);
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg a is of length 30 and b of 30, without a context */
+  a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                          21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
+  b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                          21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
+  CHECK_EQ(a.size(), 30);
+  CHECK_EQ(b.size(), 30);
+  result = TA_MAVP(a, b);
+  check_output(result, a, b);
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg a is of length 30 and b of 35, without a context */
-    a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
-    b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18,
-                            19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35});
-    CHECK_EQ(a.size(), 30);
-    CHECK_EQ(b.size(), 35);
-    result = TA_MAVP(hayaku::CONTEXT(a), hayaku::CONTEXT(b));
-    check_output(result, a,
-                 PRICELIST(PriceList{6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-                                     21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35}));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg a is of length 30 and b of 35, without a context */
+  a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                          21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
+  b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
+                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+                          25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35});
+  CHECK_EQ(a.size(), 30);
+  CHECK_EQ(b.size(), 35);
+  result = TA_MAVP(hayaku::CONTEXT(a), hayaku::CONTEXT(b));
+  check_output(result, a,
+               PRICELIST(PriceList{6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
+                                   16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+                                   26, 27, 28, 29, 30, 31, 32, 33, 34, 35}));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg a is of length 35 and b of 30, without a context */
-    a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18,
-                            19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35});
-    b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
-    CHECK_EQ(a.size(), 35);
-    CHECK_EQ(b.size(), 30);
-    result = TA_MAVP(a, b);
-    check_output(result, a,
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,  7,
-                                     8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18, 19,
-                                     20,  21,  22,  23,  24,  25, 26, 27, 28, 29, 30},
-                           5));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 34);
+  /** @arg a is of length 35 and b of 30, without a context */
+  a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
+                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+                          25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35});
+  b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                          21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
+  CHECK_EQ(a.size(), 35);
+  CHECK_EQ(b.size(), 30);
+  result = TA_MAVP(a, b);
+  check_output(
+      result, a,
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,  7,
+                          8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18, 19,
+                          20,  21,  22,  23,  24,  25, 26, 27, 28, 29, 30},
+                5));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 34);
 }
 
 /** @par Test points */
 TEST_CASE("test_TA_MAVP_all_not_time_with_context") {
-    //-------------------------------------------------------
-    // With a context, both inputs are time independent; a is calculated with b as the reference
-    //-------------------------------------------------------
-    KData k1 = getKData("sz000001", KQuery(-35));
-    Indicator result, a, b, expect;
-    double nan = Null<double>();
+  //-------------------------------------------------------
+  // With a context, both inputs are time independent; a is calculated with b as
+  // the reference
+  //-------------------------------------------------------
+  KData k1 = getKData("sz000001", KQuery(-35));
+  Indicator result, a, b, expect;
+  double nan = Null<double>();
 
-    /** @arg Both a and b are of length 1 (equal and less than 2), with a context */
-    a = PRICELIST(PriceList{1.});
-    b = PRICELIST(PriceList{2.});
-    CHECK_EQ(a.size(), 1);
-    CHECK_EQ(b.size(), 1);
-    result = TA_MAVP(a, b)(k1);
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 35);
-    // CHECK_EQ(result.name(), "TA_MAVP(PRICELIST)");
-    for (size_t i = 0, len = result.discard(); i < len; i++) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
+  /** @arg Both a and b are of length 1 (equal and less than 2), with a context
+   */
+  a = PRICELIST(PriceList{1.});
+  b = PRICELIST(PriceList{2.});
+  CHECK_EQ(a.size(), 1);
+  CHECK_EQ(b.size(), 1);
+  result = TA_MAVP(a, b)(k1);
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 35);
+  // CHECK_EQ(result.name(), "TA_MAVP(PRICELIST)");
+  for (size_t i = 0, len = result.discard(); i < len; i++) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
 
-    /** @arg a is of length 0 and b of 1, with a context */
-    a = PRICELIST();
-    b = PRICELIST(PriceList{1.});
-    CHECK_EQ(a.size(), 0);
-    CHECK_EQ(b.size(), 1);
-    result = TA_MAVP(a, b)(k1);
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 35);
+  /** @arg a is of length 0 and b of 1, with a context */
+  a = PRICELIST();
+  b = PRICELIST(PriceList{1.});
+  CHECK_EQ(a.size(), 0);
+  CHECK_EQ(b.size(), 1);
+  result = TA_MAVP(a, b)(k1);
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 35);
 
-    /** @arg a is of length 2 and b of 2, with a context */
-    a = PRICELIST(PriceList{1., 2.});
-    b = PRICELIST(PriceList{1., 2.});
-    CHECK_EQ(a.size(), 2);
-    CHECK_EQ(b.size(), 2);
-    result = TA_MAVP(a, b)(k1);
-    check_output(result, a(k1), b(k1));
-    CHECK_EQ(result.size(), k1.size());
-    CHECK_EQ(result.discard(), k1.size());
+  /** @arg a is of length 2 and b of 2, with a context */
+  a = PRICELIST(PriceList{1., 2.});
+  b = PRICELIST(PriceList{1., 2.});
+  CHECK_EQ(a.size(), 2);
+  CHECK_EQ(b.size(), 2);
+  result = TA_MAVP(a, b)(k1);
+  check_output(result, a(k1), b(k1));
+  CHECK_EQ(result.size(), k1.size());
+  CHECK_EQ(result.discard(), k1.size());
 
-    /** @arg a is of length 29 and b of 20, with a context */
-    a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29});
-    b = PRICELIST(PriceList{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20});
-    CHECK_EQ(a.size(), 29);
-    CHECK_EQ(b.size(), 20);
-    result = TA_MAVP(a, b)(k1);
-    check_output(result,
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,
-                                     7,   8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18,
-                                     19,  20,  21,  22,  23,  24,  25, 26, 27, 28, 29},
-                           6),
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan,
-                                     nan, nan, nan, 1,   2,   3,   4,   5,   6,   7,   8,   9,
-                                     10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20},
-                           15));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 35);
-
-    /** @arg a is of length 20 and b of 29, with a context */
-    a = PRICELIST(PriceList{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20});
-    b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29});
-    CHECK_EQ(a.size(), 20);
-    CHECK_EQ(b.size(), 29);
-    result = TA_MAVP(a, b)(k1);
-    check_output(result,
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,
-                                     7,   8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18,
-                                     19,  20,  21,  22,  23,  24,  25, 26, 27, 28, 29},
-                           6),
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan,
-                                     nan, nan, nan, 1,   2,   3,   4,   5,   6,   7,   8,   9,
-                                     10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20},
-                           15));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 35);
-
-    /** @arg The length of a is 30 and that of b is 30 */
-    a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
-    b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 30);
-    result = TA_MAVP(a, b)(k1);
-    check_output(result,
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,  7,
-                                     8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18, 19,
-                                     20,  21,  22,  23,  24,  25, 26, 27, 28, 29, 30},
-                           5),
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,  7,
-                                     8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18, 19,
-                                     20,  21,  22,  23,  24,  25, 26, 27, 28, 29, 30},
-                           5));
-    CHECK_EQ(result.size(), k1.size());
-    CHECK_EQ(result.discard(), 34);
-
-    /** @arg The length of a is 30 and that of b is 35 */
-    b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18,
-                            19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35});
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 35);
-    result = TA_MAVP(a, b)(k1);
-    check_output(
+  /** @arg a is of length 29 and b of 20, with a context */
+  a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                          21, 22, 23, 24, 25, 26, 27, 28, 29});
+  b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20});
+  CHECK_EQ(a.size(), 29);
+  CHECK_EQ(b.size(), 20);
+  result = TA_MAVP(a, b)(k1);
+  check_output(
       result,
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,
+                          7,   8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18,
+                          19,  20,  21,  22,  23,  24,  25, 26, 27, 28, 29},
+                6),
       PRICELIST(
-        PriceList{nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13,
-                  14,  15,  16,  17,  18,  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30},
-        5),
-      PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18,
-                          19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35}));
+          PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan,
+                    nan, nan, nan, 1,   2,   3,   4,   5,   6,   7,   8,   9,
+                    10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20},
+          15));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 35);
 
-    /** @arg The length of a is 35 and that of b is 30 */
-    a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18,
-                            19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35});
-    b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
-                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
-    REQUIRE(a.size() == 35);
-    REQUIRE(b.size() == 30);
-    result = TA_MAVP(a, b)(k1);
-    check_output(result, PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
-                                             13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-                                             25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35}),
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,  7,
-                                     8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18, 19,
-                                     20,  21,  22,  23,  24,  25, 26, 27, 28, 29, 30},
-                           5));
+  /** @arg a is of length 20 and b of 29, with a context */
+  a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20});
+  b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                          21, 22, 23, 24, 25, 26, 27, 28, 29});
+  CHECK_EQ(a.size(), 20);
+  CHECK_EQ(b.size(), 29);
+  result = TA_MAVP(a, b)(k1);
+  check_output(
+      result,
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,
+                          7,   8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18,
+                          19,  20,  21,  22,  23,  24,  25, 26, 27, 28, 29},
+                6),
+      PRICELIST(
+          PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan,
+                    nan, nan, nan, 1,   2,   3,   4,   5,   6,   7,   8,   9,
+                    10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20},
+          15));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 35);
+
+  /** @arg The length of a is 30 and that of b is 30 */
+  a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                          21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
+  b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                          21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 30);
+  result = TA_MAVP(a, b)(k1);
+  check_output(
+      result,
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,  7,
+                          8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18, 19,
+                          20,  21,  22,  23,  24,  25, 26, 27, 28, 29, 30},
+                5),
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,  7,
+                          8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18, 19,
+                          20,  21,  22,  23,  24,  25, 26, 27, 28, 29, 30},
+                5));
+  CHECK_EQ(result.size(), k1.size());
+  CHECK_EQ(result.discard(), 34);
+
+  /** @arg The length of a is 30 and that of b is 35 */
+  b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
+                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+                          25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35});
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 35);
+  result = TA_MAVP(a, b)(k1);
+  check_output(
+      result,
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,  7,
+                          8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18, 19,
+                          20,  21,  22,  23,  24,  25, 26, 27, 28, 29, 30},
+                5),
+      PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
+                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+                          25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35}));
+
+  /** @arg The length of a is 35 and that of b is 30 */
+  a = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
+                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+                          25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35});
+  b = PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
+                          11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                          21, 22, 23, 24, 25, 26, 27, 28, 29, 30});
+  REQUIRE(a.size() == 35);
+  REQUIRE(b.size() == 30);
+  result = TA_MAVP(a, b)(k1);
+  check_output(
+      result,
+      PRICELIST(PriceList{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
+                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+                          25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35}),
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, 1,  2,  3,  4,  5,  6,  7,
+                          8,   9,   10,  11,  12,  13, 14, 15, 16, 17, 18, 19,
+                          20,  21,  22,  23,  24,  25, 26, 27, 28, 29, 30},
+                5));
 }
 
 /** @par Test points */
-TEST_CASE("test_TA_MAVP_ref_not_time_with_context_ind_is_time_without_context") {
-    //-------------------------------------------------------
-    // Without a context, the reference is time independent, the calculated one is a time series
-    //-------------------------------------------------------
-    Stock stk = getStock("sz000001");
-    KData k;
-    Indicator result, a, b, expect;
-    double nan = Null<double>();
+TEST_CASE(
+    "test_TA_MAVP_ref_not_time_with_context_ind_is_time_without_context") {
+  //-------------------------------------------------------
+  // Without a context, the reference is time independent, the calculated one is
+  // a time series
+  //-------------------------------------------------------
+  Stock stk = getStock("sz000001");
+  KData k;
+  Indicator result, a, b, expect;
+  double nan = Null<double>();
 
-    /** @arg The lengths of a and b are both 1 (equal and less than 2) */
-    k = stk.getKData(KQuery(-1));
-    a = k.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{2.}));
-    REQUIRE(a.size() == 1);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, k.close(), PRICELIST(PriceList{2.}));
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 1);
+  /** @arg The lengths of a and b are both 1 (equal and less than 2) */
+  k = stk.getKData(KQuery(-1));
+  a = k.close();
+  b = hayaku::CONTEXT(PRICELIST(PriceList{2.}));
+  REQUIRE(a.size() == 1);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(result, k.close(), PRICELIST(PriceList{2.}));
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 1);
 
-    /** @arg The length of a is 0 and that of b is 1 */
-    k = stk.getKData(KQueryByDate(Datetime(20240101)));
-    a = k.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{2.}));
-    REQUIRE(a.size() == 0);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, PRICELIST(PriceList()), PRICELIST(PriceList()));
-    CHECK_EQ(result.size(), 0);
-    CHECK_EQ(result.discard(), 0);
+  /** @arg The length of a is 0 and that of b is 1 */
+  k = stk.getKData(KQueryByDate(Datetime(20240101)));
+  a = k.close();
+  b = hayaku::CONTEXT(PRICELIST(PriceList{2.}));
+  REQUIRE(a.size() == 0);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(result, PRICELIST(PriceList()), PRICELIST(PriceList()));
+  CHECK_EQ(result.size(), 0);
+  CHECK_EQ(result.discard(), 0);
 
-    /** @arg The lengths of a and b are both 2 */
-    k = stk.getKData(KQuery(-2));
-    a = k.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1.0, 2.}));
-    REQUIRE(a.size() == 2);
-    REQUIRE(b.size() == 2);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, a, PRICELIST(PriceList({1.0, 2.0})));
-    CHECK_EQ(result.size(), 2);
-    CHECK_EQ(result.discard(), 2);
+  /** @arg The lengths of a and b are both 2 */
+  k = stk.getKData(KQuery(-2));
+  a = k.close();
+  b = hayaku::CONTEXT(PRICELIST(PriceList{1.0, 2.}));
+  REQUIRE(a.size() == 2);
+  REQUIRE(b.size() == 2);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(result, a, PRICELIST(PriceList({1.0, 2.0})));
+  CHECK_EQ(result.size(), 2);
+  CHECK_EQ(result.discard(), 2);
 
-    /** @arg The length of a is 29 and that of b is 20 */
-    k = stk.getKData(KQuery(-29));
-    a = k.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                                         11., 12., 13., 14., 15., 16., 17., 18., 19., 20.}));
-    REQUIRE(a.size() == 29);
-    REQUIRE(b.size() == 20);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, a, PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, 1.,
-                                                2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11.,
-                                                12., 13., 14., 15., 16., 17., 18., 19., 20.}));
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
-
-    /** @arg The length of a is 20 and that of b is 29 */
-    k = stk.getKData(KQuery(-20));
-    a = k.close();
-    b = hayaku::CONTEXT(
-      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,  5., 6.,
-                          7.,  8.,  9.,  10., 11., 12., 13., 14., 15., 16., 17., 18., 19., 20.}));
-    REQUIRE(a.size() == 20);
-    REQUIRE(b.size() == 29);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, a, PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                                                11., 12., 13., 14., 15., 16., 17., 18., 19., 20.}));
-    CHECK_EQ(result.size(), 20);
-    CHECK_EQ(result.discard(), 20);
-
-    /** @arg The length of a is 30 and that of b is 30 */
-    k = stk.getKData(KQuery(-30));
-    a = k.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                                         11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                                         21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, a, PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                                                11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                                                21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 29);
-
-    /** @arg The length of a is 30 and that of b is 35 */
-    k = stk.getKData(KQuery(-30));
-    a = k.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12.,
-                                         13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24.,
-                                         25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35.}));
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 35);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, a, PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                                                11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                                                21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 29);
-
-    /** @arg The length of a is 35 and that of b is 30 */
-    k = stk.getKData(KQuery(-35));
-    a = k.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                                         11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                                         21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
-    REQUIRE(a.size() == 35);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, a,
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,  5.,  6.,  7.,
-                                     8.,  9.,  10., 11., 12., 13., 14., 15., 16., 17., 18., 19.,
-                                     20., 21., 22., 23., 24., 25., 26., 27., 28., 29., 30.},
-                           5));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 34);
-}
-
-/** @par Test points */
-TEST_CASE("test_TA_MAVP_ref_not_time_without_context_ind_is_time_without_context") {
-    //-------------------------------------------------------
-    // Without a context, the reference is time independent with its own context, the calculated one
-    // is a time series; a is calculated with b as the reference
-    //-------------------------------------------------------
-    Stock stk = getStock("sz000001");
-    KData k;
-    Indicator result, a, b, expect;
-    double nan = Null<double>();
-
-    /** @arg The lengths of a and b are both 1 (equal and less than 2) */
-    k = stk.getKData(KQuery(-1));
-    a = k.close();
-    b = PRICELIST(PriceList{2.});
-    REQUIRE(a.size() == 1);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, k.close(), PRICELIST(PriceList{2.}));
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 1);
-
-    /** @arg The length of a is 0 and that of b is 1 */
-    k = stk.getKData(KQueryByDate(Datetime(20240101)));
-    a = k.close();
-    b = PRICELIST(PriceList{2.});
-    REQUIRE(a.size() == 0);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, k.close(), PRICELIST());
-    CHECK_EQ(result.size(), 0);
-    CHECK_EQ(result.discard(), 0);
-
-    /** @arg The lengths of a and b are both 2 */
-    k = stk.getKData(KQuery(-2));
-    a = k.close();
-    b = PRICELIST(PriceList{1., 2.});
-    REQUIRE(a.size() == 2);
-    REQUIRE(b.size() == 2);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, a, b);
-    CHECK_EQ(result.size(), 2);
-    CHECK_EQ(result.discard(), 2);
-
-    /** @arg The length of a is 29 and that of b is 20 */
-    k = stk.getKData(KQuery(-29));
-    a = k.close();
-    b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                            11., 12., 13., 14., 15., 16., 17., 18., 19., 20.});
-    REQUIRE(a.size() == 29);
-    REQUIRE(b.size() == 20);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(
+  /** @arg The length of a is 29 and that of b is 20 */
+  k = stk.getKData(KQuery(-29));
+  a = k.close();
+  b = hayaku::CONTEXT(
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.}));
+  REQUIRE(a.size() == 29);
+  REQUIRE(b.size() == 20);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(
       result, a,
-      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,  5., 6.,
-                          7.,  8.,  9.,  10., 11., 12., 13., 14., 15., 16., 17., 18., 19., 20.},
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, 1.,
+                          2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11.,
+                          12., 13., 14., 15., 16., 17., 18., 19., 20.}));
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
+
+  /** @arg The length of a is 20 and that of b is 29 */
+  k = stk.getKData(KQuery(-20));
+  a = k.close();
+  b = hayaku::CONTEXT(PRICELIST(PriceList{
+      nan, nan, nan, nan, nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,  5., 6.,
+      7.,  8.,  9.,  10., 11., 12., 13., 14., 15., 16., 17., 18., 19., 20.}));
+  REQUIRE(a.size() == 20);
+  REQUIRE(b.size() == 29);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(result, a, PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,
+                                              8.,  9.,  10., 11., 12., 13., 14.,
+                                              15., 16., 17., 18., 19., 20.}));
+  CHECK_EQ(result.size(), 20);
+  CHECK_EQ(result.discard(), 20);
+
+  /** @arg The length of a is 30 and that of b is 30 */
+  k = stk.getKData(KQuery(-30));
+  a = k.close();
+  b = hayaku::CONTEXT(
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(
+      result, a,
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 29);
+
+  /** @arg The length of a is 30 and that of b is 35 */
+  k = stk.getKData(KQuery(-30));
+  a = k.close();
+  b = hayaku::CONTEXT(PRICELIST(
+      PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12.,
+                13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24.,
+                25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35.}));
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 35);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(
+      result, a,
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 29);
+
+  /** @arg The length of a is 35 and that of b is 30 */
+  k = stk.getKData(KQuery(-35));
+  a = k.close();
+  b = hayaku::CONTEXT(
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
+  REQUIRE(a.size() == 35);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(result, a,
+               PRICELIST(PriceList{nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,
+                                   5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13.,
+                                   14., 15., 16., 17., 18., 19., 20., 21., 22.,
+                                   23., 24., 25., 26., 27., 28., 29., 30.},
+                         5));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 34);
+}
+
+/** @par Test points */
+TEST_CASE(
+    "test_TA_MAVP_ref_not_time_without_context_ind_is_time_without_context") {
+  //-------------------------------------------------------
+  // Without a context, the reference is time independent with its own context,
+  // the calculated one is a time series; a is calculated with b as the
+  // reference
+  //-------------------------------------------------------
+  Stock stk = getStock("sz000001");
+  KData k;
+  Indicator result, a, b, expect;
+  double nan = Null<double>();
+
+  /** @arg The lengths of a and b are both 1 (equal and less than 2) */
+  k = stk.getKData(KQuery(-1));
+  a = k.close();
+  b = PRICELIST(PriceList{2.});
+  REQUIRE(a.size() == 1);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(result, k.close(), PRICELIST(PriceList{2.}));
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 1);
+
+  /** @arg The length of a is 0 and that of b is 1 */
+  k = stk.getKData(KQueryByDate(Datetime(20240101)));
+  a = k.close();
+  b = PRICELIST(PriceList{2.});
+  REQUIRE(a.size() == 0);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(result, k.close(), PRICELIST());
+  CHECK_EQ(result.size(), 0);
+  CHECK_EQ(result.discard(), 0);
+
+  /** @arg The lengths of a and b are both 2 */
+  k = stk.getKData(KQuery(-2));
+  a = k.close();
+  b = PRICELIST(PriceList{1., 2.});
+  REQUIRE(a.size() == 2);
+  REQUIRE(b.size() == 2);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(result, a, b);
+  CHECK_EQ(result.size(), 2);
+  CHECK_EQ(result.discard(), 2);
+
+  /** @arg The length of a is 29 and that of b is 20 */
+  k = stk.getKData(KQuery(-29));
+  a = k.close();
+  b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.});
+  REQUIRE(a.size() == 29);
+  REQUIRE(b.size() == 20);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(
+      result, a,
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, 1.,
+                          2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11.,
+                          12., 13., 14., 15., 16., 17., 18., 19., 20.},
                 9));
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 20 and that of b is 29 */
-    k = stk.getKData(KQuery(-20));
-    a = k.close();
-    b =
-      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13., 14., 15.,
-                          16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29.});
-    REQUIRE(a.size() == 20);
-    REQUIRE(b.size() == 29);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, a, PRICELIST(PriceList{10., 11., 12., 13., 14., 15., 16., 17., 18., 19.,
-                                                20., 21., 22., 23., 24., 25., 26., 27., 28., 29.}));
-    CHECK_EQ(result.size(), 20);
-    CHECK_EQ(result.discard(), 20);
+  /** @arg The length of a is 20 and that of b is 29 */
+  k = stk.getKData(KQuery(-20));
+  a = k.close();
+  b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29.});
+  REQUIRE(a.size() == 20);
+  REQUIRE(b.size() == 29);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(result, a, PRICELIST(PriceList{10., 11., 12., 13., 14., 15., 16.,
+                                              17., 18., 19., 20., 21., 22., 23.,
+                                              24., 25., 26., 27., 28., 29.}));
+  CHECK_EQ(result.size(), 20);
+  CHECK_EQ(result.discard(), 20);
 
-    /** @arg The length of a is 30 and that of b is 30 */
-    k = stk.getKData(KQuery(-30));
-    a = k.close();
-    b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                            11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                            21., 22., 23., 24., 25., 26., 27., 28., 29., 30.});
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, a, PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                                                11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                                                21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 30 and that of b is 30 */
+  k = stk.getKData(KQuery(-30));
+  a = k.close();
+  b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.});
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(
+      result, a,
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 30 and that of b is 35 */
-    k = stk.getKData(KQuery(-30));
-    a = k.close();
-    b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12.,
-                            13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24.,
-                            25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35.});
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 35);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, a, PRICELIST(PriceList{6.,  7.,  8.,  9.,  10., 11., 12., 13., 14., 15.,
-                                                16., 17., 18., 19., 20., 21., 22., 23., 24., 25.,
-                                                26., 27., 28., 29., 30., 31., 32., 33., 34., 35.}));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 30 and that of b is 35 */
+  k = stk.getKData(KQuery(-30));
+  a = k.close();
+  b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,
+                          10., 11., 12., 13., 14., 15., 16., 17., 18.,
+                          19., 20., 21., 22., 23., 24., 25., 26., 27.,
+                          28., 29., 30., 31., 32., 33., 34., 35.});
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 35);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(
+      result, a,
+      PRICELIST(PriceList{6.,  7.,  8.,  9.,  10., 11., 12., 13., 14., 15.,
+                          16., 17., 18., 19., 20., 21., 22., 23., 24., 25.,
+                          26., 27., 28., 29., 30., 31., 32., 33., 34., 35.}));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 35 and that of b is 30 */
-    k = stk.getKData(KQuery(-35));
-    a = k.close();
-    b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                            11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                            21., 22., 23., 24., 25., 26., 27., 28., 29., 30.});
-    REQUIRE(a.size() == 35);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    result = TA_MAVP(a, b);
-    check_output(result, a,
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,  5.,  6.,  7.,
-                                     8.,  9.,  10., 11., 12., 13., 14., 15., 16., 17., 18., 19.,
-                                     20., 21., 22., 23., 24., 25., 26., 27., 28., 29., 30.},
-                           5));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 34);
+  /** @arg The length of a is 35 and that of b is 30 */
+  k = stk.getKData(KQuery(-35));
+  a = k.close();
+  b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.});
+  REQUIRE(a.size() == 35);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  result = TA_MAVP(a, b);
+  check_output(result, a,
+               PRICELIST(PriceList{nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,
+                                   5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13.,
+                                   14., 15., 16., 17., 18., 19., 20., 21., 22.,
+                                   23., 24., 25., 26., 27., 28., 29., 30.},
+                         5));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 34);
 }
 
 /** @par Test points */
 TEST_CASE("test_TA_MAVP_ref_not_time_with_context_ind_is_time_bind_context") {
-    //-------------------------------------------------------
-    // With a context, the reference is time independent, the calculated one is a time series; a is
-    // calculated with b as the reference
-    //-------------------------------------------------------
-    Stock stk1 = getStock("sz000001");
-    Stock stk2 = getStock("sz000002");
-    KData k1, k2;
-    Indicator result, a, b, expect;
-    double nan = Null<double>();
+  //-------------------------------------------------------
+  // With a context, the reference is time independent, the calculated one is a
+  // time series; a is calculated with b as the reference
+  //-------------------------------------------------------
+  Stock stk1 = getStock("sz000001");
+  Stock stk2 = getStock("sz000002");
+  KData k1, k2;
+  Indicator result, a, b, expect;
+  double nan = Null<double>();
 
-    /** @arg The lengths of a and b are both 1 (equal and less than 2) */
-    k1 = stk1.getKData(KQuery(-1));
-    a = k1.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1.}));
-    REQUIRE(a.size() == 1);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-1));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(), PRICELIST(PriceList{1.}));
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 1);
+  /** @arg The lengths of a and b are both 1 (equal and less than 2) */
+  k1 = stk1.getKData(KQuery(-1));
+  a = k1.close();
+  b = hayaku::CONTEXT(PRICELIST(PriceList{1.}));
+  REQUIRE(a.size() == 1);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-1));
+  result = TA_MAVP(a, b)(k2);
+  check_output(result, k2.close(), PRICELIST(PriceList{1.}));
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 1);
 
-    /** @arg The length of a is 0 and that of b is 1 */
-    k1 = stk1.getKData(KQueryByDate(Datetime(20240101)));
-    a = k1.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1.}));
-    REQUIRE(a.size() == 0);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQueryByDate(Datetime(20240101)));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(), PRICELIST());
-    CHECK_EQ(result.size(), 0);
-    CHECK_EQ(result.discard(), 0);
+  /** @arg The length of a is 0 and that of b is 1 */
+  k1 = stk1.getKData(KQueryByDate(Datetime(20240101)));
+  a = k1.close();
+  b = hayaku::CONTEXT(PRICELIST(PriceList{1.}));
+  REQUIRE(a.size() == 0);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQueryByDate(Datetime(20240101)));
+  result = TA_MAVP(a, b)(k2);
+  check_output(result, k2.close(), PRICELIST());
+  CHECK_EQ(result.size(), 0);
+  CHECK_EQ(result.discard(), 0);
 
-    /** @arg The lengths of a and b are both 2 */
-    k1 = stk1.getKData(KQuery(-2));
-    a = k1.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1., 2.}));
-    REQUIRE(a.size() == 2);
-    REQUIRE(b.size() == 2);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-2));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(), PRICELIST(PriceList{1., 2.}));
-    CHECK_EQ(result.size(), 2);
-    CHECK_EQ(result.discard(), 2);
+  /** @arg The lengths of a and b are both 2 */
+  k1 = stk1.getKData(KQuery(-2));
+  a = k1.close();
+  b = hayaku::CONTEXT(PRICELIST(PriceList{1., 2.}));
+  REQUIRE(a.size() == 2);
+  REQUIRE(b.size() == 2);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-2));
+  result = TA_MAVP(a, b)(k2);
+  check_output(result, k2.close(), PRICELIST(PriceList{1., 2.}));
+  CHECK_EQ(result.size(), 2);
+  CHECK_EQ(result.discard(), 2);
 
-    /** @arg The length of a is 29 and that of b is 20 */
-    k1 = stk1.getKData(KQuery(-29));
-    a = k1.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                                         11., 12., 13., 14., 15., 16., 17., 18., 19., 20.}));
-    REQUIRE(a.size() == 29);
-    REQUIRE(b.size() == 20);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-29));
-    result = TA_MAVP(a, b)(k2);
-    check_output(
+  /** @arg The length of a is 29 and that of b is 20 */
+  k1 = stk1.getKData(KQuery(-29));
+  a = k1.close();
+  b = hayaku::CONTEXT(
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.}));
+  REQUIRE(a.size() == 29);
+  REQUIRE(b.size() == 20);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-29));
+  result = TA_MAVP(a, b)(k2);
+  check_output(
       result, k2.close(),
-      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,  5., 6.,
-                          7.,  8.,  9.,  10., 11., 12., 13., 14., 15., 16., 17., 18., 19., 20.},
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, 1.,
+                          2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11.,
+                          12., 13., 14., 15., 16., 17., 18., 19., 20.},
                 9));
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 20 and that of b is 29 */
-    k1 = stk1.getKData(KQuery(-20));
-    a = k1.close();
-    b = hayaku::CONTEXT(
-      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13., 14., 15.,
-                          16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29.}));
-    REQUIRE(a.size() == 20);
-    REQUIRE(b.size() == 29);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-29));
-    result = TA_MAVP(a, b)(k2);
-    check_output(
+  /** @arg The length of a is 20 and that of b is 29 */
+  k1 = stk1.getKData(KQuery(-20));
+  a = k1.close();
+  b = hayaku::CONTEXT(PRICELIST(PriceList{
+      1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13., 14., 15.,
+      16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29.}));
+  REQUIRE(a.size() == 20);
+  REQUIRE(b.size() == 29);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-29));
+  result = TA_MAVP(a, b)(k2);
+  check_output(
       result, k2.close(),
-      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13., 14., 15.,
-                          16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29.}));
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29.}));
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 30 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = k1.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                                         11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                                         21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-35));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(),
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,  5.,  6.,  7.,
-                                     8.,  9.,  10., 11., 12., 13., 14., 15., 16., 17., 18., 19.,
-                                     20., 21., 22., 23., 24., 25., 26., 27., 28., 29., 30.},
-                           5));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 34);
+  /** @arg The length of a is 30 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = k1.close();
+  b = hayaku::CONTEXT(
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-35));
+  result = TA_MAVP(a, b)(k2);
+  check_output(result, k2.close(),
+               PRICELIST(PriceList{nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,
+                                   5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13.,
+                                   14., 15., 16., 17., 18., 19., 20., 21., 22.,
+                                   23., 24., 25., 26., 27., 28., 29., 30.},
+                         5));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 34);
 
-    /** @arg The length of a is 30 and that of b is 35 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = k1.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12.,
-                                         13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24.,
-                                         25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35.}));
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 35);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-35));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(),
-                 PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12.,
-                                     13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24.,
-                                     25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35.}));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 30 and that of b is 35 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = k1.close();
+  b = hayaku::CONTEXT(PRICELIST(
+      PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12.,
+                13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24.,
+                25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35.}));
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 35);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-35));
+  result = TA_MAVP(a, b)(k2);
+  check_output(result, k2.close(),
+               PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,
+                                   10., 11., 12., 13., 14., 15., 16., 17., 18.,
+                                   19., 20., 21., 22., 23., 24., 25., 26., 27.,
+                                   28., 29., 30., 31., 32., 33., 34., 35.}));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 35 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-35));
-    a = k1.close();
-    b = hayaku::CONTEXT(PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                                         11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                                         21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
-    REQUIRE(a.size() == 35);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-35));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(),
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,  5.,  6.,  7.,
-                                     8.,  9.,  10., 11., 12., 13., 14., 15., 16., 17., 18., 19.,
-                                     20., 21., 22., 23., 24., 25., 26., 27., 28., 29., 30.},
-                           5));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 34);
+  /** @arg The length of a is 35 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-35));
+  a = k1.close();
+  b = hayaku::CONTEXT(
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
+  REQUIRE(a.size() == 35);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-35));
+  result = TA_MAVP(a, b)(k2);
+  check_output(result, k2.close(),
+               PRICELIST(PriceList{nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,
+                                   5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13.,
+                                   14., 15., 16., 17., 18., 19., 20., 21., 22.,
+                                   23., 24., 25., 26., 27., 28., 29., 30.},
+                         5));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 34);
 }
 
 /** @par Test points */
-TEST_CASE("test_TA_MAVP_ref_not_time_without_context_ind_is_time_bind_context") {
-    //-------------------------------------------------------
-    // With a context, the reference is time independent, the calculated one is a time series; a is
-    // calculated with b as the reference
-    //-------------------------------------------------------
-    Stock stk1 = getStock("sz000001");
-    Stock stk2 = getStock("sz000002");
-    KData k1, k2;
-    Indicator result, a, b, expect;
-    double nan = Null<double>();
+TEST_CASE(
+    "test_TA_MAVP_ref_not_time_without_context_ind_is_time_bind_context") {
+  //-------------------------------------------------------
+  // With a context, the reference is time independent, the calculated one is a
+  // time series; a is calculated with b as the reference
+  //-------------------------------------------------------
+  Stock stk1 = getStock("sz000001");
+  Stock stk2 = getStock("sz000002");
+  KData k1, k2;
+  Indicator result, a, b, expect;
+  double nan = Null<double>();
 
-    /** @arg The lengths of a and b are both 1 (equal and less than 2) */
-    k1 = stk1.getKData(KQuery(-1));
-    a = k1.close();
-    b = PRICELIST(PriceList{1.});
-    REQUIRE(a.size() == 1);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-1));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(), PRICELIST(PriceList{1.}));
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 1);
+  /** @arg The lengths of a and b are both 1 (equal and less than 2) */
+  k1 = stk1.getKData(KQuery(-1));
+  a = k1.close();
+  b = PRICELIST(PriceList{1.});
+  REQUIRE(a.size() == 1);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-1));
+  result = TA_MAVP(a, b)(k2);
+  check_output(result, k2.close(), PRICELIST(PriceList{1.}));
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 1);
 
-    /** @arg The length of a is 0 and that of b is 1 */
-    k1 = stk1.getKData(KQueryByDate(Datetime(20240101)));
-    a = k1.close();
-    b = PRICELIST(PriceList{1.});
-    REQUIRE(a.size() == 0);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQueryByDate(Datetime(20240101)));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(), PRICELIST());
-    CHECK_EQ(result.size(), 0);
-    CHECK_EQ(result.discard(), 0);
+  /** @arg The length of a is 0 and that of b is 1 */
+  k1 = stk1.getKData(KQueryByDate(Datetime(20240101)));
+  a = k1.close();
+  b = PRICELIST(PriceList{1.});
+  REQUIRE(a.size() == 0);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQueryByDate(Datetime(20240101)));
+  result = TA_MAVP(a, b)(k2);
+  check_output(result, k2.close(), PRICELIST());
+  CHECK_EQ(result.size(), 0);
+  CHECK_EQ(result.discard(), 0);
 
-    /** @arg The lengths of a and b are both 2 */
-    k1 = stk1.getKData(KQuery(-2));
-    a = k1.close();
-    b = PRICELIST(PriceList{1., 2.});
-    REQUIRE(a.size() == 2);
-    REQUIRE(b.size() == 2);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-2));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(), PRICELIST(PriceList{1., 2.}));
-    CHECK_EQ(result.size(), 2);
-    CHECK_EQ(result.discard(), 2);
+  /** @arg The lengths of a and b are both 2 */
+  k1 = stk1.getKData(KQuery(-2));
+  a = k1.close();
+  b = PRICELIST(PriceList{1., 2.});
+  REQUIRE(a.size() == 2);
+  REQUIRE(b.size() == 2);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-2));
+  result = TA_MAVP(a, b)(k2);
+  check_output(result, k2.close(), PRICELIST(PriceList{1., 2.}));
+  CHECK_EQ(result.size(), 2);
+  CHECK_EQ(result.discard(), 2);
 
-    /** @arg The length of a is 29 and that of b is 20 */
-    k1 = stk1.getKData(KQuery(-29));
-    a = k1.close();
-    b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                            11., 12., 13., 14., 15., 16., 17., 18., 19., 20.});
-    REQUIRE(a.size() == 29);
-    REQUIRE(b.size() == 20);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-29));
-    result = TA_MAVP(a, b)(k2);
-    check_output(
+  /** @arg The length of a is 29 and that of b is 20 */
+  k1 = stk1.getKData(KQuery(-29));
+  a = k1.close();
+  b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.});
+  REQUIRE(a.size() == 29);
+  REQUIRE(b.size() == 20);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-29));
+  result = TA_MAVP(a, b)(k2);
+  check_output(
       result, k2.close(),
-      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,  5., 6.,
-                          7.,  8.,  9.,  10., 11., 12., 13., 14., 15., 16., 17., 18., 19., 20.},
+      PRICELIST(PriceList{nan, nan, nan, nan, nan, nan, nan, nan, nan, 1.,
+                          2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11.,
+                          12., 13., 14., 15., 16., 17., 18., 19., 20.},
                 9));
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 20 and that of b is 29 */
-    k1 = stk1.getKData(KQuery(-20));
-    a = k1.close();
-    b =
-      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13., 14., 15.,
-                          16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29.});
-    REQUIRE(a.size() == 20);
-    REQUIRE(b.size() == 29);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-29));
-    result = TA_MAVP(a, b)(k2);
-    check_output(
+  /** @arg The length of a is 20 and that of b is 29 */
+  k1 = stk1.getKData(KQuery(-20));
+  a = k1.close();
+  b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29.});
+  REQUIRE(a.size() == 20);
+  REQUIRE(b.size() == 29);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-29));
+  result = TA_MAVP(a, b)(k2);
+  check_output(
       result, k2.close(),
-      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13., 14., 15.,
-                          16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29.}));
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29.}));
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 30 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = k1.close();
-    b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                            11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                            21., 22., 23., 24., 25., 26., 27., 28., 29., 30.});
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(),
-                 PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                                     11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                                     21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 30 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = k1.close();
+  b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.});
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k2);
+  check_output(
+      result, k2.close(),
+      PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.}));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 30 and that of b is 35 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = k1.close();
-    b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12.,
-                            13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24.,
-                            25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35.});
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 35);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-35));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(),
-                 PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12.,
-                                     13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24.,
-                                     25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35.}));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 30 and that of b is 35 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = k1.close();
+  b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,
+                          10., 11., 12., 13., 14., 15., 16., 17., 18.,
+                          19., 20., 21., 22., 23., 24., 25., 26., 27.,
+                          28., 29., 30., 31., 32., 33., 34., 35.});
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 35);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-35));
+  result = TA_MAVP(a, b)(k2);
+  check_output(result, k2.close(),
+               PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,
+                                   10., 11., 12., 13., 14., 15., 16., 17., 18.,
+                                   19., 20., 21., 22., 23., 24., 25., 26., 27.,
+                                   28., 29., 30., 31., 32., 33., 34., 35.}));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 35 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-35));
-    a = k1.close();
-    b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
-                            11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
-                            21., 22., 23., 24., 25., 26., 27., 28., 29., 30.});
-    REQUIRE(a.size() == 35);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == Null<KData>());
-    k2 = stk2.getKData(KQuery(-35));
-    result = TA_MAVP(a, b)(k2);
-    check_output(result, k2.close(),
-                 PRICELIST(PriceList{nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,  5.,  6.,  7.,
-                                     8.,  9.,  10., 11., 12., 13., 14., 15., 16., 17., 18., 19.,
-                                     20., 21., 22., 23., 24., 25., 26., 27., 28., 29., 30.},
-                           5));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 34);
+  /** @arg The length of a is 35 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-35));
+  a = k1.close();
+  b = PRICELIST(PriceList{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,
+                          11., 12., 13., 14., 15., 16., 17., 18., 19., 20.,
+                          21., 22., 23., 24., 25., 26., 27., 28., 29., 30.});
+  REQUIRE(a.size() == 35);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == Null<KData>());
+  k2 = stk2.getKData(KQuery(-35));
+  result = TA_MAVP(a, b)(k2);
+  check_output(result, k2.close(),
+               PRICELIST(PriceList{nan, nan, nan, nan, nan, 1.,  2.,  3.,  4.,
+                                   5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13.,
+                                   14., 15., 16., 17., 18., 19., 20., 21., 22.,
+                                   23., 24., 25., 26., 27., 28., 29., 30.},
+                         5));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 34);
 }
 
 /** @par Test points */
-TEST_CASE("test_TA_MAVP_ref_is_prototype_with_context_ind_is_time_not_bind_context") {
-    //-------------------------------------------------------
-    // Without a context, the reference is a time series formula, the calculated one is a time
-    // series
-    //-------------------------------------------------------
-    Stock stk1 = getStock("sz000001");
-    Stock stk2 = getStock("sz000002");
-    KData k1, k2;
-    Indicator result, a, b, expect;
+TEST_CASE(
+    "test_TA_MAVP_ref_is_prototype_with_context_ind_is_time_not_bind_context") {
+  //-------------------------------------------------------
+  // Without a context, the reference is a time series formula, the calculated
+  // one is a time series
+  //-------------------------------------------------------
+  Stock stk1 = getStock("sz000001");
+  Stock stk2 = getStock("sz000002");
+  KData k1, k2;
+  Indicator result, a, b, expect;
 
-    /** @arg The lengths of a and b are both 1 (equal and less than 2) */
-    k1 = stk1.getKData(KQuery(-1));
-    a = k1.close();
-    k2 = stk2.getKData(KQuery(-1));
-    b = k2.close();
-    REQUIRE(a.size() == 1);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, a, b);
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 1);
+  /** @arg The lengths of a and b are both 1 (equal and less than 2) */
+  k1 = stk1.getKData(KQuery(-1));
+  a = k1.close();
+  k2 = stk2.getKData(KQuery(-1));
+  b = k2.close();
+  REQUIRE(a.size() == 1);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, a, b);
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 1);
 
-    /** @arg The length of a is 0 and that of b is 1 */
-    k1 = stk1.getKData(KQueryByDate(Datetime(20240101)));
-    a = k1.close();
-    k2 = stk2.getKData(KQuery(-1));
-    b = k2.close();
-    REQUIRE(a.size() == 0);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, a, PRICELIST());
-    CHECK_EQ(result.size(), 0);
-    CHECK_EQ(result.discard(), 0);
+  /** @arg The length of a is 0 and that of b is 1 */
+  k1 = stk1.getKData(KQueryByDate(Datetime(20240101)));
+  a = k1.close();
+  k2 = stk2.getKData(KQuery(-1));
+  b = k2.close();
+  REQUIRE(a.size() == 0);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, a, PRICELIST());
+  CHECK_EQ(result.size(), 0);
+  CHECK_EQ(result.discard(), 0);
 
-    /** @arg The lengths of a and b are both 2 */
-    k1 = stk1.getKData(KQuery(-2));
-    a = k1.close();
-    k2 = stk2.getKData(KQuery(-2));
-    b = k2.close();
-    REQUIRE(a.size() == 2);
-    REQUIRE(b.size() == 2);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, a, b);
-    CHECK_EQ(result.size(), 2);
-    CHECK_EQ(result.discard(), 2);
+  /** @arg The lengths of a and b are both 2 */
+  k1 = stk1.getKData(KQuery(-2));
+  a = k1.close();
+  k2 = stk2.getKData(KQuery(-2));
+  b = k2.close();
+  REQUIRE(a.size() == 2);
+  REQUIRE(b.size() == 2);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, a, b);
+  CHECK_EQ(result.size(), 2);
+  CHECK_EQ(result.discard(), 2);
 
-    /** @arg The length of a is 29 and that of b is 20 */
-    k1 = stk1.getKData(KQuery(-29));
-    a = k1.close();
-    k2 = stk2.getKData(KQuery(-20));
-    b = k2.close();
-    REQUIRE(a.size() == 29);
-    REQUIRE(b.size() == 20);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, a, CVAL(0)(k1) + b);
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 29 and that of b is 20 */
+  k1 = stk1.getKData(KQuery(-29));
+  a = k1.close();
+  k2 = stk2.getKData(KQuery(-20));
+  b = k2.close();
+  REQUIRE(a.size() == 29);
+  REQUIRE(b.size() == 20);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, a, CVAL(0)(k1) + b);
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 20 and that of b is 29 */
-    k1 = stk1.getKData(KQuery(-20));
-    a = k1.close();
-    k2 = stk2.getKData(KQuery(-29));
-    b = k2.close();
-    REQUIRE(a.size() == 20);
-    REQUIRE(b.size() == 29);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, a, SLICE(b, 9, 29));
-    CHECK_EQ(result.size(), 20);
-    CHECK_EQ(result.discard(), 20);
+  /** @arg The length of a is 20 and that of b is 29 */
+  k1 = stk1.getKData(KQuery(-20));
+  a = k1.close();
+  k2 = stk2.getKData(KQuery(-29));
+  b = k2.close();
+  REQUIRE(a.size() == 20);
+  REQUIRE(b.size() == 29);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, a, SLICE(b, 9, 29));
+  CHECK_EQ(result.size(), 20);
+  CHECK_EQ(result.discard(), 20);
 
-    /** @arg The length of a is 30 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = k1.close();
-    k2 = stk2.getKData(KQuery(-30));
-    b = k2.close();
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, a, b);
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 30 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = k1.close();
+  k2 = stk2.getKData(KQuery(-30));
+  b = k2.close();
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, a, b);
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 30 and that of b is 35 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = k1.close();
-    k2 = stk2.getKData(KQuery(-35));
-    b = k2.close();
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 35);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, a, SLICE(b, 5, 35));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 30 and that of b is 35 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = k1.close();
+  k2 = stk2.getKData(KQuery(-35));
+  b = k2.close();
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 35);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, a, SLICE(b, 5, 35));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 35 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-35));
-    a = k1.close();
-    k2 = stk2.getKData(KQuery(-30));
-    b = k2.close();
-    REQUIRE(a.size() == 35);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, a, CVAL(0)(k1) + b);
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 34);
+  /** @arg The length of a is 35 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-35));
+  a = k1.close();
+  k2 = stk2.getKData(KQuery(-30));
+  b = k2.close();
+  REQUIRE(a.size() == 35);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, a, CVAL(0)(k1) + b);
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 34);
 }
 
 /** @par Test points */
 TEST_CASE("test_TA_MAVP_ref_is_prototype_ind_is_time_with_context") {
-    //-------------------------------------------------------
-    // With a context, the reference is a time series formula prototype, the calculated one is a
-    // time series; a is calculated with b as the reference
-    //-------------------------------------------------------
-    Stock stk1 = getStock("sz000001");
-    Stock stk2 = getStock("sz000002");
-    Stock stk3 = getStock("sh000001");
-    KData k1, k2, k3;
-    Indicator result, a, b;
+  //-------------------------------------------------------
+  // With a context, the reference is a time series formula prototype, the
+  // calculated one is a time series; a is calculated with b as the reference
+  //-------------------------------------------------------
+  Stock stk1 = getStock("sz000001");
+  Stock stk2 = getStock("sz000002");
+  Stock stk3 = getStock("sh000001");
+  KData k1, k2, k3;
+  Indicator result, a, b;
 
-    /** @arg Both a and b are of length 1 (equal and less than 2), without a context */
-    k1 = stk1.getKData(KQuery(-1));
-    a = MA(k1.close(), 2);
-    k2 = stk2.getKData(KQuery(-1));
-    b = EMA(k2.close(), 2);
-    REQUIRE(a.size() == 1);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-1));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 1);
+  /** @arg Both a and b are of length 1 (equal and less than 2), without a
+   * context */
+  k1 = stk1.getKData(KQuery(-1));
+  a = MA(k1.close(), 2);
+  k2 = stk2.getKData(KQuery(-1));
+  b = EMA(k2.close(), 2);
+  REQUIRE(a.size() == 1);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-1));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 1);
 
-    /** @arg The length of a is 0 and that of b is 1, without a context */
-    k1 = stk1.getKData(KQueryByDate(Datetime(20240101)));
-    a = MA(k1.close(), 2);
-    k2 = stk2.getKData(KQuery(-1));
-    b = EMA(k2.close(), 2);
-    REQUIRE(a.size() == 0);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQueryByDate(Datetime(20240101)));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 0);
-    CHECK_EQ(result.discard(), 0);
+  /** @arg The length of a is 0 and that of b is 1, without a context */
+  k1 = stk1.getKData(KQueryByDate(Datetime(20240101)));
+  a = MA(k1.close(), 2);
+  k2 = stk2.getKData(KQuery(-1));
+  b = EMA(k2.close(), 2);
+  REQUIRE(a.size() == 0);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQueryByDate(Datetime(20240101)));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 0);
+  CHECK_EQ(result.discard(), 0);
 
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg The lengths of a and b are both 2, without a context */
-    k1 = stk1.getKData(KQuery(-2));
-    a = MA(k1.close(), 2);
-    k2 = stk2.getKData(KQuery(-2));
-    b = EMA(k2.close(), 2);
-    REQUIRE(a.size() == 2);
-    REQUIRE(b.size() == 2);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-2));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 2);
-    CHECK_EQ(result.discard(), 2);
+  /** @arg The lengths of a and b are both 2, without a context */
+  k1 = stk1.getKData(KQuery(-2));
+  a = MA(k1.close(), 2);
+  k2 = stk2.getKData(KQuery(-2));
+  b = EMA(k2.close(), 2);
+  REQUIRE(a.size() == 2);
+  REQUIRE(b.size() == 2);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-2));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 2);
+  CHECK_EQ(result.discard(), 2);
 
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg The length of a is 29 and that of b is 20 */
-    k1 = stk1.getKData(KQuery(-29));
-    a = MA(k1.close(), 2);
-    k2 = stk2.getKData(KQuery(-20));
-    b = EMA(k2.close(), 2);
-    REQUIRE(a.size() == 29);
-    REQUIRE(b.size() == 20);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-29));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 29 and that of b is 20 */
+  k1 = stk1.getKData(KQuery(-29));
+  a = MA(k1.close(), 2);
+  k2 = stk2.getKData(KQuery(-20));
+  b = EMA(k2.close(), 2);
+  REQUIRE(a.size() == 29);
+  REQUIRE(b.size() == 20);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-29));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
 
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg The length of a is 20 and that of b is 29 */
-    k1 = stk1.getKData(KQuery(-20));
-    a = MA(k1.close(), 2);
-    k2 = stk2.getKData(KQuery(-29));
-    b = EMA(k2.close(), 2);
-    REQUIRE(a.size() == 20);
-    REQUIRE(b.size() == 29);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-20));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 20);
-    CHECK_EQ(result.discard(), 20);
+  /** @arg The length of a is 20 and that of b is 29 */
+  k1 = stk1.getKData(KQuery(-20));
+  a = MA(k1.close(), 2);
+  k2 = stk2.getKData(KQuery(-29));
+  b = EMA(k2.close(), 2);
+  REQUIRE(a.size() == 20);
+  REQUIRE(b.size() == 29);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-20));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 20);
+  CHECK_EQ(result.discard(), 20);
 
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg The length of a is 30 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = MA(k1.close(), 2);
-    k2 = stk2.getKData(KQuery(-30));
-    b = EMA(k2.close(), 2);
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  /** @arg The length of a is 30 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = MA(k1.close(), 2);
+  k2 = stk2.getKData(KQuery(-30));
+  b = EMA(k2.close(), 2);
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg The length of a is 30 and that of b is 35 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = MA(k1.close(), 2);
-    k2 = stk2.getKData(KQuery(-35));
-    b = EMA(k2.close(), 2);
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 35);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-35));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 30);
+  /** @arg The length of a is 30 and that of b is 35 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = MA(k1.close(), 2);
+  k2 = stk2.getKData(KQuery(-35));
+  b = EMA(k2.close(), 2);
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 35);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-35));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 30);
 
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg The length of a is 35 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-35));
-    a = MA(k1.close(), 2);
-    k2 = stk2.getKData(KQuery(-30));
-    b = EMA(k2.close(), 2);
-    REQUIRE(a.size() == 35);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-35));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 30);
+  /** @arg The length of a is 35 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-35));
+  a = MA(k1.close(), 2);
+  k2 = stk2.getKData(KQuery(-30));
+  b = EMA(k2.close(), 2);
+  REQUIRE(a.size() == 35);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-35));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 30);
 
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k3.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 }
 
 /** @par Test points */
-TEST_CASE("test_TA_MAVP_ref_has_alone_context_ind_is_time_without_context_bind_context") {
-    //-------------------------------------------------------
-    // With a context, the reference is a time series with its own context, the calculated one is a
-    // (without its own context) time series; a is calculated with b as the reference
-    //-------------------------------------------------------
-    Stock stk1 = getStock("sz000001");
-    Stock stk2 = getStock("sz000002");
-    Stock stk3 = getStock("sh000001");
-    KData k1, k2, k3;
-    Indicator result, a, b;
+TEST_CASE(
+    "test_TA_MAVP_ref_has_alone_context_ind_is_time_without_context_bind_"
+    "context") {
+  //-------------------------------------------------------
+  // With a context, the reference is a time series with its own context, the
+  // calculated one is a (without its own context) time series; a is calculated
+  // with b as the reference
+  //-------------------------------------------------------
+  Stock stk1 = getStock("sz000001");
+  Stock stk2 = getStock("sz000002");
+  Stock stk3 = getStock("sh000001");
+  KData k1, k2, k3;
+  Indicator result, a, b;
 
-    /** @arg Both a and b are of length 1 (equal and less than 2), without a context */
-    k1 = stk1.getKData(KQuery(-1));
-    a = MA(k1.close(), 2);
-    k2 = stk2.getKData(KQuery(-1));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 1);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-1));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(b, 2));
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 1);
+  /** @arg Both a and b are of length 1 (equal and less than 2), without a
+   * context */
+  k1 = stk1.getKData(KQuery(-1));
+  a = MA(k1.close(), 2);
+  k2 = stk2.getKData(KQuery(-1));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 1);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-1));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(b, 2));
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 1);
 
-    /** @arg The length of a is 0 and that of b is 1, without a context */
-    a = MA(CLOSE(), 2);
-    k2 = stk2.getKData(KQuery(-1));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 0);
-    REQUIRE(b.size() == 1);
-    REQUIRE(a.getContext() == Null<KData>());
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQueryByDate(Datetime(20240101)));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), PRICELIST());
-    CHECK_EQ(result.size(), 0);
-    CHECK_EQ(result.discard(), 0);
+  /** @arg The length of a is 0 and that of b is 1, without a context */
+  a = MA(CLOSE(), 2);
+  k2 = stk2.getKData(KQuery(-1));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 0);
+  REQUIRE(b.size() == 1);
+  REQUIRE(a.getContext() == Null<KData>());
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQueryByDate(Datetime(20240101)));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), PRICELIST());
+  CHECK_EQ(result.size(), 0);
+  CHECK_EQ(result.discard(), 0);
 
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-30));
-    check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-30));
+  check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg The lengths of a and b are both 2, without a context */
-    k1 = stk1.getKData(KQuery(-2));
-    a = MA(CLOSE(k1), 2);
-    k2 = stk2.getKData(KQuery(-2));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 2);
-    REQUIRE(b.size() == 2);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-2));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 2);
-    CHECK_EQ(result.discard(), 2);
+  /** @arg The lengths of a and b are both 2, without a context */
+  k1 = stk1.getKData(KQuery(-2));
+  a = MA(CLOSE(k1), 2);
+  k2 = stk2.getKData(KQuery(-2));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 2);
+  REQUIRE(b.size() == 2);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-2));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 2);
+  CHECK_EQ(result.discard(), 2);
 
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-30));
-    check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-30));
+  check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg a is of length 29 and b of 20, without a context */
-    k1 = stk1.getKData(KQuery(-29));
-    a = MA(CLOSE(k1), 2);
-    k2 = stk2.getKData(KQuery(-20));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 29);
-    REQUIRE(b.size() == 20);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-29));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-29));
-    check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg a is of length 29 and b of 20, without a context */
+  k1 = stk1.getKData(KQuery(-29));
+  a = MA(CLOSE(k1), 2);
+  k2 = stk2.getKData(KQuery(-20));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 29);
+  REQUIRE(b.size() == 20);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-29));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-29));
+  check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
 
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-30));
-    check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-30));
+  check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg a is of length 20 and b of 29, without a context */
-    k1 = stk1.getKData(KQuery(-20));
-    a = MA(CLOSE(k1), 2);
-    k2 = stk2.getKData(KQuery(-29));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 20);
-    REQUIRE(b.size() == 29);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-20));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-20));
-    check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 20);
-    CHECK_EQ(result.discard(), 20);
+  /** @arg a is of length 20 and b of 29, without a context */
+  k1 = stk1.getKData(KQuery(-20));
+  a = MA(CLOSE(k1), 2);
+  k2 = stk2.getKData(KQuery(-29));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 20);
+  REQUIRE(b.size() == 29);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-20));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-20));
+  check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 20);
+  CHECK_EQ(result.discard(), 20);
 
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-30));
-    check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-30));
+  check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg a is of length 30 and b of 30, without a context */
-    k1 = stk1.getKData(KQuery(-30));
-    a = MA(CLOSE(k1), 2);
-    k2 = stk2.getKData(KQuery(-30));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-30));
-    check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  /** @arg a is of length 30 and b of 30, without a context */
+  k1 = stk1.getKData(KQuery(-30));
+  a = MA(CLOSE(k1), 2);
+  k2 = stk2.getKData(KQuery(-30));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-30));
+  check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg a is of length 30 and b of 35, without a context */
-    k1 = stk1.getKData(KQuery(-30));
-    a = MA(CLOSE(k1), 2);
-    k2 = stk2.getKData(KQuery(-35));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 35);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-30));
-    check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  /** @arg a is of length 30 and b of 35, without a context */
+  k1 = stk1.getKData(KQuery(-30));
+  a = MA(CLOSE(k1), 2);
+  k2 = stk2.getKData(KQuery(-35));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 35);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-30));
+  check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg a is of length 35 and b of 30, without a context */
-    k1 = stk1.getKData(KQuery(-35));
-    a = MA(CLOSE(k1), 2);
-    k2 = stk2.getKData(KQuery(-30));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 35);
-    REQUIRE(b.size() == 30);
-    REQUIRE(a.getContext() == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-30));
-    check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  /** @arg a is of length 35 and b of 30, without a context */
+  k1 = stk1.getKData(KQuery(-35));
+  a = MA(CLOSE(k1), 2);
+  k2 = stk2.getKData(KQuery(-30));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 35);
+  REQUIRE(b.size() == 30);
+  REQUIRE(a.getContext() == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-30));
+  check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 }
 
 /** @par Test points */
-TEST_CASE("test_TA_MAVP_ref_has_alone_context_ind_is_time_with_context_not_bind_context") {
-    //-------------------------------------------------------
-    // Without a context, the reference is a time series with its own context, the calculated one is
-    // a (with its own context) time series; a is calculated with b as the reference
-    //-------------------------------------------------------
-    Stock stk1 = getStock("sz000001");
-    Stock stk2 = getStock("sz000002");
-    KData k1, k2;
-    Indicator result, a, b;
-    KQuery query;
+TEST_CASE(
+    "test_TA_MAVP_ref_has_alone_context_ind_is_time_with_context_not_bind_"
+    "context") {
+  //-------------------------------------------------------
+  // Without a context, the reference is a time series with its own context, the
+  // calculated one is a (with its own context) time series; a is calculated
+  // with b as the reference
+  //-------------------------------------------------------
+  Stock stk1 = getStock("sz000001");
+  Stock stk2 = getStock("sz000002");
+  KData k1, k2;
+  Indicator result, a, b;
+  KQuery query;
 
-    /** @arg The lengths of a and b are both 1 (equal and less than 2) */
-    k1 = stk1.getKData(KQuery(-1));
-    a = hayaku::CONTEXT(MA(k1.close(), 2));
-    k2 = stk2.getKData(KQuery(-1));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 1);
-    REQUIRE(b.size() == 1);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, MA(a, 2), EMA(b, 2));
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 1);
+  /** @arg The lengths of a and b are both 1 (equal and less than 2) */
+  k1 = stk1.getKData(KQuery(-1));
+  a = hayaku::CONTEXT(MA(k1.close(), 2));
+  k2 = stk2.getKData(KQuery(-1));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 1);
+  REQUIRE(b.size() == 1);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, MA(a, 2), EMA(b, 2));
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 1);
 
-    /** @arg The length of a is 0 and that of b is 1 */
-    a = hayaku::CONTEXT(MA(CLOSE(), 2));
-    k2 = stk2.getKData(KQuery(-1));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 0);
-    REQUIRE(b.size() == 1);
-    REQUIRE(CONTEXT_K(a) == Null<KData>());
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, PRICELIST(), PRICELIST());
-    CHECK_EQ(result.size(), 0);
-    CHECK_EQ(result.discard(), 0);
+  /** @arg The length of a is 0 and that of b is 1 */
+  a = hayaku::CONTEXT(MA(CLOSE(), 2));
+  k2 = stk2.getKData(KQuery(-1));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 0);
+  REQUIRE(b.size() == 1);
+  REQUIRE(CONTEXT_K(a) == Null<KData>());
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, PRICELIST(), PRICELIST());
+  CHECK_EQ(result.size(), 0);
+  CHECK_EQ(result.discard(), 0);
 
-    /** @arg The lengths of a and b are both 2, without a context */
-    k1 = stk1.getKData(KQuery(-2));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-2));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 2);
-    REQUIRE(b.size() == 2);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, a, b);
-    CHECK_EQ(result.size(), 2);
-    CHECK_EQ(result.discard(), 2);
+  /** @arg The lengths of a and b are both 2, without a context */
+  k1 = stk1.getKData(KQuery(-2));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-2));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 2);
+  REQUIRE(b.size() == 2);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, a, b);
+  CHECK_EQ(result.size(), 2);
+  CHECK_EQ(result.discard(), 2);
 
-    /** @arg The length of a is 29 and that of b is 20 */
-    k1 = stk1.getKData(KQuery(-29));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-20));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 29);
-    REQUIRE(b.size() == 20);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    k2 = stk2.getKData(KQuery(-29));
-    check_output(result, MA(k1.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 29 and that of b is 20 */
+  k1 = stk1.getKData(KQuery(-29));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-20));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 29);
+  REQUIRE(b.size() == 20);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  k2 = stk2.getKData(KQuery(-29));
+  check_output(result, MA(k1.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 20 and that of b is 29 */
-    k1 = stk1.getKData(KQuery(-20));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-29));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 20);
-    REQUIRE(b.size() == 29);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    k2 = stk2.getKData(KQuery(-20));
-    check_output(result, MA(k1.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 20);
-    CHECK_EQ(result.discard(), 20);
+  /** @arg The length of a is 20 and that of b is 29 */
+  k1 = stk1.getKData(KQuery(-20));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-29));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 20);
+  REQUIRE(b.size() == 29);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  k2 = stk2.getKData(KQuery(-20));
+  check_output(result, MA(k1.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 20);
+  CHECK_EQ(result.discard(), 20);
 
-    /** @arg The length of a is 30 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-30));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 30);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, MA(k1.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  /** @arg The length of a is 30 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-30));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 30);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, MA(k1.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg The length of a is 30 and that of b is 35 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-35));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 35);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    k2 = stk2.getKData(KQuery(-30));
-    check_output(result, MA(k1.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 30);
+  /** @arg The length of a is 30 and that of b is 35 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-35));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 35);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  k2 = stk2.getKData(KQuery(-30));
+  check_output(result, MA(k1.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 30);
 
-    /** @arg The length of a is 35 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-35));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-30));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 35);
-    REQUIRE(b.size() == 30);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    result = TA_MAVP(a, b);
-    check_output(result, MA(k1.close(), 2), CVAL(0.)(k1) + EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 34);
+  /** @arg The length of a is 35 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-35));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-30));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 35);
+  REQUIRE(b.size() == 30);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  result = TA_MAVP(a, b);
+  check_output(result, MA(k1.close(), 2), CVAL(0.)(k1) + EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 34);
 }
 
 /** @par Test points */
-TEST_CASE("test_TA_MAVP_ref_has_alone_context_ind_is_time_with_context_bind_context") {
-    //-------------------------------------------------------
-    // With a context, the reference is a time series with its own context, the calculated one is a
-    // time series with its own context; a is calculated with b as the reference
-    //-------------------------------------------------------
-    Stock stk1 = getStock("sz000001");
-    Stock stk2 = getStock("sz000002");
-    Stock stk3 = getStock("sh000001");
-    KData k1, k2, k3;
-    Indicator result, a, b;
-    KQuery query;
+TEST_CASE(
+    "test_TA_MAVP_ref_has_alone_context_ind_is_time_with_context_bind_"
+    "context") {
+  //-------------------------------------------------------
+  // With a context, the reference is a time series with its own context, the
+  // calculated one is a time series with its own context; a is calculated with
+  // b as the reference
+  //-------------------------------------------------------
+  Stock stk1 = getStock("sz000001");
+  Stock stk2 = getStock("sz000002");
+  Stock stk3 = getStock("sh000001");
+  KData k1, k2, k3;
+  Indicator result, a, b;
+  KQuery query;
 
-    /** @arg The lengths of a and b are both 1 (equal and less than 2) */
-    k1 = stk1.getKData(KQuery(-1));
-    a = hayaku::CONTEXT(MA(k1.close(), 2));
-    k2 = stk2.getKData(KQuery(-1));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 1);
-    REQUIRE(b.size() == 1);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-1));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, MA(a, 2), EMA(b, 2));
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 1);
+  /** @arg The lengths of a and b are both 1 (equal and less than 2) */
+  k1 = stk1.getKData(KQuery(-1));
+  a = hayaku::CONTEXT(MA(k1.close(), 2));
+  k2 = stk2.getKData(KQuery(-1));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 1);
+  REQUIRE(b.size() == 1);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-1));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, MA(a, 2), EMA(b, 2));
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 1);
 
-    /** @arg The length of a is 0 and that of b is 1 */
-    a = hayaku::CONTEXT(MA(CLOSE(), 2));
-    k2 = stk2.getKData(KQuery(-1));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 0);
-    REQUIRE(b.size() == 1);
-    REQUIRE(CONTEXT_K(a) == Null<KData>());
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQueryByDate(Datetime(20240101)));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, PRICELIST(), PRICELIST());
-    CHECK_EQ(result.size(), 0);
-    CHECK_EQ(result.discard(), 0);
+  /** @arg The length of a is 0 and that of b is 1 */
+  a = hayaku::CONTEXT(MA(CLOSE(), 2));
+  k2 = stk2.getKData(KQuery(-1));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 0);
+  REQUIRE(b.size() == 1);
+  REQUIRE(CONTEXT_K(a) == Null<KData>());
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQueryByDate(Datetime(20240101)));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, PRICELIST(), PRICELIST());
+  CHECK_EQ(result.size(), 0);
+  CHECK_EQ(result.discard(), 0);
 
-    /** @arg The lengths of a and b are both 2, without a context */
-    k1 = stk1.getKData(KQuery(-2));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-2));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 2);
-    REQUIRE(b.size() == 2);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-2));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, a, b);
-    CHECK_EQ(result.size(), 2);
-    CHECK_EQ(result.discard(), 2);
+  /** @arg The lengths of a and b are both 2, without a context */
+  k1 = stk1.getKData(KQuery(-2));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-2));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 2);
+  REQUIRE(b.size() == 2);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-2));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, a, b);
+  CHECK_EQ(result.size(), 2);
+  CHECK_EQ(result.discard(), 2);
 
-    /** @arg The length of a is 29 and that of b is 20 */
-    k1 = stk1.getKData(KQuery(-29));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-20));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 29);
-    REQUIRE(b.size() == 20);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-29));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-29));
-    check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 29);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 29 and that of b is 20 */
+  k1 = stk1.getKData(KQuery(-29));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-20));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 29);
+  REQUIRE(b.size() == 20);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-29));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-29));
+  check_output(result, MA(k3.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 29);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 20 and that of b is 29 */
-    k1 = stk1.getKData(KQuery(-20));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-29));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 20);
-    REQUIRE(b.size() == 29);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-20));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-20));
-    check_output(result, MA(k1.close(), 2), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 20);
-    CHECK_EQ(result.discard(), 20);
+  /** @arg The length of a is 20 and that of b is 29 */
+  k1 = stk1.getKData(KQuery(-20));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-29));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 20);
+  REQUIRE(b.size() == 29);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-20));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-20));
+  check_output(result, MA(k1.close(), 2), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 20);
+  CHECK_EQ(result.discard(), 20);
 
-    /** @arg The length of a is 30 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-30));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 30);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, ALIGN(MA(k1.close(), 2), k3, false), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 30 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-30));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 30);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, ALIGN(MA(k1.close(), 2), k3, false), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 30 and that of b is 35 */
-    k1 = stk1.getKData(KQuery(-30));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-35));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 30);
-    REQUIRE(b.size() == 35);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-30));
-    result = TA_MAVP(a, b)(k3);
-    k2 = stk2.getKData(KQuery(-30));
-    check_output(result, ALIGN(MA(k1.close(), 2), k3, false), EMA(k2.close(), 2));
-    CHECK_EQ(result.size(), 30);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 30 and that of b is 35 */
+  k1 = stk1.getKData(KQuery(-30));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-35));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 30);
+  REQUIRE(b.size() == 35);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-30));
+  result = TA_MAVP(a, b)(k3);
+  k2 = stk2.getKData(KQuery(-30));
+  check_output(result, ALIGN(MA(k1.close(), 2), k3, false), EMA(k2.close(), 2));
+  CHECK_EQ(result.size(), 30);
+  CHECK_EQ(result.discard(), 29);
 
-    /** @arg The length of a is 35 and that of b is 30 */
-    k1 = stk1.getKData(KQuery(-35));
-    a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
-    k2 = stk2.getKData(KQuery(-30));
-    b = hayaku::CONTEXT(EMA(k2.close(), 2));
-    REQUIRE(a.size() == 35);
-    REQUIRE(b.size() == 30);
-    REQUIRE(CONTEXT_K(a) == k1);
-    REQUIRE(CONTEXT_K(b) == k2);
-    k3 = stk3.getKData(KQuery(-35));
-    result = TA_MAVP(a, b)(k3);
-    check_output(result, hayaku::CONTEXT(MA(k1.close(), 2))(k3), hayaku::CONTEXT(EMA(k2.close(), 2))(k3));
-    CHECK_EQ(result.size(), 35);
-    CHECK_EQ(result.discard(), 29);
+  /** @arg The length of a is 35 and that of b is 30 */
+  k1 = stk1.getKData(KQuery(-35));
+  a = hayaku::CONTEXT(MA(CLOSE(k1), 2));
+  k2 = stk2.getKData(KQuery(-30));
+  b = hayaku::CONTEXT(EMA(k2.close(), 2));
+  REQUIRE(a.size() == 35);
+  REQUIRE(b.size() == 30);
+  REQUIRE(CONTEXT_K(a) == k1);
+  REQUIRE(CONTEXT_K(b) == k2);
+  k3 = stk3.getKData(KQuery(-35));
+  result = TA_MAVP(a, b)(k3);
+  check_output(result, hayaku::CONTEXT(MA(k1.close(), 2))(k3),
+               hayaku::CONTEXT(EMA(k2.close(), 2))(k3));
+  CHECK_EQ(result.size(), 35);
+  CHECK_EQ(result.discard(), 29);
 }
 
 //-----------------------------------------------------------------------------
@@ -1637,34 +1723,34 @@ TEST_CASE("test_TA_MAVP_ref_has_alone_context_ind_is_time_with_context_bind_cont
 
 /** @par Test points */
 TEST_CASE("test_TA_MAVP_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/TA_MAVP.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/TA_MAVP.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-40));
-    Indicator x1 = TA_MAVP(kdata.close(), kdata.high());
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-40));
+  Indicator x1 = TA_MAVP(kdata.close(), kdata.high());
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x1.name(), x2.name());
-    CHECK_UNARY(x1.size() == x2.size());
-    CHECK_UNARY(x1.discard() == x2.discard());
-    CHECK_UNARY(x1.getResultNumber() == x2.getResultNumber());
-    for (size_t r = 0, total = x1.getResultNumber(); r < total; r++) {
-        for (size_t i = x1.discard(); i < x1.size(); ++i) {
-            CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
-        }
+  CHECK_EQ(x1.name(), x2.name());
+  CHECK_UNARY(x1.size() == x2.size());
+  CHECK_UNARY(x1.discard() == x2.discard());
+  CHECK_UNARY(x1.getResultNumber() == x2.getResultNumber());
+  for (size_t r = 0, total = x1.getResultNumber(); r < total; r++) {
+    for (size_t i = x1.discard(); i < x1.size(); ++i) {
+      CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
     }
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */

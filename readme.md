@@ -68,12 +68,12 @@ combine into your own strategy library and validate through backtesting.
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🏠 **Project repository**    | [github.com/larrystd/hayaku-quant](https://github.com/larrystd/hayaku-quant)                                                                    |
 | 📚 **Documentation source**  | [`docs/`](docs/)                                                                                                                                |
-| 🚀 **Getting started**       | [Jupyter Notebook tutorial series](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True) |
+| 🚀 **Getting started**       | [Current quickstart](docs/en/quickstart.rst) · [Notebook tutorials](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True) |
 | 🧰 **Strategy part library** | [https://gitee.com/fasiondog/hikyuu_hub](https://gitee.com/fasiondog/hikyuu_hub)                                                              |
 
 ---
 
-## ⚡ Quick Start (run your first backtest)
+## ⚡ Quick Start
 
 ### Requirements
 
@@ -94,19 +94,12 @@ If the download is slow (for users in China), use a mirror:
 pip install hayaku -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-### Step 2: Import market data
+### Step 2: Prepare local market data
 
-Import historical A-share market data with either method:
-
-```bash
-# Graphical interface (recommended for first use; it generates the configuration file)
-HayakuTDX
-
-# Command line (requires having run HayakuTDX once to generate the configuration)
-importdata
-```
-
-> ℹ️ **Data coverage**: HayakuTDX downloads **China A-share** historical data only and needs a one-time initial configuration in the GUI. Overseas markets (US stocks, etc.) are not available yet and will be supported gradually.
+Use the optional ingest component to prepare a compatible local data source and
+`hayaku.ini`. The core package does not download data when a session opens.
+See the [installation](docs/en/install.rst) and
+[quickstart](docs/en/quickstart.rst) guides for the current package boundary.
 
 ### Step 3: Open an explicit research session
 
@@ -115,7 +108,7 @@ from hayaku import Query, open_session
 from hayaku.execution import AccountConfig
 
 account = AccountConfig(initial_cash=300000, name="research")
-with open_session(account_config=account) as session:
+with open_session(filename="/path/to/hayaku.ini", account_config=account) as session:
     session.wait_ready()
     bars = session.data.get_kdata("sz000001", Query(-150))
     snapshot = session.execution.snapshot()
@@ -126,16 +119,16 @@ with open_session(account_config=account) as session:
   <img src="docs/en/_static/10000-overview.png" alt="Backtest result" width="900">
 </p>
 
-> 📖 See the [Jupyter Notebook tutorial series](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True)
-> for the complete example.
+> 📖 See the [quickstart](docs/en/quickstart.rst) and [strategy guide](docs/en/strategy.rst) for a complete research flow. Runnable examples are in the [Notebook tutorials](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True).
+> for a complete research flow.
 
 ### ❓ FAQ
 
 | Symptom                                                     | Solution                                                                              |
 | :---------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| `pip install` on Windows hangs while downloading PyQt / PySide6 | Use the Tsinghua mirror: `pip install hayaku -i https://pypi.tuna.tsinghua.edu.cn/simple` |
-| `HayakuTDX` GUI cannot import data                          | Use the `importdata` command instead (run the GUI once first to generate the config)   |
-| Errors about a missing hdf5 / dll                           | Run `pip install tables` to reinstall HDF5 support                                    |
+| A session cannot find market data                            | Check the selected `hayaku.ini` and its local data paths.                            |
+| An optional ingest or realtime import fails                  | Build those extensions with `./op.sh build-optional` or install the matching optional package. |
+| A native HDF5 library is missing                              | Reinstall the matching wheel or rebuild the core extension.                          |
 | Build tool for **building from source**                     | This project uses **xmake**, not cmake                                                |
 
 > 💡 For more questions see the [`docs/`](docs/) source or
@@ -175,7 +168,7 @@ layer (hayaku)**, and the **interactive exploration tool**.
 - **Python interface layer (hayaku)**: a lightweight wrapper around the C++ core with TA-Lib integrated;
   converts seamlessly to and from numpy and pandas, so it plugs into the mainstream Python data analysis
   ecosystem.
-- **hayaku.application.interactive**: the interactive exploration tool, with built-in visualization of candlesticks,
+- **hayaku.interactive**: the interactive exploration tool, with built-in visualization of candlesticks,
   indicators and signals, suitable for rapid strategy validation and backtest analysis.
 
 ### 🍳 Concise syntax: explore strategies faster and more freely
@@ -183,20 +176,10 @@ layer (hayaku)**, and the **interactive exploration tool**.
 Both **object-oriented** and **command-line** styles are supported. Especially during strategy exploration,
 the command-line style is minimal and expressive, letting you validate ideas and iterate faster.
 
-### 🔐 Self-controlled: build your own cloud quant platform
-
-Combining **Python + Jupyter** with a cloud server gives you a fully self-controlled cloud quant platform.
-Once deployed, access it anywhere (phone, tablet or computer) and turn new ideas into practice quickly. It
-also integrates with mature AI and data analysis tools such as **numpy, scipy, pandas and TensorFlow** for
-building intelligent quantitative systems. You can customize the interface or deploy it as a service as
-needed.
-
 ### 🎁 Modular and extensible data storage
 
-Four storage backends are currently supported: **HDF5, MySQL, ClickHouse and SQLite**, with HDF5 as the
-default (compact, fast to read and write, and easy to back up). ClickHouse is available through a plugin:
-it reads and writes faster than HDF5 and uses far less space than MySQL, making it a better fit for
-minute-level and higher-frequency data.
+The core uses local **HDF5** and **SQLite** data sources. **MySQL** and **ClickHouse** are optional
+adapters. Prepare market data with the optional ingest capability before opening a research session.
 
 ### 💻 Concise API design
 
@@ -217,14 +200,13 @@ client tools without worrying about third-party platform restrictions.
 
 | Domain                  | Main API                                      | Responsibility                              |
 | :---------------------- | :-------------------------------------------- | :------------------------------------------ |
-| **Common**              | `hayaku.common`                               | Shared value helpers                        |
-| **Data**                | `hayaku.data`                                 | Market data queries and values              |
-| **Operators**           | `hayaku.operators`                            | Indicator formulas and transformations      |
-| **Execution**           | `hayaku.execution`                            | Orders, cash, positions and trade history   |
-| **Metrics**             | `hayaku.metrics`                              | Result conversion and analysis              |
-| **Strategy**            | `hayaku.strategy`                             | Component composition and backtesting       |
-| **Application**         | `hayaku.application`                          | Sessions, interactive tools, GUI and CLI    |
-| **Extensions**          | `hayaku.extensions`                           | Ingest, realtime, visualization and SPI     |
+| **Data**                | `open_session / DataEngine`                   | Explicit data lifetime and market queries   |
+| **Execution**           | `AccountConfig / ExecutionEngine`            | Orders, cash, positions and trade history   |
+|                         | `AccountSnapshot / AccountView`               | Immutable account inspection                |
+| **Strategy**            | `StrategyDefinition / StrategyEngine`        | Component composition and orchestration     |
+|                         | `BacktestRequest / BacktestResult`            | Stable backtest input and output values     |
+| **Analysis**            | `hayaku.analysis`                             | Explicit result conversion and analysis     |
+| **Extensions**          | `hayaku.spi / hayaku.advanced`               | Custom protocols and low-level controls     |
 
 ---
 

@@ -11,7 +11,10 @@
 
 namespace hayaku {
 
-BacktestResult::BacktestResult(Stock stock, KQuery query, TradeRecordList trades)
-: m_stock(std::move(stock)), m_query(std::move(query)), m_trades(std::move(trades)) {}
+BacktestResult::BacktestResult(Stock stock, KQuery query,
+                               TradeRecordList trades)
+    : m_stock(std::move(stock)),
+      m_query(std::move(query)),
+      m_trades(std::move(trades)) {}
 
 }  // namespace hayaku

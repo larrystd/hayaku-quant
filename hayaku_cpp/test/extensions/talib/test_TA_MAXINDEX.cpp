@@ -5,12 +5,13 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <extensions/talib/TalibOperators.h>
 #include <operators/SeriesOperators.h>
-#include <operators/SeriesOperators.h>
+
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -22,37 +23,38 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_TA_MAXINDEX") {
-    /** @arg Invalid parameters */
-    CHECK_THROWS(TA_MAXINDEX(1));
-    CHECK_THROWS(TA_MAXINDEX(100001));
+  /** @arg Invalid parameters */
+  CHECK_THROWS(TA_MAXINDEX(1));
+  CHECK_THROWS(TA_MAXINDEX(100001));
 
-    /** @arg The normal data */
-    PriceList a;
-    for (int i = 0; i < 10; ++i) {
-        a.push_back(i / 10);
-    }
+  /** @arg The normal data */
+  PriceList a;
+  for (int i = 0; i < 10; ++i) {
+    a.push_back(i / 10);
+  }
 
-    Indicator data = PRICELIST(a);
-    Indicator expect = PRICELIST(
-      PriceList{Null<Indicator::value_t>(), Null<Indicator::value_t>(), 0, 1, 2, 3, 4, 5, 6, 7});
+  Indicator data = PRICELIST(a);
+  Indicator expect =
+      PRICELIST(PriceList{Null<Indicator::value_t>(),
+                          Null<Indicator::value_t>(), 0, 1, 2, 3, 4, 5, 6, 7});
 
-    Indicator result = TA_MAXINDEX(data, 3);
-    CHECK_EQ(result.name(), "TA_MAXINDEX");
-    CHECK_EQ(result.discard(), 2);
-    CHECK_EQ(result.size(), expect.size());
-    for (int i = result.discard(), len = expect.size(); i < len; ++i) {
-        CHECK_EQ(result[i], expect[i]);
-    }
+  Indicator result = TA_MAXINDEX(data, 3);
+  CHECK_EQ(result.name(), "TA_MAXINDEX");
+  CHECK_EQ(result.discard(), 2);
+  CHECK_EQ(result.size(), expect.size());
+  for (int i = result.discard(), len = expect.size(); i < len; ++i) {
+    CHECK_EQ(result[i], expect[i]);
+  }
 
-    /** @arg The discard of the calculated data is not 0 */
-    data = TA_MA(getKData("sh000001", KQuery(-10)).close(), 3);
-    CHECK_EQ(data.discard(), 2);
-    result = TA_MAXINDEX(data, 3);
-    CHECK_EQ(result.name(), "TA_MAXINDEX");
-    CHECK_EQ(result.discard(), 4);
-    CHECK_EQ(result.size(), data.size());
-    CHECK_EQ(result[4], 4.);
-    CHECK_EQ(result[9], 7.);
+  /** @arg The discard of the calculated data is not 0 */
+  data = TA_MA(getKData("sh000001", KQuery(-10)).close(), 3);
+  CHECK_EQ(data.discard(), 2);
+  result = TA_MAXINDEX(data, 3);
+  CHECK_EQ(result.name(), "TA_MAXINDEX");
+  CHECK_EQ(result.discard(), 4);
+  CHECK_EQ(result.size(), data.size());
+  CHECK_EQ(result[4], 4.);
+  CHECK_EQ(result[9], 7.);
 }
 
 //-----------------------------------------------------------------------------
@@ -62,37 +64,37 @@ TEST_CASE("test_TA_MAXINDEX") {
 
 /** @par Test points */
 TEST_CASE("test_TA_MAXINDEX_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/TA_MAXINDEX.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/TA_MAXINDEX.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator x1 = TA_MAXINDEX(CLOSE(kdata));
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator x1 = TA_MAXINDEX(CLOSE(kdata));
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x2.name(), "TA_MAXINDEX");
-    CHECK_EQ(x1.size(), x2.size());
-    CHECK_EQ(x1.discard(), x2.discard());
-    CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
-    for (size_t i = x1.discard(); i < x1.size(); ++i) {
-        if (std::isnan(x1[i])) {
-            CHECK_UNARY(std::isnan(x2[i]));
-        } else {
-            CHECK_EQ(x1[i], doctest::Approx(x2[i]));
-        }
+  CHECK_EQ(x2.name(), "TA_MAXINDEX");
+  CHECK_EQ(x1.size(), x2.size());
+  CHECK_EQ(x1.discard(), x2.discard());
+  CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
+  for (size_t i = x1.discard(); i < x1.size(); ++i) {
+    if (std::isnan(x1[i])) {
+      CHECK_UNARY(std::isnan(x2[i]));
+    } else {
+      CHECK_EQ(x1[i], doctest::Approx(x2[i]));
     }
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

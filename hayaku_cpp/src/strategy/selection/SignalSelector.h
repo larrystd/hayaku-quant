@@ -7,25 +7,22 @@
  *      Author: fasiondog
  */
 
-
 #include "SelectorBase.h"
 
 namespace hayaku {
 
 class SignalSelector : public SelectorBase {
-    SELECTOR_IMP(SignalSelector)
-    SELECTOR_NO_PRIVATE_MEMBER_SERIALIZATION
+  SELECTOR_IMP(SignalSelector)
+  SELECTOR_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    SignalSelector();
-    virtual ~SignalSelector();
+ public:
+  SignalSelector();
+  virtual ~SignalSelector();
 
-    virtual void _reset() override {
-        m_sys_dict.clear();
-    }
+  virtual void _reset() override { m_sys_dict.clear(); }
 
-private:
-    unordered_map<Datetime, StrategyWeightList> m_sys_dict;
+ private:
+  unordered_map<Datetime, StrategyWeightList> m_sys_dict;
 };
 
 }  // namespace hayaku

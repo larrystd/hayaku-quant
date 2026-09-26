@@ -5,8 +5,9 @@
  *      Author: fasiondog
  */
 
-#include "common/OsDef.h"
 #include "GlobalStealThreadPool.h"
+
+#include "common/OsDef.h"
 
 namespace hayaku {
 
@@ -19,7 +20,8 @@ std::thread::id GlobalStealThreadPool::m_thread_id;
 #else
 
 #if CPP_STANDARD < CPP_STANDARD_17 || defined(__clang__)
-thread_local WorkStealQueue* GlobalStealThreadPool::m_local_work_queue = nullptr;
+thread_local WorkStealQueue* GlobalStealThreadPool::m_local_work_queue =
+    nullptr;
 thread_local int GlobalStealThreadPool::m_index = -1;
 thread_local InterruptFlag GlobalStealThreadPool::m_thread_need_stop;
 thread_local std::thread::id GlobalStealThreadPool::m_thread_id;

@@ -7,6 +7,5 @@
  *      Author: fasiondog
  */
 
-
-#include "ParallelAlgorithms.h"
 #include "GlobalStealThreadPool.h"
+#include "ParallelAlgorithms.h"

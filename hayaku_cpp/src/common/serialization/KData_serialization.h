@@ -7,31 +7,30 @@
  *      Author: fasiondog
  */
 
-
 #include "common/Config.h"
 #include "data/KData.h"
 
 #if HAYAKU_SUPPORT_SERIALIZATION
-#include "Stock_serialization.h"
 #include "KQuery_serialization.h"
+#include "Stock_serialization.h"
 
 namespace boost {
 namespace serialization {
 template <class Archive>
 void save(Archive& ar, const hayaku::KData& kdata, unsigned int version) {
-    hayaku::Stock stock = kdata.getStock();
-    hayaku::KQuery query = kdata.getQuery();
-    ar& BOOST_SERIALIZATION_NVP(stock);
-    ar& BOOST_SERIALIZATION_NVP(query);
+  hayaku::Stock stock = kdata.getStock();
+  hayaku::KQuery query = kdata.getQuery();
+  ar& BOOST_SERIALIZATION_NVP(stock);
+  ar& BOOST_SERIALIZATION_NVP(query);
 }
 
 template <class Archive>
 void load(Archive& ar, hayaku::KData& kdata, unsigned int version) {
-    hayaku::Stock stock;
-    hayaku::KQuery query;
-    ar& BOOST_SERIALIZATION_NVP(stock);
-    ar& BOOST_SERIALIZATION_NVP(query);
-    kdata = stock.isNull() ? hayaku::KData() : hayaku::KData(stock, query);
+  hayaku::Stock stock;
+  hayaku::KQuery query;
+  ar& BOOST_SERIALIZATION_NVP(stock);
+  ar& BOOST_SERIALIZATION_NVP(query);
+  kdata = stock.isNull() ? hayaku::KData() : hayaku::KData(stock, query);
 }
 
 }  // namespace serialization

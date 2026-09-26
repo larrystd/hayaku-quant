@@ -7,17 +7,17 @@
  *      Author: fasiondog
  */
 
-
 #include "data/MarketTypes.h"
 #include "data/Stock.h"
-#include "extensions/realtime/SpotRecord.h"
 #include "extensions/realtime/RealtimeExport.h"
+#include "extensions/realtime/SpotRecord.h"
 
 namespace hayaku {
 
-void HAYAKU_REALTIME_API startDataServer(const std::string& addr = "tcp://0.0.0.0:9201", size_t work_num = 2,
-                             bool save_tick = false, bool buf_tick = false,
-                             const std::string& parquet_path = std::string());
+void HAYAKU_REALTIME_API startDataServer(
+    const std::string& addr = "tcp://0.0.0.0:9201", size_t work_num = 2,
+    bool save_tick = false, bool buf_tick = false,
+    const std::string& parquet_path = std::string());
 
 void HAYAKU_REALTIME_API stopDataServer();
 
@@ -27,35 +27,38 @@ void HAYAKU_REALTIME_API stopDataServer();
  * @param stklist the stock list to be updated
  * @param ktype the K-line type to be updated
  */
-void HAYAKU_REALTIME_API getDataFromBufferServer(const std::string& addr, const StockList& stklist,
-                                     const KQuery::KType& ktype);
+void HAYAKU_REALTIME_API getDataFromBufferServer(const std::string& addr,
+                                                 const StockList& stklist,
+                                                 const KQuery::KType& ktype);
 
 /**
- * Pull the latest K-lines from the market data cache service and update them in place (the local
- * buffer + the mirror shared memory), without the client routing judgment.
+ * Pull the latest K-lines from the market data cache service and update them in
+ * place (the local buffer + the mirror shared memory), without the client
+ * routing judgment.
  * @details It is called directly by the IPC handler of the main process only:
- *          getDataFromBufferServer delegates to the main process in the client mode, so the main
- *          process side must go through this function to avoid re-entering the client branch (in
- * the same-process test isIpcClientMode() may be true).
+ *          getDataFromBufferServer delegates to the main process in the client
+ * mode, so the main process side must go through this function to avoid
+ * re-entering the client branch (in the same-process test isIpcClientMode() may
+ * be true).
  * @param addr cache service address, e.g. tcp://192.168.1.1:9201
  * @param stklist the stock list to be updated
  * @param ktype the K-line type to be updated
  */
-void HAYAKU_REALTIME_API pullFromBufferServerLocal(const std::string& addr, const StockList& stklist,
-                                       const KQuery::KType& ktype);
+void HAYAKU_REALTIME_API pullFromBufferServerLocal(const std::string& addr,
+                                                   const StockList& stklist,
+                                                   const KQuery::KType& ktype);
 
 /**
- * @brief Get the cached spot data of the given security from the dataserver, with the date greater
- * than or equal to the given date
+ * @brief Get the cached spot data of the given security from the dataserver,
+ * with the date greater than or equal to the given date
  * @param addr cache service address, e.g. tcp://192.168.1.1:9201
  * @param market market code
  * @param code security code
  * @param datetime query time
  * @return vector<SpotRecord>
  */
-vector<SpotRecord> HAYAKU_REALTIME_API getSpotFromBufferServer(const std::string& addr,
-                                                   const std::string& market,
-                                                   const std::string& code,
-                                                   const Datetime& datetime);
+vector<SpotRecord> HAYAKU_REALTIME_API
+getSpotFromBufferServer(const std::string& addr, const std::string& market,
+                        const std::string& code, const Datetime& datetime);
 
 }  // namespace hayaku

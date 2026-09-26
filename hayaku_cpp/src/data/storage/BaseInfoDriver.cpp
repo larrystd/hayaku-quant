@@ -9,63 +9,74 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const BaseInfoDriver& driver) {
-    os << "BaseInfoDriver(" << driver.name() << ", " << driver.getParameter() << ")";
-    return os;
+HAYAKU_API std::ostream& operator<<(std::ostream& os,
+                                    const BaseInfoDriver& driver) {
+  os << "BaseInfoDriver(" << driver.name() << ", " << driver.getParameter()
+     << ")";
+  return os;
 }
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const BaseInfoDriverPtr& driver) {
-    if (driver) {
-        os << *driver;
-    } else {
-        os << "BaseInfoDriver(NULL)";
-    }
+HAYAKU_API std::ostream& operator<<(std::ostream& os,
+                                    const BaseInfoDriverPtr& driver) {
+  if (driver) {
+    os << *driver;
+  } else {
+    os << "BaseInfoDriver(NULL)";
+  }
 
-    return os;
+  return os;
 }
 
 BaseInfoDriver::BaseInfoDriver(const string& name) : m_name(name) {
-    to_upper(m_name);
+  to_upper(m_name);
 }
 
 bool BaseInfoDriver::checkType() {
-    bool result = false;
-    try {
-        string type = getParam<string>("type");
-        to_upper(type);
-        if (type == m_name) {
-            result = true;
-        } else {
-            result = false;
-            HAYAKU_WARN("Type of driver mismatch! ({} != {})", type, m_name);
-        }
-
-    } catch (...) {
-        result = false;
-        HAYAKU_ERROR("Can't get type of driver!");
+  bool result = false;
+  try {
+    string type = getParam<string>("type");
+    to_upper(type);
+    if (type == m_name) {
+      result = true;
+    } else {
+      result = false;
+      HAYAKU_WARN("Type of driver mismatch! ({} != {})", type, m_name);
     }
 
-    return result;
+  } catch (...) {
+    result = false;
+    HAYAKU_ERROR("Can't get type of driver!");
+  }
+
+  return result;
 }
 
 bool BaseInfoDriver::init(const Parameter& params) {
-    HAYAKU_IF_RETURN(m_params == params, true);
-    m_params = params;
-    HAYAKU_IF_RETURN(!checkType(), false);
-    HAYAKU_INFO("Using {} BaseInfoDriver", name());
-    return _init();
+  HAYAKU_IF_RETURN(m_params == params, true);
+  m_params = params;
+  HAYAKU_IF_RETURN(!checkType(), false);
+  HAYAKU_INFO("Using {} BaseInfoDriver", name());
+  return _init();
 }
 
-Parameter BaseInfoDriver::getFinanceInfo(const string& market, const string& code) {
-    HAYAKU_INFO("The getFinanceInfo method has not been implemented! (BaseInfoDriver: {})", m_name);
-    return Parameter();
+Parameter BaseInfoDriver::getFinanceInfo(const string& market,
+                                         const string& code) {
+  HAYAKU_INFO(
+      "The getFinanceInfo method has not been implemented! (BaseInfoDriver: "
+      "{})",
+      m_name);
+  return Parameter();
 }
 
-StockWeightList BaseInfoDriver::getStockWeightList(const string& market, const string& code,
-                                                   Datetime start, Datetime end) {
-    HAYAKU_INFO("The getStockWeightList method has not been implemented! (BaseInfoDriver: {})",
-             m_name);
-    return StockWeightList();
+StockWeightList BaseInfoDriver::getStockWeightList(const string& market,
+                                                   const string& code,
+                                                   Datetime start,
+                                                   Datetime end) {
+  HAYAKU_INFO(
+      "The getStockWeightList method has not been implemented! "
+      "(BaseInfoDriver: {})",
+      m_name);
+  return StockWeightList();
 }
 
 } /* namespace hayaku */

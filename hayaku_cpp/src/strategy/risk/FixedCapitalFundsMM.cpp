@@ -13,30 +13,32 @@ BOOST_CLASS_EXPORT(hayaku::FixedCapitalFundsMM)
 
 namespace hayaku {
 
-FixedCapitalFundsMM::FixedCapitalFundsMM() : MoneyManagerBase("MM_FixedCapitalFunds") {
-    setParam<double>("capital", 10000.00);
+FixedCapitalFundsMM::FixedCapitalFundsMM()
+    : MoneyManagerBase("MM_FixedCapitalFunds") {
+  setParam<double>("capital", 10000.00);
 }
 
 FixedCapitalFundsMM::~FixedCapitalFundsMM() {}
 
 void FixedCapitalFundsMM::_checkParam(const string& name) const {
-    if ("capital" == name) {
-        double capital = getParam<double>("capital");
-        HAYAKU_ASSERT(capital > 0.0);
-    }
+  if ("capital" == name) {
+    double capital = getParam<double>("capital");
+    HAYAKU_ASSERT(capital > 0.0);
+  }
 }
 
-double FixedCapitalFundsMM ::_getBuyNumber(const Datetime& datetime, const Stock& stock,
-                                           price_t price, price_t risk, OrderOrigin origin) {
-    double capital = getParam<double>("capital");
-    FundsRecord funds = m_account->getFunds(datetime, m_query.kType());
-    return funds.total_assets() / capital;
+double FixedCapitalFundsMM ::_getBuyNumber(const Datetime& datetime,
+                                           const Stock& stock, price_t price,
+                                           price_t risk, OrderOrigin origin) {
+  double capital = getParam<double>("capital");
+  FundsRecord funds = m_account->getFunds(datetime, m_query.kType());
+  return funds.total_assets() / capital;
 }
 
 MoneyManagerPtr HAYAKU_API MM_FixedCapitalFunds(double capital) {
-    MoneyManagerPtr p = make_shared<FixedCapitalFundsMM>();
-    p->setParam<double>("capital", capital);
-    return p;
+  MoneyManagerPtr p = make_shared<FixedCapitalFundsMM>();
+  p->setParam<double>("capital", capital);
+  return p;
 }
 
 } /* namespace hayaku */

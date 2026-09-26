@@ -11,12 +11,9 @@
 #include <hayaku.h>
 #include <pybind11/eval.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl_bind.h>
 
 #include <string>
-
-#include <hayaku.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl_bind.h>
 
 using namespace hayaku;
 
@@ -40,7 +37,6 @@ PYBIND11_MAKE_OPAQUE(TransList);
 PYBIND11_MAKE_OPAQUE(PositionRecordList);
 // PYBIND11_MAKE_OPAQUE(FundsList);
 PYBIND11_MAKE_OPAQUE(TradeRecordList);
-
 
 using namespace hayaku;
 

@@ -5,16 +5,19 @@
  *      Author: fasiondog
  */
 
-#include "application/PluginRuntime.h"
-#include "application/plugins/PluginIds.h"
-#include "application/plugins/ExtendIndicatorsPluginInterface.h"
-#include <application/plugins/ExtendIndicatorsPlugin.h>
-#include <application/plugins/DevicePlugin.h>
 #include "application/plugin_fixtures/plugin_valid.h"
+
+#include <application/plugins/DevicePlugin.h>
+#include <application/plugins/ExtendIndicatorsPlugin.h>
+
+#include "application/PluginRuntime.h"
+#include "application/plugins/ExtendIndicatorsPluginInterface.h"
+#include "application/plugins/PluginIds.h"
 
 using namespace hayaku;
 
 bool pluginValid() {
-    auto* plugin = getPlugin<ExtendIndicatorsPluginInterface>(HAYAKU_PLUGIN_EXTEND_INDICATOR);
-    return plugin && isValidLicense();
+  auto* plugin = getPlugin<ExtendIndicatorsPluginInterface>(
+      HAYAKU_PLUGIN_EXTEND_INDICATOR);
+  return plugin && isValidLicense();
 }

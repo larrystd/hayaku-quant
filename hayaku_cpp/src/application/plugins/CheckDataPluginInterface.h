@@ -7,21 +7,20 @@
  *      Author: fasiondog
  */
 
-
-#include "data/Stock.h"
 #include "application/plugins/PluginBase.h"
+#include "data/Stock.h"
 
 namespace hayaku {
 
 class CheckDataPluginInterface : public PluginBase {
-public:
-    static constexpr uint32_t PLUGIN_INTERFACE_VERSION = 1;
-    CheckDataPluginInterface() = default;
-    virtual ~CheckDataPluginInterface() = default;
+ public:
+  static constexpr uint32_t PLUGIN_INTERFACE_VERSION = 1;
+  CheckDataPluginInterface() = default;
+  virtual ~CheckDataPluginInterface() = default;
 
-    virtual std::pair<std::string, vector<std::string>> checkData(
-      const StockList& stock_list, const Datetime& start_date, const Datetime& end_date,
-      const KQuery::KType& check_ktype) = 0;
+  virtual std::pair<std::string, vector<std::string>> checkData(
+      const StockList& stock_list, const Datetime& start_date,
+      const Datetime& end_date, const KQuery::KType& check_ktype) = 0;
 };
 
 }  // namespace hayaku

@@ -7,20 +7,19 @@
  *      Author: fasiondog
  */
 
-
 #include "NormalizeBase.h"
 
 namespace hayaku {
 
 class NormZScore : public NormalizeBase {
-    NORMALIZE_IMP(NormZScore)
-    NORMALIZE_NO_PRIVATE_MEMBER_SERIALIZATION
+  NORMALIZE_IMP(NormZScore)
+  NORMALIZE_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    NormZScore();
-    NormZScore(bool outExtreme, double nsigma, bool recursive);
-    virtual ~NormZScore() override;
-    virtual void _checkParam(const string& name) const override;
+ public:
+  NormZScore();
+  NormZScore(bool outExtreme, double nsigma, bool recursive);
+  virtual ~NormZScore() override;
+  virtual void _checkParam(const string& name) const override;
 };
 
 }  // namespace hayaku

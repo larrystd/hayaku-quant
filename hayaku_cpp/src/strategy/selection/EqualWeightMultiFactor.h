@@ -7,20 +7,20 @@
  *      Author: fasiondog
  */
 
-
 #include "MultiFactorBase.h"
 
 namespace hayaku {
 
 class EqualWeightMultiFactor : public MultiFactorBase {
-    MULTIFACTOR_IMP(EqualWeightMultiFactor)
-    MULTIFACTOR_NO_PRIVATE_MEMBER_SERIALIZATION
+  MULTIFACTOR_IMP(EqualWeightMultiFactor)
+  MULTIFACTOR_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    EqualWeightMultiFactor();
-    EqualWeightMultiFactor(const StockList& stks, const KQuery& query, const Stock& ref_stk,
-                           int ic_n, bool spearman, int mode, bool save_all_factors);
-    virtual ~EqualWeightMultiFactor() override = default;
+ public:
+  EqualWeightMultiFactor();
+  EqualWeightMultiFactor(const StockList& stks, const KQuery& query,
+                         const Stock& ref_stk, int ic_n, bool spearman,
+                         int mode, bool save_all_factors);
+  virtual ~EqualWeightMultiFactor() override = default;
 };
 
 }  // namespace hayaku

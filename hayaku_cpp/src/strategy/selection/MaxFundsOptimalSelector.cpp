@@ -13,25 +13,27 @@ BOOST_CLASS_EXPORT(hayaku::MaxFundsOptimalSelector)
 
 namespace hayaku {
 
-MaxFundsOptimalSelector::MaxFundsOptimalSelector() : OptimalSelectorBase("SE_MaxFundsOptimal") {}
+MaxFundsOptimalSelector::MaxFundsOptimalSelector()
+    : OptimalSelectorBase("SE_MaxFundsOptimal") {}
 
 MaxFundsOptimalSelector::~MaxFundsOptimalSelector() {}
 
-double MaxFundsOptimalSelector::evaluate(const internal::StrategyRuntimePtr& sys, const Datetime& endDate) noexcept {
-    double ret = Null<double>();
-    try {
-        auto funds = sys->getAccount()->getFunds(endDate);
-        ret = funds.total_assets();
-    } catch (const std::exception& e) {
-        HAYAKU_ERROR("Get funds failed! {}! {}", e.what(), name());
-    } catch (...) {
-        HAYAKU_ERROR("Get funds failed! Unknown exception! {}", name());
-    }
-    return ret;
+double MaxFundsOptimalSelector::evaluate(
+    const internal::StrategyRuntimePtr& sys, const Datetime& endDate) noexcept {
+  double ret = Null<double>();
+  try {
+    auto funds = sys->getAccount()->getFunds(endDate);
+    ret = funds.total_assets();
+  } catch (const std::exception& e) {
+    HAYAKU_ERROR("Get funds failed! {}! {}", e.what(), name());
+  } catch (...) {
+    HAYAKU_ERROR("Get funds failed! Unknown exception! {}", name());
+  }
+  return ret;
 }
 
 SEPtr HAYAKU_API SE_MaxFundsOptimal() {
-    return make_shared<MaxFundsOptimalSelector>();
+  return make_shared<MaxFundsOptimalSelector>();
 }
 
 }  // namespace hayaku

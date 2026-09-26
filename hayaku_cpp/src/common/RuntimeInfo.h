@@ -9,7 +9,6 @@
  *      Author: fasiondog
  */
 
-
 #include <iostream>
 #include <string>
 
@@ -24,9 +23,9 @@ bool supportChineseSimple();
 
 inline bool supportChineseSimple() {
 #ifdef _WIN32
-    return 0X0804 == GetUserDefaultUILanguage() ? true : false;
+  return 0X0804 == GetUserDefaultUILanguage() ? true : false;
 #endif
-    return true;
+  return true;
 }
 
 } /* namespace hayaku */

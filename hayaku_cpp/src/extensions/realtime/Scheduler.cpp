@@ -5,9 +5,11 @@
  *     Author: fasiondog
  */
 
-#include <mutex>
-#include "common/Log.h"
 #include "Scheduler.h"
+
+#include <mutex>
+
+#include "common/Log.h"
 
 namespace hayaku {
 
@@ -17,20 +19,20 @@ TimerManager* g_scheduler{nullptr};
 }  // namespace
 
 TimerManager* getScheduler() {
-    std::lock_guard<std::mutex> lock(g_scheduler_mutex);
-    if (!g_scheduler) {
-        g_scheduler = new TimerManager(1);
-    }
-    return g_scheduler;
+  std::lock_guard<std::mutex> lock(g_scheduler_mutex);
+  if (!g_scheduler) {
+    g_scheduler = new TimerManager(1);
+  }
+  return g_scheduler;
 }
 
 void releaseScheduler() {
-    std::lock_guard<std::mutex> lock(g_scheduler_mutex);
-    HAYAKU_TRACE("releaseScheduler");
-    if (g_scheduler) {
-        delete g_scheduler;
-        g_scheduler = nullptr;
-    }
+  std::lock_guard<std::mutex> lock(g_scheduler_mutex);
+  HAYAKU_TRACE("releaseScheduler");
+  if (g_scheduler) {
+    delete g_scheduler;
+    g_scheduler = nullptr;
+  }
 }
 
 }  // namespace hayaku

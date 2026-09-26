@@ -7,7 +7,6 @@
  *      Author: fasiondog
  */
 
-
 #include "MarketTypes.h"
 
 namespace hayaku {
@@ -17,15 +16,15 @@ namespace hayaku {
  * @ingroup StockManage
  */
 class HAYAKU_API TimeLineRecord {
-public:
-    Datetime datetime;
-    price_t price;
-    price_t vol;
+ public:
+  Datetime datetime;
+  price_t price;
+  price_t vol;
 
-    TimeLineRecord();
-    TimeLineRecord(const Datetime& datetime, price_t price, price_t vol);
+  TimeLineRecord();
+  TimeLineRecord(const Datetime& datetime, price_t price, price_t vol);
 
-    bool isValid() const noexcept;
+  bool isValid() const noexcept;
 };
 
 /**
@@ -35,7 +34,8 @@ public:
 typedef vector<TimeLineRecord> TimeLineList;
 
 /**
- * Output the TimeLineRecord information, e.g. TimeSharingRecord(datetime, price, vol)
+ * Output the TimeLineRecord information, e.g. TimeSharingRecord(datetime,
+ * price, vol)
  * @ingroup StockManage
  */
 HAYAKU_API std::ostream& operator<<(std::ostream&, const TimeLineRecord&);

@@ -7,7 +7,6 @@
  * a live extension may register its implementation when it is loaded.
  */
 
-
 #include <functional>
 
 #include "extensions/realtime/SpotRecord.h"
@@ -18,29 +17,33 @@ using RealtimeSpotProcess = std::function<void(const SpotRecord&)>;
 using RealtimePostProcess = std::function<void(Datetime)>;
 
 struct RealtimePort {
-    void (*stopSpot)();
-    void (*startStrategySpot)(const RealtimeSpotProcess&, const RealtimePostProcess&, size_t,
-                              const string&);
-    void (*reloadAround)(void (*)());
-    void (*shutdown)();
-    bool (*quiescent)() noexcept;
+  void (*stopSpot)();
+  void (*startStrategySpot)(const RealtimeSpotProcess&,
+                            const RealtimePostProcess&, size_t, const string&);
+  void (*reloadAround)(void (*)());
+  void (*shutdown)();
+  bool (*quiescent)() noexcept;
 };
 
 /**
- * Register one live implementation. The port and its code must outlive registration.
- * A dynamic library may be unloaded only after every session/service has stopped and
- * unregisterRealtimePort returns true; concurrent unload is not supported.
+ * Register one live implementation. The port and its code must outlive
+ * registration. A dynamic library may be unloaded only after every
+ * session/service has stopped and unregisterRealtimePort returns true;
+ * concurrent unload is not supported.
  */
 bool HAYAKU_API registerRealtimePort(const RealtimePort* port) noexcept;
 
-/** Reject registration removal while a callback, service or port call remains active. */
+/** Reject registration removal while a callback, service or port call remains
+ * active. */
 bool HAYAKU_API unregisterRealtimePort(const RealtimePort* port) noexcept;
 
-/** A no-op without live; only Strategy::start(true) requires an installed port. */
+/** A no-op without live; only Strategy::start(true) requires an installed port.
+ */
 void HAYAKU_API stopRealtimeForStrategy();
 void HAYAKU_API startRealtimeForStrategy(const RealtimeSpotProcess& process,
-                                     const RealtimePostProcess& postProcess, size_t workerNum,
-                                     const string& address);
+                                         const RealtimePostProcess& postProcess,
+                                         size_t workerNum,
+                                         const string& address);
 void HAYAKU_API reloadWithRealtimePaused(void (*reload)());
 void HAYAKU_API shutdownRealtimeRuntime() noexcept;
 

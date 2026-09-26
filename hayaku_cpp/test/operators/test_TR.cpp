@@ -5,10 +5,12 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/MomentumOperators.h>
+
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -20,26 +22,26 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_TR") {
-    KData k;
+  KData k;
 
-    /** @arg k is empty */
-    auto ret = TR(k);
-    CHECK_EQ(ret.size(), 0);
-    CHECK_EQ(ret.discard(), 0);
-    CHECK_EQ(ret.name(), "TR");
+  /** @arg k is empty */
+  auto ret = TR(k);
+  CHECK_EQ(ret.size(), 0);
+  CHECK_EQ(ret.discard(), 0);
+  CHECK_EQ(ret.name(), "TR");
 
-    /** @arg A normal k */
-    k = getKData("sh000001", KQueryByIndex(-10));
-    REQUIRE(k.size() > 0);
-    ret = ret(k);
-    CHECK_EQ(ret.name(), "TR");
-    CHECK_EQ(ret.size(), k.size());
-    CHECK_EQ(ret.discard(), 1);
-    PriceList expect = {0.0,      39.02399,  31.32,  24.671,    30.29199,
-                        92.95299, 90.144999, 42.014, 35.516999, 23.07400};
-    for (size_t i = 1; i < ret.size(); ++i) {
-        CHECK_EQ(ret[i], doctest::Approx(expect[i]).epsilon(0.0001));
-    }
+  /** @arg A normal k */
+  k = getKData("sh000001", KQueryByIndex(-10));
+  REQUIRE(k.size() > 0);
+  ret = ret(k);
+  CHECK_EQ(ret.name(), "TR");
+  CHECK_EQ(ret.size(), k.size());
+  CHECK_EQ(ret.discard(), 1);
+  PriceList expect = {0.0,      39.02399,  31.32,  24.671,    30.29199,
+                      92.95299, 90.144999, 42.014, 35.516999, 23.07400};
+  for (size_t i = 1; i < ret.size(); ++i) {
+    CHECK_EQ(ret[i], doctest::Approx(expect[i]).epsilon(0.0001));
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -47,19 +49,20 @@ TEST_CASE("test_TR") {
 //-----------------------------------------------------------------------------
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_TR_benchmark") {
-    Stock stock = getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(0));
-    Indicator c = kdata.close();
-    int cycle = 1000;  // Test loop count
+  Stock stock = getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(0));
+  Indicator c = kdata.close();
+  int cycle = 1000;  // Test loop count
 
-    {
-        BENCHMARK_TIME_MSG(test_TR_benchmark, cycle, fmt::format("data len: {}", c.size()));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            Indicator ind = TR();
-            Indicator result = ind(kdata);
-        }
+  {
+    BENCHMARK_TIME_MSG(test_TR_benchmark, cycle,
+                       fmt::format("data len: {}", c.size()));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      Indicator ind = TR();
+      Indicator result = ind(kdata);
     }
+  }
 }
 #endif
 
@@ -70,34 +73,34 @@ TEST_CASE("test_TR_benchmark") {
 
 /** @par Test points */
 TEST_CASE("test_TR_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/TR.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/TR.xml";
 
-    KData k = getStock("SH600000").getKData(KQuery(-10));
-    Indicator x1 = TR(k);
-    x1.setContext(k);
+  KData k = getStock("SH600000").getKData(KQuery(-10));
+  Indicator x1 = TR(k);
+  x1.setContext(k);
 
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x2.name(), "TR");
-    CHECK_EQ(x1.size(), x2.size());
-    CHECK_EQ(x1.discard(), x2.discard());
-    CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
-    for (size_t i = x1.discard(); i < x1.size(); ++i) {
-        CHECK_EQ(x1[i], doctest::Approx(x2[i]));
-    }
+  CHECK_EQ(x2.name(), "TR");
+  CHECK_EQ(x1.size(), x2.size());
+  CHECK_EQ(x1.discard(), x2.discard());
+  CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
+  for (size_t i = x1.discard(); i < x1.size(); ++i) {
+    CHECK_EQ(x1[i], doctest::Approx(x2[i]));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

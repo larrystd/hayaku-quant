@@ -9,17 +9,18 @@
 
 namespace hayaku {
 
-MultiFactorAllocaterFunds::MultiFactorAllocaterFunds() : AllocateFundsBase("AF_Multi_factor") {}
+MultiFactorAllocaterFunds::MultiFactorAllocaterFunds()
+    : AllocateFundsBase("AF_Multi_factor") {}
 
 MultiFactorAllocaterFunds::~MultiFactorAllocaterFunds() {}
 
-StrategyWeightList MultiFactorAllocaterFunds::_allocateWeight(const Datetime& date,
-                                                            const StrategyWeightList& se_list) {
-    return se_list;
+StrategyWeightList MultiFactorAllocaterFunds::_allocateWeight(
+    const Datetime& date, const StrategyWeightList& se_list) {
+  return se_list;
 }
 
 AFPtr HAYAKU_API AF_MultiFactor() {
-    return make_shared<MultiFactorAllocaterFunds>();
+  return make_shared<MultiFactorAllocaterFunds>();
 }
 
 }  // namespace hayaku

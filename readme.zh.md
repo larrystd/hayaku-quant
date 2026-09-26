@@ -56,12 +56,12 @@ Hayaku Quant Framework 依托成熟的系统化交易与投资组合理念，核
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🏠**项目仓库**   | [github.com/larrystd/hayaku-quant](https://github.com/larrystd/hayaku-quant)                                                                         |
 | 📚**文档源码**   | [`docs/`](docs/)                                                                                                                                     |
-| 🚀**入门示例**   | [Jupyter Notebook 系列教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True) |
+| 🚀**入门示例**   | [当前快速入门](docs/zh/quickstart.rst) · [Notebook 教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True) |
 | 🧰**策略部件库** | [https://gitee.com/fasiondog/hikyuu_hub](https://gitee.com/fasiondog/hikyuu_hub)                                                                   |
 
 ---
 
-## ⚡ 快速开始（跑通第一个回测）
+## ⚡ 快速开始
 
 ### 环境要求
 
@@ -81,19 +81,11 @@ pip install hayaku
 pip install hayaku -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-### 第 2 步：导入行情数据
+### 第 2 步：准备本地行情数据
 
-任选一种方式导入 A 股历史行情数据：
-
-```bash
-# 图形界面（推荐首次使用，会自动生成配置文件）
-HayakuTDX
-
-# 命令行（需先运行过一次 HayakuTDX 生成配置）
-importdata
-```
-
-> ℹ️ **数据范围说明**：HayakuTDX 目前仅支持下载**国内 A 股**历史数据，首次使用需在图形界面中完成初始配置；美股等其他市场暂不支持，后续将逐步补充。
+使用可选的 ingest 组件准备兼容的本地数据源和 `hayaku.ini`。打开 core
+Session 不会下载数据。当前包的使用边界见[安装说明](docs/zh/install.rst)与
+[快速入门](docs/zh/quickstart.rst)。
 
 ### 第 3 步：打开显式研究会话
 
@@ -102,7 +94,7 @@ from hayaku import Query, open_session
 from hayaku.execution import AccountConfig
 
 account = AccountConfig(initial_cash=300000, name="research")
-with open_session(account_config=account) as session:
+with open_session(filename="/path/to/hayaku.ini", account_config=account) as session:
     session.wait_ready()
     bars = session.data.get_kdata("sz000001", Query(-150))
     snapshot = session.execution.snapshot()
@@ -113,15 +105,15 @@ with open_session(account_config=account) as session:
   <img src="docs/zh/_static/10000-overview.png" alt="回测结果示意" width="900">
 </p>
 
-> 📖 完整示例参见 [Jupyter Notebook 系列教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True)
+> 📖 完整研究流程参见[快速入门](docs/zh/quickstart.rst)与[策略指南](docs/zh/strategy.rst)；可运行示例见[Notebook 教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True)。
 
 ### ❓ 上手常见问题
 
 | 现象                                              | 解决办法                                                                     |
 | :------------------------------------------------ | :--------------------------------------------------------------------------- |
-| Windows 下`pip install` 卡在下载 PyQt / PySide6 | 换清华源：`pip install hayaku -i https://pypi.tuna.tsinghua.edu.cn/simple` |
-| `HayakuTDX` 图形界面无法导入数据                | 改用命令行`importdata`（需先运行过一次 GUI 以生成配置文件）                |
-| 提示缺少 hdf5 / dll 相关错误                      | 执行`pip install tables` 重新安装 HDF5 支持                                |
+| Session 找不到行情数据                       | 检查指定的 `hayaku.ini` 及其中的本地数据路径。                            |
+| 导入可选的 ingest 或 realtime 模块失败          | 执行 `./op.sh build-optional`，或安装与当前版本匹配的可选包。             |
+| 缺少原生 HDF5 库                                | 重新安装匹配的 wheel，或重新构建 core 扩展。                              |
 | **从源码构建**时的构建工具                  | 本项目使用**xmake**，不是 cmake                                        |
 
 > 💡 更多问题请查 [`docs/`](docs/) 文档源码，或在
@@ -148,19 +140,15 @@ with open_session(account_config=account) as session:
 - **AMD 7950x 实测**：A 股全市场 1913 万日 K 线，首次加载并计算 20 日均线求和仅需 **6 秒**，数据预热后同操作仅需 **166 毫秒**（[📊 性能实测详情](https://mp.weixin.qq.com/s?__biz=MzkwMzY1NzYxMA==&mid=2247483768&idx=1&sn=33e40aa9633857fa7b4c7ded51c95ae7)）。
 - **C++ 核心库**：内置完整策略框架，原生支持多线程与多核加速，为超高算力场景预留扩展空间；核心库可独立剥离使用，帮助开发者快速构建自定义量化工具。
 - **Python 接口层（hayaku）**：对 C++ 核心进行轻量化封装，集成 TA-Lib，支持与 numpy、pandas 无缝互转，轻松对接主流 Python 数据分析生态。
-- **hayaku.application.interactive**：交互式探索工具，内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
+- **hayaku.interactive**：交互式探索工具，内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
 
 ### 🍳 语法简洁，策略探索更高效自由
 
 同时支持 **面向对象** 与 **命令行** 两种编程范式。尤其在策略探索阶段，命令行风格语法极简、表达直观，让你更快验证想法、迭代策略。
 
-### 🔐 自主可控，搭建专属云量化平台
-
-结合 **Python + Jupyter** 与云服务器，即可搭建完全自主可控的云量化平台。部署后随时随地访问（手机、平板、电脑均可使用），快速落地新想法。同时可无缝对接 **numpy、scipy、pandas、TensorFlow** 等成熟 AI 与数据分析工具，构建智能量化系统。也可按需自定义界面、实现服务化部署。
-
 ### 🎁 模块化可扩展数据存储
 
-目前支持 **HDF5、MySQL、ClickHouse、SQLite** 四种存储方式，默认采用 HDF5（体积小、读写快、备份便捷）。通过插件可扩展 ClickHouse，读写速度优于 HDF5、空间占用远低于 MySQL，更适配分钟级及以下粒度的高频数据。
+core 使用本地 **HDF5** 和 **SQLite** 数据源；**MySQL** 与 **ClickHouse** 属于可选适配器。打开研究 Session 前，需通过可选的 ingest 能力准备行情数据。
 
 ### 💻 简洁的 API 设计
 
@@ -178,14 +166,13 @@ with open_session(account_config=account) as session:
 
 | 领域                   | 主接口                                        | 职责                               |
 | :--------------------- | :-------------------------------------------- | :--------------------------------- |
-| **通用**               | `hayaku.common`                               | 共享值类型辅助功能                 |
-| **数据**               | `hayaku.data`                                 | 行情查询与数据值类型               |
-| **算子**               | `hayaku.operators`                            | 指标公式与变换                     |
-| **执行**               | `hayaku.execution`                            | 订单、现金、持仓与成交历史         |
-| **度量**               | `hayaku.metrics`                              | 结果转换与分析                     |
-| **策略**               | `hayaku.strategy`                             | 组件组合与回测                     |
-| **应用**               | `hayaku.application`                          | 会话、交互工具、GUI 与命令行       |
-| **扩展**               | `hayaku.extensions`                           | 导入、实时、绘图与 SPI             |
+| **数据**               | `open_session / DataEngine`                   | 显式数据生命周期与行情查询         |
+| **执行**               | `AccountConfig / ExecutionEngine`            | 订单、现金、持仓与成交历史         |
+|                        | `AccountSnapshot / AccountView`               | 不可变账户视图                     |
+| **策略**               | `StrategyDefinition / StrategyEngine`        | 组件组合与策略编排                 |
+|                        | `BacktestRequest / BacktestResult`            | 稳定的回测输入与结果值             |
+| **分析**               | `hayaku.analysis`                             | 显式结果转换与分析                 |
+| **扩展**               | `hayaku.spi / hayaku.advanced`               | 自定义协议与低层控制               |
 
 ---
 

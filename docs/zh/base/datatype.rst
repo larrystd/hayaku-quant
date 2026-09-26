@@ -26,7 +26,7 @@ TimeDelta 的运算规则基本与 datetime.timedelta 相同。
     
     获取日期列表参见： :py:func:`getDateRange`
     
-    获取交易日日期参见： :py:meth:`StockManager.getTradingCalendar` 
+    获取交易日日期时，在打开的 Session 中调用 ``session.data.get_trading_calendar``。
 
     .. py:attribute:: year 年，如果是 Null 将抛出异常
     .. py:attribute:: month 月，如果是 Null 将抛出异常

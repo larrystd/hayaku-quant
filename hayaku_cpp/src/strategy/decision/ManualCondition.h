@@ -7,18 +7,17 @@
  *    1. 20240916 added by fasiondog
  */
 
-
 #include "ConditionBase.h"
 
 namespace hayaku {
 
 class ManualCondition : public ConditionBase {
-    CONDITION_IMP(ManualCondition)
-    CONDITION_NO_PRIVATE_MEMBER_SERIALIZATION
+  CONDITION_IMP(ManualCondition)
+  CONDITION_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    ManualCondition();
-    virtual ~ManualCondition() = default;
+ public:
+  ManualCondition();
+  virtual ~ManualCondition() = default;
 };
 
 }  // namespace hayaku

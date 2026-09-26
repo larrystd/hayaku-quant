@@ -9,15 +9,14 @@
  *     Author: fasiondog
  */
 
-
 #include "common/Config.h"
 
 /**
  * @brief Network abstraction layer
  *
- * It provides a unified Asio interface, supporting the switching between Boost.Asio and the
- * standalone Asio.
- * The conditional compilation macro HAYAKU_USE_BOOST_ASIO controls which implementation is used:
+ * It provides a unified Asio interface, supporting the switching between
+ * Boost.Asio and the standalone Asio. The conditional compilation macro
+ * HAYAKU_USE_BOOST_ASIO controls which implementation is used:
  * - HAYAKU_USE_BOOST_ASIO = 1 (default): Boost.Asio is used
  * - HAYAKU_USE_BOOST_ASIO = 0: the standalone Asio is used
  *
@@ -41,20 +40,20 @@
 #if HAYAKU_USE_BOOST_ASIO
 // Use Boost.Asio
 #include <boost/asio.hpp>
+#include <boost/asio/any_io_executor.hpp>
+#include <boost/asio/as_tuple.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/buffer.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/use_awaitable.hpp>
-#include <boost/asio/as_tuple.hpp>
-#include <boost/asio/steady_timer.hpp>
-#include <boost/asio/system_timer.hpp>
+#include <boost/asio/error.hpp>
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ip/udp.hpp>
-#include <boost/asio/buffer.hpp>
-#include <boost/asio/error.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/asio/strand.hpp>
-#include <boost/asio/executor_work_guard.hpp>
-#include <boost/asio/any_io_executor.hpp>
+#include <boost/asio/system_timer.hpp>
+#include <boost/asio/use_awaitable.hpp>
 
 namespace hayaku {
 namespace net {
@@ -100,37 +99,39 @@ inline auto as_tuple = boost::asio::as_tuple;
 
 template <typename Executor, typename F>
 inline void co_spawn(const Executor& ex, F&& f) {
-    boost::asio::co_spawn(ex, std::forward<F>(f), boost::asio::detached);
+  boost::asio::co_spawn(ex, std::forward<F>(f), boost::asio::detached);
 }
 
 template <typename Executor, typename F>
 inline void co_spawn(const Executor& ex, F&& f, boost::system::error_code& ec) {
-    boost::asio::co_spawn(ex, std::forward<F>(f),
-                          boost::asio::redirect_error(boost::asio::detached, ec));
+  boost::asio::co_spawn(ex, std::forward<F>(f),
+                        boost::asio::redirect_error(boost::asio::detached, ec));
 }
 
 // Forwarding of the commonly used Asio functions
 template <typename... Args>
 inline auto redirect_error(Args&&... args)
-  -> decltype(boost::asio::redirect_error(std::forward<Args>(args)...)) {
-    return boost::asio::redirect_error(std::forward<Args>(args)...);
+    -> decltype(boost::asio::redirect_error(std::forward<Args>(args)...)) {
+  return boost::asio::redirect_error(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline auto post(Args&&... args) -> decltype(boost::asio::post(std::forward<Args>(args)...)) {
-    return boost::asio::post(std::forward<Args>(args)...);
+inline auto post(Args&&... args)
+    -> decltype(boost::asio::post(std::forward<Args>(args)...)) {
+  return boost::asio::post(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline auto async_initiate(Args&&... args)
-  -> decltype(boost::asio::async_initiate(std::forward<Args>(args)...)) {
-    return boost::asio::async_initiate(std::forward<Args>(args)...);
+    -> decltype(boost::asio::async_initiate(std::forward<Args>(args)...)) {
+  return boost::asio::async_initiate(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline auto get_associated_executor(Args&&... args)
-  -> decltype(boost::asio::get_associated_executor(std::forward<Args>(args)...)) {
-    return boost::asio::get_associated_executor(std::forward<Args>(args)...);
+    -> decltype(boost::asio::get_associated_executor(
+        std::forward<Args>(args)...)) {
+  return boost::asio::get_associated_executor(std::forward<Args>(args)...);
 }
 
 // Socket types
@@ -147,20 +148,20 @@ using udp_resolver = boost::asio::ip::udp::resolver;
 #else
 // Use the standalone Asio
 #include <asio.hpp>
+#include <asio/any_io_executor.hpp>
+#include <asio/as_tuple.hpp>
+#include <asio/awaitable.hpp>
+#include <asio/buffer.hpp>
 #include <asio/co_spawn.hpp>
 #include <asio/detached.hpp>
-#include <asio/awaitable.hpp>
-#include <asio/use_awaitable.hpp>
-#include <asio/as_tuple.hpp>
-#include <asio/steady_timer.hpp>
-#include <asio/system_timer.hpp>
+#include <asio/error.hpp>
+#include <asio/executor_work_guard.hpp>
 #include <asio/ip/tcp.hpp>
 #include <asio/ip/udp.hpp>
-#include <asio/buffer.hpp>
-#include <asio/error.hpp>
+#include <asio/steady_timer.hpp>
 #include <asio/strand.hpp>
-#include <asio/executor_work_guard.hpp>
-#include <asio/any_io_executor.hpp>
+#include <asio/system_timer.hpp>
+#include <asio/use_awaitable.hpp>
 
 namespace hayaku {
 namespace net {
@@ -205,36 +206,38 @@ inline auto as_tuple = asio::as_tuple;
 
 template <typename Executor, typename F>
 inline void co_spawn(const Executor& ex, F&& f) {
-    asio::co_spawn(ex, std::forward<F>(f), asio::detached);
+  asio::co_spawn(ex, std::forward<F>(f), asio::detached);
 }
 
 template <typename Executor, typename F>
 inline void co_spawn(const Executor& ex, F&& f, asio::error_code& ec) {
-    asio::co_spawn(ex, std::forward<F>(f), asio::redirect_error(asio::detached, ec));
+  asio::co_spawn(ex, std::forward<F>(f),
+                 asio::redirect_error(asio::detached, ec));
 }
 
 // Forwarding of the commonly used Asio functions
 template <typename... Args>
 inline auto redirect_error(Args&&... args)
-  -> decltype(asio::redirect_error(std::forward<Args>(args)...)) {
-    return asio::redirect_error(std::forward<Args>(args)...);
+    -> decltype(asio::redirect_error(std::forward<Args>(args)...)) {
+  return asio::redirect_error(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline auto post(Args&&... args) -> decltype(asio::post(std::forward<Args>(args)...)) {
-    return asio::post(std::forward<Args>(args)...);
+inline auto post(Args&&... args)
+    -> decltype(asio::post(std::forward<Args>(args)...)) {
+  return asio::post(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline auto async_initiate(Args&&... args)
-  -> decltype(asio::async_initiate(std::forward<Args>(args)...)) {
-    return asio::async_initiate(std::forward<Args>(args)...);
+    -> decltype(asio::async_initiate(std::forward<Args>(args)...)) {
+  return asio::async_initiate(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline auto get_associated_executor(Args&&... args)
-  -> decltype(asio::get_associated_executor(std::forward<Args>(args)...)) {
-    return asio::get_associated_executor(std::forward<Args>(args)...);
+    -> decltype(asio::get_associated_executor(std::forward<Args>(args)...)) {
+  return asio::get_associated_executor(std::forward<Args>(args)...);
 }
 
 // Socket types

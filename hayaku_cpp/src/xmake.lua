@@ -14,6 +14,16 @@ local function generate_spot_schema(target)
     end
 end
 
+local function enable_project_asan()
+    if get_config("leak_check") and is_plat("macosx", "linux") then
+        set_symbols("debug")
+        set_policy("build.sanitizer.address", true)
+        if is_plat("linux") then
+            set_policy("build.sanitizer.leak", true)
+        end
+    end
+end
+
 target("hayaku")
     -- set_kind("$(kind)")
     set_kind("shared")
@@ -22,17 +32,7 @@ target("hayaku")
         add_cxflags("-fprofile-update=atomic")
     end
 
-    if get_config("leak_check") then
-        if is_plat("macosx") then
-            set_policy("build.sanitizer.address", true)
-        elseif is_plat("linux") then
-            -- 需要 export LD_PRELOAD=libasan.so
-            set_policy("build.sanitizer.address", true)
-            set_policy("build.sanitizer.leak", true)
-            -- set_policy("build.sanitizer.memory", true)
-            -- set_policy("build.sanitizer.thread", true)
-        end
-    end
+    enable_project_asan()
 
     if has_config("http_client_ssl") or has_config("mysql") then
         add_packages("openssl3")
@@ -230,6 +230,7 @@ target_end()
 
 -- Optional live market-data transport and server facades. The core only owns RealtimePort.
 target("hayaku-realtime")
+    enable_project_asan()
     set_kind("shared")
     set_default(false)
     add_deps("hayaku")
@@ -263,6 +264,7 @@ target("hayaku-realtime")
 target_end()
 
 target("hayaku-ingest")
+    enable_project_asan()
     set_kind("shared")
     set_default(false)
     add_deps("hayaku")

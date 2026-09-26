@@ -17,8 +17,6 @@ ManualEnvironment::ManualEnvironment() : EnvironmentBase("EV_Manual") {}
 
 void ManualEnvironment::_calculate() {}
 
-EVPtr HAYAKU_API EV_Manual() {
-    return make_shared<ManualEnvironment>();
-}
+EVPtr HAYAKU_API EV_Manual() { return make_shared<ManualEnvironment>(); }
 
 }  // namespace hayaku

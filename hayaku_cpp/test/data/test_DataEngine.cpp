@@ -2,10 +2,11 @@
  * Copyright (c) 2026 hikyuu.org
  */
 
-#include "doctest/doctest.h"
-#include <data/DataRuntime.h>
 #include <application/HayakuSession.h>
 #include <application/SessionOptions.h>
+#include <data/DataRuntime.h>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -18,59 +19,64 @@ using namespace hayaku;
 namespace {
 
 SessionOptions makeDataEngineOptions() {
-    auto& sm = getDataRuntime();
-    return SessionOptions(sm.getBaseInfoDriverParameter(), sm.getBlockDriverParameter(),
-                          sm.getKDataDriverParameter(), sm.getPreloadParameter(),
-                          sm.getHayakuParameter(), sm.getStrategyContext());
+  auto& sm = getDataRuntime();
+  return SessionOptions(sm.getBaseInfoDriverParameter(),
+                        sm.getBlockDriverParameter(),
+                        sm.getKDataDriverParameter(), sm.getPreloadParameter(),
+                        sm.getHayakuParameter(), sm.getStrategyContext());
 }
 
 }  // namespace
 
 TEST_CASE("test_DataEngine_stock_queries") {
-    auto session = HayakuSession::open(makeDataEngineOptions());
-    const auto& data = session.data();
-    auto& sm = getDataRuntime();
+  auto session = HayakuSession::open(makeDataEngineOptions());
+  const auto& data = session.data();
+  auto& sm = getDataRuntime();
 
-    /** @arg DataEngine preserves the existing security count. */
-    CHECK_EQ(data.size(), sm.size());
+  /** @arg DataEngine preserves the existing security count. */
+  CHECK_EQ(data.size(), sm.size());
 
-    /** @arg Existing and missing security queries match the compatibility backend. */
-    CHECK_EQ(data.getStock("sh000001"), sm.getStock("sh000001"));
-    CHECK_EQ(data.getStock("missing"), sm.getStock("missing"));
+  /** @arg Existing and missing security queries match the compatibility
+   * backend. */
+  CHECK_EQ(data.getStock("sh000001"), sm.getStock("sh000001"));
+  CHECK_EQ(data.getStock("missing"), sm.getStock("missing"));
 
-    /** @arg Market metadata remains unchanged. */
-    CHECK_EQ(data.getMarketInfo("SH"), sm.getMarketInfo("SH"));
-    CHECK_EQ(data.getMarketStock("SH"), sm.getMarketStock("SH"));
-    CHECK_EQ(data.getMarketList(), sm.getAllMarket());
+  /** @arg Market metadata remains unchanged. */
+  CHECK_EQ(data.getMarketInfo("SH"), sm.getMarketInfo("SH"));
+  CHECK_EQ(data.getMarketStock("SH"), sm.getMarketStock("SH"));
+  CHECK_EQ(data.getMarketList(), sm.getAllMarket());
 }
 
 TEST_CASE("test_DataEngine_market_data_queries") {
-    auto session = HayakuSession::open(makeDataEngineOptions());
-    const auto& data = session.data();
-    auto query = KQuery(-20);
+  auto session = HayakuSession::open(makeDataEngineOptions());
+  const auto& data = session.data();
+  auto query = KQuery(-20);
 
-    /** @arg KData results match direct DataRuntime access. */
-    auto actual = data.getKData("sh000001", query);
-    auto expected = getDataRuntime().getStock("sh000001").getKData(query);
-    CHECK_EQ(actual.size(), expected.size());
-    CHECK_EQ(actual.getDatetimeList(), expected.getDatetimeList());
+  /** @arg KData results match direct DataRuntime access. */
+  auto actual = data.getKData("sh000001", query);
+  auto expected = getDataRuntime().getStock("sh000001").getKData(query);
+  CHECK_EQ(actual.size(), expected.size());
+  CHECK_EQ(actual.getDatetimeList(), expected.getDatetimeList());
 
-    /** @arg Trading calendars match the compatibility backend. */
-    CHECK_EQ(data.getTradingCalendar(query), getDataRuntime().getTradingCalendar(query));
+  /** @arg Trading calendars match the compatibility backend. */
+  CHECK_EQ(data.getTradingCalendar(query),
+           getDataRuntime().getTradingCalendar(query));
 
-    /** @arg Historical-finance field metadata remains available without driver access. */
-    CHECK_EQ(data.getHistoryFinanceAllFields(),
-             getDataRuntime().getHistoryFinanceAllFields());
+  /** @arg Historical-finance field metadata remains available without driver
+   * access. */
+  CHECK_EQ(data.getHistoryFinanceAllFields(),
+           getDataRuntime().getHistoryFinanceAllFields());
 }
 
 TEST_CASE("test_DataEngine_block_queries") {
-    auto session = HayakuSession::open(makeDataEngineOptions());
-    const auto& data = session.data();
-    auto& sm = getDataRuntime();
+  auto session = HayakuSession::open(makeDataEngineOptions());
+  const auto& data = session.data();
+  auto& sm = getDataRuntime();
 
-    /** @arg Block category and block lookup results remain unchanged. */
-    CHECK_EQ(data.getBlockCategoryList(), sm.getAllCategory());
-    CHECK_EQ(data.getBlock("指数板块", "上证50"), sm.getBlock("指数板块", "上证50"));
+  /** @arg Block category and block lookup results remain unchanged. */
+  CHECK_EQ(data.getBlockCategoryList(), sm.getAllCategory());
+  CHECK_EQ(data.getBlock("指数板块", "上证50"),
+           sm.getBlock("指数板块", "上证50"));
 }
 
 /** @} */

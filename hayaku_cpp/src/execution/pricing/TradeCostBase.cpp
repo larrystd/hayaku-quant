@@ -14,17 +14,17 @@ BOOST_CLASS_EXPORT(hayaku::TradeCostBase)
 namespace hayaku {
 
 HAYAKU_API std::ostream& operator<<(std::ostream& os, const TradeCostBase& tc) {
-    os << "TradeCostFunc(" << tc.name() << ", " << tc.getParameter() << ")";
-    return os;
+  os << "TradeCostFunc(" << tc.name() << ", " << tc.getParameter() << ")";
+  return os;
 }
 
 HAYAKU_API std::ostream& operator<<(std::ostream& os, const TradeCostPtr& tc) {
-    if (tc) {
-        os << *tc;
-    } else {
-        os << "TradeCostFunc(NULL)";
-    }
-    return os;
+  if (tc) {
+    os << *tc;
+  } else {
+    os << "TradeCostFunc(NULL)";
+  }
+  return os;
 }
 
 TradeCostBase::TradeCostBase(const string& name) : m_name(name) {}
@@ -35,12 +35,12 @@ void TradeCostBase::baseCheckParam(const string& name) const {}
 void TradeCostBase::paramChanged() {}
 
 TradeCostPtr TradeCostBase::clone() {
-    TradeCostPtr result = _clone();
-    TradeCostBase* p = result.get();
-    p->m_params = m_params;
-    p->m_name = m_name;
-    p->m_is_python_object = m_is_python_object;
-    return result;
+  TradeCostPtr result = _clone();
+  TradeCostBase* p = result.get();
+  p->m_params = m_params;
+  p->m_name = m_name;
+  p->m_is_python_object = m_is_python_object;
+  return result;
 }
 
 } /* namespace hayaku */

@@ -5,10 +5,12 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/SeriesOperators.h>
+
+#include <fstream>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -25,63 +27,63 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_IF") {
-    KData kdata = getStock("SH600000").getKData(KQuery(-10));
+  KData kdata = getStock("SH600000").getKData(KQuery(-10));
 
-    /** @arg All the three parameters are indicator */
-    Indicator x = IF(CLOSE() > OPEN(), CVAL(1), CVAL(0));
-    x.setContext(kdata);
-    Indicator c = CLOSE(kdata);
-    Indicator o = OPEN(kdata);
-    for (int i = 0; i < x.size(); i++) {
-        if (c[i] > o[i]) {
-            CHECK_EQ(x[i], 1);
-        } else {
-            CHECK_EQ(x[i], 0);
-        }
+  /** @arg All the three parameters are indicator */
+  Indicator x = IF(CLOSE() > OPEN(), CVAL(1), CVAL(0));
+  x.setContext(kdata);
+  Indicator c = CLOSE(kdata);
+  Indicator o = OPEN(kdata);
+  for (int i = 0; i < x.size(); i++) {
+    if (c[i] > o[i]) {
+      CHECK_EQ(x[i], 1);
+    } else {
+      CHECK_EQ(x[i], 0);
     }
+  }
 
-    /** @arg Test calling operator()(const Indicator&) */
-    x = IF(REF(0) > REF(1), 1, 0);
-    c = CLOSE(kdata);
-    x = x(c);
-    for (int i = 0; i < x.size(); i++) {
-        if (i == 0)
-            CHECK(std::isnan(x[i]));
-        else
-            CHECK_EQ(x[i], c[i] > c[i - 1] ? 1 : 0);
-    }
+  /** @arg Test calling operator()(const Indicator&) */
+  x = IF(REF(0) > REF(1), 1, 0);
+  c = CLOSE(kdata);
+  x = x(c);
+  for (int i = 0; i < x.size(); i++) {
+    if (i == 0)
+      CHECK(std::isnan(x[i]));
+    else
+      CHECK_EQ(x[i], c[i] > c[i - 1] ? 1 : 0);
+  }
 
-    /** @arg One of the parameters is a number */
-    x = IF(CLOSE() > OPEN(), 1, CVAL(0));
-    x.setContext(kdata);
-    for (int i = 0; i < x.size(); i++) {
-        if (c[i] > o[i]) {
-            CHECK_EQ(x[i], 1);
-        } else {
-            CHECK_EQ(x[i], 0);
-        }
+  /** @arg One of the parameters is a number */
+  x = IF(CLOSE() > OPEN(), 1, CVAL(0));
+  x.setContext(kdata);
+  for (int i = 0; i < x.size(); i++) {
+    if (c[i] > o[i]) {
+      CHECK_EQ(x[i], 1);
+    } else {
+      CHECK_EQ(x[i], 0);
     }
+  }
 
-    x = IF(CLOSE() > OPEN(), CVAL(1), 0);
-    x.setContext(kdata);
-    for (int i = 0; i < x.size(); i++) {
-        if (c[i] > o[i]) {
-            CHECK_EQ(x[i], 1);
-        } else {
-            CHECK_EQ(x[i], 0);
-        }
+  x = IF(CLOSE() > OPEN(), CVAL(1), 0);
+  x.setContext(kdata);
+  for (int i = 0; i < x.size(); i++) {
+    if (c[i] > o[i]) {
+      CHECK_EQ(x[i], 1);
+    } else {
+      CHECK_EQ(x[i], 0);
     }
+  }
 
-    /** @arg Two of the parameters are numbers */
-    x = IF(CLOSE() > OPEN(), 1, 0);
-    x.setContext(kdata);
-    for (int i = 0; i < x.size(); i++) {
-        if (c[i] > o[i]) {
-            CHECK_EQ(x[i], 1);
-        } else {
-            CHECK_EQ(x[i], 0);
-        }
+  /** @arg Two of the parameters are numbers */
+  x = IF(CLOSE() > OPEN(), 1, 0);
+  x.setContext(kdata);
+  for (int i = 0; i < x.size(); i++) {
+    if (c[i] > o[i]) {
+      CHECK_EQ(x[i], 1);
+    } else {
+      CHECK_EQ(x[i], 0);
     }
+  }
 }
 
 #ifdef __GNUC__
@@ -95,33 +97,33 @@ TEST_CASE("test_IF") {
 
 /** @par Test points */
 TEST_CASE("test_IF_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/IF.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/IF.xml";
 
-    KData kdata = getStock("SH600000").getKData(KQuery(-10));
-    Indicator x1 = IF(CLOSE() > OPEN(), CVAL(1), CVAL(0));
-    x1.setContext(kdata);
+  KData kdata = getStock("SH600000").getKData(KQuery(-10));
+  Indicator x1 = IF(CLOSE() > OPEN(), CVAL(1), CVAL(0));
+  x1.setContext(kdata);
 
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x1.size(), x2.size());
-    CHECK_EQ(x1.discard(), x2.discard());
-    CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
-    for (size_t i = 0; i < x1.size(); ++i) {
-        CHECK_EQ(x1[i], doctest::Approx(x2[i]));
-    }
+  CHECK_EQ(x1.size(), x2.size());
+  CHECK_EQ(x1.discard(), x2.discard());
+  CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
+  for (size_t i = 0; i < x1.size(); ++i) {
+    CHECK_EQ(x1[i], doctest::Approx(x2[i]));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

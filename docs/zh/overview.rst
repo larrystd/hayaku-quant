@@ -19,11 +19,11 @@ POC，并非上游项目的即插即用替代品。
 
 👉 **项目首页：** `https://github.com/larrystd/hayaku-quant <https://github.com/larrystd/hayaku-quant>`_
 
-👉 **入门示例:** `https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True <https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True>`_
+👉 **入门示例：** :ref:`quickstart`。
+
+👉 **教程 Notebook：** `中文系列 <https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True>`_。
 
 👉 **上游策略部件库：** `https://gitee.com/fasiondog/hikyuu_hub <https://gitee.com/fasiondog/hikyuu_hub>`_
-
-👉 感谢网友提供的 Hayaku Ubuntu虚拟机环境, 百度网盘下载(提取码: ht8j): `下载地址 <https://pan.baidu.com/s/1CAiUWDdgV0c0VhPpe4AgVw?pwd=ht8j>`_
 
 示例代码：
 
@@ -45,7 +45,7 @@ POC，并非上游项目的即插即用替代品。
 .. figure:: _static/10000-overview.png
         :width: 600px
 
-完整示例参见：`入门示例 Notebook <https://nbviewer.jupyter.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True>`_
+当前 Session 使用流程参见 :ref:`quickstart`。
 
 
 🔥 为什么选择 Hayaku？
@@ -68,19 +68,16 @@ Hayaku 对系统化交易方法进行了轻量化抽象，涵盖市场环境判�
 
 * **Python接口层（hayaku）：** 对 C++ 核心进行轻量化封装，集成 TA-Lib，支持与 numpy、pandas 无缝互转，轻松对接主流 Python 数据分析生态。
 
-* **hayaku.application.interactive 交互式探索工具：** 内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
+* **hayaku.interactive 交互式探索工具：** 内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
 
 **🍳 语法简洁，策略探索更高效自由**
 
 同时支持面向对象与命令行两种编程范式。尤其在策略探索阶段，命令行风格语法极简、表达直观，让你更快验证想法、迭代策略。
 
-**🔐 自主可控，搭建专属云量化平台**
-
-结合 Python + Jupyter 与云服务器，即可搭建完全自主可控的云量化平台。部署后随时随地访问（手机、平板、电脑均可使用），快速落地新想法。同时可无缝对接 numpy、scipy、pandas、TensorFlow 等成熟 AI 与数据分析工具，构建智能量化系统。也可按需自定义界面、实现服务化部署。
-
 **🎁 模块化可扩展数据存储**
 
-目前支持本地 HDF5、MySQL、ClickHouse 和 SQLite 四种存储方式，默认采用 HDF5（文件体积小、读写速度快、备份便捷）。截至 2017 年 4 月 21 日，沪市日线数据文件仅 149MB，深市 184MB，5 分钟线数据整体小于 2GB。通过插件可扩展 ClickHouse 存储，其读写速度优于 HDF5、空间占用远低于 MySQL，更适配分钟级及以下粒度的高频数据存储。
+core 支持本地 HDF5 和 SQLite 数据源；MySQL 与 ClickHouse 属于可选适配器。
+打开研究 Session 前，需通过可选的 ingest 能力准备数据。
 
 
 

@@ -4,7 +4,6 @@
  * Copyright (c) 2026 hikyuu.org
  */
 
-
 #if defined(_WIN32)
 #if defined(HAYAKU_REALTIME_BUILD)
 #define HAYAKU_REALTIME_API __declspec(dllexport)

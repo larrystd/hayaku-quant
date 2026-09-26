@@ -5,24 +5,23 @@
  *      Author: fasiondog
  */
 
-#include "Indicator.h"
 #include "IndParam.h"
+
+#include "Indicator.h"
 
 namespace hayaku {
 
 HAYAKU_API std::ostream& operator<<(std::ostream& os, const IndParam& ind) {
-    os << "IndParam: \n" << ind.m_ind->formula();
-    return os;
+  os << "IndParam: \n" << ind.m_ind->formula();
+  return os;
 }
 
 IndParam::IndParam() {}
 
-IndParam::IndParam(const IndicatorImpPtr& ind) : m_ind(ind){};
+IndParam::IndParam(const IndicatorImpPtr& ind) : m_ind(ind) {};
 
-IndParam::IndParam(const Indicator& ind) : m_ind(ind.getImp()){};
+IndParam::IndParam(const Indicator& ind) : m_ind(ind.getImp()) {};
 
-Indicator IndParam::get() const {
-    return Indicator(m_ind);
-}
+Indicator IndParam::get() const { return Indicator(m_ind); }
 
-}
+}  // namespace hayaku

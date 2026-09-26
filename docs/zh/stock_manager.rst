@@ -165,13 +165,14 @@ DataEngine 句柄失效；最后一个 Session 关闭时会停止数据加载并
         stock = session.data.get_stock("sh000001")
         kdata = session.data.get_kdata("sh000001", Query(-100))
 
-.. py:function:: open_session(filename=None, ignore_preload=False, context=None)
+.. py:function:: open_session(filename=None, ignore_preload=False, context=None, account_config=None)
 
     打开运行会话。返回值支持 Python 上下文管理器协议，退出 ``with`` 时自动关闭该会话。
 
     :param str filename: 配置文件路径；缺省为 ``~/.hayaku/hayaku.ini``
     :param bool ignore_preload: 是否忽略预加载配置
     :param StrategyContext context: 数据加载范围
+    :param AccountConfig account_config: 可选的原生执行账户配置
     :rtype: HayakuSession
 
 .. py:class:: HayakuSession
@@ -191,313 +192,21 @@ DataEngine 句柄失效；最后一个 Session 关闭时会停止数据加载并
     .. py:method:: close()
 
         关闭并使当前会话句柄失效，重复调用是安全的。最后一个显式 Session 会释放内部
-        数据运行时，兼容 ``StockManager`` 门面本身仍保持有效。
+        数据运行时。
 
 .. py:class:: DataEngine
 
     面向普通用户的只读数据入口，提供证券、K 线、市场、交易日历、板块、权重和财务数据查询。
     Driver、插件、预加载线程和 IPC 控制不属于该公共接口。它直接访问当前
-    :py:class:`HayakuSession` 持有的内部数据运行时，查询不会再经过 ``StockManager``。
+    :py:class:`HayakuSession` 持有的内部数据运行时。
 
     常用方法包括 ``get_stock``、``get_stock_list``、``get_kdata``、
     ``get_market_info``、``get_trading_calendar``、``get_block`` 和
     ``get_history_finance_all_fields``。
 
 
-StockManager/Block/Stock（兼容接口）
-------------------------------------
-
-.. py:class:: StockManager
-
-    证券信息管理兼容类。新代码优先使用 :py:class:`DataEngine`；迁移期内现有方法保持可用。
-    该对象是地址稳定的转发门面，Driver、缓存和加载任务由内部数据运行时持有。
-    
-    .. py:attribute:: data_ready
-    
-        是否所有数据已准备就绪（加载完毕）
-        
-    .. py:staticmethod:: instance()
-    
-        获取StockManager单例实例
-        
-    .. py:method:: init(self, base_info_param, block_param, kdata_param, preload_param, hayaku_param[, context])
-    
-        初始化函数，必须在程序入口调用
-        
-        :param Parameter base_info_param: 基础信息数据驱动参数
-        :param Parameter block_param: 板块信息数据驱动参数
-        :param Parameter kdata_param: K线数据驱动参数
-        :param Parameter preload_param: 预加载参数
-        :param Parameter hayaku_param: 其他hayaku参数
-        :param StrategyContext context: 策略上下文, 默认加载全部证券
-        
-    .. py:method:: wait_data_ready(self)
-    
-        简单阻塞，等待所有数据准备就绪（加载完毕）
-        
-    .. py:method:: cancel_load(self)
-    
-        取消所有数据加载
-       
-    .. py:method:: get_base_info_parameter(self)
-    
-        :return: 基础信息数据驱动参数
-        :rtype: Parameter
-        
-    .. py:method:: get_block_parameter(self)
-
-        :return: 板块信息数据驱动参数
-        :rtype: Parameter
-        
-    .. py:method:: get_kdata_parameter(self)
-    
-        :return: K线数据驱动参数
-        :rtype: Parameter
-        
-    .. py:method:: get_preload_parameter(self)
-    
-        :return: 预加载参数
-        :rtype: Parameter
-        
-    .. py:method:: get_hayaku_parameter(self)
-    
-        :return: 其他hayaku参数
-        :rtype: Parameter
-
-    .. py:method:: get_context(self)
-
-        :return: 获取当前上下文
-        :rtype: StrategyContext
-
-    .. py:method:: set_plugin_path(self, path)
-    
-        设置插件路径，仅在初始化之前设置有效
-        
-    .. py:method:: get_plugin_path(self)
-    
-        :return: 获取插件路径
-        :rtype: str
-        
-    .. py:method:: set_language_path(self, path)
-    
-        设置多语言支持的翻译文件所在路径，仅在初始化之前设置有效
-    
-    .. py:method:: reload(self)
-    
-        重新加载所有证券数据
-        
-    .. py:method:: reload_with(self, context)
-    
-        带策略上下文参数的重新加载，如果 context 中证券列表为空，将沿用原有 context
-        
-        :param StrategyContext context: 策略上下文
-    
-    .. py:method:: tmpdir(self)
-    
-        获取用于保存零时变量等的临时目录，如未配置则为当前目录 由 m_config 中的"tmpdir"指定
-
-    .. py:method:: datadir(self)
-
-        获取财务数据目录
-    
-    .. py:method:: get_market_list(self)
-    
-        获取市场简称列表
-        
-        :rtype: StringList
-    
-    .. py:method:: get_market_info(self, market)
-    
-        获取相应的市场信息
-        
-        :param string market: 指定的市场标识（市场简称）
-        :return: 相应的市场信息，如果相应的市场信息不存在，则返回Null<MarketInfo>()
-        :rtype: MarketInfo
-    
-    .. py:method:: get_market_stock(self, market)
-    
-        获取指定市场的代表指数（可能为空）
-        
-        :param string market: 指定的市场标识（市场简称）
-        :return: 相应的市场代表指数，如果相应的市场信息不存在，则返回Null<Stock>()
-        :rtype: Stock
-    
-    .. py:method:: get_stock_type_info(self, stk_type)
-    
-        获取相应的证券类型详细信息
-        
-        :param int stk_type: 证券类型，参见： :py:data:`constant`
-        :return: 对应的证券类型信息，如果不存在，则返回Null<StockTypeInfo>()
-        :rtype: StockTypeInfo
-
-    .. py:method:: get_stock_type_list(self)
-
-        获取所有证券类型详细信息
-
-        :return: 所有证券类型详细信息
-        :rtype: DataFrame
-        
-    .. py:method:: get_stock(self, querystr)
-    
-        根据"市场简称证券代码"获取对应的证券实例
-        
-        :param str querystr: 格式：“市场简称证券代码”，如"sh000001"
-        :return: 对应的证券实例，如果实例不存在，则Null<Stock>()，不抛出异常
-        :rtype: Stock
-    
-    .. py:method:: get_stock_list(self[, filter=None])
-    
-        获取证券列表
-        
-        :param func filter: 输入参数为 stock, 返回 True | False 的过滤函数
-        
-    .. py:method:: __getitem__
-
-        同 get_stock
-        
-    .. py:method:: __len__
-    
-        返回证券数量
-        
-    .. py:method:: __iter__
-    
-        遍历所有证券
-        
-    .. py:method:: get_category_list(self)
-    
-        获取所有板块分类
-        
-        :return: 所有板块分类
-        :rtype: StringList
-    
-    .. py:method:: get_block(self, category, name)
-    
-        获取预定义的板块
-        
-        :param str category: 板块分类
-        :param str name: 板块名称
-        :return: 板块，如找不到返回空Block
-        :rtype: Block
-
-    .. py:method:: add_block(self, block)
-
-        将独立的板块加入到数据库中，板块通过 category+name 区分，数据库中相同板块将被覆盖。注意，如果板块发生变化，需要调用 save_block 重新保存。
-
-        :param Block block: 新增的板块
-        
-    .. py:method:: save_block(self, block)
-    
-        保存发生变化后的板块至数据库
-        
-        :param Block block: 板块实例
-
-    .. py:method:: remove_block(self, block)
-
-        从数据库系统中删除板块
-
-        :param Block block: 要删除的板块
-        
-    .. py:method:: get_block_list(self[, category])
-    
-        获取指定分类的板块列表
-        
-        :param str category: 板块分类
-        :return: 板块列表
-        :rtype: BlockList
-
-    .. py:method:: get_block_list_by_index_stock(self, index_stk)
-
-        获取指定指数的板块列表
-
-        :param Stock index_stk: 指数
-        :return: 板块列表
-        :rtype: BlockList        
-    
-    .. py:method:: get_trading_calendar(self, query[, market='SH'])
-                  get_trading_calendar(self, stk_list, query)
-    
-        获取交易日历
-        
-        **方式一：** 获取指定市场的交易日历
-        
-        :param Query query: Query查询条件
-        :param str market: 市场简称，默认为'SH'
-        :return: 日期列表
-        :rtype: DatetimeList
-        
-        **方式二：** 根据指定的证券列表获取叠加后的交易日历（主要用于包含不同市场证券时）
-        
-        :param StockList stk_list: 股票列表
-        :param Query query: Query查询条件
-        :return: 日期列表
-        :rtype: DatetimeList
-        
-    .. py:method:: is_holiday(self, d)
-
-        判断时间对应日期是否为节假日(仅使用A股市场)
-
-        :param Datetime d: 指定的时间
-        :rtype: bool
-
-    .. py:method:: is_trading_hours(self, d: Datetime, market: str)
-
-        判断指定时间对应的日期是否为交易时间
-
-        :param Datetime d: 待判断的时间
-        :param str market: 市场简称
-        :return: 是否为交易时间
-        :rtype: bool
-    
-
-    .. py:method:: add_temp_csv_stock(self, code, day_filename, min_filename[, tick=0.01, tick_value=0.01, precision=2, min_trade_num = 1, max_trade_num=1000000])
-
-        从CSV文件（K线数据）增加临时的Stock，可用于只有CSV格式的K线数据时，进行临时测试。
-
-        添加的 stock 对应的 market 为 "TMP", 如需通过 sm 获取，需加入 tmp，如：sm['tmp0001']
-        
-        CSV文件第一行为标题，需含有 Datetime（或Date、日期）、OPEN（或开盘价）、HIGH（或最高价）、LOW（或最低价）、CLOSE（或收盘价）、AMOUNT（或成交金额）、VOLUME（或VOL、COUNT、成交量）。
-        
-        :param str code: 自行编号的证券代码，不能和已有的Stock相同，否则将返回Null<Stock>。
-        :param str day_filename: 日线CSV文件名
-        :param str min_filename: 分钟线CSV文件名
-        :param float tick: 最小跳动量，默认0.01
-        :param float tick_value: 最小跳动量价值，默认0.01
-        :param int precision: 价格精度，默认2
-        :param int min_trade_num: 单笔最小交易量，默认1
-        :param int max_trade_num: 单笔最大交易量，默认1000000
-        :return: 加入的Stock
-        :rtype: Stock
-
-    .. py:method:: remove_temp_csv_stock(self, code)
-    
-        移除增加的临时Stock
-        
-        :param str code: 创建时自定义的编码
-
-    .. py:method:: add_stock(self, stock)
-
-        谨慎调用！！！仅供增加某些临时的外部 Stock, 通常配合 Stock.set_krecord_list 方法直接使用外部来源的数据
-
-        :param Stock stock: sm 外部自行创建的 Stock
-
-    .. py:method:: remove_stock(self, market_code)
-
-        从 sm 中移除 market_code 代表的证券，谨慎使用！！！通常用于移除临时增加的外部 Stock
-
-        :param str market_code: 证券市场标识
-
-    .. py:method:: get_history_finance_all_fields(self)
-
-        获取所有历史财务信息字段及其索引
-
-    .. py:method:: get_history_finance_field_index(self, name)
-
-        根据字段名称，获取历史财务信息相应字段索引
-
-    .. py:method:: get_history_finance_field_name(self, index)
-
-        根据字段索引，获取历史财务信息相应字段名
-
+Stock 与 Block 值类型
+---------------------
 
 .. py:class:: Stock
 
@@ -611,7 +320,7 @@ StockManager/Block/Stock（兼容接口）
         
     .. py:method:: get_history_finance(self)
     
-        获取所有历史财务信息列表，字段信息可参考 StockManager 中的相关方法: get_history_finance_all_fields/get_history_finance_field_index/get_history_finance_field_name 方法
+        获取所有历史财务信息列表，字段信息可参考 DataEngine 的 get_history_finance_all_fields/get_history_finance_field_index/get_history_finance_field_name 方法
         
         日常建议直接使用指标 FINANCE 获取财务数据
         

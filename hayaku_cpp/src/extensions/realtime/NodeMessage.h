@@ -7,13 +7,14 @@
  *      Author: fasiondog
  */
 
+#include <common/Log.h>
+#include <nng/nng.h>
 
 #include <cstdint>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
-#include <nng/nng.h>
-#include <nlohmann/json.hpp>
-#include <common/Log.h>
+
 #include "NodeError.h"
 
 using json = nlohmann::json;
@@ -21,9 +22,10 @@ using json = nlohmann::json;
 namespace hayaku {
 
 #define NODE_STATUS_TIMEOUT \
-    150                          ///< The node status timeout in seconds; the connection is regarded
-                                 ///< as interrupted on a timeout
-#define NODE_STATUS_INTERVAL 60  ///< The interval of sending the status in seconds (the heartbeat)
+  150  ///< The node status timeout in seconds; the connection is regarded
+       ///< as interrupted on a timeout
+#define NODE_STATUS_INTERVAL \
+  60  ///< The interval of sending the status in seconds (the heartbeat)
 
 /*
  * Message format
@@ -31,7 +33,8 @@ namespace hayaku {
  *  {"cmd": int, ...}
  *
  * <- res
- *  {"ret": code, "msg": str}  // msg is the error information returned on an error (optional)
+ *  {"ret": code, "msg": str}  // msg is the error information returned on an
+ * error (optional)
  *
  *
  */
@@ -43,11 +46,11 @@ namespace hayaku {
  * @exception NodeErrorCode the message type does not match
  */
 inline json decodeMsg(nng_msg *msg) {
-    HAYAKU_ASSERT(msg != nullptr);
-    size_t len = nng_msg_len(msg);
-    uint8_t *data = (uint8_t *)nng_msg_body(msg);
-    json result = json::from_msgpack(data, data + len);
-    return result;
+  HAYAKU_ASSERT(msg != nullptr);
+  size_t len = nng_msg_len(msg);
+  uint8_t *data = (uint8_t *)nng_msg_body(msg);
+  json result = json::from_msgpack(data, data + len);
+  return result;
 }
 
 /**
@@ -59,12 +62,12 @@ inline json decodeMsg(nng_msg *msg) {
  * @exception yas::io_exception the yas serialization exception
  */
 inline void encodeMsg(nng_msg *msg, const json &in) {
-    HAYAKU_ASSERT(msg != nullptr);
-    nng_msg_clear(msg);
+  HAYAKU_ASSERT(msg != nullptr);
+  nng_msg_clear(msg);
 
-    std::vector<std::uint8_t> v = json::to_msgpack(in);
-    int rv = nng_msg_append(msg, v.data(), v.size());
-    NODE_NNG_CHECK(rv, "Failed nng_msg_append!");
+  std::vector<std::uint8_t> v = json::to_msgpack(in);
+  int rv = nng_msg_append(msg, v.data(), v.size());
+  NODE_NNG_CHECK(rv, "Failed nng_msg_append!");
 }
 
 /**
@@ -73,11 +76,12 @@ inline void encodeMsg(nng_msg *msg, const json &in) {
  * @param errcode error code
  * @param errmsg error message
  */
-inline void errorMsg(nng_msg *msg, NodeErrorCode errcode, const std::string &errmsg) {
-    json res;
-    res["ret"] = errcode;
-    res["msg"] = errmsg;
-    encodeMsg(msg, res);
+inline void errorMsg(nng_msg *msg, NodeErrorCode errcode,
+                     const std::string &errmsg) {
+  json res;
+  res["ret"] = errcode;
+  res["msg"] = errmsg;
+  encodeMsg(msg, res);
 }
 
 }  // namespace hayaku

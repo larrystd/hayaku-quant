@@ -10,7 +10,18 @@ local function python_program()
     return "python3"
 end
 
+local function enable_project_asan()
+    if get_config("leak_check") and is_plat("macosx", "linux") then
+        set_symbols("debug")
+        set_policy("build.sanitizer.address", true)
+        if is_plat("linux") then
+            set_policy("build.sanitizer.leak", true)
+        end
+    end
+end
+
 target("core")
+    enable_project_asan()
     set_kind("shared")
     set_default(false)
     -- if is_mode("debug") then 
@@ -226,6 +237,7 @@ target_end()
 
 -- Optional Python live extension. Its native library is not part of core.so.
 target("realtime")
+    enable_project_asan()
     set_kind("shared")
     set_default(false)
     add_deps("hayaku-realtime")
@@ -300,6 +312,7 @@ target_end()
 
 -- Optional Python ingestion extension. core.so can be installed without it.
 target("ingest")
+    enable_project_asan()
     set_kind("shared")
     set_default(false)
     add_deps("hayaku-ingest")

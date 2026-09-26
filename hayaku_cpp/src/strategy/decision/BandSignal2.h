@@ -7,38 +7,38 @@
  *       Author: yangrq1018
  */
 
-
-#include "operators/Indicator.h"
 #include "SignalBase.h"
+#include "operators/Indicator.h"
 
 namespace hayaku {
 
 class BandSignal2 : public SignalBase {
-public:
-    BandSignal2();
-    BandSignal2(const Indicator& sig, const Indicator& lower, const Indicator& upper);
-    virtual ~BandSignal2();
+ public:
+  BandSignal2();
+  BandSignal2(const Indicator& sig, const Indicator& lower,
+              const Indicator& upper);
+  virtual ~BandSignal2();
 
-    virtual SignalPtr _clone() override;
-    virtual void _calculate(const KData& kdata) override;
+  virtual SignalPtr _clone() override;
+  virtual void _calculate(const KData& kdata) override;
 
-private:
-    Indicator m_ind;
-    Indicator m_lower;
-    Indicator m_upper;
+ private:
+  Indicator m_ind;
+  Indicator m_lower;
+  Indicator m_upper;
 
 //============================================
 // Serialization support
 //============================================
 #if HAYAKU_SUPPORT_SERIALIZATION
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SignalBase);
-        ar& BOOST_SERIALIZATION_NVP(m_ind);
-        ar& BOOST_SERIALIZATION_NVP(m_lower);
-        ar& BOOST_SERIALIZATION_NVP(m_upper);
-    }
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SignalBase);
+    ar& BOOST_SERIALIZATION_NVP(m_ind);
+    ar& BOOST_SERIALIZATION_NVP(m_lower);
+    ar& BOOST_SERIALIZATION_NVP(m_upper);
+  }
 #endif
 };
 }  // namespace hayaku

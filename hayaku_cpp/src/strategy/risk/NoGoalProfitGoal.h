@@ -7,18 +7,17 @@
  *      Author: Administrator
  */
 
-
 #include "ProfitGoalBase.h"
 
 namespace hayaku {
 
 class NoGoalProfitGoal : public ProfitGoalBase {
-    PROFITGOAL_IMP(NoGoalProfitGoal)
-    PROFIT_GOAL_NO_PRIVATE_MEMBER_SERIALIZATION
+  PROFITGOAL_IMP(NoGoalProfitGoal)
+  PROFIT_GOAL_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    NoGoalProfitGoal();
-    virtual ~NoGoalProfitGoal();
+ public:
+  NoGoalProfitGoal();
+  virtual ~NoGoalProfitGoal();
 };
 
 } /* namespace hayaku */

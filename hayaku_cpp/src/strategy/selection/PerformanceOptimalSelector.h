@@ -7,33 +7,34 @@
  *      Author: fasiondog
  */
 
-
 #include "OptimalSelectorBase.h"
 
 namespace hayaku {
 
 class PerformanceOptimalSelector : public OptimalSelectorBase {
-    CLASS_LOGGER_IMP(SE_Optimal)
-    OPTIMAL_SELECTOR_NO_PRIVATE_MEMBER_SERIALIZATION
+  CLASS_LOGGER_IMP(SE_Optimal)
+  OPTIMAL_SELECTOR_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    PerformanceOptimalSelector();
-    virtual ~PerformanceOptimalSelector() = default;
+ public:
+  PerformanceOptimalSelector();
+  virtual ~PerformanceOptimalSelector() = default;
 
-    virtual void _checkParam(const string& name) const override;
-    virtual void calculate(const internal::StrategyRuntimeList& pf_realSysList, const KQuery& query) override;
+  virtual void _checkParam(const string& name) const override;
+  virtual void calculate(const internal::StrategyRuntimeList& pf_realSysList,
+                         const KQuery& query) override;
 
-    virtual StrategyWeightList _getSelected(Datetime date) override;
-    virtual SelectorPtr _clone() override;
-    virtual void _reset() override;
+  virtual StrategyWeightList _getSelected(Datetime date) override;
+  virtual SelectorPtr _clone() override;
+  virtual void _reset() override;
 
-private:
-    void _calculate_parallel(const vector<std::pair<size_t, size_t>>& train_ranges,
-                             const DatetimeList& dates, const string& key, int mode,
-                             size_t test_len, bool trace);
+ private:
+  void _calculate_parallel(
+      const vector<std::pair<size_t, size_t>>& train_ranges,
+      const DatetimeList& dates, const string& key, int mode, size_t test_len,
+      bool trace);
 
-private:
-    unordered_map<Datetime, internal::StrategyRuntimePtr> m_sys_dict;
+ private:
+  unordered_map<Datetime, internal::StrategyRuntimePtr> m_sys_dict;
 };
 
 }  // namespace hayaku

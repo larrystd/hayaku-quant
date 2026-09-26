@@ -7,19 +7,18 @@
  *      Author: fasiondog
  */
 
-
 #include "ScoresFilterBase.h"
 
 namespace hayaku {
 
 class HAYAKU_API IgnoreLessOrEqualValueSCFilter : public ScoresFilterBase {
-    SCORESFILTER_IMP(IgnoreLessOrEqualValueSCFilter)
-    SCORESFILTER_NO_PRIVATE_MEMBER_SERIALIZATION
+  SCORESFILTER_IMP(IgnoreLessOrEqualValueSCFilter)
+  SCORESFILTER_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    IgnoreLessOrEqualValueSCFilter();
-    virtual ~IgnoreLessOrEqualValueSCFilter() override = default;
-    virtual void _checkParam(const string& name) const override;
+ public:
+  IgnoreLessOrEqualValueSCFilter();
+  virtual ~IgnoreLessOrEqualValueSCFilter() override = default;
+  virtual void _checkParam(const string& name) const override;
 };
 
 }  // namespace hayaku

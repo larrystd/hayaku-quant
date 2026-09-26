@@ -7,15 +7,14 @@
  *      Author: fasiondog
  */
 
-
 #include "common/database/TableMacro.h"
 
 namespace hayaku {
 
 struct ZhBond10Table {
-    TABLE_BIND2(ZhBond10Table, zh_bond10, date, value)
-    int64_t date{0};
-    int64_t value{0};
+  TABLE_BIND2(ZhBond10Table, zh_bond10, date, value)
+  int64_t date{0};
+  int64_t value{0};
 };
 
 }  // namespace hayaku

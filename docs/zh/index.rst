@@ -1,10 +1,5 @@
-.. Hayaku documentation master file, created by
-   sphinx-quickstart on Thu Nov 10 22:23:15 2011.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to Hayaku's documentation!
-==================================
+Hayaku 文档
+============
 
 .. toctree::
    :maxdepth: 2
@@ -22,20 +17,11 @@ Welcome to Hayaku's documentation!
    interactive/index
    base/index
    stock_manager
-   shm_server
    indicator/index
    factor.md
    strategy
    others
    reference
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: 用户捐赠
-   :name: donors-features
-
-   vip/index.rst
 
 
 .. toctree::
@@ -51,7 +37,6 @@ Welcome to Hayaku's documentation!
    :caption: Release
 
    release.md
-   release_history.rst
 
    
 Indices and tables

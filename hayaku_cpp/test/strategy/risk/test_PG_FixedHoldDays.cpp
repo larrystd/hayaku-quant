@@ -5,10 +5,11 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
 #include <data/DataRuntime.h>
-#include "../selection/create_test_strategy.h"
 #include <strategy/risk/ProfitGoals.h>
+
+#include "../selection/create_test_strategy.h"
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -20,81 +21,82 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_PG_FixedHoldDays") {
-    DataRuntime& sm = getDataRuntime();
-    auto account = create_test_account(AccountConfig(Datetime(199001010000LL), 100000));
+  DataRuntime& sm = getDataRuntime();
+  auto account =
+      create_test_account(AccountConfig(Datetime(199001010000LL), 100000));
 
-    Datetime start_date(199911100000LL);  // Test start date
-    Datetime end_date(200002250000LL);    // Test end date
-    KQuery query = KQueryByDate(start_date, end_date, KQuery::DAY);
+  Datetime start_date(199911100000LL);  // Test start date
+  Datetime end_date(200002250000LL);    // Test end date
+  KQuery query = KQueryByDate(start_date, end_date, KQuery::DAY);
 
-    Stock stk = sm.getStock("sh600000");
-    KData k = stk.getKData(query);
+  Stock stk = sm.getStock("sh600000");
+  KData k = stk.getKData(query);
 
-    PGPtr pg = PG_FixedHoldDays();
-    pg->setAccount(account);
-    pg->setTO(k);
+  PGPtr pg = PG_FixedHoldDays();
+  pg->setAccount(account);
+  pg->setTO(k);
 
-    static_cast<void>(account->submit(
-      OrderRequest(OrderSide::BUY, Datetime(199911110000LL), stk, 29.51, 100, 0.0, 0.0, 0.0,
-                   OrderOrigin::SIGNAL)));
+  static_cast<void>(account->submit(
+      OrderRequest(OrderSide::BUY, Datetime(199911110000LL), stk, 29.51, 100,
+                   0.0, 0.0, 0.0, OrderOrigin::SIGNAL)));
 
-    /** @arg Check the default parameters */
-    CHECK_EQ(pg->getParam<int>("days"), 5);
+  /** @arg Check the default parameters */
+  CHECK_EQ(pg->getParam<int>("days"), 5);
 
-    /** @arg days = 0 */
-    CHECK_THROWS_AS(pg->setParam<int>("days", 0), std::exception);
+  /** @arg days = 0 */
+  CHECK_THROWS_AS(pg->setParam<int>("days", 0), std::exception);
 
-    /** @arg days = 1 */
-    pg->setParam<int>("days", 1);
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911100000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911110000LL), 0.0)));
-    CHECK_EQ(pg->getGoal(Datetime(199911120000LL), 0.0), 0.0);
-    CHECK_EQ(pg->getGoal(Datetime(199911130000LL), 0.0), 0.0);
-    CHECK_EQ(pg->getGoal(Datetime(199911150000LL), 0.0), 0.0);
+  /** @arg days = 1 */
+  pg->setParam<int>("days", 1);
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911100000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911110000LL), 0.0)));
+  CHECK_EQ(pg->getGoal(Datetime(199911120000LL), 0.0), 0.0);
+  CHECK_EQ(pg->getGoal(Datetime(199911130000LL), 0.0), 0.0);
+  CHECK_EQ(pg->getGoal(Datetime(199911150000LL), 0.0), 0.0);
 
-    /** @arg days = 2 */
-    pg->setParam<int>("days", 2);
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911100000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911110000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911120000LL), 0.0)));
-    CHECK_EQ(pg->getGoal(Datetime(199911130000LL), 0.0), 0.0);
-    CHECK_EQ(pg->getGoal(Datetime(199911150000LL), 0.0), 0.0);
-    CHECK_EQ(pg->getGoal(Datetime(199911160000LL), 0.0), 0.0);
+  /** @arg days = 2 */
+  pg->setParam<int>("days", 2);
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911100000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911110000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911120000LL), 0.0)));
+  CHECK_EQ(pg->getGoal(Datetime(199911130000LL), 0.0), 0.0);
+  CHECK_EQ(pg->getGoal(Datetime(199911150000LL), 0.0), 0.0);
+  CHECK_EQ(pg->getGoal(Datetime(199911160000LL), 0.0), 0.0);
 
-    /** @arg days = 3 */
-    pg->setParam<int>("days", 3);
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911100000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911110000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911120000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911130000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911150000LL), 0.0)));
-    CHECK_EQ(pg->getGoal(Datetime(199911160000LL), 0.0), 0.0);
+  /** @arg days = 3 */
+  pg->setParam<int>("days", 3);
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911100000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911110000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911120000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911130000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911150000LL), 0.0)));
+  CHECK_EQ(pg->getGoal(Datetime(199911160000LL), 0.0), 0.0);
 
-    /** @arg days = 4 */
-    pg->setParam<int>("days", 4);
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911100000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911110000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911120000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911130000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911150000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911160000LL), 0.0)));
-    CHECK_EQ(pg->getGoal(Datetime(199911170000LL), 0.0), 0.0);
+  /** @arg days = 4 */
+  pg->setParam<int>("days", 4);
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911100000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911110000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911120000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911130000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911150000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911160000LL), 0.0)));
+  CHECK_EQ(pg->getGoal(Datetime(199911170000LL), 0.0), 0.0);
 
-    /** @arg days = 8 */
-    pg->setParam<int>("days", 8);
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911100000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911110000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911120000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911130000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911150000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911160000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911170000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911180000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911190000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911200000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911210000LL), 0.0)));
-    CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911220000LL), 0.0)));
-    CHECK_EQ(pg->getGoal(Datetime(199911230000LL), 0.0), 0.0);
+  /** @arg days = 8 */
+  pg->setParam<int>("days", 8);
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911100000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911110000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911120000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911130000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911150000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911160000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911170000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911180000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911190000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911200000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911210000LL), 0.0)));
+  CHECK_UNARY(std::isnan(pg->getGoal(Datetime(199911220000LL), 0.0)));
+  CHECK_EQ(pg->getGoal(Datetime(199911230000LL), 0.0), 0.0);
 }
 
 /** @} */

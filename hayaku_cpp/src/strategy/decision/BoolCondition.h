@@ -7,34 +7,33 @@
  *      Author: fasiondog
  */
 
-
-#include "operators/Indicator.h"
 #include "ConditionBase.h"
+#include "operators/Indicator.h"
 
 namespace hayaku {
 
 class BoolCondition : public ConditionBase {
-public:
-    BoolCondition();
-    explicit BoolCondition(const Indicator&);
-    virtual ~BoolCondition();
+ public:
+  BoolCondition();
+  explicit BoolCondition(const Indicator&);
+  virtual ~BoolCondition();
 
-    virtual void _calculate() override;
-    virtual ConditionPtr _clone() override;
+  virtual void _calculate() override;
+  virtual ConditionPtr _clone() override;
 
-private:
-    Indicator m_ind;
+ private:
+  Indicator m_ind;
 
 //============================================
 // Serialization support
 //============================================
 #if HAYAKU_SUPPORT_SERIALIZATION
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-        ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConditionBase);
-        ar& BOOST_SERIALIZATION_NVP(m_ind);
-    }
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConditionBase);
+    ar& BOOST_SERIALIZATION_NVP(m_ind);
+  }
 #endif
 };
 

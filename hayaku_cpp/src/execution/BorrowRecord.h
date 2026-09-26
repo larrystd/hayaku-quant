@@ -7,10 +7,9 @@
  *      Author: fasiondog
  */
 
-
-#include "data/MarketTypes.h"
-#include "common/serialization/Stock_serialization.h"
 #include "common/serialization/Datetime_serialization.h"
+#include "common/serialization/Stock_serialization.h"
+#include "data/MarketTypes.h"
 
 namespace hayaku {
 
@@ -19,60 +18,60 @@ namespace hayaku {
  * @ingroup ExecutionAccount
  */
 class HAYAKU_API BorrowRecord {
-public:
-    BorrowRecord();
-    BorrowRecord(const Stock&, double number, price_t value);
+ public:
+  BorrowRecord();
+  BorrowRecord(const Stock&, double number, price_t value);
 
-    Stock stock;
-    double number;  // Total borrowed quantity
-    price_t value;  // Total borrowed value
+  Stock stock;
+  double number;  // Total borrowed quantity
+  price_t value;  // Total borrowed value
 
-    struct Data {
-        Data() : datetime(Null<Datetime>()), price(0.0), number(0) {}
-        Data(const Datetime& datetime, price_t price, double number)
+  struct Data {
+    Data() : datetime(Null<Datetime>()), price(0.0), number(0) {}
+    Data(const Datetime& datetime, price_t price, double number)
         : datetime(datetime), price(price), number(number) {}
 
-        Datetime datetime;  // Borrow time
-        price_t price;      // Price per share at borrowing
-        double number;      // Borrowed quantity
+    Datetime datetime;  // Borrow time
+    price_t price;      // Price per share at borrowing
+    double number;      // Borrowed quantity
 
 #if HAYAKU_SUPPORT_SERIALIZATION
-    private:
-        friend class boost::serialization::access;
-        template <class Archive>
-        void save(Archive& ar, const unsigned int version) const {
-            uint64_t datetime_num = datetime.number();
-            ar& boost::serialization::make_nvp("datetime", datetime_num);
-            ar& BOOST_SERIALIZATION_NVP(number);
-            ar& BOOST_SERIALIZATION_NVP(price);
-        }
+   private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void save(Archive& ar, const unsigned int version) const {
+      uint64_t datetime_num = datetime.number();
+      ar& boost::serialization::make_nvp("datetime", datetime_num);
+      ar& BOOST_SERIALIZATION_NVP(number);
+      ar& BOOST_SERIALIZATION_NVP(price);
+    }
 
-        template <class Archive>
-        void load(Archive& ar, const unsigned int version) {
-            uint64_t datetime_num;
-            ar& boost::serialization::make_nvp("datetime", datetime_num);
-            datetime = Datetime(datetime_num);
-            ar& BOOST_SERIALIZATION_NVP(number);
-            ar& BOOST_SERIALIZATION_NVP(price);
-        }
+    template <class Archive>
+    void load(Archive& ar, const unsigned int version) {
+      uint64_t datetime_num;
+      ar& boost::serialization::make_nvp("datetime", datetime_num);
+      datetime = Datetime(datetime_num);
+      ar& BOOST_SERIALIZATION_NVP(number);
+      ar& BOOST_SERIALIZATION_NVP(price);
+    }
 
-        BOOST_SERIALIZATION_SPLIT_MEMBER()
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 #endif
-    };
+  };
 
-    list<Data> record_list;  // Current borrowed records
+  list<Data> record_list;  // Current borrowed records
 
 // Serialization support
 #if HAYAKU_SUPPORT_SERIALIZATION
-private:
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-        ar& BOOST_SERIALIZATION_NVP(stock);
-        ar& BOOST_SERIALIZATION_NVP(number);
-        ar& BOOST_SERIALIZATION_NVP(value);
-        ar& BOOST_SERIALIZATION_NVP(record_list);
-    }
+ private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar& BOOST_SERIALIZATION_NVP(stock);
+    ar& BOOST_SERIALIZATION_NVP(number);
+    ar& BOOST_SERIALIZATION_NVP(value);
+    ar& BOOST_SERIALIZATION_NVP(record_list);
+  }
 #endif
 };
 

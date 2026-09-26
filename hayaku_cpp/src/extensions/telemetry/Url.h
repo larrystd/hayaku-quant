@@ -7,7 +7,6 @@
  *     Author: fasiondog
  */
 
-
 #include <string>
 
 #ifndef HAYAKU_UTILS_API
@@ -19,9 +18,9 @@ namespace hayaku {
 /**
  * @brief URL encoding (the percent encoding)
  *
- * Convert the special characters in the string into the URL safe percent encoded format.
- * The alphanumeric characters and - _ . ~ stay unchanged, the other characters are converted into
- * the %XX format.
+ * Convert the special characters in the string into the URL safe percent
+ * encoded format. The alphanumeric characters and - _ . ~ stay unchanged, the
+ * other characters are converted into the %XX format.
  *
  * @param istr the input string to be encoded
  * @return std::string the encoded string

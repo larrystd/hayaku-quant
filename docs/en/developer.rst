@@ -1,13 +1,13 @@
+Developer Guide
+===============
 
+.. _developer:
 
-.. note::
-
-    For a successful build, do not compile from a source package downloaded directly from GitHub: when files are uploaded to git, some line endings are converted to Linux-style line endings, so parts of a directly downloaded source package may fail to compile on Windows.
-
-The C++ source is built with Xmake. From the repository root, use
-``./op.sh configure`` followed by ``./op.sh build``. Run ``./op.sh test``
-for the C++ and Python regression suites. C++ formatting and static-analysis
-commands are documented in ``tools/cpp-style.md`` in the repository.
+Hayaku uses Xmake for the C++ library and Python extensions. The core, ingest,
+and realtime targets are separate; the last two are optional at runtime. Use
+a C++20 compiler, Xmake 3.0.8, and a Python installation with development
+headers. Set ``HAYAKU_PYTHON`` to the Python executable used for the extension
+modules when building with Xmake directly.
 
 Python Package Layout
 ---------------------
@@ -42,146 +42,54 @@ The former ``hayaku.indicator``, ``hayaku.analysis``, ``hayaku.apps``,
 ``hayaku.session``, ``hayaku.ingest``, ``hayaku.realtime``,
 ``hayaku.visualization``, and ``hayaku.spi`` paths were removed in Step 6C.
 
-.. _developer:
+macOS local workflow
+--------------------
 
-
-Build Prerequisites
--------------------
-
-1. Install a C++ compiler
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The codebase is gradually migrating to C++20, so a compiler that supports the C++20 language features is required.
-
-- Windows: Visual C++ 2022
-- Linux: g++ >= 13, clang >= 15
-
-
-2. Install the xmake build tool
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-xmake >= 2.8.2. Website: `<https://github.com/xmake-io/xmake>`_
-
-See: `<https://xmake.io/#/zh-cn/guide/installation>`_
-
-
-3. Clone the Hayaku source code
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Run the following command to clone the Hayaku source code (do not clone into a directory whose path contains Chinese characters):
+``op.sh`` selects the Homebrew Python 3.10 installation by default. From the
+repository root:
 
 .. code-block:: shell
 
-    git clone https://github.com/larrystd/hayaku-quant.git
+   ./op.sh configure
+   ./op.sh build
+   ./op.sh build-optional
+   ./op.sh test
 
-.. note::
+``build`` creates the core extension. ``build-optional`` creates the ingest
+and realtime extensions. ``test`` builds the C++ test targets and both
+optional extensions before running the C++ and Python suites. Use
+``./op.sh doctor`` to inspect the selected toolchain and artifact paths.
 
-    **Donor users who need the plugin should install the hayaku_plugin package: pip install hayaku_plugin**
+Linux local workflow
+--------------------
 
-    If the plugin crashes when used with the latest code, check out the release branch or the corresponding version branch and build from that.
-
-
-4. Install the dependency packages on Linux
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-On Linux, the required development packages must be installed. On Ubuntu, for example, run:
-
-.. code-block:: shell
-    
-    sudo apt-get install -y libsqlite3-dev   
-
-
-5. Install the Xcode command-line tools on macOS
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Install Xcode and its command-line tools before building.
-    
-
-Building and Installing
------------------------
-
-1. Install the Python dependencies
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Install a C++20 compiler, Python development headers, and the system packages
+required by the enabled Xmake options. Then run:
 
 .. code-block:: shell
 
-    pip install -r requirements.txt  or pip install -r requirements.txt -U  (upgrade the dependencies periodically)
+   export HAYAKU_PYTHON="$(command -v python3)"
+   xmake f -m release -k shared --feedback=n -y
+   xmake -b core
+   xmake -b ingest
+   xmake -b realtime
+   xmake r small-test
+   xmake r unit-test
+   python3 tests/python/test.py
 
-
-2. Build
-^^^^^^^^^^
-
-.. note::
-
-    **Note**: if you have not built for a while, run python setup.py clear before rebuilding after updating the code, so that the previous build cache is fully cleared. Also update the Python dependencies: pip install -r requirements.txt
-
-
-From the source directory, run python setup.py build -j 10. Other supported commands:
-
-- python setup.py help        -- show the help
-- python setup.py build       -- run the build
-- python setup.py install     -- build and install (into Python's site-packages directory)
-- python setup.py uninstall   -- remove the installed Hayaku
-- python setup.py test        -- run the unit tests (optionally pass --compile=1 to build first)
-- python setup.py clear       -- clear the local build artifacts
-- python setup.py wheel       -- generate a wheel package
-
-
-For the options of each command, run python setup.py <command> --help, for example: python setup.py build --help
-
-
-
-3. Set the PYTHONPATH environment variable
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-On Linux, for example, add the following line to the end of ~/.bashrc (pointing to the source directory):
-
-.. code-block:: shell
-
-    export PYTHONPATH=/path/to/hayaku:$PYTHONPATH
-
-
-4. Generate a Visual Studio project on Windows
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Run a complete build with python setup.py build first, and generate the project only afterwards.
-
-On Windows, if you prefer to debug with MSVC, run xmake project -k vsxmake -m "debug,release" to generate a Visual Studio project. After the command finishes, a subdirectory such as vsxmake2022 is created in the current directory, and the Visual Studio project is inside it.
-
-In Visual Studio, you can set the demo as the startup project for debugging.
-
-
-5. IDE code hints do not work
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-1. Install pybind11-stubgen with pip install pybind11-stubgen
-2. Run pybind11-stubgen hayaku -o .; code hints and help information will then work correctly.
-
-
-6. Using the plugin
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-If you build from source and want to use the Hayaku plugin, install the standalone plugin package: pip install hayaku-plugin
-
-Note that the plugin version must match your build: it is best to build from the release branch (or a release tag), so that a version mismatch does not render the plugin unusable.
-
-
-Docker Build
+Code quality
 ------------
 
-The docker directory in the source tree contains Dockerfile_dev files based on Ubuntu, Debian and Fedora, which can be used to quickly set up a Hayaku build environment.
+Use LLVM 20 for the project-wide Google C++ format and the C++ static
+analysis commands. The source list and compilation database instructions are
+in ``tools/cpp-style.md``.
 
 .. code-block:: shell
 
-    cd docker
-    docker build -t hayaku_dev -f Dockerfile_dev .
+   ./op.sh fmt-check
+   ./op.sh asan-test
 
-    docker run -it hayaku_dev /bin/bash
-
-Enter the hayaku directory; the remaining steps are the same as the source build instructions above.
-
-There is also a Dockerfile that installs Hayaku via pip; see /docker/Dockerfile_miniconda .
-
-Hayaku requires data to be imported before use. The Docker image does not include the GUI; run ``python -m hayaku.application.gui.importdata`` to import the data.
-
-The Hayaku configuration file is located in /root/.hayaku, and the data files (HDF5) are stored in /root/stocks; you can specify your own mount directories when creating the Docker container.
+The ASan command builds project targets in ``build/asan`` and restores the
+prior Xmake configuration. Rebuild the ordinary Python extensions afterwards
+before running a non-sanitized Python process. On macOS, ASan runs without
+LeakSanitizer; Linux also checks leaks when supported by its runtime.

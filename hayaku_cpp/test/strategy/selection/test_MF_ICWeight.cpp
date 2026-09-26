@@ -5,15 +5,17 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
-#include <cmath>
 #include <data/DataRuntime.h>
-#include <operators/WindowOperators.h>
-#include <operators/StatisticsOperators.h>
 #include <operators/MomentumOperators.h>
 #include <operators/SeriesOperators.h>
+#include <operators/StatisticsOperators.h>
+#include <operators/WindowOperators.h>
 #include <strategy/selection/MultiFactors.h>
+
+#include <cmath>
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -24,44 +26,49 @@ using namespace hayaku;
  */
 
 TEST_CASE("test_MF_ICWeight") {
-    DataRuntime& sm = getDataRuntime();
-    int ndays = 3;
-    int ic_rolling_n = 3;
-    Stock ref_stk = sm["sh000001"];
-    IndicatorList src_inds = {MA(ROCR(CLOSE(), ndays)), AMA(ROCR(CLOSE(), ndays)),
-                              EMA(ROCR(CLOSE(), ndays))};
-    StockList stks = {sm["sh600004"], sm["sh600005"], sm["sz000001"], sm["sz000002"]};
-    KQuery query = KQuery(-50);
-    KData ref_k = ref_stk.getKData(query);
-    DatetimeList ref_dates = ref_k.getDatetimeList();
-    auto mf = MF_ICWeight(src_inds, stks, query, ref_stk, ndays, ic_rolling_n);
-    mf->setParam<bool>("save_all_factors", true);
-    CHECK_EQ(mf->name(), "MF_ICWeight");
-    CHECK_THROWS_AS(mf->getFactor(sm["sh600000"]), std::exception);
+  DataRuntime& sm = getDataRuntime();
+  int ndays = 3;
+  int ic_rolling_n = 3;
+  Stock ref_stk = sm["sh000001"];
+  IndicatorList src_inds = {MA(ROCR(CLOSE(), ndays)), AMA(ROCR(CLOSE(), ndays)),
+                            EMA(ROCR(CLOSE(), ndays))};
+  StockList stks = {sm["sh600004"], sm["sh600005"], sm["sz000001"],
+                    sm["sz000002"]};
+  KQuery query = KQuery(-50);
+  KData ref_k = ref_stk.getKData(query);
+  DatetimeList ref_dates = ref_k.getDatetimeList();
+  auto mf = MF_ICWeight(src_inds, stks, query, ref_stk, ndays, ic_rolling_n);
+  mf->setParam<bool>("save_all_factors", true);
+  CHECK_EQ(mf->name(), "MF_ICWeight");
+  CHECK_THROWS_AS(mf->getFactor(sm["sh600000"]), std::exception);
 
-    auto stk = sm["sh600004"];
-    auto ind1 = MA(ROCR(CLOSE(stk.getKData(query)), ndays));
-    auto ic1 = MA(IC(MA(ROCR(CLOSE(), ndays)), stks, ndays), ic_rolling_n)(ref_k);
-    auto ind2 = AMA(ROCR(CLOSE(stk.getKData(query)), ndays));
-    auto ic2 = MA(IC(AMA(ROCR(CLOSE(), ndays)), stks, ndays), ic_rolling_n)(ref_k);
-    auto ind3 = EMA(ROCR(CLOSE(stk.getKData(query)), ndays));
-    auto ic3 = MA(IC(EMA(ROCR(CLOSE(), ndays)), stks, ndays), ic_rolling_n)(ref_k);
+  auto stk = sm["sh600004"];
+  auto ind1 = MA(ROCR(CLOSE(stk.getKData(query)), ndays));
+  auto ic1 = MA(IC(MA(ROCR(CLOSE(), ndays)), stks, ndays), ic_rolling_n)(ref_k);
+  auto ind2 = AMA(ROCR(CLOSE(stk.getKData(query)), ndays));
+  auto ic2 =
+      MA(IC(AMA(ROCR(CLOSE(), ndays)), stks, ndays), ic_rolling_n)(ref_k);
+  auto ind3 = EMA(ROCR(CLOSE(stk.getKData(query)), ndays));
+  auto ic3 =
+      MA(IC(EMA(ROCR(CLOSE(), ndays)), stks, ndays), ic_rolling_n)(ref_k);
 
-    auto ind4 = mf->getFactor(stk);
-    for (size_t i = 0; i < ind4.discard(); i++) {
-        CHECK_UNARY(std::isnan(ind4[i]));
-    }
-    CHECK_EQ(ind4.discard(), std::max(ic1.discard(), std::max(ic2.discard(), ic3.discard())));
-    for (size_t i = 0; i < ind4.discard(); i++) {
-        CHECK_UNARY(std::isnan(ind4[i]));
-    }
-    for (size_t i = ind4.discard(), len = ref_dates.size(); i < len; i++) {
-        Indicator::value_t w = (ind1[i] * ic1[i] + ind2[i] * ic2[i] + ind3[i] * ic3[i]) /
-                               (std::abs(ic1[i]) + std::abs(ic2[i]) + std::abs(ic3[i]));
-        // HAYAKU_INFO("{}: {}, {}", i, w, ind4[i]);
-        CHECK_EQ(ind4[i], doctest::Approx(w));
-    }
-    // HAYAKU_INFO("{}", ind4);
+  auto ind4 = mf->getFactor(stk);
+  for (size_t i = 0; i < ind4.discard(); i++) {
+    CHECK_UNARY(std::isnan(ind4[i]));
+  }
+  CHECK_EQ(ind4.discard(),
+           std::max(ic1.discard(), std::max(ic2.discard(), ic3.discard())));
+  for (size_t i = 0; i < ind4.discard(); i++) {
+    CHECK_UNARY(std::isnan(ind4[i]));
+  }
+  for (size_t i = ind4.discard(), len = ref_dates.size(); i < len; i++) {
+    Indicator::value_t w =
+        (ind1[i] * ic1[i] + ind2[i] * ic2[i] + ind3[i] * ic3[i]) /
+        (std::abs(ic1[i]) + std::abs(ic2[i]) + std::abs(ic3[i]));
+    // HAYAKU_INFO("{}: {}, {}", i, w, ind4[i]);
+    CHECK_EQ(ind4[i], doctest::Approx(w));
+  }
+  // HAYAKU_INFO("{}", ind4);
 }
 
 //-----------------------------------------------------------------------------
@@ -69,28 +76,29 @@ TEST_CASE("test_MF_ICWeight") {
 //-----------------------------------------------------------------------------
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_MF_ICWeight_benchmark") {
-    DataRuntime& sm = getDataRuntime();
-    int ndays = 3;
-    IndicatorList src_inds = {MA(ROCR(CLOSE(), ndays)), AMA(ROCR(CLOSE(), ndays)),
-                              EMA(ROCR(CLOSE(), ndays))};
-    StockList stks = {sm["sh600004"], sm["sh600005"], sm["sz000001"], sm["sz000002"]};
-    KQuery query = KQuery(0);
-    Stock ref_stk = sm["sh000001"];
-    auto ref_k = ref_stk.getKData(query);
-    auto ref_dates = ref_k.getDatetimeList();
+  DataRuntime& sm = getDataRuntime();
+  int ndays = 3;
+  IndicatorList src_inds = {MA(ROCR(CLOSE(), ndays)), AMA(ROCR(CLOSE(), ndays)),
+                            EMA(ROCR(CLOSE(), ndays))};
+  StockList stks = {sm["sh600004"], sm["sh600005"], sm["sz000001"],
+                    sm["sz000002"]};
+  KQuery query = KQuery(0);
+  Stock ref_stk = sm["sh000001"];
+  auto ref_k = ref_stk.getKData(query);
+  auto ref_dates = ref_k.getDatetimeList();
 
-    int cycle = 10;  // Test loop count
+  int cycle = 10;  // Test loop count
 
-    {
-        BENCHMARK_TIME_MSG(test_MF_ICWeight_benchmark, cycle,
-                           fmt::format("data len: {}", ref_k.size()));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            auto mf = MF_ICWeight(src_inds, stks, query, ref_stk);
-            mf->setParam<bool>("save_all_factors", true);
-            auto ic = mf->getIC();
-        }
+  {
+    BENCHMARK_TIME_MSG(test_MF_ICWeight_benchmark, cycle,
+                       fmt::format("data len: {}", ref_k.size()));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      auto mf = MF_ICWeight(src_inds, stks, query, ref_stk);
+      mf->setParam<bool>("save_all_factors", true);
+      auto ic = mf->getIC();
     }
+  }
 }
 #endif
 

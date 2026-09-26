@@ -7,8 +7,8 @@
 namespace hayaku {
 
 class VersionTwoPluginInterface : public PluginBase {
-public:
-    static constexpr uint32_t PLUGIN_INTERFACE_VERSION = 2;
+ public:
+  static constexpr uint32_t PLUGIN_INTERFACE_VERSION = 2;
 };
 
 }  // namespace hayaku

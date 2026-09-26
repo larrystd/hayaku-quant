@@ -7,11 +7,13 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
 #include <data/DataRuntime.h>
-#include <operators/WindowOperators.h>
 #include <operators/SeriesOperators.h>
+#include <operators/WindowOperators.h>
+
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -23,83 +25,83 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_SMA") {
-    Indicator result;
-    PriceList a;
-    Indicator data = PRICELIST(a);
+  Indicator result;
+  PriceList a;
+  Indicator data = PRICELIST(a);
 
-    /** @arg The input indicator length is 0 */
-    result = SMA(data);
-    CHECK_EQ(result.name(), "SMA");
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result.size(), 0);
+  /** @arg The input indicator length is 0 */
+  result = SMA(data);
+  CHECK_EQ(result.name(), "SMA");
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The input indicator length is 1, n = 2 and m=2 */
-    a.push_back(10);
-    data = PRICELIST(a);
-    result = SMA(data, 2, 2);
-    CHECK_EQ(result.name(), "SMA");
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result[0], 10);
+  /** @arg The input indicator length is 1, n = 2 and m=2 */
+  a.push_back(10);
+  data = PRICELIST(a);
+  result = SMA(data, 2, 2);
+  CHECK_EQ(result.name(), "SMA");
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result[0], 10);
 
-    /** @arg The input indicator length is 1, n = 1 and m=2 */
-    a.clear();
-    a.push_back(10);
-    data = PRICELIST(a);
-    result = SMA(data, 1, 2);
-    CHECK_EQ(result.name(), "SMA");
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result[0], 10);
+  /** @arg The input indicator length is 1, n = 1 and m=2 */
+  a.clear();
+  a.push_back(10);
+  data = PRICELIST(a);
+  result = SMA(data, 1, 2);
+  CHECK_EQ(result.name(), "SMA");
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result[0], 10);
 
-    /** @arg The input indicator length is 10, n = 1 and m=1 */
-    a.clear();
-    for (int i = 0; i < 10; ++i) {
-        a.push_back(i / 10.0);
-    }
-    data = PRICELIST(a);
-    result = SMA(data, 1, 1);
-    CHECK_EQ(result.name(), "SMA");
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result.size(), data.size());
-    for (size_t i = result.discard(); i < data.size(); i++) {
-        CHECK_EQ(result[i], data[i]);
-    }
+  /** @arg The input indicator length is 10, n = 1 and m=1 */
+  a.clear();
+  for (int i = 0; i < 10; ++i) {
+    a.push_back(i / 10.0);
+  }
+  data = PRICELIST(a);
+  result = SMA(data, 1, 1);
+  CHECK_EQ(result.name(), "SMA");
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result.size(), data.size());
+  for (size_t i = result.discard(); i < data.size(); i++) {
+    CHECK_EQ(result[i], data[i]);
+  }
 
-    /** @arg The input indicator length is 1, n = 4 and m=2 */
-    result = SMA(data, 4, 2);
-    CHECK_EQ(result.name(), "SMA");
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result.size(), data.size());
-    CHECK_EQ(result[0], 0);
-    CHECK_EQ(result[1], doctest::Approx(0.05));
-    CHECK_EQ(result[5], doctest::Approx(0.4031).epsilon(0.01));
-    CHECK_EQ(result[9], doctest::Approx(0.8002).epsilon(0.01));
+  /** @arg The input indicator length is 1, n = 4 and m=2 */
+  result = SMA(data, 4, 2);
+  CHECK_EQ(result.name(), "SMA");
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result.size(), data.size());
+  CHECK_EQ(result[0], 0);
+  CHECK_EQ(result[1], doctest::Approx(0.05));
+  CHECK_EQ(result[5], doctest::Approx(0.4031).epsilon(0.01));
+  CHECK_EQ(result[9], doctest::Approx(0.8002).epsilon(0.01));
 }
 
 /** @par Test points */
 TEST_CASE("test_SMA_dyn") {
-    Stock stock = getDataRuntime().getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-33));
-    Indicator c = CLOSE(kdata);
-    Indicator expect = SMA(c, 22, 2.0);
-    Indicator result = SMA(c, CVAL(c, 22), CVAL(c, 2.0));
-    CHECK_EQ(expect.size(), result.size());
-    for (size_t i = 0; i < result.discard(); i++) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
-    for (size_t i = result.discard(); i < result.size(); i++) {
-        CHECK_EQ(expect.get(i, 0), doctest::Approx(result.get(i, 0)));
-    }
+  Stock stock = getDataRuntime().getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-33));
+  Indicator c = CLOSE(kdata);
+  Indicator expect = SMA(c, 22, 2.0);
+  Indicator result = SMA(c, CVAL(c, 22), CVAL(c, 2.0));
+  CHECK_EQ(expect.size(), result.size());
+  for (size_t i = 0; i < result.discard(); i++) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
+  for (size_t i = result.discard(); i < result.size(); i++) {
+    CHECK_EQ(expect.get(i, 0), doctest::Approx(result.get(i, 0)));
+  }
 
-    result = SMA(c, IndParam(CVAL(c, 22)), IndParam(CVAL(c, 2.0)));
-    CHECK_EQ(expect.size(), result.size());
-    for (size_t i = 0; i < result.discard(); i++) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
-    for (size_t i = result.discard(); i < result.size(); i++) {
-        CHECK_EQ(expect.get(i, 0), doctest::Approx(result.get(i, 0)));
-    }
+  result = SMA(c, IndParam(CVAL(c, 22)), IndParam(CVAL(c, 2.0)));
+  CHECK_EQ(expect.size(), result.size());
+  for (size_t i = 0; i < result.discard(); i++) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
+  for (size_t i = result.discard(); i < result.size(); i++) {
+    CHECK_EQ(expect.get(i, 0), doctest::Approx(result.get(i, 0)));
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -107,19 +109,20 @@ TEST_CASE("test_SMA_dyn") {
 //-----------------------------------------------------------------------------
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_SMA_benchmark") {
-    Stock stock = getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(0));
-    Indicator c = kdata.close();
-    int cycle = 1000;  // Test loop count
+  Stock stock = getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(0));
+  Indicator c = kdata.close();
+  int cycle = 1000;  // Test loop count
 
-    {
-        BENCHMARK_TIME_MSG(test_SMA_benchmark, cycle, fmt::format("data len: {}", c.size()));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            Indicator ind = SMA();
-            Indicator result = ind(c);
-        }
+  {
+    BENCHMARK_TIME_MSG(test_SMA_benchmark, cycle,
+                       fmt::format("data len: {}", c.size()));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      Indicator ind = SMA();
+      Indicator result = ind(c);
     }
+  }
 }
 #endif
 
@@ -130,33 +133,33 @@ TEST_CASE("test_SMA_benchmark") {
 
 /** @par Test points */
 TEST_CASE("test_SMA_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/SMA.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/SMA.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator x1 = SMA(CLOSE(kdata));
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator x1 = SMA(CLOSE(kdata));
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x2.name(), "SMA");
-    CHECK_EQ(x1.size(), x2.size());
-    CHECK_EQ(x1.discard(), x2.discard());
-    CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
-    for (size_t i = 0; i < x1.size(); ++i) {
-        CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
-    }
+  CHECK_EQ(x2.name(), "SMA");
+  CHECK_EQ(x1.size(), x2.size());
+  CHECK_EQ(x1.discard(), x2.discard());
+  CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
+  for (size_t i = 0; i < x1.size(); ++i) {
+    CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

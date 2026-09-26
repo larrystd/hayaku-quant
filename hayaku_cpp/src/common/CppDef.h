@@ -7,7 +7,6 @@
  *      Author: fasiondog
  */
 
-
 #if defined(__clang__) || defined(__GNUC__)
 #define CPP_STANDARD __cplusplus
 

@@ -5,11 +5,13 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/BooleanOperators.h>
 #include <operators/SeriesOperators.h>
+
+#include <fstream>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -21,30 +23,30 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_UPNDAY_dyn") {
-    Stock stock = getDataRuntime().getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-30));
-    // KData kdata = stock.getKData(KQuery(0, Null<size_t>(), KQuery::MIN));
-    Indicator c = CLOSE(kdata);
-    Indicator expect = UPNDAY(c, 10);
-    Indicator result = UPNDAY(c, CVAL(c, 10));
-    // CHECK_EQ(expect.discard(), result.discard());
-    CHECK_EQ(expect.size(), result.size());
-    for (size_t i = 0; i < result.discard(); i++) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
-    for (size_t i = expect.discard(); i < expect.size(); i++) {
-        CHECK_EQ(expect[i], doctest::Approx(result[i]));
-    }
+  Stock stock = getDataRuntime().getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-30));
+  // KData kdata = stock.getKData(KQuery(0, Null<size_t>(), KQuery::MIN));
+  Indicator c = CLOSE(kdata);
+  Indicator expect = UPNDAY(c, 10);
+  Indicator result = UPNDAY(c, CVAL(c, 10));
+  // CHECK_EQ(expect.discard(), result.discard());
+  CHECK_EQ(expect.size(), result.size());
+  for (size_t i = 0; i < result.discard(); i++) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
+  for (size_t i = expect.discard(); i < expect.size(); i++) {
+    CHECK_EQ(expect[i], doctest::Approx(result[i]));
+  }
 
-    result = UPNDAY(c, IndParam(CVAL(c, 10)));
-    // CHECK_EQ(expect.discard(), result.discard());
-    CHECK_EQ(expect.size(), result.size());
-    for (size_t i = 0; i < result.discard(); i++) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
-    for (size_t i = expect.discard(); i < expect.size(); i++) {
-        CHECK_EQ(expect[i], doctest::Approx(result[i]));
-    }
+  result = UPNDAY(c, IndParam(CVAL(c, 10)));
+  // CHECK_EQ(expect.discard(), result.discard());
+  CHECK_EQ(expect.size(), result.size());
+  for (size_t i = 0; i < result.discard(); i++) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
+  for (size_t i = expect.discard(); i < expect.size(); i++) {
+    CHECK_EQ(expect[i], doctest::Approx(result[i]));
+  }
 }
 
 /** @} */

@@ -9,10 +9,9 @@
  *      Author: fasiondog
  */
 
-
+#include "common/Config.h"
 #include "common/time/TimeDelta.h"
 #include "config.h"
-#include "common/Config.h"
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 #include <boost/serialization/nvp.hpp>
@@ -23,15 +22,15 @@ namespace serialization {
 
 template <class Archive>
 void save(Archive& ar, const hayaku::TimeDelta& td, unsigned int version) {
-    int64_t ticks = td.ticks();
-    ar& BOOST_SERIALIZATION_NVP(ticks);
+  int64_t ticks = td.ticks();
+  ar& BOOST_SERIALIZATION_NVP(ticks);
 }
 
 template <class Archive>
 void load(Archive& ar, hayaku::TimeDelta& td, unsigned int version) {
-    int64_t ticks;
-    ar& BOOST_SERIALIZATION_NVP(ticks);
-    td = hayaku::TimeDelta(boost::posix_time::time_duration(0, 0, 0, ticks));
+  int64_t ticks;
+  ar& BOOST_SERIALIZATION_NVP(ticks);
+  td = hayaku::TimeDelta(boost::posix_time::time_duration(0, 0, 0, ticks));
 }
 
 }  // namespace serialization

@@ -5,8 +5,9 @@
  *    1. 20240916 added by fasiondog
  */
 
-#include "test_config.h"
 #include <data/KQuery.h>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -18,72 +19,72 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_KQuery") {
-    KQuery q1 = KQueryByIndex(-1);
-    CHECK_EQ(q1.start(), -1);
-    CHECK_UNARY(q1.end() == Null<int64_t>());
-    CHECK_UNARY(q1.startDatetime() == Null<Datetime>());
-    CHECK_UNARY(q1.endDatetime() == Null<Datetime>());
-    CHECK_UNARY(q1.isRightOpening());
+  KQuery q1 = KQueryByIndex(-1);
+  CHECK_EQ(q1.start(), -1);
+  CHECK_UNARY(q1.end() == Null<int64_t>());
+  CHECK_UNARY(q1.startDatetime() == Null<Datetime>());
+  CHECK_UNARY(q1.endDatetime() == Null<Datetime>());
+  CHECK_UNARY(q1.isRightOpening());
 
-    q1 = KQueryByIndex(10, 30);
-    CHECK_EQ(q1.start(), 10);
-    CHECK_EQ(q1.end(), 30);
-    CHECK_UNARY(q1.startDatetime() == Null<Datetime>());
-    CHECK_UNARY(q1.endDatetime() == Null<Datetime>());
-    CHECK_UNARY(!q1.isRightOpening());
+  q1 = KQueryByIndex(10, 30);
+  CHECK_EQ(q1.start(), 10);
+  CHECK_EQ(q1.end(), 30);
+  CHECK_UNARY(q1.startDatetime() == Null<Datetime>());
+  CHECK_UNARY(q1.endDatetime() == Null<Datetime>());
+  CHECK_UNARY(!q1.isRightOpening());
 
-    q1 = KQueryByDate(Datetime(20010101), Datetime(20010110));
-    CHECK_UNARY(q1.start() == Null<int64_t>());
-    CHECK_UNARY(q1.end() == Null<int64_t>());
-    CHECK_EQ(q1.startDatetime(), Datetime(20010101));
-    CHECK_EQ(q1.endDatetime(), Datetime(20010110));
-    CHECK_UNARY(!q1.isRightOpening());
+  q1 = KQueryByDate(Datetime(20010101), Datetime(20010110));
+  CHECK_UNARY(q1.start() == Null<int64_t>());
+  CHECK_UNARY(q1.end() == Null<int64_t>());
+  CHECK_EQ(q1.startDatetime(), Datetime(20010101));
+  CHECK_EQ(q1.endDatetime(), Datetime(20010110));
+  CHECK_UNARY(!q1.isRightOpening());
 
-    q1 = KQueryByDate(Datetime(20010101));
-    CHECK_UNARY(q1.start() == Null<int64_t>());
-    CHECK_UNARY(q1.end() == Null<int64_t>());
-    CHECK_EQ(q1.startDatetime(), Datetime(20010101));
-    CHECK_EQ(q1.endDatetime(), Null<Datetime>());
-    CHECK_UNARY(q1.isRightOpening());
+  q1 = KQueryByDate(Datetime(20010101));
+  CHECK_UNARY(q1.start() == Null<int64_t>());
+  CHECK_UNARY(q1.end() == Null<int64_t>());
+  CHECK_EQ(q1.startDatetime(), Datetime(20010101));
+  CHECK_EQ(q1.endDatetime(), Null<Datetime>());
+  CHECK_UNARY(q1.isRightOpening());
 }
 
 /** @par Test points */
 TEST_CASE("test_KQuery_equal") {
-    KQuery q1 = KQueryByIndex(-1);
-    KQuery q2 = KQueryByIndex(-1);
-    CHECK_EQ(q1, q2);
+  KQuery q1 = KQueryByIndex(-1);
+  KQuery q2 = KQueryByIndex(-1);
+  CHECK_EQ(q1, q2);
 
-    q1 = KQueryByIndex(-1);
-    q2 = KQueryByIndex(2);
-    CHECK_NE(q1, q2);
+  q1 = KQueryByIndex(-1);
+  q2 = KQueryByIndex(2);
+  CHECK_NE(q1, q2);
 
-    q1 = KQueryByIndex(2);
-    q2 = KQueryByIndex(2, 3);
-    CHECK_NE(q1, q2);
+  q1 = KQueryByIndex(2);
+  q2 = KQueryByIndex(2, 3);
+  CHECK_NE(q1, q2);
 
-    q1 = KQueryByIndex(2);
-    q2 = KQueryByIndex(2);
-    CHECK_EQ(q1, q2);
+  q1 = KQueryByIndex(2);
+  q2 = KQueryByIndex(2);
+  CHECK_EQ(q1, q2);
 
-    q1 = KQueryByIndex(2, 10);
-    q2 = KQueryByIndex(2, 10);
-    CHECK_EQ(q1, q2);
+  q1 = KQueryByIndex(2, 10);
+  q2 = KQueryByIndex(2, 10);
+  CHECK_EQ(q1, q2);
 
-    q1 = KQueryByDate(Datetime(20010101));
-    q2 = KQueryByIndex(2, 10);
-    CHECK_NE(q1, q2);
+  q1 = KQueryByDate(Datetime(20010101));
+  q2 = KQueryByIndex(2, 10);
+  CHECK_NE(q1, q2);
 
-    q1 = KQueryByDate(Datetime(20010101));
-    q2 = KQueryByDate(Datetime(20010101));
-    CHECK_EQ(q1, q2);
+  q1 = KQueryByDate(Datetime(20010101));
+  q2 = KQueryByDate(Datetime(20010101));
+  CHECK_EQ(q1, q2);
 
-    q1 = KQueryByDate(Datetime(20010101));
-    q2 = KQueryByDate(Datetime(20010101), Datetime(20010102));
-    CHECK_NE(q1, q2);
+  q1 = KQueryByDate(Datetime(20010101));
+  q2 = KQueryByDate(Datetime(20010101), Datetime(20010102));
+  CHECK_NE(q1, q2);
 
-    q1 = KQueryByDate(Datetime(20010101), Datetime(20010110));
-    q2 = KQueryByDate(Datetime(20010101), Datetime(20010110));
-    CHECK_EQ(q1, q2);
+  q1 = KQueryByDate(Datetime(20010101), Datetime(20010110));
+  q2 = KQueryByDate(Datetime(20010101), Datetime(20010110));
+  CHECK_EQ(q1, q2);
 }
 
 /** @} */

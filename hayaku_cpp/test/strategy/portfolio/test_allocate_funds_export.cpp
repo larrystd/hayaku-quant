@@ -5,16 +5,18 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
 #include <config.h>
+
+#include "doctest/doctest.h"
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 
-#include <fstream>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
 #include <data/DataRuntime.h>
 #include <strategy/portfolio/AllocationPolicies.h>
+
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <fstream>
 
 using namespace hayaku;
 
@@ -26,25 +28,25 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_AF_EqualWeight_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/AF_EQUALWEIGHT.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/AF_EQUALWEIGHT.xml";
 
-    AFPtr af1 = AF_EqualWeight();
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(af1);
-    }
+  AFPtr af1 = AF_EqualWeight();
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(af1);
+  }
 
-    AFPtr af2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(af2);
-    }
+  AFPtr af2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(af2);
+  }
 
-    CHECK_EQ(af1->name(), af2->name());
+  CHECK_EQ(af1->name(), af2->name());
 }
 
 /** @} */

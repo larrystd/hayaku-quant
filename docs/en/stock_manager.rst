@@ -172,7 +172,7 @@ concurrently with a query on the same session.
         stock = session.data.get_stock("sh000001")
         kdata = session.data.get_kdata("sh000001", Query(-100))
 
-.. py:function:: open_session(filename=None, ignore_preload=False, context=None)
+.. py:function:: open_session(filename=None, ignore_preload=False, context=None, account_config=None)
 
     Open a runtime session. The returned object implements the Python context-manager protocol and
     closes the session when leaving the ``with`` block.
@@ -180,6 +180,7 @@ concurrently with a query on the same session.
     :param str filename: configuration file path; defaults to ``~/.hayaku/hayaku.ini``
     :param bool ignore_preload: whether to ignore preloading configuration
     :param StrategyContext context: data loading scope
+    :param AccountConfig account_config: optional native execution account
     :rtype: HayakuSession
 
 .. py:class:: HayakuSession
@@ -199,339 +200,21 @@ concurrently with a query on the same session.
     .. py:method:: close()
 
         Close and invalidate this session handle. Repeated calls are safe. The final explicit
-        session releases the internal data runtime; the compatibility ``StockManager`` facade
-        remains valid.
+        session releases the internal data runtime.
 
 .. py:class:: DataEngine
 
     The read-only data entry point for ordinary users. It provides security, bar-data, market,
     trading-calendar, sector, weight and financial-data queries. Driver, plugin, preload-thread and
     IPC controls are not part of this public interface. It talks directly to the internal data
-    runtime owned by its :py:class:`HayakuSession`; it does not route queries through
-    ``StockManager``.
+    runtime owned by its :py:class:`HayakuSession`.
 
     Common methods include ``get_stock``, ``get_stock_list``, ``get_kdata``, ``get_market_info``,
     ``get_trading_calendar``, ``get_block`` and ``get_history_finance_all_fields``.
 
 
-StockManager/Block/Stock (compatibility API)
----------------------------------------------
-
-.. py:class:: StockManager
-
-    Compatibility security-information manager. New code should prefer :py:class:`DataEngine`;
-    existing methods remain available during the migration period. The object is a stable facade;
-    data drivers, caches and loading tasks are owned by the internal runtime.
-
-    .. py:attribute:: data_ready
-
-        Whether all data has finished loading and is ready to use
-
-    .. py:staticmethod:: instance()
-
-        Return the StockManager singleton instance
-
-    .. py:method:: init(self, base_info_param, block_param, kdata_param, preload_param, hayaku_param[, context])
-
-        Initialize the manager. This method must be called once at program startup
-
-        :param Parameter base_info_param: parameters for the base-information data driver
-        :param Parameter block_param: parameters for the sector-information data driver
-        :param Parameter kdata_param: parameters for the bar-data driver
-        :param Parameter preload_param: preloading parameters
-        :param Parameter hayaku_param: other hayaku parameters
-        :param StrategyContext context: strategy context; all securities are loaded by default
-
-    .. py:method:: wait_data_ready(self)
-
-        Block until all data has finished loading and is ready to use
-
-    .. py:method:: cancel_load(self)
-
-        Cancel all in-progress data loading
-
-    .. py:method:: get_base_info_parameter(self)
-
-        :return: parameters for the base-information data driver
-        :rtype: Parameter
-
-    .. py:method:: get_block_parameter(self)
-
-        :return: parameters for the sector-information data driver
-        :rtype: Parameter
-
-    .. py:method:: get_kdata_parameter(self)
-
-        :return: parameters for the bar-data driver
-        :rtype: Parameter
-
-    .. py:method:: get_preload_parameter(self)
-
-        :return: preloading parameters
-        :rtype: Parameter
-
-    .. py:method:: get_hayaku_parameter(self)
-
-        :return: other hayaku parameters
-        :rtype: Parameter
-
-    .. py:method:: get_context(self)
-
-        :return: the current strategy context
-        :rtype: StrategyContext
-
-    .. py:method:: set_plugin_path(self, path)
-
-        Set the plugin search path. Only takes effect when called before initialization
-
-    .. py:method:: get_plugin_path(self)
-
-        :return: the plugin search path
-        :rtype: str
-
-    .. py:method:: set_language_path(self, path)
-
-        Set the directory containing the translation files used for multi-language support. Only
-        takes effect when called before initialization
-
-    .. py:method:: reload(self)
-
-        Reload all security data
-
-    .. py:method:: reload_with(self, context)
-
-        Reload using the given strategy context. If the security list in the context is empty,
-        the previous context is retained
-
-        :param StrategyContext context: the strategy context
-
-    .. py:method:: tmpdir(self)
-
-        Return the temporary directory used for temporary variables and similar files. When not
-        configured, it defaults to the current working directory; it is set via the "tmpdir" key
-        in m_config
-
-    .. py:method:: datadir(self)
-
-        Return the directory containing the financial data
-
-    .. py:method:: get_market_list(self)
-
-        Return the list of known market abbreviations
-
-        :rtype: StringList
-
-    .. py:method:: get_market_info(self, market)
-
-        Return information about the given market
-
-        :param string market: market identifier (the market abbreviation)
-        :return: market information for the given market; returns Null<MarketInfo>() if no such
-                 market exists
-        :rtype: MarketInfo
-
-    .. py:method:: get_market_stock(self, market)
-
-        Return the representative benchmark index of the given market (may be null)
-
-        :param string market: market identifier (the market abbreviation)
-        :return: the representative index for the market; returns Null<Stock>() if no such market
-                 exists
-        :rtype: Stock
-
-    .. py:method:: get_stock_type_info(self, stk_type)
-
-        Return the detailed information record for the given security type
-
-        :param int stk_type: security type; see :py:data:`constant`
-        :return: information for the given security type; returns Null<StockTypeInfo>() if it
-                 does not exist
-        :rtype: StockTypeInfo
-
-    .. py:method:: get_stock_type_list(self)
-
-        Return the detailed information records for all security types
-
-        :return: detailed information for all security types
-        :rtype: DataFrame
-
-    .. py:method:: get_stock(self, querystr)
-
-        Return the security identified by "market abbreviation + security code"
-
-        :param str querystr: market abbreviation followed by the security code, e.g. "sh000001"
-        :return: the matching security; returns Null<Stock>() if it does not exist, without
-                 raising an exception
-        :rtype: Stock
-
-    .. py:method:: get_stock_list(self[, filter=None])
-
-        Return the list of securities
-
-        :param func filter: predicate function that takes a stock as its argument and returns
-                            True | False
-
-    .. py:method:: __getitem__
-
-        Equivalent to get_stock
-
-    .. py:method:: __len__
-
-        Return the number of securities
-
-    .. py:method:: __iter__
-
-        Iterate over all securities
-
-    .. py:method:: get_category_list(self)
-
-        Return all sector categories
-
-        :return: all sector categories
-        :rtype: StringList
-
-    .. py:method:: get_block(self, category, name)
-
-        Return a predefined sector
-
-        :param str category: the sector category
-        :param str name: the sector name
-        :return: the sector; returns an empty Block if it cannot be found
-        :rtype: Block
-
-    .. py:method:: add_block(self, block)
-
-        Add a standalone sector to the database. Sectors are keyed by category + name, so an
-        existing sector with the same key will be overwritten. Note that after modifying a sector
-        you must call save_block to persist the changes.
-
-        :param Block block: the sector to add
-
-    .. py:method:: save_block(self, block)
-
-        Persist a modified sector to the database
-
-        :param Block block: the sector instance
-
-    .. py:method:: remove_block(self, block)
-
-        Delete a sector from the database
-
-        :param Block block: the sector to delete
-
-    .. py:method:: get_block_list(self[, category])
-
-        Return the sectors belonging to the given category
-
-        :param str category: the sector category
-        :return: the sector list
-        :rtype: BlockList
-
-    .. py:method:: get_block_list_by_index_stock(self, index_stk)
-
-        Return the sectors associated with the given index
-
-        :param Stock index_stk: the index
-        :return: the sector list
-        :rtype: BlockList
-
-    .. py:method:: get_trading_calendar(self, query[, market='SH'])
-                  get_trading_calendar(self, stk_list, query)
-
-        Return the trading calendar
-
-        **Form 1:** return the trading calendar of the specified market
-
-        :param Query query: the Query criteria
-        :param str market: market abbreviation, defaults to 'SH'
-        :return: the list of trading dates
-        :rtype: DatetimeList
-
-        **Form 2:** return the union of the trading calendars of the given securities (mainly
-        used when the list contains securities from different markets)
-
-        :param StockList stk_list: the security list
-        :param Query query: the Query criteria
-        :return: the list of trading dates
-        :rtype: DatetimeList
-
-    .. py:method:: is_holiday(self, d)
-
-        Return whether the date of the given time is a market holiday (the A-share calendar
-        only)
-
-        :param Datetime d: the specified time
-        :rtype: bool
-
-    .. py:method:: is_trading_hours(self, d: Datetime, market: str)
-
-        Return whether the given time falls within trading hours
-
-        :param Datetime d: the time to check
-        :param str market: the market abbreviation
-        :return: True if the time is within trading hours
-        :rtype: bool
-
-
-    .. py:method:: add_temp_csv_stock(self, code, day_filename, min_filename[, tick=0.01, tick_value=0.01, precision=2, min_trade_num = 1, max_trade_num=1000000])
-
-        Register a temporary Stock backed by CSV files of bar data. This is useful for ad-hoc
-        testing when the only market data available is a set of CSV bars.
-
-        The added stock is placed on the "TMP" market; prefix its code with "tmp" to retrieve it
-        through the manager, e.g. sm['tmp0001']
-
-        The first line of each CSV file is a header and must contain the following columns:
-        Datetime (Date or the Chinese alias 日期 is also accepted), OPEN (开盘价),
-        HIGH (最高价), LOW (最低价), CLOSE (收盘价), AMOUNT (成交金额), and VOLUME
-        (VOL, COUNT, or 成交量 are also accepted). The Chinese names are literal header aliases
-        recognized by the CSV loader.
-
-        :param str code: a self-assigned security code; it must not clash with an existing
-                         Stock, otherwise Null<Stock> is returned
-        :param str day_filename: path to the daily-bar CSV file
-        :param str min_filename: path to the minute-bar CSV file
-        :param float tick: minimum price tick, defaults to 0.01
-        :param float tick_value: monetary value of one tick, defaults to 0.01
-        :param int precision: price precision in decimal places, defaults to 2
-        :param int min_trade_num: minimum order quantity, defaults to 1
-        :param int max_trade_num: maximum order quantity, defaults to 1000000
-        :return: the newly added Stock
-        :rtype: Stock
-
-    .. py:method:: remove_temp_csv_stock(self, code)
-
-        Remove a previously added temporary Stock
-
-        :param str code: the custom code specified when it was created
-
-    .. py:method:: add_stock(self, stock)
-
-        Use with caution!!! Intended only for registering temporary external Stocks; typically
-        used together with the Stock.set_krecord_list method so that data from external sources
-        can be consumed directly
-
-        :param Stock stock: a Stock created outside the manager
-
-    .. py:method:: remove_stock(self, market_code)
-
-        Remove the security identified by market_code from the manager. Use with caution!!!
-        Typically used to remove temporary external Stocks that were added earlier
-
-        :param str market_code: the market-qualified security identifier
-
-    .. py:method:: get_history_finance_all_fields(self)
-
-        Return all historical financial-report fields together with their indices
-
-    .. py:method:: get_history_finance_field_index(self, name)
-
-        Return the index of the historical financial field with the given name
-
-    .. py:method:: get_history_finance_field_name(self, index)
-
-        Return the name of the historical financial field at the given index
-
+Stock and Block values
+----------------------
 
 .. py:class:: Stock
 
@@ -651,7 +334,7 @@ StockManager/Block/Stock (compatibility API)
     .. py:method:: get_history_finance(self)
 
         Return all historical fundamental records. For the field layout, refer to the related
-        StockManager methods: get_history_finance_all_fields /
+        DataEngine methods: get_history_finance_all_fields /
         get_history_finance_field_index / get_history_finance_field_name
 
         For day-to-day work, the FINANCE indicator is the more convenient way to access

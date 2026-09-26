@@ -1,8 +1,7 @@
 
-#include "common/Config.h"
-
 #include "AsyncMySQLConnect.cpp"
 #include "AsyncMySQLStatement.cpp"
+#include "common/Config.h"
 
 #if HAYAKU_DISABLE_LIBMYSQLCLIENT
 #include "MySQLConnectBoost.cpp"

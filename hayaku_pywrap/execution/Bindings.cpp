@@ -1324,6 +1324,4 @@ void export_execution_main(py::module& m) {
   export_ExecutionEngine(m);
 }
 
-void bindExecution(py::module_& m) {
-  export_execution_main(m);
-}
+void bindExecution(py::module_& m) { export_execution_main(m); }

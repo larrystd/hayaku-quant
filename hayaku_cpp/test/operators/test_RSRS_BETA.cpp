@@ -7,11 +7,13 @@
  *  Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/RiskOperators.h>
 #include <operators/SeriesOperators.h>
+
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -23,61 +25,62 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_RSRS_BETA") {
-    // The invalid parameter n
-    CHECK_THROWS_AS(RSRS_BETA(1), std::exception);
-    CHECK_THROWS_AS(RSRS_BETA(0), std::exception);
+  // The invalid parameter n
+  CHECK_THROWS_AS(RSRS_BETA(1), std::exception);
+  CHECK_THROWS_AS(RSRS_BETA(0), std::exception);
 }
 
 TEST_CASE("test_RSRS_BETA_kdata") {
-    Stock stock = getDataRuntime().getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-100));
+  Stock stock = getDataRuntime().getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-100));
 
-    // The normal case, n = 20
-    Indicator result = RSRS_BETA(kdata, 20);
-    CHECK_EQ(result.name(), "RSRS_BETA");
-    CHECK_EQ(result.size(), kdata.size());
-    CHECK_EQ(result.discard(), 19);
+  // The normal case, n = 20
+  Indicator result = RSRS_BETA(kdata, 20);
+  CHECK_EQ(result.name(), "RSRS_BETA");
+  CHECK_EQ(result.size(), kdata.size());
+  CHECK_EQ(result.discard(), 19);
 
-    // Verify that the first few values are nan (enough data is needed to calculate)
-    for (size_t i = 0; i < result.discard(); ++i) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
+  // Verify that the first few values are nan (enough data is needed to
+  // calculate)
+  for (size_t i = 0; i < result.discard(); ++i) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
 
-    // Verify the concrete calculation result (a fixed value check)
-    CHECK_EQ(result[19], doctest::Approx(0.791453).epsilon(0.001));
-    CHECK_EQ(result[39], doctest::Approx(0.711802).epsilon(0.001));
-    CHECK_EQ(result[59], doctest::Approx(0.882348).epsilon(0.001));
-    CHECK_EQ(result[79], doctest::Approx(0.824682).epsilon(0.001));
-    CHECK_EQ(result[99], doctest::Approx(0.938075).epsilon(0.001));
+  // Verify the concrete calculation result (a fixed value check)
+  CHECK_EQ(result[19], doctest::Approx(0.791453).epsilon(0.001));
+  CHECK_EQ(result[39], doctest::Approx(0.711802).epsilon(0.001));
+  CHECK_EQ(result[59], doctest::Approx(0.882348).epsilon(0.001));
+  CHECK_EQ(result[79], doctest::Approx(0.824682).epsilon(0.001));
+  CHECK_EQ(result[99], doctest::Approx(0.938075).epsilon(0.001));
 }
 
 TEST_CASE("test_RSRS_BETA_consistency") {
-    Stock stock = getDataRuntime().getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-50));
+  Stock stock = getDataRuntime().getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-50));
 
-    // Calculating the same input several times should give the same result
-    Indicator result1 = RSRS_BETA(kdata, 20);
-    Indicator result2 = RSRS_BETA(kdata, 20);
+  // Calculating the same input several times should give the same result
+  Indicator result1 = RSRS_BETA(kdata, 20);
+  Indicator result2 = RSRS_BETA(kdata, 20);
 
-    CHECK_EQ(result1.size(), result2.size());
-    CHECK_EQ(result1.discard(), result2.discard());
-    for (size_t i = result1.discard(); i < result1.size(); ++i) {
-        CHECK_EQ(result1[i], doctest::Approx(result2[i]));
-    }
+  CHECK_EQ(result1.size(), result2.size());
+  CHECK_EQ(result1.discard(), result2.discard());
+  for (size_t i = result1.discard(); i < result1.size(); ++i) {
+    CHECK_EQ(result1[i], doctest::Approx(result2[i]));
+  }
 }
 
 TEST_CASE("test_RSRS_BETA_different_n") {
-    Stock stock = getDataRuntime().getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-100));
+  Stock stock = getDataRuntime().getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-100));
 
-    // The test with different window sizes
-    Indicator result10 = RSRS_BETA(kdata, 10);
-    Indicator result20 = RSRS_BETA(kdata, 20);
-    Indicator result30 = RSRS_BETA(kdata, 30);
+  // The test with different window sizes
+  Indicator result10 = RSRS_BETA(kdata, 10);
+  Indicator result20 = RSRS_BETA(kdata, 20);
+  Indicator result30 = RSRS_BETA(kdata, 30);
 
-    CHECK_EQ(result10.discard(), 9);
-    CHECK_EQ(result20.discard(), 19);
-    CHECK_EQ(result30.discard(), 29);
+  CHECK_EQ(result10.discard(), 9);
+  CHECK_EQ(result20.discard(), 19);
+  CHECK_EQ(result30.discard(), 29);
 }
 
 //-----------------------------------------------------------------------------
@@ -85,18 +88,18 @@ TEST_CASE("test_RSRS_BETA_different_n") {
 //-----------------------------------------------------------------------------
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_RSRS_BETA_benchmark") {
-    Stock stock = getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(0));
-    int cycle = 1000;
+  Stock stock = getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(0));
+  int cycle = 1000;
 
-    {
-        BENCHMARK_TIME_MSG(test_RSRS_BETA_benchmark, cycle,
-                           fmt::format("data len: {}", kdata.size()));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            Indicator result = RSRS_BETA(kdata, 20);
-        }
+  {
+    BENCHMARK_TIME_MSG(test_RSRS_BETA_benchmark, cycle,
+                       fmt::format("data len: {}", kdata.size()));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      Indicator result = RSRS_BETA(kdata, 20);
     }
+  }
 }
 #endif
 
@@ -107,37 +110,37 @@ TEST_CASE("test_RSRS_BETA_benchmark") {
 
 /** @par Test points */
 TEST_CASE("test_RSRS_BETA_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/RSRS_BETA.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/RSRS_BETA.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-30));
-    Indicator x1 = RSRS_BETA(kdata, 10);
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-30));
+  Indicator x1 = RSRS_BETA(kdata, 10);
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x2.name(), "RSRS_BETA");
-    CHECK_EQ(x1.size(), x2.size());
-    CHECK_EQ(x1.discard(), x2.discard());
-    CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
-    for (size_t i = x1.discard(); i < x1.size(); ++i) {
-        if (std::isnan(x1[i])) {
-            CHECK_UNARY(std::isnan(x2[i]));
-        } else {
-            CHECK_EQ(x1[i], doctest::Approx(x2[i]));
-        }
+  CHECK_EQ(x2.name(), "RSRS_BETA");
+  CHECK_EQ(x1.size(), x2.size());
+  CHECK_EQ(x1.discard(), x2.discard());
+  CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
+  for (size_t i = x1.discard(); i < x1.size(); ++i) {
+    if (std::isnan(x1[i])) {
+      CHECK_UNARY(std::isnan(x2[i]));
+    } else {
+      CHECK_EQ(x1[i], doctest::Approx(x2[i]));
     }
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

@@ -7,7 +7,6 @@
  *      Author: fasiondog
  */
 
-
 #include "common/Config.h"
 #include "data/Block.h"
 
@@ -18,31 +17,32 @@ namespace boost {
 namespace serialization {
 template <class Archive>
 void save(Archive& ar, const hayaku::Block& blk, unsigned int version) {
-    hayaku::string category = blk.category();
-    hayaku::string name = blk.name();
-    ar& boost::serialization::make_nvp("category", category);
-    ar& boost::serialization::make_nvp("name", name);
-    hayaku::StockList stock_list;
-    stock_list.reserve(blk.size());
-    for (auto iter = blk.begin(); iter != blk.end(); ++iter) {
-        stock_list.push_back(*iter);
-    }
-    ar& boost::serialization::make_nvp("stock_list", stock_list);
+  hayaku::string category = blk.category();
+  hayaku::string name = blk.name();
+  ar& boost::serialization::make_nvp("category", category);
+  ar& boost::serialization::make_nvp("name", name);
+  hayaku::StockList stock_list;
+  stock_list.reserve(blk.size());
+  for (auto iter = blk.begin(); iter != blk.end(); ++iter) {
+    stock_list.push_back(*iter);
+  }
+  ar& boost::serialization::make_nvp("stock_list", stock_list);
 }
 
 template <class Archive>
 void load(Archive& ar, hayaku::Block& blk, unsigned int version) {
-    hayaku::string category, name;
-    ar& boost::serialization::make_nvp("category", category);
-    ar& boost::serialization::make_nvp("name", name);
-    hayaku::StockList stock_list;
-    ar& boost::serialization::make_nvp("stock_list", stock_list);
-    HAYAKU_IF_RETURN(category.empty() && name.empty() && stock_list.empty(), void());
-    blk.category(category);
-    blk.name(name);
-    for (auto iter = stock_list.begin(); iter != stock_list.end(); ++iter) {
-        blk.add(*iter);
-    }
+  hayaku::string category, name;
+  ar& boost::serialization::make_nvp("category", category);
+  ar& boost::serialization::make_nvp("name", name);
+  hayaku::StockList stock_list;
+  ar& boost::serialization::make_nvp("stock_list", stock_list);
+  HAYAKU_IF_RETURN(category.empty() && name.empty() && stock_list.empty(),
+                   void());
+  blk.category(category);
+  blk.name(name);
+  for (auto iter = stock_list.begin(); iter != stock_list.end(); ++iter) {
+    blk.add(*iter);
+  }
 }
 }  // namespace serialization
 }  // namespace boost

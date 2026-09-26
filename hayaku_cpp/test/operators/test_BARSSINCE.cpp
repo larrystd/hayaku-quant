@@ -7,11 +7,13 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
 #include <data/DataRuntime.h>
-#include <operators/WindowOperators.h>
 #include <operators/SeriesOperators.h>
+#include <operators/WindowOperators.h>
+
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -23,81 +25,81 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_BARSSINCE") {
-    Indicator result;
+  Indicator result;
 
-    PriceList a;
-    for (int i = 0; i < 5; ++i) {
-        a.push_back(i);
-    }
+  PriceList a;
+  for (int i = 0; i < 5; ++i) {
+    a.push_back(i);
+  }
 
-    auto nan = Null<Indicator::value_t>();
-    Indicator data = PRICELIST(a);
+  auto nan = Null<Indicator::value_t>();
+  Indicator data = PRICELIST(a);
 
-    result = BARSSINCE(data);
-    CHECK_EQ(result.name(), "BARSSINCE");
-    CHECK_EQ(result.size(), 5);
-    CHECK_EQ(result.discard(), 1);
-    check_indicator(result, PRICELIST({nan, 0, 1, 2, 3}, 1));
+  result = BARSSINCE(data);
+  CHECK_EQ(result.name(), "BARSSINCE");
+  CHECK_EQ(result.size(), 5);
+  CHECK_EQ(result.discard(), 1);
+  check_indicator(result, PRICELIST({nan, 0, 1, 2, 3}, 1));
 
-    result = BARSSINCE(-11);
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result[0], 0);
+  result = BARSSINCE(-11);
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result[0], 0);
 
-    /** @arg The discard positions of the input data are Nan */
-    a[1] = Null<price_t>();
-    data = PRICELIST(a, 1);
-    result = BARSSINCE(data);
-    check_indicator(result, PRICELIST({0, nan, 0, 1, 2}, 2));
+  /** @arg The discard positions of the input data are Nan */
+  a[1] = Null<price_t>();
+  data = PRICELIST(a, 1);
+  result = BARSSINCE(data);
+  check_indicator(result, PRICELIST({0, nan, 0, 1, 2}, 2));
 
-    /** @arg The input data contains a Nan in the middle */
-    a[3] = Null<price_t>();
-    data = PRICELIST(a);
-    result = BARSSINCE(data);
-    check_indicator(result, PRICELIST({0, nan, 0, 1, 2}, 2));
+  /** @arg The input data contains a Nan in the middle */
+  a[3] = Null<price_t>();
+  data = PRICELIST(a);
+  result = BARSSINCE(data);
+  check_indicator(result, PRICELIST({0, nan, 0, 1, 2}, 2));
 }
 
 /** @par Test points */
 TEST_CASE("test_BARSSINCEN") {
-    Indicator result;
+  Indicator result;
 
-    PriceList a;
-    for (int i = 0; i < 5; ++i) {
-        a.push_back(i);
-    }
+  PriceList a;
+  for (int i = 0; i < 5; ++i) {
+    a.push_back(i);
+  }
 
-    auto nan = Null<Indicator::value_t>();
-    Indicator data = PRICELIST(a);
+  auto nan = Null<Indicator::value_t>();
+  Indicator data = PRICELIST(a);
 
-    /** @arg The period is 1, */
-    result = BARSSINCEN(data, 1);
-    CHECK_EQ(result.name(), "BARSSINCE");
-    CHECK_EQ(result.size(), 5);
-    CHECK_EQ(result.discard(), 1);
-    check_indicator(result, PRICELIST({nan, 0., 0., 0., 0.}, 1));
+  /** @arg The period is 1, */
+  result = BARSSINCEN(data, 1);
+  CHECK_EQ(result.name(), "BARSSINCE");
+  CHECK_EQ(result.size(), 5);
+  CHECK_EQ(result.discard(), 1);
+  check_indicator(result, PRICELIST({nan, 0., 0., 0., 0.}, 1));
 
-    /** @arg The period is 3, */
-    result = BARSSINCEN(data, 3);
-    CHECK_EQ(result.name(), "BARSSINCE");
-    CHECK_EQ(result.size(), 5);
-    CHECK_EQ(result.discard(), 2);
-    check_indicator(result, PRICELIST({nan, nan, 1., 2., 2.}, 2));
+  /** @arg The period is 3, */
+  result = BARSSINCEN(data, 3);
+  CHECK_EQ(result.name(), "BARSSINCE");
+  CHECK_EQ(result.size(), 5);
+  CHECK_EQ(result.discard(), 2);
+  check_indicator(result, PRICELIST({nan, nan, 1., 2., 2.}, 2));
 
-    /** @arg The period is 4, */
-    result = BARSSINCEN(data, 4);
-    CHECK_EQ(result.name(), "BARSSINCE");
-    CHECK_EQ(result.size(), 5);
-    CHECK_EQ(result.discard(), 3);
-    check_indicator(result, PRICELIST({nan, nan, nan, 2., 3.}, 3));
+  /** @arg The period is 4, */
+  result = BARSSINCEN(data, 4);
+  CHECK_EQ(result.name(), "BARSSINCE");
+  CHECK_EQ(result.size(), 5);
+  CHECK_EQ(result.discard(), 3);
+  check_indicator(result, PRICELIST({nan, nan, nan, 2., 3.}, 3));
 
-    /** @arg The period is 3 and the input contains nan */
-    a[2] = nan;
-    data = PRICELIST(a);
-    result = BARSSINCEN(data, 3);
-    CHECK_EQ(result.name(), "BARSSINCE");
-    CHECK_EQ(result.size(), 5);
-    CHECK_EQ(result.discard(), 2);
-    check_indicator(result, PRICELIST({nan, nan, 1., 2., 1.}, 2));
+  /** @arg The period is 3 and the input contains nan */
+  a[2] = nan;
+  data = PRICELIST(a);
+  result = BARSSINCEN(data, 3);
+  CHECK_EQ(result.name(), "BARSSINCE");
+  CHECK_EQ(result.size(), 5);
+  CHECK_EQ(result.discard(), 2);
+  check_indicator(result, PRICELIST({nan, nan, 1., 2., 1.}, 2));
 }
 
 //-----------------------------------------------------------------------------
@@ -107,33 +109,33 @@ TEST_CASE("test_BARSSINCEN") {
 
 /** @par Test points */
 TEST_CASE("test_BARSSINCE_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/BARSSINCE.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/BARSSINCE.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator x1 = BARSSINCE(CLOSE(kdata));
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator x1 = BARSSINCE(CLOSE(kdata));
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x2.name(), "BARSSINCE");
-    CHECK_EQ(x1.size(), x2.size());
-    CHECK_EQ(x1.discard(), x2.discard());
-    CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
-    for (size_t i = 0; i < x1.size(); ++i) {
-        CHECK_EQ(x1[i], doctest::Approx(x2[i]));
-    }
+  CHECK_EQ(x2.name(), "BARSSINCE");
+  CHECK_EQ(x1.size(), x2.size());
+  CHECK_EQ(x1.discard(), x2.discard());
+  CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
+  for (size_t i = 0; i < x1.size(); ++i) {
+    CHECK_EQ(x1[i], doctest::Approx(x2[i]));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

@@ -9,7 +9,6 @@
  *  Some miscellaneous functions
  */
 
-
 #include "metrics/Performance.h"
 
 namespace hayaku {
@@ -21,22 +20,23 @@ namespace hayaku {
  * @return vector<FundsList>
  * @ingroup ExecutionAccount
  */
-vector<FundsList> HAYAKU_API getFundsList(
-  const vector<internal::ExecutionAccountPortPtr>& accounts, const DatetimeList& ref_dates);
+vector<FundsList> HAYAKU_API
+getFundsList(const vector<internal::ExecutionAccountPortPtr>& accounts,
+             const DatetimeList& ref_dates);
 
 /**
  * Get the funds list of the account list at once
  * @param accounts account list
  * @param datetime deadline date
  * @param ktype K-line type
- * @param ext whether to get the extended statistics (donation users, otherwise the basic
- *            statistics are still returned)
+ * @param ext whether to get the extended statistics (donation users, otherwise
+ * the basic statistics are still returned)
  * @return vector<FundsList>
  * @ingroup ExecutionAccount
  */
-vector<Performance> HAYAKU_API getPerformanceList(
-  const vector<internal::ExecutionAccountPortPtr>& accounts,
-  const Datetime& datetime = Datetime::now(), const KQuery::KType& ktype = KQuery::DAY,
-  bool ext = true);
+vector<Performance> HAYAKU_API
+getPerformanceList(const vector<internal::ExecutionAccountPortPtr>& accounts,
+                   const Datetime& datetime = Datetime::now(),
+                   const KQuery::KType& ktype = KQuery::DAY, bool ext = true);
 
 }  // namespace hayaku

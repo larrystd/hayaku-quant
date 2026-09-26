@@ -5,8 +5,9 @@
  *      Author: fasiondog
  */
 
-#include "data/DataRuntime.h"
 #include "BoolEnvironment.h"
+
+#include "data/DataRuntime.h"
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::BoolEnvironment)
@@ -15,51 +16,53 @@ BOOST_CLASS_EXPORT(hayaku::BoolEnvironment)
 namespace hayaku {
 
 BoolEnvironment::BoolEnvironment() : EnvironmentBase("EV_Bool") {
-    setParam<string>("market", "SH");
+  setParam<string>("market", "SH");
 }
 
-BoolEnvironment::BoolEnvironment(const Indicator& ind) : EnvironmentBase("EV_Bool"), m_ind(ind) {
-    setParam<string>("market", "SH");
+BoolEnvironment::BoolEnvironment(const Indicator& ind)
+    : EnvironmentBase("EV_Bool"), m_ind(ind) {
+  setParam<string>("market", "SH");
 }
 
 BoolEnvironment::~BoolEnvironment() {}
 
 void BoolEnvironment::_checkParam(const string& name) const {
-    if ("market" == name) {
-        string market = getParam<string>(name);
-        auto market_info = getDataRuntime().getMarketInfo(market);
-        HAYAKU_CHECK(market_info != Null<MarketInfo>(), "Invalid market: {}", market);
-    }
+  if ("market" == name) {
+    string market = getParam<string>(name);
+    auto market_info = getDataRuntime().getMarketInfo(market);
+    HAYAKU_CHECK(market_info != Null<MarketInfo>(), "Invalid market: {}",
+                 market);
+  }
 }
 
 EnvironmentPtr BoolEnvironment::_clone() {
-    return make_shared<BoolEnvironment>(m_ind.clone());
+  return make_shared<BoolEnvironment>(m_ind.clone());
 }
 
 void BoolEnvironment::_calculate() {
-    string market = getParam<string>("market");
-    const auto& sm = getDataRuntime();
-    MarketInfo market_info = sm.getMarketInfo(market);
-    HAYAKU_ERROR_IF_RETURN(market_info == Null<MarketInfo>(), void(), "Can't find maket({}) info!",
-                        market);
+  string market = getParam<string>("market");
+  const auto& sm = getDataRuntime();
+  MarketInfo market_info = sm.getMarketInfo(market);
+  HAYAKU_ERROR_IF_RETURN(market_info == Null<MarketInfo>(), void(),
+                         "Can't find maket({}) info!", market);
 
-    Stock stock = sm.getStock(market + market_info.code());
-    KData kdata = stock.getKData(m_query);
+  Stock stock = sm.getStock(market + market_info.code());
+  KData kdata = stock.getKData(m_query);
 
-    auto ds = kdata.getDatetimeList();
-    m_ind.setContext(kdata);
-    auto const* ind_data = m_ind.data();
-    for (size_t i = m_ind.discard(), len = m_ind.size(); i < len; i++) {
-        if (!std::isnan(ind_data[i]) && ind_data[i] > 0.) {
-            _addValid(ds[i]);
-        }
+  auto ds = kdata.getDatetimeList();
+  m_ind.setContext(kdata);
+  auto const* ind_data = m_ind.data();
+  for (size_t i = m_ind.discard(), len = m_ind.size(); i < len; i++) {
+    if (!std::isnan(ind_data[i]) && ind_data[i] > 0.) {
+      _addValid(ds[i]);
     }
+  }
 }
 
 EVPtr HAYAKU_API EV_Bool(const Indicator& ind, const string& market) {
-    EVPtr p = make_shared<BoolEnvironment>(ind);
-    p->setParam<string>("market", market);
-    return p;
+  EVPtr p = make_shared<BoolEnvironment>(ind);
+  p->setParam<string>("market", market);
+  return p;
 }
 
 }  // namespace hayaku

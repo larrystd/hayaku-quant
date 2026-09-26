@@ -14,38 +14,38 @@ BOOST_CLASS_EXPORT(hayaku::FixedSelector)
 namespace hayaku {
 
 FixedSelector::FixedSelector() : SelectorBase("SE_Fixed") {
-    setParam<double>("weight", 1.0);
+  setParam<double>("weight", 1.0);
 }
 
 FixedSelector::FixedSelector(double weight) : SelectorBase("SE_Fixed") {
-    setParam<double>("weight", weight);
+  setParam<double>("weight", weight);
 }
 
 FixedSelector::~FixedSelector() {}
 
-bool FixedSelector::isMatchAF(const AFPtr& af) {
-    return true;
-}
+bool FixedSelector::isMatchAF(const AFPtr& af) { return true; }
 
 StrategyWeightList FixedSelector::_getSelected(Datetime date) {
-    auto weight = getParam<double>("weight");
-    StrategyWeightList result;
-    for (auto& sys : m_real_sys_list) {
-        result.emplace_back(sys, weight);
-    }
-    return result;
+  auto weight = getParam<double>("weight");
+  StrategyWeightList result;
+  for (auto& sys : m_real_sys_list) {
+    result.emplace_back(sys, weight);
+  }
+  return result;
 }
 
 void FixedSelector::_calculate() {}
 
 SelectorPtr HAYAKU_API SE_Fixed(double weight) {
-    return make_shared<FixedSelector>(weight);
+  return make_shared<FixedSelector>(weight);
 }
 
-SelectorPtr HAYAKU_API SE_Fixed(const StockList& stock_list, const internal::StrategyRuntimePtr& sys, double weight) {
-    SelectorPtr p = make_shared<FixedSelector>(weight);
-    p->addStockList(stock_list, sys);
-    return p;
+SelectorPtr HAYAKU_API SE_Fixed(const StockList& stock_list,
+                                const internal::StrategyRuntimePtr& sys,
+                                double weight) {
+  SelectorPtr p = make_shared<FixedSelector>(weight);
+  p->addStockList(stock_list, sys);
+  return p;
 }
 
 } /* namespace hayaku */

@@ -7,12 +7,12 @@
  *      Author: fasiondog
  */
 
-
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <cmath>
 #include <limits>
 #include <type_traits>
+
 #include "OsDef.h"
 
 namespace hayaku {
@@ -28,11 +28,9 @@ namespace hayaku {
  */
 template <typename T>
 class Null {
-public:
-    Null() {}
-    operator T() const {
-        return T();
-    }
+ public:
+  Null() {}
+  operator T() const { return T(); }
 };
 
 /**
@@ -40,11 +38,9 @@ public:
  */
 template <>
 class Null<int> {
-public:
-    Null() {}
-    operator int() const {
-        return (std::numeric_limits<int>::max)();
-    }
+ public:
+  Null() {}
+  operator int() const { return (std::numeric_limits<int>::max)(); }
 };
 
 /**
@@ -52,11 +48,11 @@ public:
  */
 template <>
 class Null<unsigned int> {
-public:
-    Null() {}
-    operator unsigned int() const {
-        return (std::numeric_limits<unsigned int>::max)();
-    }
+ public:
+  Null() {}
+  operator unsigned int() const {
+    return (std::numeric_limits<unsigned int>::max)();
+  }
 };
 
 /**
@@ -64,11 +60,9 @@ public:
  */
 template <>
 class Null<long long> {
-public:
-    Null() {}
-    operator long long() const {
-        return (std::numeric_limits<long long>::max)();
-    }
+ public:
+  Null() {}
+  operator long long() const { return (std::numeric_limits<long long>::max)(); }
 };
 
 #if !defined(_MSC_VER) && !HAYAKU_OS_OSX
@@ -77,39 +71,39 @@ public:
  */
 template <>
 class Null<int64_t> {
-public:
-    Null() {}
-    operator int64_t() {
-        return (std::numeric_limits<int64_t>::max)();
-    }
+ public:
+  Null() {}
+  operator int64_t() { return (std::numeric_limits<int64_t>::max)(); }
 };
 #endif
 
 /**
- * It provides the Null value of unsigned long long (the unsigned 64-bit integer)
+ * It provides the Null value of unsigned long long (the unsigned 64-bit
+ * integer)
  */
 template <>
 class Null<unsigned long long> {
-public:
-    Null() {}
-    operator unsigned long long() const {
-        return (std::numeric_limits<unsigned long long>::max)();
-    }
+ public:
+  Null() {}
+  operator unsigned long long() const {
+    return (std::numeric_limits<unsigned long long>::max)();
+  }
 };
 
-#if (HAYAKU_OS_ANDROID && HAYAKU_ARCH_ARM64) || (HAYAKU_OS_LINUX && HAYAKU_ARCH_ARM64) || HAYAKU_OS_OSX || \
-  HAYAKU_OS_IOS || (defined(__GNUC__) && __GNUC__ >= 8) ||                                     \
-  (defined(__clang__) && !HAYAKU_OS_ANDROID && !HAYAKU_OS_WINDOWS)
+#if (HAYAKU_OS_ANDROID && HAYAKU_ARCH_ARM64) ||                \
+    (HAYAKU_OS_LINUX && HAYAKU_ARCH_ARM64) || HAYAKU_OS_OSX || \
+    HAYAKU_OS_IOS || (defined(__GNUC__) && __GNUC__ >= 8) ||   \
+    (defined(__clang__) && !HAYAKU_OS_ANDROID && !HAYAKU_OS_WINDOWS)
 /**
  * It provides the Null value of size_t
  */
 template <>
 class Null<std::size_t> {
-public:
-    Null() {}
-    operator std::size_t() const {
-        return (std::numeric_limits<std::size_t>::max)();
-    }
+ public:
+  Null() {}
+  operator std::size_t() const {
+    return (std::numeric_limits<std::size_t>::max)();
+  }
 };
 #endif
 
@@ -118,28 +112,24 @@ public:
  */
 template <>
 class Null<double> {
-public:
-    Null() {}
-    operator double() const {
-        return (std::numeric_limits<double>::quiet_NaN)();
-        // return (std::numeric_limits<double>::max)();
-    }
+ public:
+  Null() {}
+  operator double() const {
+    return (std::numeric_limits<double>::quiet_NaN)();
+    // return (std::numeric_limits<double>::max)();
+  }
 
-    bool operator==(double val) const {
-        return std::isnan(val);
-    }
+  bool operator==(double val) const { return std::isnan(val); }
 
-    bool operator==(float val) const {
-        return std::isnan(val);
-    }
+  bool operator==(float val) const { return std::isnan(val); }
 };
 
 inline bool operator==(double val, const Null<double>&) {
-    return std::isnan(val);
+  return std::isnan(val);
 }
 
 inline bool operator==(float val, const Null<double>&) {
-    return std::isnan(val);
+  return std::isnan(val);
 }
 
 /**
@@ -147,27 +137,21 @@ inline bool operator==(float val, const Null<double>&) {
  */
 template <>
 class Null<float> {
-public:
-    Null() {}
-    operator float() const {
-        return (std::numeric_limits<float>::quiet_NaN)();
-    }
+ public:
+  Null() {}
+  operator float() const { return (std::numeric_limits<float>::quiet_NaN)(); }
 
-    bool operator==(float val) const {
-        return std::isnan(val);
-    }
+  bool operator==(float val) const { return std::isnan(val); }
 
-    bool operator==(double val) const {
-        return std::isnan(val);
-    }
+  bool operator==(double val) const { return std::isnan(val); }
 };
 
 inline bool operator==(float val, const Null<float>&) {
-    return std::isnan(val);
+  return std::isnan(val);
 }
 
 inline bool operator==(double val, const Null<float>&) {
-    return std::isnan(val);
+  return std::isnan(val);
 }
 
 /** @} */

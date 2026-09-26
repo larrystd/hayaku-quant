@@ -7,11 +7,7 @@
  *      Author: fasiondog
  */
 
-
 #include <random>
-
-
-
 
 /*
  * SL_FixedPercent.h
@@ -20,22 +16,20 @@
  *      Author: Administrator
  */
 
-
 #include "SlippageBase.h"
 
 namespace hayaku {
 
 /**
  * Fixed percentage slippage algorithm
- * @details Actual buy price = planned buy price * (1 + p), actual sell price = planned sell price *
- *          (1 - p)
+ * @details Actual buy price = planned buy price * (1 + p), actual sell price =
+ * planned sell price * (1 - p)
  * @param p the fixed offset percentage
  * @return SPPtr
  */
 SlippagePtr HAYAKU_API SP_FixedPercent(double p = 0.001);
 
 } /* namespace hayaku */
-
 
 /*
  * SL_FixedValue.h
@@ -44,21 +38,18 @@ SlippagePtr HAYAKU_API SP_FixedPercent(double p = 0.001);
  *      Author: Administrator
  */
 
-
-
 namespace hayaku {
 
 /**
  * Fixed price slippage algorithm
- * @details Actual buy price = planned buy price + offset price, actual sell price = planned sell
- *          price - offset price
+ * @details Actual buy price = planned buy price + offset price, actual sell
+ * price = planned sell price - offset price
  * @param value
  * @return
  */
 SlippagePtr HAYAKU_API SP_FixedValue(double value = 0.01);
 
 } /* namespace hayaku */
-
 
 /*
  * SP_Normal.h
@@ -67,13 +58,11 @@ SlippagePtr HAYAKU_API SP_FixedValue(double value = 0.01);
  *      Author: fasiondog
  */
 
-
-
 namespace hayaku {
 
 /**
- * Normal distribution random price slippage algorithm: the buy and sell operations are a random
- * price offset based on the normal distribution
+ * Normal distribution random price slippage algorithm: the buy and sell
+ * operations are a random price offset based on the normal distribution
  * @param mean mean of the normal distribution
  * @param stddev standard deviation of the normal distribution
  * @return the slippage object pointer
@@ -89,13 +78,11 @@ SlippagePtr HAYAKU_API SP_Normal(double mean = 0.0, double stddev = 0.05);
  *      Author: fasiondog
  */
 
-
-
 namespace hayaku {
 
 /**
- * Log-normal distribution random price slippage algorithm: the buy and sell operations are a random
- * price offset based on the log-normal distribution
+ * Log-normal distribution random price slippage algorithm: the buy and sell
+ * operations are a random price offset based on the log-normal distribution
  * @param mean the mean parameter of the log-normal distribution
  * @param stddev the standard deviation parameter of the log-normal distribution
  * @return the slippage object pointer
@@ -111,21 +98,21 @@ SlippagePtr HAYAKU_API SP_LogNormal(double mean = 0.0, double stddev = 0.05);
  *      Author: fasiondog
  */
 
-
-
 namespace hayaku {
 
 /**
- * Truncated normal distribution random price slippage algorithm: the buy and sell operations are a
- * random price offset based on the truncated normal distribution
+ * Truncated normal distribution random price slippage algorithm: the buy and
+ * sell operations are a random price offset based on the truncated normal
+ * distribution
  * @param mean mean of the normal distribution
  * @param stddev standard deviation of the normal distribution
  * @param min_value the truncation minimum
  * @param max_value the truncation maximum
  * @return the slippage object pointer
  */
-SlippagePtr HAYAKU_API SP_TruncNormal(double mean = 0.0, double stddev = 0.05, double min_value = -0.1,
-                                   double max_value = 0.1);
+SlippagePtr HAYAKU_API SP_TruncNormal(double mean = 0.0, double stddev = 0.05,
+                                      double min_value = -0.1,
+                                      double max_value = 0.1);
 
 } /* namespace hayaku */
 
@@ -136,18 +123,18 @@ SlippagePtr HAYAKU_API SP_TruncNormal(double mean = 0.0, double stddev = 0.05, d
  *      Author: Administrator
  */
 
-
-
 namespace hayaku {
 
 /**
- * Uniform distribution random price slippage algorithm: the buy and sell operations are a random
- * offset of the price with a uniform distribution within the range [min_value, max_value]
+ * Uniform distribution random price slippage algorithm: the buy and sell
+ * operations are a random offset of the price with a uniform distribution
+ * within the range [min_value, max_value]
  * @param min_value the lower limit of the offset price
  * @param max_value the upper limit of the offset price
  * @return
  */
-SlippagePtr HAYAKU_API SP_Uniform(double min_value = -0.05, double max_value = 0.05);
+SlippagePtr HAYAKU_API SP_Uniform(double min_value = -0.05,
+                                  double max_value = 0.05);
 
 } /* namespace hayaku */
 
@@ -158,22 +145,19 @@ SlippagePtr HAYAKU_API SP_Uniform(double min_value = -0.05, double max_value = 0
  *      Author: Administrator
  */
 
-
-
 namespace hayaku {
 
 class FixedPercentSlippage : public SlippageBase {
-    SLIPPAGE_IMP(FixedPercentSlippage)
-    SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
+  SLIPPAGE_IMP(FixedPercentSlippage)
+  SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    FixedPercentSlippage();
-    virtual ~FixedPercentSlippage();
-    virtual void _checkParam(const string& name) const override;
+ public:
+  FixedPercentSlippage();
+  virtual ~FixedPercentSlippage();
+  virtual void _checkParam(const string& name) const override;
 };
 
 } /* namespace hayaku */
-
 
 /*
  * FixedValueSlippage.h
@@ -182,22 +166,19 @@ public:
  *      Author: Administrator
  */
 
-
-
 namespace hayaku {
 
 class FixedValueSlippage : public SlippageBase {
-    SLIPPAGE_IMP(FixedValueSlippage)
-    SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
+  SLIPPAGE_IMP(FixedValueSlippage)
+  SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    FixedValueSlippage();
-    virtual ~FixedValueSlippage();
-    virtual void _checkParam(const string& name) const override;
+ public:
+  FixedValueSlippage();
+  virtual ~FixedValueSlippage();
+  virtual void _checkParam(const string& name) const override;
 };
 
 } /* namespace hayaku */
-
 
 /*
  *  Copyright (c) 2025 hikyuu.org
@@ -205,23 +186,21 @@ public:
  *  Created on: 2025-10-25
  *      Author: fasiondog
  */
-
-
 
 namespace hayaku {
 
 class NormalSlippage : public SlippageBase {
-    SLIPPAGE_IMP(NormalSlippage)
-    SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
+  SLIPPAGE_IMP(NormalSlippage)
+  SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    NormalSlippage();
-    virtual ~NormalSlippage();
-    virtual void _checkParam(const string& name) const override;
+ public:
+  NormalSlippage();
+  virtual ~NormalSlippage();
+  virtual void _checkParam(const string& name) const override;
 
-private:
-    static std::random_device ms_rd;
-    static std::mt19937 ms_gen;
+ private:
+  static std::random_device ms_rd;
+  static std::mt19937 ms_gen;
 };
 
 } /* namespace hayaku */
@@ -232,23 +211,21 @@ private:
  *  Created on: 2025-10-25
  *      Author: fasiondog
  */
-
-
 
 namespace hayaku {
 
 class LogNormalSlippage : public SlippageBase {
-    SLIPPAGE_IMP(LogNormalSlippage)
-    SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
+  SLIPPAGE_IMP(LogNormalSlippage)
+  SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    LogNormalSlippage();
-    virtual ~LogNormalSlippage();
-    virtual void _checkParam(const string& name) const override;
+ public:
+  LogNormalSlippage();
+  virtual ~LogNormalSlippage();
+  virtual void _checkParam(const string& name) const override;
 
-private:
-    static std::random_device ms_rd;
-    static std::mt19937 ms_gen;
+ private:
+  static std::random_device ms_rd;
+  static std::mt19937 ms_gen;
 };
 
 } /* namespace hayaku */
@@ -259,23 +236,21 @@ private:
  *  Created on: 2025-10-25
  *      Author: fasiondog
  */
-
-
 
 namespace hayaku {
 
 class TruncNormalSlippage : public SlippageBase {
-    SLIPPAGE_IMP(TruncNormalSlippage)
-    SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
+  SLIPPAGE_IMP(TruncNormalSlippage)
+  SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    TruncNormalSlippage();
-    virtual ~TruncNormalSlippage();
-    virtual void _checkParam(const string& name) const override;
+ public:
+  TruncNormalSlippage();
+  virtual ~TruncNormalSlippage();
+  virtual void _checkParam(const string& name) const override;
 
-private:
-    static std::random_device ms_rd;
-    static std::mt19937 ms_gen;
+ private:
+  static std::random_device ms_rd;
+  static std::mt19937 ms_gen;
 };
 
 } /* namespace hayaku */
@@ -287,18 +262,16 @@ private:
  *      Author: fasiondog
  */
 
-
-
 namespace hayaku {
 
 class UniformSlippage : public SlippageBase {
-    SLIPPAGE_IMP(UniformSlippage)
-    SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
+  SLIPPAGE_IMP(UniformSlippage)
+  SLIPPAGE_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    UniformSlippage();
-    virtual ~UniformSlippage();
-    virtual void _checkParam(const string& name) const override;
+ public:
+  UniformSlippage();
+  virtual ~UniformSlippage();
+  virtual void _checkParam(const string& name) const override;
 };
 
 } /* namespace hayaku */

@@ -5,11 +5,12 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
 #include <application/plugins/ExtendIndicatorsPlugin.h>
 #include <data/DataRuntime.h>
 #include <operators/SeriesOperators.h>
+
 #include "application/plugin_fixtures/plugin_valid.h"
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -21,69 +22,73 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_AGG_COUNT") {
-    HAYAKU_IF_RETURN(!pluginValid(), void());
+  HAYAKU_IF_RETURN(!pluginValid(), void());
 
-    auto k = getKData("sh000001", KQueryByDate(Datetime(20111115)));
-    auto mink =
-      getKData("sh000001", KQueryByDate(Datetime(20111115), Null<Datetime>(), KQuery::MIN));
+  auto k = getKData("sh000001", KQueryByDate(Datetime(20111115)));
+  auto mink = getKData("sh000001", KQueryByDate(Datetime(20111115),
+                                                Null<Datetime>(), KQuery::MIN));
 
-    /** @arg Aggregate the minute lines of a single day */
-    auto ind = AGG_COUNT(CLOSE(), KQuery::MIN);
-    auto result = ind(k);
-    CHECK_EQ(result.name(), "AGG_COUNT");
-    CHECK_EQ(result.size(), k.size());
-    CHECK_EQ(result.discard(), 0);
-    double sum = 0.0;
-    for (const auto& v : result) {
-        sum += v;
-    }
-    CHECK_EQ(sum, mink.size());
+  /** @arg Aggregate the minute lines of a single day */
+  auto ind = AGG_COUNT(CLOSE(), KQuery::MIN);
+  auto result = ind(k);
+  CHECK_EQ(result.name(), "AGG_COUNT");
+  CHECK_EQ(result.size(), k.size());
+  CHECK_EQ(result.discard(), 0);
+  double sum = 0.0;
+  for (const auto& v : result) {
+    sum += v;
+  }
+  CHECK_EQ(sum, mink.size());
 
-    /** @arg Aggregate the minute lines of a single day with a compound operation */
-    auto x = (ind + ind)(k);
-    sum = 0.0;
-    for (const auto& v : x) {
-        sum += v;
-    }
-    CHECK_EQ(sum, 2 * mink.size());
+  /** @arg Aggregate the minute lines of a single day with a compound operation
+   */
+  auto x = (ind + ind)(k);
+  sum = 0.0;
+  for (const auto& v : x) {
+    sum += v;
+  }
+  CHECK_EQ(sum, 2 * mink.size());
 
-    /** @arg Aggregate the minute lines of a single day with multiple result sets */
-    ind = AGG_COUNT(KDATA(), KQuery::MIN);
-    result = ind(k);
-    CHECK_EQ(result.name(), "AGG_COUNT");
-    CHECK_EQ(result.size(), k.size());
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result.getResultNumber(), 6);
-    sum = 0.0;
-    for (const auto& v : result) {
-        sum += v;
-    }
-    CHECK_EQ(sum, mink.size());
+  /** @arg Aggregate the minute lines of a single day with multiple result sets
+   */
+  ind = AGG_COUNT(KDATA(), KQuery::MIN);
+  result = ind(k);
+  CHECK_EQ(result.name(), "AGG_COUNT");
+  CHECK_EQ(result.size(), k.size());
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result.getResultNumber(), 6);
+  sum = 0.0;
+  for (const auto& v : result) {
+    sum += v;
+  }
+  CHECK_EQ(sum, mink.size());
 
-    /** @arg Aggregate the minute lines with a two-day sliding window */
-    ind = AGG_COUNT(CLOSE(), KQuery::MIN, false, 2);
-    result = ind(k);
-    CHECK_EQ(result.size(), k.size());
-    CHECK_EQ(result.front(), 240);
-    CHECK_EQ(result[1], 480);
-    CHECK_EQ(result[15], 480);
+  /** @arg Aggregate the minute lines with a two-day sliding window */
+  ind = AGG_COUNT(CLOSE(), KQuery::MIN, false, 2);
+  result = ind(k);
+  CHECK_EQ(result.size(), k.size());
+  CHECK_EQ(result.front(), 240);
+  CHECK_EQ(result[1], 480);
+  CHECK_EQ(result[15], 480);
 
-    /** @arg Aggregate the minute lines into the extended K-line type DAY3 */
-    k = getKData("sh000001", KQueryByDate(Datetime(20111101), Datetime(20111117), KQuery::DAY3));
-    result = AGG_COUNT(CLOSE(), KQuery::MIN)(k);
-    CHECK_EQ(result.size(), k.size());
-    CHECK_EQ(result.front(), 240);
-    CHECK_EQ(result[1], 720);
-    CHECK_EQ(result[2], 720);
-    CHECK_EQ(result[3], 720);
-    CHECK_EQ(result[4], 240);
+  /** @arg Aggregate the minute lines into the extended K-line type DAY3 */
+  k = getKData("sh000001", KQueryByDate(Datetime(20111101), Datetime(20111117),
+                                        KQuery::DAY3));
+  result = AGG_COUNT(CLOSE(), KQuery::MIN)(k);
+  CHECK_EQ(result.size(), k.size());
+  CHECK_EQ(result.front(), 240);
+  CHECK_EQ(result[1], 720);
+  CHECK_EQ(result[2], 720);
+  CHECK_EQ(result[3], 720);
+  CHECK_EQ(result[4], 240);
 
-    /** @arg Aggregate the tick lines into the extended K-line type MIN3 */
-    k = getKData("sh000001", KQueryByDate(Datetime(20111101), Datetime(20111103), KQuery::MIN3));
-    result = AGG_COUNT(CLOSE(), KQuery::MIN)(k);
-    CHECK_EQ(result.size(), k.size());
-    CHECK_EQ(result[0], 3);
-    CHECK_EQ(result[1], 3);
+  /** @arg Aggregate the tick lines into the extended K-line type MIN3 */
+  k = getKData("sh000001", KQueryByDate(Datetime(20111101), Datetime(20111103),
+                                        KQuery::MIN3));
+  result = AGG_COUNT(CLOSE(), KQuery::MIN)(k);
+  CHECK_EQ(result.size(), k.size());
+  CHECK_EQ(result[0], 3);
+  CHECK_EQ(result[1], 3);
 }
 
 //-----------------------------------------------------------------------------
@@ -93,35 +98,35 @@ TEST_CASE("test_AGG_COUNT") {
 
 /** @par Test points */
 TEST_CASE("test_AGG_COUNT_export") {
-    HAYAKU_IF_RETURN(!pluginValid(), void());
+  HAYAKU_IF_RETURN(!pluginValid(), void());
 
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/AGG_COUNT.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/AGG_COUNT.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator x1 = AGG_COUNT(CLOSE())(kdata);
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator x1 = AGG_COUNT(CLOSE())(kdata);
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x1.name(), x2.name());
-    CHECK_UNARY(x1.size() == x2.size());
-    CHECK_UNARY(x1.discard() == x2.discard());
-    CHECK_UNARY(x1.getResultNumber() == x2.getResultNumber());
-    for (size_t i = 0; i < x1.size(); ++i) {
-        CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
-    }
+  CHECK_EQ(x1.name(), x2.name());
+  CHECK_UNARY(x1.size() == x2.size());
+  CHECK_UNARY(x1.discard() == x2.discard());
+  CHECK_UNARY(x1.getResultNumber() == x2.getResultNumber());
+  for (size_t i = 0; i < x1.size(); ++i) {
+    CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

@@ -9,24 +9,23 @@
  *      Author: fasiondog
  */
 
-#include "SQLResultSet.h"
 #include "AsyncSQLResultSet.h"
-#include "DBConnectBase.h"
-#include "SQLStatementBase.h"
 #include "AsyncSQLStatementBase.h"
-#include "AutoTransAction.h"
 #include "AsyncTransAction.h"
-#include "TableMacro.h"
+#include "AutoTransAction.h"
+#include "DBConnectBase.h"
 #include "DBUpgrade.h"
-
+#include "SQLResultSet.h"
+#include "SQLStatementBase.h"
+#include "TableMacro.h"
 #include "common/Config.h"
 #if HAYAKU_ENABLE_MYSQL
-#include "extensions/mysql/MySQLConnect.h"
 #include "extensions/mysql/AsyncMySQLConnect.h"
+#include "extensions/mysql/MySQLConnect.h"
 #endif
 
 #if HAYAKU_ENABLE_SQLITE
-#include "SQLiteConnect.h"
 #include "AsyncSQLiteConnect.h"
+#include "SQLiteConnect.h"
 #include "SQLiteUtil.h"
 #endif

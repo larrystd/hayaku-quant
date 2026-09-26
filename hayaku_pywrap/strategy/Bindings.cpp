@@ -2554,6 +2554,4 @@ void export_strategy_main(py::module& m) {
   export_StrategyEngine(m);
 }
 
-void bindStrategy(py::module_& m) {
-  export_strategy_main(m);
-}
+void bindStrategy(py::module_& m) { export_strategy_main(m); }

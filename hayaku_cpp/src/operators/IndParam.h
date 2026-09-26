@@ -7,7 +7,6 @@
  *      Author: fasiondog
  */
 
-
 #include "IndicatorImp.h"
 
 namespace hayaku {
@@ -16,25 +15,24 @@ class HAYAKU_API Indicator;
 class HAYAKU_API IndicatorImp;
 
 /**
- * @brief Dynamic indicator parameter, used as the parameter of the other indicators
+ * @brief Dynamic indicator parameter, used as the parameter of the other
+ * indicators
  * @ingroup Indicator
  */
 class HAYAKU_API IndParam {
-    HAYAKU_API friend std::ostream& operator<<(std::ostream&, const IndParam&);
+  HAYAKU_API friend std::ostream& operator<<(std::ostream&, const IndParam&);
 
-public:
-    IndParam();
-    explicit IndParam(const IndicatorImpPtr& ind);
-    explicit IndParam(const Indicator& ind);
+ public:
+  IndParam();
+  explicit IndParam(const IndicatorImpPtr& ind);
+  explicit IndParam(const Indicator& ind);
 
-    IndicatorImpPtr getImp() const noexcept {
-        return m_ind;
-    }
+  IndicatorImpPtr getImp() const noexcept { return m_ind; }
 
-    Indicator get() const;
+  Indicator get() const;
 
-private:
-    IndicatorImpPtr m_ind;
+ private:
+  IndicatorImpPtr m_ind;
 };
 
 }  // namespace hayaku

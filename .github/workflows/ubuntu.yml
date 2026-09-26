@@ -52,6 +52,8 @@ jobs:
       - name: build
         run: |
           xmake -b core
+          xmake -b ingest
+          xmake -b realtime
 
       - name: test python
         run: |

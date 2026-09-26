@@ -9,17 +9,18 @@
  *      Author: fasiondog
  */
 
-
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
 
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <chrono>
-#include <vector>
 #include <fmt/format.h>
+
+#include <chrono>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <vector>
+
 #include "common/Config.h"
 
 #ifndef HAYAKU_UTILS_API
@@ -35,7 +36,8 @@
 
 #ifdef _WIN32
 #include <shlwapi.h>
-#pragma comment(lib, "shlwapi.lib")  // The library needed when linking under Windows
+#pragma comment( \
+    lib, "shlwapi.lib")  // The library needed when linking under Windows
 #define GET_FILENAME(path) PathFindFileNameA(path)
 #else
 #include <libgen.h>
@@ -62,9 +64,9 @@ namespace hayaku {
 /**
  * @ingroup Utilities
  * @addtogroup SpendTimer Spend timer time consumption statistics
- * @details The utility macros assisting in the statistics of the execution time of a code block;
- * they can be turned off at compile time with the macro HAYAKU_CLOSE_SPEND_TIME=1, or turned on with
- * HAYAKU_CLOSE_SPEND_TIME=0
+ * @details The utility macros assisting in the statistics of the execution time
+ * of a code block; they can be turned off at compile time with the macro
+ * HAYAKU_CLOSE_SPEND_TIME=1, or turned on with HAYAKU_CLOSE_SPEND_TIME=0
  * @code
  *     {
  *        SPEND_TIME(test, "run test");
@@ -90,19 +92,23 @@ namespace hayaku {
  * Timer for the time consumption of the code execution
  * @param id the custom time consumption timer id
  */
-#define SPEND_TIME(id) hayaku::SpendTimer test_spend_timer_##id(#id, GET_FILENAME(__FILE__), __LINE__);
+#define SPEND_TIME(id)                                                  \
+  hayaku::SpendTimer test_spend_timer_##id(#id, GET_FILENAME(__FILE__), \
+                                           __LINE__);
 
 /**
  * Timer for the time consumption of the code execution, with an output message
  * @param id the custom time consumption timer id
  * @param ... the output message
  */
-#define SPEND_TIME_MSG(id, ...)                     \
-    std::string msg_##id(fmt::format(__VA_ARGS__)); \
-    hayaku::SpendTimer test_spend_timer_##id(#id, msg_##id.c_str(), GET_FILENAME(__FILE__), __LINE__);
+#define SPEND_TIME_MSG(id, ...)                                   \
+  std::string msg_##id(fmt::format(__VA_ARGS__));                 \
+  hayaku::SpendTimer test_spend_timer_##id(#id, msg_##id.c_str(), \
+                                           GET_FILENAME(__FILE__), __LINE__);
 
 /** Stopwatch timing */
-#define SPEND_TIME_KEEP(id, ...) test_spend_timer_##id.keep(fmt::format(__VA_ARGS__));
+#define SPEND_TIME_KEEP(id, ...) \
+  test_spend_timer_##id.keep(fmt::format(__VA_ARGS__));
 
 /** Display the current time consumption */
 #define SPEND_TIME_SHOW(id) test_spend_timer_##id.show();
@@ -111,11 +117,12 @@ namespace hayaku {
 #define SPEND_TIME_VALUE(id) test_spend_timer_##id.value()
 
 /**
- * Used to dynamically control the time consumption timers in the current code block and its
- * sub-blocks; it is mainly used to turn off and on a part of the time consumption statistics in the
- * test code
+ * Used to dynamically control the time consumption timers in the current code
+ * block and its sub-blocks; it is mainly used to turn off and on a part of the
+ * time consumption statistics in the test code
  */
-#define SPEND_TIME_CONTROL(open) hayaku::SpendTimerGuad spend_timer_guard_##open(open);
+#define SPEND_TIME_CONTROL(open) \
+  hayaku::SpendTimerGuad spend_timer_guard_##open(open);
 
 /** Globally turn on the message time consumption printing */
 #define OPEN_SPEND_TIME hayaku::open_spend_time()
@@ -126,137 +133,140 @@ namespace hayaku {
 /**
  * Benchmark time consumption timer
  * @param id the custom time consumption timer id
- * @param cycle  the number of the loop runs (used for the statistics printing output only)
+ * @param cycle  the number of the loop runs (used for the statistics printing
+ * output only)
  */
-#define BENCHMARK_TIME(id, cycle)                                                 \
-    hayaku::SpendTimer test_spend_timer_##id(#id, GET_FILENAME(__FILE__), __LINE__); \
-    test_spend_timer_##id.setCycle(cycle);
+#define BENCHMARK_TIME(id, cycle)                                       \
+  hayaku::SpendTimer test_spend_timer_##id(#id, GET_FILENAME(__FILE__), \
+                                           __LINE__);                   \
+  test_spend_timer_##id.setCycle(cycle);
 
 /**
  * Benchmark time consumption timer, with an output message
  * @param id the custom time consumption timer id
- * @param cycle  the number of the loop runs (used for the statistics printing output only)
+ * @param cycle  the number of the loop runs (used for the statistics printing
+ * output only)
  * @param ... the output message
  */
-#define BENCHMARK_TIME_MSG(id, cycle, ...)                                               \
-    std::string msg_##id = fmt::format(fmt::runtime(__VA_ARGS__));                       \
-    hayaku::SpendTimer test_spend_timer_##id(#id, msg_##id.c_str(), GET_FILENAME(__FILE__), \
-                                          __LINE__);                                     \
-    test_spend_timer_##id.setCycle(cycle);
+#define BENCHMARK_TIME_MSG(id, cycle, ...)                                    \
+  std::string msg_##id = fmt::format(fmt::runtime(__VA_ARGS__));              \
+  hayaku::SpendTimer test_spend_timer_##id(#id, msg_##id.c_str(),             \
+                                           GET_FILENAME(__FILE__), __LINE__); \
+  test_spend_timer_##id.setCycle(cycle);
 
 #endif /* HAYAKU_CLOSE_SPEND_TIME */
 
 /**
- * Timer for the statistics of the program execution time consumption, it assists in calculating the
- * code execution time
- * @note It is not recommended to use it directly, the related utility macros should be used
+ * Timer for the statistics of the program execution time consumption, it
+ * assists in calculating the code execution time
+ * @note It is not recommended to use it directly, the related utility macros
+ * should be used
  * @see SPEND_TIME, SPEND_TIME_MSG, SPEND_TIMG_CONTROL
  */
 class HAYAKU_UTILS_API SpendTimer {
-public:
-    /** Constructor, it records the current system time */
-    explicit SpendTimer()
-    : m_cycle(1),
-      m_msg(""),
-      m_lineno(0),
-      m_start_time(std::chrono::steady_clock::now()),
-      m_pre_keep_time(m_start_time) {}
+ public:
+  /** Constructor, it records the current system time */
+  explicit SpendTimer()
+      : m_cycle(1),
+        m_msg(""),
+        m_lineno(0),
+        m_start_time(std::chrono::steady_clock::now()),
+        m_pre_keep_time(m_start_time) {}
 
-    /**
-     * Constructor, it records the current system time
-     * @param id timer id
-     * @param filename the current file name, corresponding to __FILE__
-     * @param lineno the current line number, corresponding to __LINE__
-     */
-    explicit SpendTimer(const char *id, const char *filename, int lineno)
-    : m_cycle(1),
-      m_id(id),
-      m_msg(""),
-      m_filename(filename),
-      m_lineno(lineno),
-      m_start_time(std::chrono::steady_clock::now()),
-      m_pre_keep_time(m_start_time) {}
+  /**
+   * Constructor, it records the current system time
+   * @param id timer id
+   * @param filename the current file name, corresponding to __FILE__
+   * @param lineno the current line number, corresponding to __LINE__
+   */
+  explicit SpendTimer(const char *id, const char *filename, int lineno)
+      : m_cycle(1),
+        m_id(id),
+        m_msg(""),
+        m_filename(filename),
+        m_lineno(lineno),
+        m_start_time(std::chrono::steady_clock::now()),
+        m_pre_keep_time(m_start_time) {}
 
-    /**
-     * Constructor, it records the current system time
-     * @param id timer id
-     * @param msg the additional output message
-     * @param filename the current file name, corresponding to __FILE__
-     * @param lineno the current line number, corresponding to __LINE__
-     */
-    explicit SpendTimer(const char *id, const char *msg, const char *filename, int lineno)
-    : m_cycle(1),
-      m_id(id),
-      m_msg(msg),
-      m_filename(filename),
-      m_lineno(lineno),
-      m_start_time(std::chrono::steady_clock::now()),
-      m_pre_keep_time(m_start_time) {}
+  /**
+   * Constructor, it records the current system time
+   * @param id timer id
+   * @param msg the additional output message
+   * @param filename the current file name, corresponding to __FILE__
+   * @param lineno the current line number, corresponding to __LINE__
+   */
+  explicit SpendTimer(const char *id, const char *msg, const char *filename,
+                      int lineno)
+      : m_cycle(1),
+        m_id(id),
+        m_msg(msg),
+        m_filename(filename),
+        m_lineno(lineno),
+        m_start_time(std::chrono::steady_clock::now()),
+        m_pre_keep_time(m_start_time) {}
 
-    /** Destructor, it calculates the time consumed from the construction to the destruction and
-     *  prints the output */
-    virtual ~SpendTimer();
+  /** Destructor, it calculates the time consumed from the construction to the
+   * destruction and prints the output */
+  virtual ~SpendTimer();
 
-    /**
-     * @brief Get the time consumed from the start to the current moment, in seconds
-     * @return std::chrono::duration<double>
-     */
-    std::chrono::duration<double> duration() const {
-        return std::chrono::steady_clock::now() - m_start_time;
-    }
+  /**
+   * @brief Get the time consumed from the start to the current moment, in
+   * seconds
+   * @return std::chrono::duration<double>
+   */
+  std::chrono::duration<double> duration() const {
+    return std::chrono::steady_clock::now() - m_start_time;
+  }
 
-    /** Print the time consumed from the start of the timer until now, and return the current
-     *  consumed seconds */
-    void show() const;
+  /** Print the time consumed from the start of the timer until now, and return
+   * the current consumed seconds */
+  void show() const;
 
-    /** Get the number of the seconds consumed from the start to the current */
-    double value() const;
+  /** Get the number of the seconds consumed from the start to the current */
+  double value() const;
 
-    /**
-     * @brief Stopwatch timing; every keep records the interval between the current time and the
-     * last keep
-     * @param description description
-     * @note The first keep is the interval between the current time and the start
-     */
-    void keep(const std::string &description);
+  /**
+   * @brief Stopwatch timing; every keep records the interval between the
+   * current time and the last keep
+   * @param description description
+   * @note The first keep is the interval between the current time and the start
+   */
+  void keep(const std::string &description);
 
-    /**
-     * @brief Get the stopwatch timing list
-     * @return const std::vector<std::chrono::duration<double>>&
-     */
-    const std::vector<std::chrono::duration<double>> &getKeepDurations() const {
-        return m_keep_seconds;
-    }
+  /**
+   * @brief Get the stopwatch timing list
+   * @return const std::vector<std::chrono::duration<double>>&
+   */
+  const std::vector<std::chrono::duration<double>> &getKeepDurations() const {
+    return m_keep_seconds;
+  }
 
-    /**
-     * Tell the number of the loops in the benchmark test
-     * @param cycle the number of the loops, used for the time consumption statistics printing only
-     */
-    void setCycle(int cycle) {
-        m_cycle = cycle;
-    }
+  /**
+   * Tell the number of the loops in the benchmark test
+   * @param cycle the number of the loops, used for the time consumption
+   * statistics printing only
+   */
+  void setCycle(int cycle) { m_cycle = cycle; }
 
-public:
-    /** Get the current switch state of the time consumption printing */
-    static bool isClosed() {
-        return ms_closed;
-    }
+ public:
+  /** Get the current switch state of the time consumption printing */
+  static bool isClosed() { return ms_closed; }
 
-private:
-    int m_cycle;  // Tells the number of the loops in the benchmark test
-    std::string m_id;
-    std::string m_msg;
-    std::string m_filename;
-    int m_lineno;
-    std::chrono::time_point<std::chrono::steady_clock> m_start_time;
-    std::chrono::time_point<std::chrono::steady_clock> m_pre_keep_time;
-    std::vector<std::chrono::duration<double>> m_keep_seconds;
-    std::vector<std::string> m_keep_desc;
+ private:
+  int m_cycle;  // Tells the number of the loops in the benchmark test
+  std::string m_id;
+  std::string m_msg;
+  std::string m_filename;
+  int m_lineno;
+  std::chrono::time_point<std::chrono::steady_clock> m_start_time;
+  std::chrono::time_point<std::chrono::steady_clock> m_pre_keep_time;
+  std::vector<std::chrono::duration<double>> m_keep_seconds;
+  std::vector<std::string> m_keep_desc;
 
-    static bool ms_closed;
-    friend void HAYAKU_UTILS_API close_spend_time();
-    friend void HAYAKU_UTILS_API open_spend_time();
-    friend bool HAYAKU_UTILS_API get_spend_time_status();
+  static bool ms_closed;
+  friend void HAYAKU_UTILS_API close_spend_time();
+  friend void HAYAKU_UTILS_API open_spend_time();
+  friend bool HAYAKU_UTILS_API get_spend_time_status();
 };
 
 /** Globally turn off the time consumption printing output */
@@ -265,47 +275,49 @@ void HAYAKU_UTILS_API close_spend_time();
 /** Globally turn on the time consumption printing output */
 void HAYAKU_UTILS_API open_spend_time();
 
-/** Get the global state of the time consumption printing output: true - on, false - off */
+/** Get the global state of the time consumption printing output: true - on,
+ * false - off */
 bool HAYAKU_UTILS_API get_spend_time_status();
 
 /**
- * A guard of the on/off state of the time consumption timer; it records the previous switch state
- * and sets it to the given state, restoring the original state on release
+ * A guard of the on/off state of the time consumption timer; it records the
+ * previous switch state and sets it to the given state, restoring the original
+ * state on release
  */
 class SpendTimerGuad {
-public:
-    /**
-     * Constructor, it records the current state and turns on or off the time consumption statistics
-     * according to open
-     * @param open whether to turn on the time consumption statistics
-     */
-    explicit SpendTimerGuad(bool open) : m_open(open), m_old_open(false) {
-        m_old_open = !SpendTimer::isClosed();
-        if (m_open == m_old_open) {
-            return;
-        }
-        if (m_open) {
-            open_spend_time();
-        } else {
-            close_spend_time();
-        }
+ public:
+  /**
+   * Constructor, it records the current state and turns on or off the time
+   * consumption statistics according to open
+   * @param open whether to turn on the time consumption statistics
+   */
+  explicit SpendTimerGuad(bool open) : m_open(open), m_old_open(false) {
+    m_old_open = !SpendTimer::isClosed();
+    if (m_open == m_old_open) {
+      return;
     }
-
-    /** Destructor, it exits the given state and restores the original state */
-    ~SpendTimerGuad() {
-        if (m_open == m_old_open) {
-            return;
-        }
-        if (m_old_open) {
-            open_spend_time();
-        } else {
-            close_spend_time();
-        }
+    if (m_open) {
+      open_spend_time();
+    } else {
+      close_spend_time();
     }
+  }
 
-private:
-    bool m_open;
-    bool m_old_open;
+  /** Destructor, it exits the given state and restores the original state */
+  ~SpendTimerGuad() {
+    if (m_open == m_old_open) {
+      return;
+    }
+    if (m_old_open) {
+      open_spend_time();
+    } else {
+      close_spend_time();
+    }
+  }
+
+ private:
+  bool m_open;
+  bool m_old_open;
 };
 
 /** @} */

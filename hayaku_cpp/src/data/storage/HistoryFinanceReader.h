@@ -9,7 +9,6 @@
  *      Author: fasiondog
  */
 
-
 #include "data/Stock.h"
 
 namespace hayaku {
@@ -19,15 +18,17 @@ namespace hayaku {
  * @ingroup DataDriver
  */
 class HAYAKU_API HistoryFinanceReader {
-public:
-    HistoryFinanceReader() = delete;
-    explicit HistoryFinanceReader(const string& dir);
-    virtual ~HistoryFinanceReader();
+ public:
+  HistoryFinanceReader() = delete;
+  explicit HistoryFinanceReader(const string& dir);
+  virtual ~HistoryFinanceReader();
 
-    PriceList getHistoryFinanceInfo(Datetime date, const string& market, const string& code);
+  PriceList getHistoryFinanceInfo(Datetime date, const string& market,
+                                  const string& code);
 
-private:
-    string m_dir;  // The directory where the historical financial information files are stored
+ private:
+  string m_dir;  // The directory where the historical financial information
+                 // files are stored
 };
 
 }  // namespace hayaku

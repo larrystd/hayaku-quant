@@ -7,41 +7,35 @@
  *      Author: fasiondog
  */
 
-
 #include <atomic>
 
 namespace hayaku {
 
 class InterruptFlag {
-public:
-    InterruptFlag() : m_flag(false) {}
+ public:
+  InterruptFlag() : m_flag(false) {}
 
-    explicit InterruptFlag(bool initial) : m_flag(initial) {}
+  explicit InterruptFlag(bool initial) : m_flag(initial) {}
 
-    InterruptFlag(const InterruptFlag& other)
-    : m_flag(other.m_flag.load(std::memory_order_relaxed)) {}
+  InterruptFlag(const InterruptFlag& other)
+      : m_flag(other.m_flag.load(std::memory_order_relaxed)) {}
 
-    // Assignment operator
-    InterruptFlag& operator=(const InterruptFlag& other) {
-        m_flag.store(other.m_flag.load(std::memory_order_relaxed), std::memory_order_relaxed);
-        return *this;
-    }
+  // Assignment operator
+  InterruptFlag& operator=(const InterruptFlag& other) {
+    m_flag.store(other.m_flag.load(std::memory_order_relaxed),
+                 std::memory_order_relaxed);
+    return *this;
+  }
 
-    // Convert to the bool type
-    operator bool() const {
-        return m_flag.load(std::memory_order_relaxed);
-    }
+  // Convert to the bool type
+  operator bool() const { return m_flag.load(std::memory_order_relaxed); }
 
-    void set() {
-        m_flag = true;
-    }
+  void set() { m_flag = true; }
 
-    bool isSet() const {
-        return m_flag;
-    }
+  bool isSet() const { return m_flag; }
 
-private:
-    std::atomic_bool m_flag;
+ private:
+  std::atomic_bool m_flag;
 };
 
 }  // namespace hayaku

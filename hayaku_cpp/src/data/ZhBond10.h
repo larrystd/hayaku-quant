@@ -7,7 +7,6 @@
  *      Author: fasiondog
  */
 
-
 #include "MarketTypes.h"
 
 namespace hayaku {
@@ -17,8 +16,8 @@ namespace hayaku {
  * @ingroup StockManage
  */
 struct HAYAKU_API ZhBond10 {
-    Datetime date;  ///< Date
-    price_t value;  ///< Yield
+  Datetime date;  ///< Date
+  price_t value;  ///< Yield
 };
 
 typedef vector<ZhBond10> ZhBond10List;

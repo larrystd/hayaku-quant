@@ -7,19 +7,18 @@
  *      Author: fasiondog
  */
 
-
 #include "ScoresFilterBase.h"
 
 namespace hayaku {
 
 class HAYAKU_API GroupSCFilter : public ScoresFilterBase {
-    SCORESFILTER_IMP(GroupSCFilter)
-    SCORESFILTER_NO_PRIVATE_MEMBER_SERIALIZATION
+  SCORESFILTER_IMP(GroupSCFilter)
+  SCORESFILTER_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    GroupSCFilter();
-    virtual ~GroupSCFilter() override = default;
-    virtual void _checkParam(const string& name) const override;
+ public:
+  GroupSCFilter();
+  virtual ~GroupSCFilter() override = default;
+  virtual void _checkParam(const string& name) const override;
 };
 
 }  // namespace hayaku

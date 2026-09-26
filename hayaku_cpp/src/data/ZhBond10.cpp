@@ -10,13 +10,14 @@
 namespace hayaku {
 
 HAYAKU_API std::ostream& operator<<(std::ostream& os, const ZhBond10& bond) {
-    string strip(", ");
-    os << std::fixed;
-    (void)os.precision(4);
-    os << "ZhBond10(Datetime(" << bond.date.ymd() << ")" << strip << bond.value << ")";
-    os.unsetf(std::ostream::floatfield);
-    (void)os.precision();
-    return os;
+  string strip(", ");
+  os << std::fixed;
+  (void)os.precision(4);
+  os << "ZhBond10(Datetime(" << bond.date.ymd() << ")" << strip << bond.value
+     << ")";
+  os.unsetf(std::ostream::floatfield);
+  (void)os.precision();
+  return os;
 }
 
 }  // namespace hayaku

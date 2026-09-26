@@ -5,12 +5,14 @@
  *      Author: fasiondog
  */
 
-#include <functional>
 #include "KDataImp.h"
+
+#include <functional>
 
 namespace hayaku {
 
-KDataImp::KDataImp(const Stock& stock, const KQuery& query) : m_query(query), m_stock(stock) {}
+KDataImp::KDataImp(const Stock& stock, const KQuery& query)
+    : m_query(query), m_stock(stock) {}
 
 KDataImp::~KDataImp() {}
 

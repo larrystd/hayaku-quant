@@ -5,13 +5,14 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
+#include <data/DataRuntime.h>
 #include <operators/BooleanOperators.h>
 #include <operators/MarketOperators.h>
 #include <operators/SeriesOperators.h>
 #include <operators/StatisticsOperators.h>
 #include <operators/WindowOperators.h>
-#include <data/DataRuntime.h>
+
+#include "test_config.h"
 
 /**
  * @defgroup test_indicator_Indicator test_indicator_Indicator
@@ -21,1007 +22,1017 @@
 
 /** @par Test points */
 TEST_CASE("test_indicator_other") {
-    double dx = Null<double>();
-    size_t ix = size_t(dx);
-    // A random value
-    HAYAKU_INFO("double nan to size_t: {}", ix);
+  double dx = Null<double>();
+  size_t ix = size_t(dx);
+  // A random value
+  HAYAKU_INFO("double nan to size_t: {}", ix);
 
-    float fx = Null<float>();
-    ix = size_t(fx);
-    // A random value
-    HAYAKU_INFO("float nan to size_t: {}", ix);
+  float fx = Null<float>();
+  ix = size_t(fx);
+  // A random value
+  HAYAKU_INFO("float nan to size_t: {}", ix);
 }
 
 /** @par Test points */
 TEST_CASE("test_indicator_alike") {
-    /** @arg The empty indicator comparison */
-    CHECK_UNARY(Indicator().alike(Indicator()));
+  /** @arg The empty indicator comparison */
+  CHECK_UNARY(Indicator().alike(Indicator()));
 
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 1);
-    }
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 1);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    for (size_t i = 0, len = data1.size(); i < len; i++) {
-        CHECK(data1[i] != data2[i]);
-    }
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  for (size_t i = 0, len = data1.size(); i < len; i++) {
+    CHECK(data1[i] != data2[i]);
+  }
 
-    CHECK_UNARY(!data1.alike(data2));
+  CHECK_UNARY(!data1.alike(data2));
 
-    for (size_t i = 0; i < 10; ++i) {
-        d2[i] = i;
-    }
-    data2 = PRICELIST(d2);
-    for (size_t i = 0, len = data1.size(); i < len; i++) {
-        CHECK(data1[i] == data2[i]);
-    }
-    CHECK_UNARY(data1.alike(data2));
+  for (size_t i = 0; i < 10; ++i) {
+    d2[i] = i;
+  }
+  data2 = PRICELIST(d2);
+  for (size_t i = 0, len = data1.size(); i < len; i++) {
+    CHECK(data1[i] == data2[i]);
+  }
+  CHECK_UNARY(data1.alike(data2));
 }
 
 TEST_CASE("test_indicator_alike_dynamic_parameters") {
-    Indicator ma5 = MA(CLOSE(), IndParam(CVAL(CLOSE(), 5)));
-    Indicator ma10 = MA(CLOSE(), IndParam(CVAL(CLOSE(), 10)));
-    Indicator ma5_copy = MA(CLOSE(), IndParam(CVAL(CLOSE(), 5)));
+  Indicator ma5 = MA(CLOSE(), IndParam(CVAL(CLOSE(), 5)));
+  Indicator ma10 = MA(CLOSE(), IndParam(CVAL(CLOSE(), 10)));
+  Indicator ma5_copy = MA(CLOSE(), IndParam(CVAL(CLOSE(), 5)));
 
-    CHECK_FALSE(ma5.alike(ma10));
-    CHECK_UNARY(ma5.alike(ma5_copy));
+  CHECK_FALSE(ma5.alike(ma10));
+  CHECK_UNARY(ma5.alike(ma5_copy));
 
-    Indicator corr_close = CORR(CLOSE(), OPEN(), 10);
-    Indicator corr_high = CORR(HIGH(), OPEN(), 10);
-    Indicator corr_close_copy = CORR(CLOSE(), OPEN(), 10);
+  Indicator corr_close = CORR(CLOSE(), OPEN(), 10);
+  Indicator corr_high = CORR(HIGH(), OPEN(), 10);
+  Indicator corr_close_copy = CORR(CLOSE(), OPEN(), 10);
 
-    CHECK_FALSE(corr_close.alike(corr_high));
-    CHECK_UNARY(corr_close.alike(corr_close_copy));
+  CHECK_FALSE(corr_close.alike(corr_high));
+  CHECK_UNARY(corr_close.alike(corr_close_copy));
 
-    Indicator corr_open_template = CORR(OPEN(), 10);
-    Indicator corr_high_template = CORR(HIGH(), 10);
-    Indicator corr_open_template_copy = CORR(OPEN(), 10);
+  Indicator corr_open_template = CORR(OPEN(), 10);
+  Indicator corr_high_template = CORR(HIGH(), 10);
+  Indicator corr_open_template_copy = CORR(OPEN(), 10);
 
-    CHECK_FALSE(corr_open_template.alike(corr_high_template));
-    CHECK_UNARY(corr_open_template.alike(corr_open_template_copy));
+  CHECK_FALSE(corr_open_template.alike(corr_high_template));
+  CHECK_UNARY(corr_open_template.alike(corr_open_template_copy));
 
-    CHECK_FALSE(DROPNA(CLOSE()).alike(DROPNA(CLOSE())));
+  CHECK_FALSE(DROPNA(CLOSE()).alike(DROPNA(CLOSE())));
 }
 
 /** @par Test points */
 TEST_CASE("test_operator_add") {
-    /** @arg The normal addition */
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 1);
-    }
+  /** @arg The normal addition */
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 1);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator result = data1 + data2;
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator result = data1 + data2;
 
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], i + i + 1);
-    }
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], i + i + 1);
+  }
 
-    /** @arg The two ind to add have different sizes and one of them is 0 */
-    Indicator data3;
-    result = data1 + data3;
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind to add have different sizes and one of them is 0 */
+  Indicator data3;
+  result = data1 + data3;
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The two ind to add have different sizes and one of them is 0 */
-    PriceList d3;
-    for (size_t i = 0; i < 20; ++i) {
-        d3.push_back(i);
-    }
-    data3 = PRICELIST(d3);
-    result = data1 + data3;
-    CHECK_EQ(data1.size(), 10);
-    CHECK_EQ(data3.size(), 20);
-    CHECK_EQ(result.empty(), false);
-    CHECK_EQ(result.size(), 20);
-    CHECK_EQ(result.discard(), 10);
-    for (size_t i = 0; i < result.discard(); ++i) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
-    for (size_t i = result.discard(); i < 20; ++i) {
-        CHECK_EQ(result[i], i + i - 10);
-    }
+  /** @arg The two ind to add have different sizes and one of them is 0 */
+  PriceList d3;
+  for (size_t i = 0; i < 20; ++i) {
+    d3.push_back(i);
+  }
+  data3 = PRICELIST(d3);
+  result = data1 + data3;
+  CHECK_EQ(data1.size(), 10);
+  CHECK_EQ(data3.size(), 20);
+  CHECK_EQ(result.empty(), false);
+  CHECK_EQ(result.size(), 20);
+  CHECK_EQ(result.discard(), 10);
+  for (size_t i = 0; i < result.discard(); ++i) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
+  for (size_t i = result.discard(); i < 20; ++i) {
+    CHECK_EQ(result[i], i + i - 10);
+  }
 
-    /** @arg The two ind to add have the same size but a different result_number */
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 10);
-    KData kdata = stock.getKData(query);
-    Indicator k = KDATA(kdata);
-    CHECK_EQ(k.size(), data1.size());
-    result = k + data1;
-    CHECK_EQ(result.size(), k.size());
-    CHECK_EQ(result.getResultNumber(), 1);
-    for (size_t i = 0; i < result.size(); ++i) {
-        CHECK_EQ(result[i], (k[i] + data1[i]));
-    }
+  /** @arg The two ind to add have the same size but a different result_number
+   */
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 10);
+  KData kdata = stock.getKData(query);
+  Indicator k = KDATA(kdata);
+  CHECK_EQ(k.size(), data1.size());
+  result = k + data1;
+  CHECK_EQ(result.size(), k.size());
+  CHECK_EQ(result.getResultNumber(), 1);
+  for (size_t i = 0; i < result.size(); ++i) {
+    CHECK_EQ(result[i], (k[i] + data1[i]));
+  }
 }
 
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_operator_add_benchmark") {
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10000; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 1);
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10000; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 1);
+  }
+
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+
+  int cycle = 10000;  // Test loop count
+
+  {
+    BENCHMARK_TIME_MSG(Indicator_add, cycle, HAYAKU_CSTR(""));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      Indicator result = data1 + data2;
+      DO_NOT_OPTIMIZE(result);
     }
-
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-
-    int cycle = 10000;  // Test loop count
-
-    {
-        BENCHMARK_TIME_MSG(Indicator_add, cycle, HAYAKU_CSTR(""));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            Indicator result = data1 + data2;
-            DO_NOT_OPTIMIZE(result);
-        }
-    }
+  }
 }
 #endif
 
 /** @par Test points */
 TEST_CASE("test_operator_sub") {
-    /** @arg The normal subtraction */
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 1);
-    }
+  /** @arg The normal subtraction */
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 1);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator result = data1 - data2;
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], data1[i] - data2[i]);
-    }
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator result = data1 - data2;
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], data1[i] - data2[i]);
+  }
 
-    /** @arg The two ind to subtract have different sizes */
-    Indicator data3;
-    result = data1 - data3;
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind to subtract have different sizes */
+  Indicator data3;
+  result = data1 - data3;
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The two ind to subtract have the same size but a different result_number */
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 10);
-    KData kdata = stock.getKData(query);
-    Indicator k = KDATA(kdata);
-    CHECK_EQ(k.size(), data1.size());
-    result = k - data1;
-    CHECK_EQ(result.size(), k.size());
-    for (size_t i = 0; i < result.size(); ++i) {
-        CHECK_EQ(result[i], (k[i] - data1[i]));
-    }
+  /** @arg The two ind to subtract have the same size but a different
+   * result_number */
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 10);
+  KData kdata = stock.getKData(query);
+  Indicator k = KDATA(kdata);
+  CHECK_EQ(k.size(), data1.size());
+  result = k - data1;
+  CHECK_EQ(result.size(), k.size());
+  for (size_t i = 0; i < result.size(); ++i) {
+    CHECK_EQ(result[i], (k[i] - data1[i]));
+  }
 }
 
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_operator_sub_benchmark") {
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10000; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 1);
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10000; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 1);
+  }
+
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+
+  int cycle = 10000;  // Test loop count
+
+  {
+    BENCHMARK_TIME_MSG(Indicator_sub, cycle, HAYAKU_CSTR(""));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      Indicator result = data1 - data2;
     }
-
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-
-    int cycle = 10000;  // Test loop count
-
-    {
-        BENCHMARK_TIME_MSG(Indicator_sub, cycle, HAYAKU_CSTR(""));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            Indicator result = data1 - data2;
-        }
-    }
+  }
 }
 #endif
 
 /** @par Test points */
 TEST_CASE("test_operator_multi") {
-    /** @arg The normal multiplication */
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 1);
-    }
+  /** @arg The normal multiplication */
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 1);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator result = data1 * data2;
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], data1[i] * data2[i]);
-    }
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator result = data1 * data2;
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], data1[i] * data2[i]);
+  }
 
-    /** @arg The two ind to multiply have different sizes */
-    Indicator data3;
-    result = data1 * data3;
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind to multiply have different sizes */
+  Indicator data3;
+  result = data1 * data3;
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The two ind to multiply have the same size but a different result_number */
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 10);
-    KData kdata = stock.getKData(query);
-    Indicator k = KDATA(kdata);
-    CHECK_EQ(k.size(), data1.size());
-    result = k * data1;
-    CHECK_EQ(result.size(), k.size());
-    for (size_t i = 0; i < result.size(); ++i) {
-        CHECK_EQ(result[i], (k[i] * data1[i]));
-    }
+  /** @arg The two ind to multiply have the same size but a different
+   * result_number */
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 10);
+  KData kdata = stock.getKData(query);
+  Indicator k = KDATA(kdata);
+  CHECK_EQ(k.size(), data1.size());
+  result = k * data1;
+  CHECK_EQ(result.size(), k.size());
+  for (size_t i = 0; i < result.size(); ++i) {
+    CHECK_EQ(result[i], (k[i] * data1[i]));
+  }
 }
 
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_operator_multi_benchmark") {
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10000; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 1);
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10000; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 1);
+  }
+
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+
+  int cycle = 10000;  // Test loop count
+
+  {
+    BENCHMARK_TIME_MSG(Indicator_multi, cycle, HAYAKU_CSTR(""));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      Indicator result = data1 * data2;
     }
-
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-
-    int cycle = 10000;  // Test loop count
-
-    {
-        BENCHMARK_TIME_MSG(Indicator_multi, cycle, HAYAKU_CSTR(""));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            Indicator result = data1 * data2;
-        }
-    }
+  }
 }
 #endif
 
 /** @par Test points */
 TEST_CASE("test_operator_division") {
-    /** @arg The normal division */
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 1);
-    }
+  /** @arg The normal division */
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 1);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator result = data2 / data1;
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        if (data1[i] == 0.0) {
-            CHECK_UNARY((std::isinf(result[i]) || std::isnan(result[i])));
-        } else {
-            CHECK_EQ(result[i], doctest::Approx(data2[i] / data1[i]));
-        }
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator result = data2 / data1;
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    if (data1[i] == 0.0) {
+      CHECK_UNARY((std::isinf(result[i]) || std::isnan(result[i])));
+    } else {
+      CHECK_EQ(result[i], doctest::Approx(data2[i] / data1[i]));
     }
+  }
 
-    /** @arg The two ind to divide have different sizes */
-    Indicator data3;
-    result = data1 / data3;
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind to divide have different sizes */
+  Indicator data3;
+  result = data1 / data3;
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The two ind to divide have the same size but a different result_number */
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 10);
-    KData kdata = stock.getKData(query);
-    Indicator k = KDATA(kdata);
-    CHECK_EQ(k.size(), data1.size());
-    result = k / data1;
-    CHECK_EQ(result.size(), k.size());
-    for (size_t i = 0; i < result.size(); ++i) {
-        if (data1[i] == 0.0) {
-            CHECK_UNARY(std::isinf(result[i]) || std::isnan(result[i]));
-        } else {
-            CHECK_EQ(result[i], doctest::Approx(k[i] / data1[i]));
-        }
+  /** @arg The two ind to divide have the same size but a different
+   * result_number */
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 10);
+  KData kdata = stock.getKData(query);
+  Indicator k = KDATA(kdata);
+  CHECK_EQ(k.size(), data1.size());
+  result = k / data1;
+  CHECK_EQ(result.size(), k.size());
+  for (size_t i = 0; i < result.size(); ++i) {
+    if (data1[i] == 0.0) {
+      CHECK_UNARY(std::isinf(result[i]) || std::isnan(result[i]));
+    } else {
+      CHECK_EQ(result[i], doctest::Approx(k[i] / data1[i]));
     }
+  }
 }
 
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_operator_division_benchmark") {
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10000; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 1);
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10000; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 1);
+  }
+
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+
+  int cycle = 10000;  // Test loop count
+
+  {
+    BENCHMARK_TIME_MSG(Indicator_div, cycle, HAYAKU_CSTR(""));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      Indicator result = data1 / data2;
     }
-
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-
-    int cycle = 10000;  // Test loop count
-
-    {
-        BENCHMARK_TIME_MSG(Indicator_div, cycle, HAYAKU_CSTR(""));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            Indicator result = data1 / data2;
-        }
-    }
+  }
 }
 #endif
 
 /** @par Test points */
 TEST_CASE("test_operator_mod") {
-    /** @arg The normal modulo */
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 2);
-    }
+  /** @arg The normal modulo */
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 2);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator result = data2 % data1;
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    CHECK_UNARY(std::isnan(result[0]));
-    CHECK_EQ(result[1], 0);
-    CHECK_EQ(result[2], 0);
-    CHECK_EQ(result[3], 2);
-    CHECK_EQ(result[4], 2);
-    CHECK_EQ(result[5], 2);
-    CHECK_EQ(result[6], 2);
-    CHECK_EQ(result[7], 2);
-    CHECK_EQ(result[8], 2);
-    CHECK_EQ(result[9], 2);
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator result = data2 % data1;
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  CHECK_UNARY(std::isnan(result[0]));
+  CHECK_EQ(result[1], 0);
+  CHECK_EQ(result[2], 0);
+  CHECK_EQ(result[3], 2);
+  CHECK_EQ(result[4], 2);
+  CHECK_EQ(result[5], 2);
+  CHECK_EQ(result[6], 2);
+  CHECK_EQ(result[7], 2);
+  CHECK_EQ(result[8], 2);
+  CHECK_EQ(result[9], 2);
 
-    /** @arg The two ind to divide have different sizes */
-    Indicator data3;
-    result = data1 % data3;
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind to divide have different sizes */
+  Indicator data3;
+  result = data1 % data3;
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The two ind to divide have the same size but a different result_number */
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 10);
-    KData kdata = stock.getKData(query);
-    Indicator k = KDATA(kdata);
-    CHECK_EQ(k.size(), data1.size());
-    result = k % data1;
-    CHECK_EQ(result.size(), k.size());
-    CHECK_UNARY(std::isnan(result[0]));
-    CHECK_EQ(result[1], 0);
-    CHECK_EQ(result[2], 1);
-    CHECK_EQ(result[3], 1);
-    CHECK_EQ(result[4], 3);
-    CHECK_EQ(result[5], 1);
-    CHECK_EQ(result[6], 3);
-    CHECK_EQ(result[7], 6);
-    CHECK_EQ(result[8], 2);
-    CHECK_EQ(result[9], 8);
+  /** @arg The two ind to divide have the same size but a different
+   * result_number */
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 10);
+  KData kdata = stock.getKData(query);
+  Indicator k = KDATA(kdata);
+  CHECK_EQ(k.size(), data1.size());
+  result = k % data1;
+  CHECK_EQ(result.size(), k.size());
+  CHECK_UNARY(std::isnan(result[0]));
+  CHECK_EQ(result[1], 0);
+  CHECK_EQ(result[2], 1);
+  CHECK_EQ(result[3], 1);
+  CHECK_EQ(result[4], 3);
+  CHECK_EQ(result[5], 1);
+  CHECK_EQ(result[6], 3);
+  CHECK_EQ(result[7], 6);
+  CHECK_EQ(result[8], 2);
+  CHECK_EQ(result[9], 8);
 }
 
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_operator_mod_benchmark") {
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10000; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 1);
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10000; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 1);
+  }
+
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+
+  int cycle = 10000;  // Test loop count
+
+  {
+    BENCHMARK_TIME_MSG(Indicator_mod, cycle, HAYAKU_CSTR(""));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      Indicator result = data1 % data2;
     }
-
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-
-    int cycle = 10000;  // Test loop count
-
-    {
-        BENCHMARK_TIME_MSG(Indicator_mod, cycle, HAYAKU_CSTR(""));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            Indicator result = data1 % data2;
-        }
-    }
+  }
 }
 #endif
 
 /** @par Test points */
 TEST_CASE("test_operator_eq") {
-    /** @arg The normal equality */
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i);
-    }
+  /** @arg The normal equality */
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator result = (data2 == data1);
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], true);
-    }
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator result = (data2 == data1);
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], true);
+  }
 
-    /** @arg The two ind have different sizes */
-    Indicator data3;
-    result = (data1 == data3);
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind have different sizes */
+  Indicator data3;
+  result = (data1 == data3);
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The two ind have the same size but a different result_number */
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 10);
-    KData kdata = stock.getKData(query);
-    Indicator k = KDATA(kdata);
-    CHECK_EQ(k.size(), data1.size());
-    result = (k == data1);
-    CHECK_EQ(result.size(), k.size());
-    for (size_t i = 0; i < result.size(); ++i) {
-        CHECK_EQ(result[i], false);
-    }
+  /** @arg The two ind have the same size but a different result_number */
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 10);
+  KData kdata = stock.getKData(query);
+  Indicator k = KDATA(kdata);
+  CHECK_EQ(k.size(), data1.size());
+  result = (k == data1);
+  CHECK_EQ(result.size(), k.size());
+  for (size_t i = 0; i < result.size(); ++i) {
+    CHECK_EQ(result[i], false);
+  }
 }
 
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_operator_eq_benchmark") {
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10000; ++i) {
-        d1.push_back(i);
-        d2.push_back(i + 1);
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10000; ++i) {
+    d1.push_back(i);
+    d2.push_back(i + 1);
+  }
+
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+
+  int cycle = 10000;  // Test loop count
+
+  {
+    BENCHMARK_TIME_MSG(Indicator_eq, cycle, HAYAKU_CSTR(""));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      Indicator result = data1 == data2;
     }
-
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-
-    int cycle = 10000;  // Test loop count
-
-    {
-        BENCHMARK_TIME_MSG(Indicator_eq, cycle, HAYAKU_CSTR(""));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            Indicator result = data1 == data2;
-        }
-    }
+  }
 }
 #endif
 
 /** @par Test points */
 TEST_CASE("test_operator_ne") {
-    /** @arg The normal inequality */
-    PriceList d1, d2;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i);
-    }
+  /** @arg The normal inequality */
+  PriceList d1, d2;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator result = (data2 != data1);
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], false);
-    }
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator result = (data2 != data1);
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], false);
+  }
 
-    /** @arg The two ind have different sizes */
-    Indicator data3;
-    result = (data1 != data3);
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind have different sizes */
+  Indicator data3;
+  result = (data1 != data3);
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The two ind have the same size but a different result_number */
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 10);
-    KData kdata = stock.getKData(query);
-    Indicator k = KDATA(kdata);
-    CHECK_EQ(k.size(), data1.size());
-    result = (k != data1);
-    CHECK_EQ(result.size(), k.size());
-    for (size_t i = 0; i < result.size(); ++i) {
-        CHECK_EQ(result[i], true);
-    }
+  /** @arg The two ind have the same size but a different result_number */
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 10);
+  KData kdata = stock.getKData(query);
+  Indicator k = KDATA(kdata);
+  CHECK_EQ(k.size(), data1.size());
+  result = (k != data1);
+  CHECK_EQ(result.size(), k.size());
+  for (size_t i = 0; i < result.size(); ++i) {
+    CHECK_EQ(result[i], true);
+  }
 }
 
 /** @par Test points */
 TEST_CASE("test_operator_gt") {
-    PriceList d1, d2, d3;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i);
-        d3.push_back(i + 1);
-    }
+  PriceList d1, d2, d3;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i);
+    d3.push_back(i + 1);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator data3 = PRICELIST(d3);
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator data3 = PRICELIST(d3);
 
-    /** @arg ind1 > ind2*/
-    Indicator result = (data3 > data1);
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg ind1 > ind2*/
+  Indicator result = (data3 > data1);
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 
-    /** @arg ind1 < ind2 */
-    result = (data1 > data3);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 0.0);
-    }
+  /** @arg ind1 < ind2 */
+  result = (data1 > data3);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 0.0);
+  }
 
-    /** @arg ind1 == ind2 */
-    result = (data1 > data2);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 0.0);
-    }
+  /** @arg ind1 == ind2 */
+  result = (data1 > data2);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 0.0);
+  }
 
-    /** @arg The two ind have different sizes */
-    Indicator data4;
-    result = data1 > data4;
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind have different sizes */
+  Indicator data4;
+  result = data1 > data4;
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The two ind have the same size but a different result_number */
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 10);
-    KData kdata = stock.getKData(query);
-    Indicator k = KDATA(kdata);
-    CHECK_EQ(k.size(), data1.size());
-    result = (k > data1);
-    CHECK_EQ(result.size(), k.size());
-    for (size_t i = 0; i < result.size(); ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg The two ind have the same size but a different result_number */
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 10);
+  KData kdata = stock.getKData(query);
+  Indicator k = KDATA(kdata);
+  CHECK_EQ(k.size(), data1.size());
+  result = (k > data1);
+  CHECK_EQ(result.size(), k.size());
+  for (size_t i = 0; i < result.size(); ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 }
 
 /** @par Test points */
 TEST_CASE("test_operator_ge") {
-    PriceList d1, d2, d3;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i);
-        d3.push_back(i + 1);
-    }
+  PriceList d1, d2, d3;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i);
+    d3.push_back(i + 1);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator data3 = PRICELIST(d3);
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator data3 = PRICELIST(d3);
 
-    /** @arg ind1 > ind2*/
-    Indicator result = (data3 >= data1);
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg ind1 > ind2*/
+  Indicator result = (data3 >= data1);
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 
-    /** @arg ind1 < ind2 */
-    result = (data1 >= data3);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 0.0);
-    }
+  /** @arg ind1 < ind2 */
+  result = (data1 >= data3);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 0.0);
+  }
 
-    /** @arg ind1 == ind2 */
-    result = (data1 >= data2);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg ind1 == ind2 */
+  result = (data1 >= data2);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 
-    /** @arg The two ind have different sizes */
-    Indicator data4;
-    result = data1 >= data4;
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind have different sizes */
+  Indicator data4;
+  result = data1 >= data4;
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The two ind have the same size but a different result_number */
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 10);
-    KData kdata = stock.getKData(query);
-    Indicator k = KDATA(kdata);
-    CHECK_EQ(k.size(), data1.size());
-    result = (k >= data1);
-    CHECK_EQ(result.size(), k.size());
-    for (size_t i = 0; i < result.size(); ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg The two ind have the same size but a different result_number */
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 10);
+  KData kdata = stock.getKData(query);
+  Indicator k = KDATA(kdata);
+  CHECK_EQ(k.size(), data1.size());
+  result = (k >= data1);
+  CHECK_EQ(result.size(), k.size());
+  for (size_t i = 0; i < result.size(); ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 }
 
 /** @par Test points */
 TEST_CASE("test_operator_lt") {
-    PriceList d1, d2, d3;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i);
-        d3.push_back(i + 1);
-    }
+  PriceList d1, d2, d3;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i);
+    d3.push_back(i + 1);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator data3 = PRICELIST(d3);
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator data3 = PRICELIST(d3);
 
-    /** @arg ind1 > ind2*/
-    Indicator result = (data3 < data1);
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 0.0);
-    }
+  /** @arg ind1 > ind2*/
+  Indicator result = (data3 < data1);
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 0.0);
+  }
 
-    /** @arg ind1 < ind2 */
-    result = (data1 < data3);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg ind1 < ind2 */
+  result = (data1 < data3);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 
-    /** @arg ind1 == ind2 */
-    result = (data1 < data2);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 0.0);
-    }
+  /** @arg ind1 == ind2 */
+  result = (data1 < data2);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 0.0);
+  }
 
-    /** @arg The two ind have different sizes */
-    Indicator data4;
-    result = data1 < data4;
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind have different sizes */
+  Indicator data4;
+  result = data1 < data4;
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The two ind have the same size but a different result_number */
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 10);
-    KData kdata = stock.getKData(query);
-    Indicator k = KDATA(kdata);
-    CHECK_EQ(k.size(), data1.size());
-    result = (k < data1);
-    CHECK_EQ(result.size(), k.size());
-    for (size_t i = 0; i < result.size(); ++i) {
-        CHECK_EQ(result[i], 0.0);
-    }
+  /** @arg The two ind have the same size but a different result_number */
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 10);
+  KData kdata = stock.getKData(query);
+  Indicator k = KDATA(kdata);
+  CHECK_EQ(k.size(), data1.size());
+  result = (k < data1);
+  CHECK_EQ(result.size(), k.size());
+  for (size_t i = 0; i < result.size(); ++i) {
+    CHECK_EQ(result[i], 0.0);
+  }
 }
 
 /** @par Test points */
 TEST_CASE("test_operator_le") {
-    PriceList d1, d2, d3;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(i);
-        d2.push_back(i);
-        d3.push_back(i + 1);
-    }
+  PriceList d1, d2, d3;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(i);
+    d2.push_back(i);
+    d3.push_back(i + 1);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator data3 = PRICELIST(d3);
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator data3 = PRICELIST(d3);
 
-    /** @arg ind1 > ind2*/
-    Indicator result = (data3 <= data1);
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 0.0);
-    }
+  /** @arg ind1 > ind2*/
+  Indicator result = (data3 <= data1);
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 0.0);
+  }
 
-    /** @arg ind1 < ind2 */
-    result = (data1 <= data3);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg ind1 < ind2 */
+  result = (data1 <= data3);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 
-    /** @arg ind1 == ind2 */
-    result = (data1 <= data2);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg ind1 == ind2 */
+  result = (data1 <= data2);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 
-    /** @arg The two ind have different sizes */
-    Indicator data4;
-    result = data1 <= data4;
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind have different sizes */
+  Indicator data4;
+  result = data1 <= data4;
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg The two ind have the same size but a different result_number */
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 10);
-    KData kdata = stock.getKData(query);
-    Indicator k = KDATA(kdata);
-    CHECK_EQ(k.size(), data1.size());
-    result = (k <= data1);
-    CHECK_EQ(result.size(), k.size());
-    for (size_t i = 0; i < result.size(); ++i) {
-        CHECK_EQ(result[i], 0.0);
-    }
+  /** @arg The two ind have the same size but a different result_number */
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 10);
+  KData kdata = stock.getKData(query);
+  Indicator k = KDATA(kdata);
+  CHECK_EQ(k.size(), data1.size());
+  result = (k <= data1);
+  CHECK_EQ(result.size(), k.size());
+  for (size_t i = 0; i < result.size(); ++i) {
+    CHECK_EQ(result[i], 0.0);
+  }
 }
 
 /** @par Test points */
 TEST_CASE("test_getResult_getResultAsPriceList") {
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query;
-    KData kdata;
-    Indicator ikdata, result1;
-    PriceList result2;
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query;
+  KData kdata;
+  Indicator ikdata, result1;
+  PriceList result2;
 
-    /** @arg The source data is empty */
-    ikdata = KDATA(kdata);
-    result1 = ikdata.getResult(0);
-    result2 = ikdata.getResultAsPriceList(0);
-    CHECK_EQ(result1.size(), 0);
-    CHECK_EQ(result2.size(), 0);
+  /** @arg The source data is empty */
+  ikdata = KDATA(kdata);
+  result1 = ikdata.getResult(0);
+  result2 = ikdata.getResultAsPriceList(0);
+  CHECK_EQ(result1.size(), 0);
+  CHECK_EQ(result2.size(), 0);
 
-    /** @arg The invalid result_num parameter */
-    query = KQuery(0, 10);
-    kdata = stock.getKData(query);
-    ikdata = KDATA(kdata);
-    CHECK_EQ(ikdata.size(), 10);
-    result1 = ikdata.getResult(6);
-    result2 = ikdata.getResultAsPriceList(6);
-    CHECK_EQ(result1.size(), 0);
-    CHECK_EQ(result2.size(), 0);
+  /** @arg The invalid result_num parameter */
+  query = KQuery(0, 10);
+  kdata = stock.getKData(query);
+  ikdata = KDATA(kdata);
+  CHECK_EQ(ikdata.size(), 10);
+  result1 = ikdata.getResult(6);
+  result2 = ikdata.getResultAsPriceList(6);
+  CHECK_EQ(result1.size(), 0);
+  CHECK_EQ(result2.size(), 0);
 
-    /** @arg The normal getting */
-    result1 = ikdata.getResult(0);
-    result2 = ikdata.getResultAsPriceList(1);
-    CHECK_EQ(result1.size(), 10);
-    CHECK_EQ(result2.size(), 10);
-    CHECK_EQ(result1[0], 29.5);
-    CHECK_LT(std::fabs(result1[1] - 27.58), 0.0001);
-    CHECK_EQ(result1[9], doctest::Approx(26.45));
+  /** @arg The normal getting */
+  result1 = ikdata.getResult(0);
+  result2 = ikdata.getResultAsPriceList(1);
+  CHECK_EQ(result1.size(), 10);
+  CHECK_EQ(result2.size(), 10);
+  CHECK_EQ(result1[0], 29.5);
+  CHECK_LT(std::fabs(result1[1] - 27.58), 0.0001);
+  CHECK_EQ(result1[9], doctest::Approx(26.45));
 
-    CHECK_EQ(result2[0], doctest::Approx(29.8));
-    CHECK_EQ(result2[1], doctest::Approx(28.38));
-    CHECK_EQ(result2[9], doctest::Approx(26.55));
+  CHECK_EQ(result2[0], doctest::Approx(29.8));
+  CHECK_EQ(result2[1], doctest::Approx(28.38));
+  CHECK_EQ(result2[9], doctest::Approx(26.55));
 }
 
 /** @par Test points */
 TEST_CASE("test_LOGIC_AND") {
-    PriceList d1, d2, d3;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(0);
-        d2.push_back(1);
-        d3.push_back(i);
-    }
+  PriceList d1, d2, d3;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(0);
+    d2.push_back(1);
+    d3.push_back(i);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator data3 = PRICELIST(d3);
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator data3 = PRICELIST(d3);
 
-    /** @arg ind1 is all 0 and ind2 is all 1 */
-    Indicator result = data1 & data2;
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 0.0);
-    }
+  /** @arg ind1 is all 0 and ind2 is all 1 */
+  Indicator result = data1 & data2;
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 0.0);
+  }
 
-    /** @arg ind is all 0 and val is 1 */
-    /*result = IND_AND(data1, 1.0);
-    BOOST_CHECK(result.size() == 10);
-    BOOST_CHECK(result.getResultNumber() == 1);
-    BOOST_CHECK(result.discard() == 0);
-    for (size_t i = 0; i < 10; ++i) {
-        BOOST_CHECK(result[i] == 0.0);
-    }*/
+  /** @arg ind is all 0 and val is 1 */
+  /*result = IND_AND(data1, 1.0);
+  BOOST_CHECK(result.size() == 10);
+  BOOST_CHECK(result.getResultNumber() == 1);
+  BOOST_CHECK(result.discard() == 0);
+  for (size_t i = 0; i < 10; ++i) {
+      BOOST_CHECK(result[i] == 0.0);
+  }*/
 
-    /** @arg ind1 is all 0 and ind2 is an integer starting from 0 */
-    result = data1 & data3;
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 0.0);
-    }
+  /** @arg ind1 is all 0 and ind2 is an integer starting from 0 */
+  result = data1 & data3;
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 0.0);
+  }
 
-    /** @arg ind1 is all 1 and ind2 is an integer starting from 0 */
-    result = data2 & data3;
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result[0], 0.0);
-    for (size_t i = 1; i < 10; ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg ind1 is all 1 and ind2 is an integer starting from 0 */
+  result = data2 & data3;
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result[0], 0.0);
+  for (size_t i = 1; i < 10; ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 
-    /** @arg The two ind have different sizes */
-    Indicator data4;
-    result = data1 & data4;
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind have different sizes */
+  Indicator data4;
+  result = data1 & data4;
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 }
 
 /** @par Test points */
 TEST_CASE("test_LOGIC_OR") {
-    PriceList d1, d2, d3;
-    for (size_t i = 0; i < 10; ++i) {
-        d1.push_back(0);
-        d2.push_back(1);
-        d3.push_back(i);
-    }
+  PriceList d1, d2, d3;
+  for (size_t i = 0; i < 10; ++i) {
+    d1.push_back(0);
+    d2.push_back(1);
+    d3.push_back(i);
+  }
 
-    Indicator data1 = PRICELIST(d1);
-    Indicator data2 = PRICELIST(d2);
-    Indicator data3 = PRICELIST(d3);
+  Indicator data1 = PRICELIST(d1);
+  Indicator data2 = PRICELIST(d2);
+  Indicator data3 = PRICELIST(d3);
 
-    /** @arg ind1 is all 0 and ind2 is all 1 */
-    Indicator result = data1 | data2;
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg ind1 is all 0 and ind2 is all 1 */
+  Indicator result = data1 | data2;
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 
-    /** @arg ind1 is all 0 and ind2 is an integer starting from 0 */
-    result = data1 | data3;
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result[0], 0.0);
-    for (size_t i = 1; i < 10; ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg ind1 is all 0 and ind2 is an integer starting from 0 */
+  result = data1 | data3;
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result[0], 0.0);
+  for (size_t i = 1; i < 10; ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 
-    /** @arg ind1 is all 1 and ind2 is an integer starting from 0 */
-    result = data2 | data3;
-    CHECK_EQ(result.size(), 10);
-    CHECK_EQ(result.getResultNumber(), 1);
-    CHECK_EQ(result.discard(), 0);
-    for (size_t i = 0; i < 10; ++i) {
-        CHECK_EQ(result[i], 1.0);
-    }
+  /** @arg ind1 is all 1 and ind2 is an integer starting from 0 */
+  result = data2 | data3;
+  CHECK_EQ(result.size(), 10);
+  CHECK_EQ(result.getResultNumber(), 1);
+  CHECK_EQ(result.discard(), 0);
+  for (size_t i = 0; i < 10; ++i) {
+    CHECK_EQ(result[i], 1.0);
+  }
 
-    /** @arg The two ind have different sizes */
-    Indicator data4;
-    result = data1 | data4;
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.size(), 0);
+  /** @arg The two ind have different sizes */
+  Indicator data4;
+  result = data1 | data4;
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.size(), 0);
 }
 
 /** @par Test points */
 TEST_CASE("test_indicator_increment_calculate") {
-    auto VAR1 = LLV(LOW(), 13);
-    auto VAR2 = HHV(HIGH(), 13);
-    auto VAR3 = SMA((CLOSE() - VAR1) / (VAR2 - VAR1) * 100, 5, 1);
-    auto VAR4 = SMA((VAR2 - CLOSE()) / (VAR2 - VAR1) * 100, 5, 1);
-    auto AA = VAR3;
-    auto BB = VAR4;
-    auto VAR5 = SMA(MAX(CLOSE() - REF(CLOSE(), 1), 0), 5, 1) /
-                SMA(ABS(CLOSE() - REF(CLOSE(), 1)), 5, 1) * 100;
-    auto CC = EMA(VAR5, 3);
-    auto XG = CROSS(CC, BB) & (CC >= REF(CC, 1)) & (BB <= REF(BB, 3)) & (CC >= 49.5) &
-              (MA(CLOSE(), 3) >= REF(MA(CLOSE(), 3), 1)) &
-              (MA(CLOSE(), 7) >= REF(MA(CLOSE(), 7), 1)) &
-              (MA(CLOSE(), 60) > REF(MA(CLOSE(), 60), 3));
+  auto VAR1 = LLV(LOW(), 13);
+  auto VAR2 = HHV(HIGH(), 13);
+  auto VAR3 = SMA((CLOSE() - VAR1) / (VAR2 - VAR1) * 100, 5, 1);
+  auto VAR4 = SMA((VAR2 - CLOSE()) / (VAR2 - VAR1) * 100, 5, 1);
+  auto AA = VAR3;
+  auto BB = VAR4;
+  auto VAR5 = SMA(MAX(CLOSE() - REF(CLOSE(), 1), 0), 5, 1) /
+              SMA(ABS(CLOSE() - REF(CLOSE(), 1)), 5, 1) * 100;
+  auto CC = EMA(VAR5, 3);
+  auto XG = CROSS(CC, BB) & (CC >= REF(CC, 1)) & (BB <= REF(BB, 3)) &
+            (CC >= 49.5) & (MA(CLOSE(), 3) >= REF(MA(CLOSE(), 3), 1)) &
+            (MA(CLOSE(), 7) >= REF(MA(CLOSE(), 7), 1)) &
+            (MA(CLOSE(), 60) > REF(MA(CLOSE(), 60), 3));
 
-    Stock stk = getStock("sh600000");
-    KData k1 = stk.getKData(KQuery(100, 300));
-    KData k2 = stk.getKData(KQuery(200, 500));
-    auto x = XG(k1);
-    auto y = XG(k2);
-    x.setContext(k2);
-    CHECK_EQ(x.size(), y.size());
-    CHECK_EQ(x[159], 1.0);
-    CHECK_EQ(x[159], y[159]);
+  Stock stk = getStock("sh600000");
+  KData k1 = stk.getKData(KQuery(100, 300));
+  KData k2 = stk.getKData(KQuery(200, 500));
+  auto x = XG(k1);
+  auto y = XG(k2);
+  x.setContext(k2);
+  CHECK_EQ(x.size(), y.size());
+  CHECK_EQ(x[159], 1.0);
+  CHECK_EQ(x[159], y[159]);
 }
 
 /** @par Test points */
 TEST_CASE("test_combineCalculateIndicators") {
-    DataRuntime& sm = getDataRuntime();
-    Stock stock = sm.getStock("sh600000");
-    KQuery query(0, 20);
-    KData kdata = stock.getKData(query);
+  DataRuntime& sm = getDataRuntime();
+  Stock stock = sm.getStock("sh600000");
+  KQuery query(0, 20);
+  KData kdata = stock.getKData(query);
 
-    /** @arg An empty indicator list */
-    IndicatorList empty_indicators;
-    IndicatorList result = combineCalculateIndicators(empty_indicators, kdata);
-    CHECK_EQ(result.size(), 0);
+  /** @arg An empty indicator list */
+  IndicatorList empty_indicators;
+  IndicatorList result = combineCalculateIndicators(empty_indicators, kdata);
+  CHECK_EQ(result.size(), 0);
 
-    /** @arg A single simple indicator */
-    Indicator close_ind = CLOSE();
-    IndicatorList single_indicator{close_ind};
-    result = combineCalculateIndicators(single_indicator, kdata);
-    check_indicator(result[0], CLOSE(kdata));
+  /** @arg A single simple indicator */
+  Indicator close_ind = CLOSE();
+  IndicatorList single_indicator{close_ind};
+  result = combineCalculateIndicators(single_indicator, kdata);
+  check_indicator(result[0], CLOSE(kdata));
 
-    /** @arg Multiple simple indicators */
-    Indicator open_ind = OPEN();
-    Indicator high_ind = HIGH();
-    Indicator low_ind = LOW();
-    IndicatorList multi_indicators{close_ind, open_ind, high_ind, low_ind};
-    result = combineCalculateIndicators(multi_indicators, kdata);
-    CHECK_EQ(result.size(), 4);
-    check_indicator(result[0], CLOSE(kdata));
-    check_indicator(result[1], OPEN(kdata));
-    check_indicator(result[2], HIGH(kdata));
-    check_indicator(result[3], LOW(kdata));
+  /** @arg Multiple simple indicators */
+  Indicator open_ind = OPEN();
+  Indicator high_ind = HIGH();
+  Indicator low_ind = LOW();
+  IndicatorList multi_indicators{close_ind, open_ind, high_ind, low_ind};
+  result = combineCalculateIndicators(multi_indicators, kdata);
+  CHECK_EQ(result.size(), 4);
+  check_indicator(result[0], CLOSE(kdata));
+  check_indicator(result[1], OPEN(kdata));
+  check_indicator(result[2], HIGH(kdata));
+  check_indicator(result[3], LOW(kdata));
 
-    /** @arg It contains a composite indicator */
-    Indicator ma_close = MA(CLOSE(), 5);
-    Indicator rsi_close = RSI(CLOSE(), 14);
-    IndicatorList complex_indicators{ma_close, rsi_close};
-    result = combineCalculateIndicators(complex_indicators, kdata);
-    check_indicator(result[0], MA(CLOSE(kdata), 5));
-    check_indicator(result[1], RSI(CLOSE(kdata), 14));
+  /** @arg It contains a composite indicator */
+  Indicator ma_close = MA(CLOSE(), 5);
+  Indicator rsi_close = RSI(CLOSE(), 14);
+  IndicatorList complex_indicators{ma_close, rsi_close};
+  result = combineCalculateIndicators(complex_indicators, kdata);
+  check_indicator(result[0], MA(CLOSE(kdata), 5));
+  check_indicator(result[1], RSI(CLOSE(kdata), 14));
 
-    /** @arg Test the tovalue parameter being true */
-    result = combineCalculateIndicators(complex_indicators, kdata, true);
-    CHECK_EQ(result.size(), 2);
-    // When tovalue is true only the first result column should be returned
-    CHECK_EQ(result[0].getResultNumber(), 1);
-    CHECK_EQ(result[1].getResultNumber(), 1);
-    CHECK_UNARY(result[0].equal(MA(CLOSE(kdata), 5)));
-    CHECK_UNARY(result[1].equal(RSI(CLOSE(kdata), 14)));
+  /** @arg Test the tovalue parameter being true */
+  result = combineCalculateIndicators(complex_indicators, kdata, true);
+  CHECK_EQ(result.size(), 2);
+  // When tovalue is true only the first result column should be returned
+  CHECK_EQ(result[0].getResultNumber(), 1);
+  CHECK_EQ(result[1].getResultNumber(), 1);
+  CHECK_UNARY(result[0].equal(MA(CLOSE(kdata), 5)));
+  CHECK_UNARY(result[1].equal(RSI(CLOSE(kdata), 14)));
 
-    /** @arg Test the different KData contexts */
-    KQuery query2(10, 30);
-    KData kdata2 = stock.getKData(query2);
-    result = combineCalculateIndicators(multi_indicators, kdata2);
-    check_indicator(result[0], CLOSE(kdata2));
-    check_indicator(result[1], OPEN(kdata2));
-    check_indicator(result[2], HIGH(kdata2));
-    check_indicator(result[3], LOW(kdata2));
+  /** @arg Test the different KData contexts */
+  KQuery query2(10, 30);
+  KData kdata2 = stock.getKData(query2);
+  result = combineCalculateIndicators(multi_indicators, kdata2);
+  check_indicator(result[0], CLOSE(kdata2));
+  check_indicator(result[1], OPEN(kdata2));
+  check_indicator(result[2], HIGH(kdata2));
+  check_indicator(result[3], LOW(kdata2));
 
-    /** @arg Test the indicators containing the same child node (they should be deduplicated) */
-    Indicator close1 = CLOSE();
-    Indicator close2 = CLOSE();  // The same indicator
-    IndicatorList duplicate_indicators{close1, close2};
-    result = combineCalculateIndicators(duplicate_indicators, kdata);
-    CHECK_EQ(result.size(), 2);
-    // Although they are the same indicator, they are cloned into different instances
-    CHECK_NE(result[0].getImp().get(), result[1].getImp().get());
-    check_indicator(result[0], CLOSE(kdata));
-    check_indicator(result[1], CLOSE(kdata));
+  /** @arg Test the indicators containing the same child node (they should be
+   * deduplicated) */
+  Indicator close1 = CLOSE();
+  Indicator close2 = CLOSE();  // The same indicator
+  IndicatorList duplicate_indicators{close1, close2};
+  result = combineCalculateIndicators(duplicate_indicators, kdata);
+  CHECK_EQ(result.size(), 2);
+  // Although they are the same indicator, they are cloned into different
+  // instances
+  CHECK_NE(result[0].getImp().get(), result[1].getImp().get());
+  check_indicator(result[0], CLOSE(kdata));
+  check_indicator(result[1], CLOSE(kdata));
 }
 
 /** @par Test points */
 TEST_CASE("test_Indicator_operator_alike_non_cval") {
-    // Verify that the alike short-circuit fix in Indicator::operator() also applies to the non-CVAL
-    // operators. For a PRICELIST leaf of the same type and parameters, the base class alike goes
-    // through the leaf size/data comparison (not the selfAlike of ICval) Two identical nested
-    // PRICELIST -> alike true -> after the fix it returns ind (reusing the argument)
+  // Verify that the alike short-circuit fix in Indicator::operator() also
+  // applies to the non-CVAL operators. For a PRICELIST leaf of the same type
+  // and parameters, the base class alike goes through the leaf size/data
+  // comparison (not the selfAlike of ICval) Two identical nested PRICELIST ->
+  // alike true -> after the fix it returns ind (reusing the argument)
 
-    PriceList d;
-    for (int i = 0; i < 5; i++) {
-        d.push_back(i + 1);  // [1,2,3,4,5]
-    }
-    Indicator pl1 = PRICELIST(d);
-    Indicator pl2 = PRICELIST(d);
-    CHECK_EQ(pl1.size(), 5);
-    CHECK_EQ(pl2.size(), 5);
-    CHECK_NE(pl1.getImp().get(), pl2.getImp().get());  // Two independent instances
+  PriceList d;
+  for (int i = 0; i < 5; i++) {
+    d.push_back(i + 1);  // [1,2,3,4,5]
+  }
+  Indicator pl1 = PRICELIST(d);
+  Indicator pl2 = PRICELIST(d);
+  CHECK_EQ(pl1.size(), 5);
+  CHECK_EQ(pl2.size(), 5);
+  CHECK_NE(pl1.getImp().get(),
+           pl2.getImp().get());  // Two independent instances
 
-    // pl1(pl2): pl1 is the operator and pl2 the operand, both alike true -> return pl2
-    Indicator result = pl1(pl2);
-    CHECK_EQ(result.size(), pl2.size());
-    for (size_t i = 0; i < pl2.size(); ++i) {
-        CHECK_EQ(result[i], pl2[i]);
-    }
-    // A white box assertion: pl2 is reused (pl1 is not cloned)
-    CHECK_EQ(result.getImp().get(), pl2.getImp().get());
+  // pl1(pl2): pl1 is the operator and pl2 the operand, both alike true ->
+  // return pl2
+  Indicator result = pl1(pl2);
+  CHECK_EQ(result.size(), pl2.size());
+  for (size_t i = 0; i < pl2.size(); ++i) {
+    CHECK_EQ(result[i], pl2[i]);
+  }
+  // A white box assertion: pl2 is reused (pl1 is not cloned)
+  CHECK_EQ(result.getImp().get(), pl2.getImp().get());
 }
 
 /** @} */

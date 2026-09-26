@@ -5,11 +5,12 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
 #include <application/plugins/ExtendIndicatorsPlugin.h>
 #include <data/DataRuntime.h>
 #include <operators/SeriesOperators.h>
+
 #include "application/plugin_fixtures/plugin_valid.h"
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -21,59 +22,62 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_AGG_SAMPLE_MIN") {
-    HAYAKU_IF_RETURN(!pluginValid(), void());
+  HAYAKU_IF_RETURN(!pluginValid(), void());
 
-    auto k = getKData("sh000001", KQueryByDate(Datetime(20111115)));
-    auto mink =
-      getKData("sh000001", KQueryByDate(Datetime(20111115), Datetime(20111116), KQuery::MIN));
+  auto k = getKData("sh000001", KQueryByDate(Datetime(20111115)));
+  auto mink = getKData(
+      "sh000001",
+      KQueryByDate(Datetime(20111115), Datetime(20111116), KQuery::MIN));
 
-    /** @arg Test the default parameter (the minimum in the 9:30-10:00 range) */
-    auto ind = AGG_SAMPLE_MIN(CLOSE());
-    auto result = ind(k);
-    CHECK_EQ(result.size(), k.size());
-    CHECK_EQ(result.name(), "AGG_SAMPLE_MIN");
-    CHECK_EQ(result.discard(), 0);
+  /** @arg Test the default parameter (the minimum in the 9:30-10:00 range) */
+  auto ind = AGG_SAMPLE_MIN(CLOSE());
+  auto result = ind(k);
+  CHECK_EQ(result.size(), k.size());
+  CHECK_EQ(result.name(), "AGG_SAMPLE_MIN");
+  CHECK_EQ(result.discard(), 0);
 
-    /** @arg Verify the minimum - find the lowest close between 9:30 and 10:00 */
-    double expected_value = std::numeric_limits<double>::max();
-    for (auto& kr : mink) {
-        int hour = kr.datetime.hour();
-        int minute = kr.datetime.minute();
-        if ((hour == 9 && minute >= 30) || (hour == 10 && minute == 0)) {
-            if (kr.closePrice < expected_value) {
-                expected_value = kr.closePrice;
-            }
-        }
+  /** @arg Verify the minimum - find the lowest close between 9:30 and 10:00 */
+  double expected_value = std::numeric_limits<double>::max();
+  for (auto& kr : mink) {
+    int hour = kr.datetime.hour();
+    int minute = kr.datetime.minute();
+    if ((hour == 9 && minute >= 30) || (hour == 10 && minute == 0)) {
+      if (kr.closePrice < expected_value) {
+        expected_value = kr.closePrice;
+      }
     }
-    CHECK_EQ(result[0], doctest::Approx(expected_value));
+  }
+  CHECK_EQ(result[0], doctest::Approx(expected_value));
 }
 
 /** @par Test points */
 TEST_CASE("test_AGG_SAMPLE_MIN_time_range") {
-    HAYAKU_IF_RETURN(!pluginValid(), void());
+  HAYAKU_IF_RETURN(!pluginValid(), void());
 
-    auto k = getKData("sh000001", KQueryByDate(Datetime(20111115), Datetime(20111118)));
-    auto mink =
-      getKData("sh000001", KQueryByDate(Datetime(20111115), Datetime(20111116), KQuery::MIN));
+  auto k = getKData("sh000001",
+                    KQueryByDate(Datetime(20111115), Datetime(20111118)));
+  auto mink = getKData(
+      "sh000001",
+      KQueryByDate(Datetime(20111115), Datetime(20111116), KQuery::MIN));
 
-    /** @arg Test the given time range parameter (10:00-11:00) */
-    auto ind = AGG_SAMPLE_MIN(CLOSE(), "10:00", "11:00");
-    auto result = ind(k);
-    CHECK_EQ(result.size(), k.size());
-    CHECK_EQ(result.name(), "AGG_SAMPLE_MIN");
+  /** @arg Test the given time range parameter (10:00-11:00) */
+  auto ind = AGG_SAMPLE_MIN(CLOSE(), "10:00", "11:00");
+  auto result = ind(k);
+  CHECK_EQ(result.size(), k.size());
+  CHECK_EQ(result.name(), "AGG_SAMPLE_MIN");
 
-    /** @arg Verify the minimum of the time range */
-    double expected_value = std::numeric_limits<double>::max();
-    for (auto& kr : mink) {
-        int hour = kr.datetime.hour();
-        int minute = kr.datetime.minute();
-        if ((hour == 10) || (hour == 11 && minute == 0)) {
-            if (kr.closePrice < expected_value) {
-                expected_value = kr.closePrice;
-            }
-        }
+  /** @arg Verify the minimum of the time range */
+  double expected_value = std::numeric_limits<double>::max();
+  for (auto& kr : mink) {
+    int hour = kr.datetime.hour();
+    int minute = kr.datetime.minute();
+    if ((hour == 10) || (hour == 11 && minute == 0)) {
+      if (kr.closePrice < expected_value) {
+        expected_value = kr.closePrice;
+      }
     }
-    CHECK_EQ(result[0], doctest::Approx(expected_value));
+  }
+  CHECK_EQ(result[0], doctest::Approx(expected_value));
 }
 
 //-----------------------------------------------------------------------------
@@ -83,35 +87,35 @@ TEST_CASE("test_AGG_SAMPLE_MIN_time_range") {
 
 /** @par Test points */
 TEST_CASE("test_AGG_SAMPLE_MIN_export") {
-    HAYAKU_IF_RETURN(!pluginValid(), void());
+  HAYAKU_IF_RETURN(!pluginValid(), void());
 
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/AGG_SAMPLE_MIN.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/AGG_SAMPLE_MIN.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator x1 = AGG_SAMPLE_MIN(CLOSE())(kdata);
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator x1 = AGG_SAMPLE_MIN(CLOSE())(kdata);
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x1.name(), x2.name());
-    CHECK_UNARY(x1.size() == x2.size());
-    CHECK_UNARY(x1.discard() == x2.discard());
-    CHECK_UNARY(x1.getResultNumber() == x2.getResultNumber());
-    for (size_t i = 0; i < x1.size(); ++i) {
-        CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
-    }
+  CHECK_EQ(x1.name(), x2.name());
+  CHECK_UNARY(x1.size() == x2.size());
+  CHECK_UNARY(x1.discard() == x2.discard());
+  CHECK_UNARY(x1.getResultNumber() == x2.getResultNumber());
+  for (size_t i = 0; i < x1.size(); ++i) {
+    CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

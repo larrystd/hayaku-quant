@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the project's pinned LLVM formatter and linter on explicit C++ files."""
+"""Run the project's pinned LLVM formatter and linter on handwritten C++ files."""
 
 import argparse
 import json
@@ -15,6 +15,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 LLVM_MAJOR = 20
 FORMAT_EXTENSIONS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx"}
 TIDY_EXTENSIONS = {".c", ".cc", ".cpp", ".cxx"}
+SOURCE_ROOTS = (
+    "hayaku_cpp/src",
+    "hayaku_cpp/test",
+    "hayaku_cpp/demo",
+    "hayaku_pywrap",
+    "hayaku_ingest_native",
+    "hayaku_realtime_native",
+)
 
 
 def find_llvm_tool(name):
@@ -58,7 +66,27 @@ def resolve_files(names, extensions):
             raise ValueError(f"not a supported C++ file: {name}")
         if not path.is_relative_to(PROJECT_ROOT):
             raise ValueError(f"file is outside the project: {name}")
+        if not any(path.is_relative_to(PROJECT_ROOT / root) for root in SOURCE_ROOTS):
+            raise ValueError(f"file is outside the handwritten C++ roots: {name}")
         files.append(path)
+    return files
+
+
+def tracked_source_files():
+    """Use Git's tracked-file list so generated and third-party files stay out."""
+    result = subprocess.run(
+        ["git", "ls-files", "-z", "--", *SOURCE_ROOTS],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        check=True,
+    )
+    files = []
+    for name in result.stdout.split(b"\0"):
+        if not name:
+            continue
+        path = PROJECT_ROOT / os.fsdecode(name)
+        if path.is_file() and path.suffix in FORMAT_EXTENSIONS:
+            files.append(path)
     return files
 
 
@@ -78,11 +106,25 @@ def compile_database_files():
 
 def run_format(tool, files, write):
     options = ["-i"] if write else ["--dry-run", "--Werror"]
-    status = 0
+    failed = []
     for path in files:
-        result = subprocess.run([str(tool), "--style=file", *options, str(path)], cwd=PROJECT_ROOT)
-        status |= result.returncode
-    return status
+        result = subprocess.run(
+            [str(tool), "--style=file", *options, str(path)],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode:
+            failed.append((path, result.stderr.strip()))
+    if failed:
+        print(f"{len(failed)} of {len(files)} files failed formatting {'write' if write else 'check'}:", file=sys.stderr)
+        for path, error in failed[:25]:
+            print(f"  {path.relative_to(PROJECT_ROOT)}: {error.splitlines()[0] if error else 'unknown error'}", file=sys.stderr)
+        if len(failed) > 25:
+            print(f"  ... and {len(failed) - 25} more", file=sys.stderr)
+        return 1
+    print(f"{'Formatted' if write else 'Checked'} {len(files)} C/C++ files.")
+    return 0
 
 
 def run_tidy(tool, files, strict):
@@ -95,6 +137,8 @@ def run_tidy(tool, files, strict):
         )
 
     options = ["--warnings-as-errors=*"] if strict else []
+    header_roots = "|".join(re.escape(str(PROJECT_ROOT / root)) for root in SOURCE_ROOTS)
+    options.extend(["--header-filter", rf"^(?:{header_roots})/.*"])
     status = 0
     for path in files:
         result = subprocess.run(
@@ -112,15 +156,30 @@ def main(argv=None):
     commands = parser.add_subparsers(dest="command", required=True)
     format_command = commands.add_parser("format", help="check formatting (or write with --write)")
     format_command.add_argument("--write", action="store_true", help="format the named files in place")
-    format_command.add_argument("files", nargs="+", help="explicit project C/C++ files")
+    format_command.add_argument("--all", action="store_true", help="use all tracked handwritten C/C++ files")
+    format_command.add_argument("files", nargs="*", help="explicit project C/C++ files")
     tidy_command = commands.add_parser("tidy", help="analyze compiled C/C++ source files")
     tidy_command.add_argument("--strict", action="store_true", help="fail on clang-tidy warnings")
     tidy_command.add_argument("files", nargs="+", help="explicit project C/C++ source files")
+    commands.add_parser("doctor", help="show the pinned LLVM tool paths and versions")
     args = parser.parse_args(argv)
 
     try:
+        if args.command == "doctor":
+            for name in ("clang-format", "clang-tidy"):
+                try:
+                    tool = find_llvm_tool(name)
+                    version = subprocess.run(
+                        [str(tool), "--version"], capture_output=True, text=True, check=True
+                    ).stdout.splitlines()[0]
+                    print(f"  {name}: {tool} ({version})")
+                except RuntimeError as error:
+                    print(f"  {name}: {error}")
+            return 0
         if args.command == "format":
-            files = resolve_files(args.files, FORMAT_EXTENSIONS)
+            if args.all == bool(args.files):
+                raise ValueError("pass either --all or explicit files")
+            files = tracked_source_files() if args.all else resolve_files(args.files, FORMAT_EXTENSIONS)
             return run_format(find_llvm_tool("clang-format"), files, args.write)
         files = resolve_files(args.files, TIDY_EXTENSIONS)
         return run_tidy(find_llvm_tool("clang-tidy"), files, args.strict)

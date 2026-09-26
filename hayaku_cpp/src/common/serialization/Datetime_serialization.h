@@ -7,9 +7,8 @@
  *      Author: fasiondog
  */
 
-
-#include "common/time/Datetime.h"
 #include "common/Config.h"
+#include "common/time/Datetime.h"
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 #include <boost/serialization/nvp.hpp>
@@ -19,15 +18,15 @@ namespace boost {
 namespace serialization {
 template <class Archive>
 void save(Archive& ar, const hayaku::Datetime& date, unsigned int version) {
-    std::string datetime = date.str();
-    ar& BOOST_SERIALIZATION_NVP(datetime);
+  std::string datetime = date.str();
+  ar& BOOST_SERIALIZATION_NVP(datetime);
 }
 
 template <class Archive>
 void load(Archive& ar, hayaku::Datetime& date, unsigned int version) {
-    std::string datetime;
-    ar& BOOST_SERIALIZATION_NVP(datetime);
-    date = hayaku::Datetime(datetime);
+  std::string datetime;
+  ar& BOOST_SERIALIZATION_NVP(datetime);
+  date = hayaku::Datetime(datetime);
 }
 }  // namespace serialization
 }  // namespace boost

@@ -7,23 +7,25 @@
  *      Author: fasiondog
  */
 
-
 #include "OptimalSelectorBase.h"
 
 namespace hayaku {
 
 class OptimalEvaluateSelector : public OptimalSelectorBase {
-    OPTIMAL_SELECTOR_IMP(OptimalEvaluateSelector)
-    OPTIMAL_SELECTOR_NO_PRIVATE_MEMBER_SERIALIZATION
+  OPTIMAL_SELECTOR_IMP(OptimalEvaluateSelector)
+  OPTIMAL_SELECTOR_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    OptimalEvaluateSelector();
-    OptimalEvaluateSelector(std::function<double(const internal::StrategyRuntimePtr&, const Datetime&)>&& evaluate);
+ public:
+  OptimalEvaluateSelector();
+  OptimalEvaluateSelector(
+      std::function<double(const internal::StrategyRuntimePtr&,
+                           const Datetime&)>&& evaluate);
 
-    virtual ~OptimalEvaluateSelector();
+  virtual ~OptimalEvaluateSelector();
 
-private:
-    std::function<double(const internal::StrategyRuntimePtr&, const Datetime&)> m_evaluate;
+ private:
+  std::function<double(const internal::StrategyRuntimePtr&, const Datetime&)>
+      m_evaluate;
 };
 
 }  // namespace hayaku

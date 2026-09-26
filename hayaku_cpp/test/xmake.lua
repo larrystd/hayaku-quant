@@ -1,5 +1,15 @@
 add_requires("doctest")
 
+local function enable_project_asan()
+    if get_config("leak_check") and is_plat("macosx", "linux") then
+        set_symbols("debug")
+        set_policy("build.sanitizer.address", true)
+        if is_plat("linux") then
+            set_policy("build.sanitizer.leak", true)
+        end
+    end
+end
+
 function coverage_report(target)
     if is_mode("coverage") and not is_plat("windows") and not (linuxos.name() == "ubuntu" and linuxos.version():lt("20.0")) then 
         -- 如需分支覆盖，须在下面 lcov, genhtml 命令后都加入: --rc lcov_branch_coverage=1
@@ -52,26 +62,13 @@ end
 
 
 target("unit-test")
+    enable_project_asan()
     set_kind("binary")
     set_default(false)
 
     if is_mode("coverage") then 
         add_cxflags("-fprofile-update=atomic")
     end    
-
-    if get_config("leak_check") then
-        if is_plat("macosx") then
-            set_policy("build.sanitizer.address", true)
-        elseif is_plat("linux") then
-            -- 需要 export LD_PRELOAD=libasan.so
-            -- 也可能需要抑制 openssl 泄露告警：export LSAN_OPTIONS="suppressions=asan.sup"
-            -- asan.sup 需要copy到 unit-test执行目录
-            set_policy("build.sanitizer.address", true)
-            set_policy("build.sanitizer.leak", true)
-            -- set_policy("build.sanitizer.memory", true)
-            -- set_policy("build.sanitizer.thread", true)
-        end
-    end
 
     if has_config("mysql") and not has_config("disable_libmysqlclient") then
         add_packages("mysql")
@@ -141,6 +138,7 @@ target("unit-test")
 target_end()
 
 target("small-test")
+    enable_project_asan()
     set_kind("binary")
     set_default(false)
     
@@ -187,6 +185,7 @@ target_end()
 
 for _, fixture in ipairs({"valid", "legacy", "wrong_version", "wrong_id", "no_destroy", "wrong_interface"}) do
     target("hayaku_abi_" .. fixture)
+        enable_project_asan()
         set_kind("shared")
         set_default(false)
         add_includedirs("../src")
@@ -200,6 +199,7 @@ for _, fixture in ipairs({"valid", "legacy", "wrong_version", "wrong_id", "no_de
 end
 
 target("plugin-abi-test")
+    enable_project_asan()
     set_kind("binary")
     set_default(false)
     add_packages("doctest", "spdlog", "fmt")
@@ -216,6 +216,7 @@ target("plugin-abi-test")
 target_end()
 
 target("real-test")
+    enable_project_asan()
     set_kind("binary")
     set_default(false)
 

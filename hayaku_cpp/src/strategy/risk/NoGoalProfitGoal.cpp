@@ -18,11 +18,9 @@ NoGoalProfitGoal::NoGoalProfitGoal() : ProfitGoalBase("PG_NoGoal") {}
 NoGoalProfitGoal::~NoGoalProfitGoal() {}
 
 price_t NoGoalProfitGoal::getGoal(const Datetime& datetime, price_t price) {
-    return Null<price_t>();
+  return Null<price_t>();
 }
 
-ProfitGoalPtr HAYAKU_API PG_NoGoal() {
-    return make_shared<NoGoalProfitGoal>();
-}
+ProfitGoalPtr HAYAKU_API PG_NoGoal() { return make_shared<NoGoalProfitGoal>(); }
 
 } /* namespace hayaku */

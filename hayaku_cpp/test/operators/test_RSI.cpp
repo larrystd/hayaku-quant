@@ -5,11 +5,13 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/MomentumOperators.h>
 #include <operators/SeriesOperators.h>
+
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -21,29 +23,29 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_RSI") {
-    auto k = getKData("sh000001", KQuery(-10));
+  auto k = getKData("sh000001", KQuery(-10));
 
-    price_t nan = Null<price_t>();
-    auto expect = PRICELIST({nan, 71.33849, 48.28178, 52.84457, 77.14873, 29.67481, 52.49847,
-                             44.35698, 37.35631, 35.624438},
-                            1);
-    Indicator rsi, ret;
-    rsi = RSI(CLOSE());
-    ret = rsi(k);
-    check_indicator(ret, expect);
+  price_t nan = Null<price_t>();
+  auto expect = PRICELIST({nan, 71.33849, 48.28178, 52.84457, 77.14873,
+                           29.67481, 52.49847, 44.35698, 37.35631, 35.624438},
+                          1);
+  Indicator rsi, ret;
+  rsi = RSI(CLOSE());
+  ret = rsi(k);
+  check_indicator(ret, expect);
 
-    rsi = RSI(CLOSE(k));
-    ret = rsi(k);
-    check_indicator(ret, expect);
+  rsi = RSI(CLOSE(k));
+  ret = rsi(k);
+  check_indicator(ret, expect);
 
-    ret = RSI(CLOSE(k))(k);
-    check_indicator(ret, expect);
+  ret = RSI(CLOSE(k))(k);
+  check_indicator(ret, expect);
 
-    ret = RSI(CLOSE())(k);
-    check_indicator(ret, expect);
+  ret = RSI(CLOSE())(k);
+  check_indicator(ret, expect);
 
-    ret = RSI(CLOSE(k));
-    check_indicator(ret, expect);
+  ret = RSI(CLOSE(k));
+  check_indicator(ret, expect);
 }
 
 /** @} */

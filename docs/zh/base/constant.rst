@@ -4,56 +4,6 @@
 全局变量与常量定义
 ===================
 
-全局变量
----------
-
-.. note:: 以下全局变量仅在 hayaku 交互式工具中存在，hayaku库中并无定义。
-
-.. py:data:: sm
-
-    :py:class:`StockManager` 的实例
-    
-.. py:data:: blocka
-
-    :py:class:`Block` 实例，包含全部A股
-    
-.. py:data:: blocksh
-
-    :py:class:`Block` 实例，包含全部沪市股票
-    
-.. py:data:: blocksz
-
-    :py:class:`Block` 实例，包含全部深市股票
-    
-.. py:data:: blockg
-
-    :py:class:`Block` 实例，包含全部创业板股票
-
-.. py:data:: blockstart
-
-    :py:class:`Block` 实例，科创板
-
-.. py:data:: blockzxb
-
-    :py:class:`Block` 实例，中小板
-
-.. py:data:: zsbk_sh50
-
-    :py:class:`Block` 实例，上证500
-
-.. py:data:: zsbk_sh180
-
-    :py:class:`Block` 实例，上证180
-
-.. py:data:: zsbk_hs300
-
-    :py:class:`Block` 实例，沪深300
-
-.. py:data:: zsbk_zz100
-
-    :py:class:`Block` 实例，中证100
-
-
 Null 值及证券类别
 -------------------
 

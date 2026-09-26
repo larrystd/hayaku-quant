@@ -4,6 +4,9 @@
 内建技术指标
 ============
 
+查询证券的示例假定已通过 :func:`hayaku.open_session` 打开
+``session``，参见 :ref:`quickstart`。
+
 
 .. py:function:: ABS([data])
 
@@ -53,8 +56,8 @@
     **使用示例**::
     
         # 获取某只股票的复权因子
-        stock = sm.getStock("sh000001")
-        kdata = stock.getKData(Query(-100))
+        stock = session.data.get_stock("sh000001")
+        kdata = stock.get_kdata(Query(-100))
         adj_factor = ADJ_FACTOR()
         adj_factor.setContext(kdata)
         
@@ -981,7 +984,7 @@
 
 .. py:function:: FINANCE([kdata, ix, name])
 
-    获取历史财务信息。（可通过 StockManager.get_history_finance_all_fields 查询相应的历史财务字段信息）
+    获取历史财务信息。（可通过 session.data.get_history_finance_all_fields 查询相应的历史财务字段信息）
 
     ix, name 使用时，为二选一。即要不使用 ix，要不就使用 name 进行获取。
 
@@ -1144,7 +1147,7 @@
     B: 比较基准收益率
     TE: 投资周期中每天的 p 和 b 之间的标准差
     实际使用时，P 一般为 TM 的资产曲线，B 为沪深 3000 收盘价，如:
-    ref_k = sm["sh000300"].get_kdata(query)
+    ref_k = session.data.get_stock("sh000300").get_kdata(query)
     funds = my_tm.get_funds_curve(ref_k.get_datetime.list())
     ir = IR(PRICELIST(funds), ref_k.close, 0)
 
@@ -2044,8 +2047,8 @@
         stktype = STKTYPE()
         
         # 指定K线数据
-        stock = sm.getStock("sh000001")
-        kdata = stock.getKData(Query(0, 100))
+        stock = session.data.get_stock("sh000001")
+        kdata = stock.get_kdata(Query(0, 100))
         stktype = STKTYPE(kdata)
 
     :param KData k: K线数据上下文

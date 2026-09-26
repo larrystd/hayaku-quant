@@ -9,7 +9,9 @@
 
 #include <config.h>
 #include <data/DataEngine.h>
+#include <data/MarketTypes.h>
 #include <data/Stock.h>
+#include <pybind11/iostream.h>
 #include <pybind11/numpy.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -19,8 +21,6 @@
 #include <vector>
 
 #include "AnyConversion.h"
-#include <data/MarketTypes.h>
-#include <pybind11/iostream.h>
 
 namespace hayaku {
 

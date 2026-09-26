@@ -5,11 +5,13 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/ScalarMathOperators.h>
 #include <operators/SeriesOperators.h>
+
+#include <fstream>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -21,37 +23,37 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_SGN") {
-    Indicator result;
+  Indicator result;
 
-    PriceList a;
-    a.push_back(-10);
-    a.push_back(0);
-    a.push_back(10);
+  PriceList a;
+  a.push_back(-10);
+  a.push_back(0);
+  a.push_back(10);
 
-    Indicator data = PRICELIST(a);
+  Indicator data = PRICELIST(a);
 
-    result = SGN(data);
-    CHECK_EQ(result.name(), "SGN");
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result.size(), 3);
-    CHECK_EQ(result[0], -1);
-    CHECK_EQ(result[1], 0);
-    CHECK_EQ(result[2], 1);
+  result = SGN(data);
+  CHECK_EQ(result.name(), "SGN");
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result.size(), 3);
+  CHECK_EQ(result[0], -1);
+  CHECK_EQ(result[1], 0);
+  CHECK_EQ(result[2], 1);
 
-    result = SGN(-1);
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result[0], -1);
+  result = SGN(-1);
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result[0], -1);
 
-    result = SGN(0);
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result[0], 0);
+  result = SGN(0);
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result[0], 0);
 
-    result = SGN(1);
-    CHECK_EQ(result.size(), 1);
-    CHECK_EQ(result.discard(), 0);
-    CHECK_EQ(result[0], 1);
+  result = SGN(1);
+  CHECK_EQ(result.size(), 1);
+  CHECK_EQ(result.discard(), 0);
+  CHECK_EQ(result[0], 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -61,32 +63,32 @@ TEST_CASE("test_SGN") {
 
 /** @par Test points */
 TEST_CASE("test_SGN_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/SGN.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/SGN.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator x1 = SGN(CLOSE(kdata));
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator x1 = SGN(CLOSE(kdata));
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x1.size(), x2.size());
-    CHECK_EQ(x1.discard(), x2.discard());
-    CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
-    for (size_t i = 0; i < x1.size(); ++i) {
-        CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
-    }
+  CHECK_EQ(x1.size(), x2.size());
+  CHECK_EQ(x1.discard(), x2.discard());
+  CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
+  for (size_t i = 0; i < x1.size(); ++i) {
+    CHECK_EQ(x1[i], doctest::Approx(x2[i]).epsilon(0.00001));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

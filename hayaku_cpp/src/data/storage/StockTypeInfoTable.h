@@ -9,97 +9,81 @@
  *      Author: fasiondog
  */
 
-
 #include "common/database/SQLStatementBase.h"
 
 namespace hayaku {
 
 class StockTypeInfoTable {
-public:
-    StockTypeInfoTable()
-    : m_id(0),
-      m_type(Null<uint32_t>()),
-      m_precision(0),
-      m_tick(0.0),
-      m_tickValue(0.0),
-      m_minTradeNumber(0),
-      m_maxTradeNumber(0) {}
+ public:
+  StockTypeInfoTable()
+      : m_id(0),
+        m_type(Null<uint32_t>()),
+        m_precision(0),
+        m_tick(0.0),
+        m_tickValue(0.0),
+        m_minTradeNumber(0),
+        m_maxTradeNumber(0) {}
 
-    int64_t id() const {
-        return m_id;
-    }
+  int64_t id() const { return m_id; }
 
-    uint32_t type() const {
-        return m_type;
-    }
+  uint32_t type() const { return m_type; }
 
-    uint32_t precision() const {
-        return m_precision;
-    }
+  uint32_t precision() const { return m_precision; }
 
-    double tick() const {
-        return m_tick;
-    }
+  double tick() const { return m_tick; }
 
-    double tickValue() const {
-        return m_tickValue;
-    }
+  double tickValue() const { return m_tickValue; }
 
-    double minTradeNumber() const {
-        return m_minTradeNumber;
-    }
+  double minTradeNumber() const { return m_minTradeNumber; }
 
-    double maxTradeNumber() const {
-        return m_maxTradeNumber;
-    }
+  double maxTradeNumber() const { return m_maxTradeNumber; }
 
-    const string& description() const {
-        return m_description;
-    }
+  const string& description() const { return m_description; }
 
-public:
-    static const char* getInsertSQL() {
-        return "insert into `stocktypeinfo` "
-               "(`id`, `type`, `precision`, `tick`, `tickValue`, "
-               "`minTradeNumber`, `maxTradeNumber`, `description`) "
-               "values (?,?,?,?,?,?,?,?)";
-    }
+ public:
+  static const char* getInsertSQL() {
+    return "insert into `stocktypeinfo` "
+           "(`id`, `type`, `precision`, `tick`, `tickValue`, "
+           "`minTradeNumber`, `maxTradeNumber`, `description`) "
+           "values (?,?,?,?,?,?,?,?)";
+  }
 
-    static const char* getUpdateSQL() {
-        return "update `stocktypeinfo` set `type`=?, `precision`=?, `tick`=?, "
-               "`tickValue`=?, `minTradeNumber`=?, `maxTradeNumber`=?"
-               "`description`=? where `id`=?";
-    }
+  static const char* getUpdateSQL() {
+    return "update `stocktypeinfo` set `type`=?, `precision`=?, `tick`=?, "
+           "`tickValue`=?, `minTradeNumber`=?, `maxTradeNumber`=?"
+           "`description`=? where `id`=?";
+  }
 
-    static const char* getSelectSQL() {
-        return "select `id`,`type`,`precision`, `tick`, `tickValue`, "
-               "`minTradeNumber`, `maxTradeNumber`, `description` from `stocktypeinfo`";
-    }
+  static const char* getSelectSQL() {
+    return "select `id`,`type`,`precision`, `tick`, `tickValue`, "
+           "`minTradeNumber`, `maxTradeNumber`, `description` from "
+           "`stocktypeinfo`";
+  }
 
-    void save(const SQLStatementPtr& st) const {
-        st->bind(0, m_id, m_type, m_precision, m_tick, m_tickValue, m_minTradeNumber,
-                 m_maxTradeNumber, m_description);
-    }
+  void save(const SQLStatementPtr& st) const {
+    st->bind(0, m_id, m_type, m_precision, m_tick, m_tickValue,
+             m_minTradeNumber, m_maxTradeNumber, m_description);
+  }
 
-    void update(const SQLStatementPtr& st) const {
-        st->bind(0, m_type, m_precision, m_tick, m_tickValue, m_minTradeNumber, m_maxTradeNumber,
-                 m_description, m_id);
-    }
+  void update(const SQLStatementPtr& st) const {
+    st->bind(0, m_type, m_precision, m_tick, m_tickValue, m_minTradeNumber,
+             m_maxTradeNumber, m_description, m_id);
+  }
 
-    void load(const SQLStatementPtr& st) {
-        st->getColumn(0, m_id, m_type, m_precision, m_tick, m_tickValue, m_minTradeNumber,
-                      m_maxTradeNumber, m_description);
-    }
+  void load(const SQLStatementPtr& st) {
+    st->getColumn(0, m_id, m_type, m_precision, m_tick, m_tickValue,
+                  m_minTradeNumber, m_maxTradeNumber, m_description);
+  }
 
-private:
-    int64_t m_id;
-    uint32_t m_type;          // Security type
-    uint32_t m_precision;     // Price precision
-    double m_tick;            // Minimum tick size
-    double m_tickValue;       // Price of every tick
-    double m_minTradeNumber;  // Minimum trade quantity per order
-    double m_maxTradeNumber;  // Maximum trade quantity per order
-    string m_description;     // Description
+ private:
+  int64_t m_id;
+  uint32_t m_type;          // Security type
+  uint32_t m_precision;     // Price precision
+  double m_tick;            // Minimum tick size
+  double m_tickValue;       // Price of every tick
+  double m_minTradeNumber;  // Minimum trade quantity per order
+  double m_maxTradeNumber;  // Maximum trade quantity per order
+  string m_description;     // Description
 };
 
 }  // namespace hayaku

@@ -9,10 +9,10 @@
  *      Author: fasiondog
  */
 
-
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
+
 #include "common/database/SQLStatementBase.h"
 
 #ifndef HAYAKU_UTILS_API
@@ -22,40 +22,40 @@
 namespace hayaku {
 
 class HAYAKU_UTILS_API MySQLStatement : public SQLStatementBase {
-public:
-    MySQLStatement() = delete;
-    MySQLStatement(DBConnectBase *driver, const std::string &sql_statement);
-    virtual ~MySQLStatement() override;
+ public:
+  MySQLStatement() = delete;
+  MySQLStatement(DBConnectBase *driver, const std::string &sql_statement);
+  virtual ~MySQLStatement() override;
 
-    virtual void sub_exec() override;
-    virtual bool sub_moveNext() override;
-    virtual uint64_t sub_getLastRowid() override;
+  virtual void sub_exec() override;
+  virtual bool sub_moveNext() override;
+  virtual uint64_t sub_getLastRowid() override;
 
-    virtual void sub_bindNull(int idx) override;
-    virtual void sub_bindInt(int idx, int64_t value) override;
-    virtual void sub_bindDouble(int idx, double item) override;
-    virtual void sub_bindDatetime(int idx, const Datetime &item) override;
-    virtual void sub_bindText(int idx, const std::string &item) override;
-    virtual void sub_bindText(int idx, const char *item, size_t len) override;
-    virtual void sub_bindBlob(int idx, const std::string &item) override;
-    virtual void sub_bindBlob(int idx, const std::vector<char> &item) override;
+  virtual void sub_bindNull(int idx) override;
+  virtual void sub_bindInt(int idx, int64_t value) override;
+  virtual void sub_bindDouble(int idx, double item) override;
+  virtual void sub_bindDatetime(int idx, const Datetime &item) override;
+  virtual void sub_bindText(int idx, const std::string &item) override;
+  virtual void sub_bindText(int idx, const char *item, size_t len) override;
+  virtual void sub_bindBlob(int idx, const std::string &item) override;
+  virtual void sub_bindBlob(int idx, const std::vector<char> &item) override;
 
-    virtual int sub_getNumColumns() const override;
-    virtual void sub_getColumnAsInt64(int idx, int64_t &item) override;
-    virtual void sub_getColumnAsDouble(int idx, double &item) override;
-    virtual void sub_getColumnAsDatetime(int idx, Datetime &item) override;
-    virtual void sub_getColumnAsText(int idx, std::string &item) override;
-    virtual void sub_getColumnAsBlob(int idx, std::string &item) override;
-    virtual void sub_getColumnAsBlob(int idx, std::vector<char> &item) override;
+  virtual int sub_getNumColumns() const override;
+  virtual void sub_getColumnAsInt64(int idx, int64_t &item) override;
+  virtual void sub_getColumnAsDouble(int idx, double &item) override;
+  virtual void sub_getColumnAsDatetime(int idx, Datetime &item) override;
+  virtual void sub_getColumnAsText(int idx, std::string &item) override;
+  virtual void sub_getColumnAsBlob(int idx, std::string &item) override;
+  virtual void sub_getColumnAsBlob(int idx, std::vector<char> &item) override;
 
-private:
-    void _prepare();
-    void _reset();
-    void _bindResult();
+ private:
+  void _prepare();
+  void _reset();
+  void _bindResult();
 
-private:
-    struct Impl;
-    std::unique_ptr<Impl> m_impl;
+ private:
+  struct Impl;
+  std::unique_ptr<Impl> m_impl;
 };
 
 }  // namespace hayaku

@@ -7,7 +7,6 @@
  *      Author: fasiondog
  */
 
-
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::OperatorAddSelector)
 #endif
@@ -15,11 +14,12 @@ BOOST_CLASS_EXPORT(hayaku::OperatorAddSelector)
 namespace hayaku {
 
 StrategyWeightList OperatorAddSelector::_getSelected(Datetime date) {
-    return getUnionSelected(date, [](double w1, double w2) { return w1 + w2; });
+  return getUnionSelected(date, [](double w1, double w2) { return w1 + w2; });
 }
 
-HAYAKU_API SelectorPtr operator+(const SelectorPtr& se1, const SelectorPtr& se2) {
-    return make_shared<OperatorAddSelector>(se1, se2);
+HAYAKU_API SelectorPtr operator+(const SelectorPtr& se1,
+                                 const SelectorPtr& se2) {
+  return make_shared<OperatorAddSelector>(se1, se2);
 }
 
 }  // namespace hayaku
@@ -30,7 +30,6 @@ HAYAKU_API SelectorPtr operator+(const SelectorPtr& se1, const SelectorPtr& se2)
  *  Created on: 2024-05-27
  *      Author: fasiondog
  */
-
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::OperatorAddValueSelector)
@@ -39,19 +38,19 @@ BOOST_CLASS_EXPORT(hayaku::OperatorAddValueSelector)
 namespace hayaku {
 
 StrategyWeightList OperatorAddValueSelector::_getSelected(Datetime date) {
-    StrategyWeightList ret;
-    HAYAKU_IF_RETURN(!m_se, ret);
+  StrategyWeightList ret;
+  HAYAKU_IF_RETURN(!m_se, ret);
 
-    ret = m_se->getSelected(date);
-    for (auto& sw : ret) {
-        sw.weight += m_value;
-    }
+  ret = m_se->getSelected(date);
+  for (auto& sw : ret) {
+    sw.weight += m_value;
+  }
 
-    return ret;
+  return ret;
 }
 
 HAYAKU_API SelectorPtr operator+(const SelectorPtr& se, double value) {
-    return make_shared<OperatorAddValueSelector>(se, value);
+  return make_shared<OperatorAddValueSelector>(se, value);
 }
 
 }  // namespace hayaku
@@ -62,7 +61,6 @@ HAYAKU_API SelectorPtr operator+(const SelectorPtr& se, double value) {
  *  Created on: 2024-05-27
  *      Author: fasiondog
  */
-
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::OperatorDivSelector)
@@ -71,11 +69,13 @@ BOOST_CLASS_EXPORT(hayaku::OperatorDivSelector)
 namespace hayaku {
 
 StrategyWeightList OperatorDivSelector::_getSelected(Datetime date) {
-    return getIntersectionSelected(date, [](double w1, double w2) { return w1 / w2; });
+  return getIntersectionSelected(date,
+                                 [](double w1, double w2) { return w1 / w2; });
 }
 
-HAYAKU_API SelectorPtr operator/(const SelectorPtr& se1, const SelectorPtr& se2) {
-    return make_shared<OperatorDivSelector>(se1, se2);
+HAYAKU_API SelectorPtr operator/(const SelectorPtr& se1,
+                                 const SelectorPtr& se2) {
+  return make_shared<OperatorDivSelector>(se1, se2);
 }
 
 }  // namespace hayaku
@@ -86,7 +86,6 @@ HAYAKU_API SelectorPtr operator/(const SelectorPtr& se1, const SelectorPtr& se2)
  *  Created on: 2024-05-27
  *      Author: fasiondog
  */
-
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::OperatorDivValueSelector)
@@ -95,19 +94,19 @@ BOOST_CLASS_EXPORT(hayaku::OperatorDivValueSelector)
 namespace hayaku {
 
 StrategyWeightList OperatorDivValueSelector::_getSelected(Datetime date) {
-    StrategyWeightList ret;
-    HAYAKU_IF_RETURN(!m_se, ret);
+  StrategyWeightList ret;
+  HAYAKU_IF_RETURN(!m_se, ret);
 
-    ret = m_se->getSelected(date);
-    for (auto& sw : ret) {
-        sw.weight /= m_value;
-    }
+  ret = m_se->getSelected(date);
+  for (auto& sw : ret) {
+    sw.weight /= m_value;
+  }
 
-    return ret;
+  return ret;
 }
 
 HAYAKU_API SelectorPtr operator/(const SelectorPtr& se, double value) {
-    return make_shared<OperatorDivValueSelector>(se, value);
+  return make_shared<OperatorDivValueSelector>(se, value);
 }
 
 }  // namespace hayaku
@@ -118,7 +117,6 @@ HAYAKU_API SelectorPtr operator/(const SelectorPtr& se, double value) {
  *  Created on: 2024-05-27
  *      Author: fasiondog
  */
-
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::OperatorInvertDivValueSelector)
@@ -127,19 +125,19 @@ BOOST_CLASS_EXPORT(hayaku::OperatorInvertDivValueSelector)
 namespace hayaku {
 
 StrategyWeightList OperatorInvertDivValueSelector::_getSelected(Datetime date) {
-    StrategyWeightList ret;
-    HAYAKU_IF_RETURN(!m_se, ret);
+  StrategyWeightList ret;
+  HAYAKU_IF_RETURN(!m_se, ret);
 
-    ret = m_se->getSelected(date);
-    for (auto& sw : ret) {
-        sw.weight = m_value / sw.weight;
-    }
+  ret = m_se->getSelected(date);
+  for (auto& sw : ret) {
+    sw.weight = m_value / sw.weight;
+  }
 
-    return ret;
+  return ret;
 }
 
 HAYAKU_API SelectorPtr operator/(double value, const SelectorPtr& se) {
-    return make_shared<OperatorInvertDivValueSelector>(se, value);
+  return make_shared<OperatorInvertDivValueSelector>(se, value);
 }
 
 }  // namespace hayaku
@@ -150,7 +148,6 @@ HAYAKU_API SelectorPtr operator/(double value, const SelectorPtr& se) {
  *  Created on: 2024-05-27
  *      Author: fasiondog
  */
-
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::OperatorInvertSubValueSelector)
@@ -159,19 +156,19 @@ BOOST_CLASS_EXPORT(hayaku::OperatorInvertSubValueSelector)
 namespace hayaku {
 
 StrategyWeightList OperatorInvertSubValueSelector::_getSelected(Datetime date) {
-    StrategyWeightList ret;
-    HAYAKU_IF_RETURN(!m_se, ret);
+  StrategyWeightList ret;
+  HAYAKU_IF_RETURN(!m_se, ret);
 
-    ret = m_se->getSelected(date);
-    for (auto& sw : ret) {
-        sw.weight = m_value - sw.weight;
-    }
+  ret = m_se->getSelected(date);
+  for (auto& sw : ret) {
+    sw.weight = m_value - sw.weight;
+  }
 
-    return ret;
+  return ret;
 }
 
 HAYAKU_API SelectorPtr operator-(double value, const SelectorPtr& se) {
-    return make_shared<OperatorInvertSubValueSelector>(se, value);
+  return make_shared<OperatorInvertSubValueSelector>(se, value);
 }
 
 }  // namespace hayaku
@@ -182,7 +179,6 @@ HAYAKU_API SelectorPtr operator-(double value, const SelectorPtr& se) {
  *  Created on: 2024-05-27
  *      Author: fasiondog
  */
-
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::OperatorMulSelector)
@@ -191,11 +187,13 @@ BOOST_CLASS_EXPORT(hayaku::OperatorMulSelector)
 namespace hayaku {
 
 StrategyWeightList OperatorMulSelector::_getSelected(Datetime date) {
-    return getIntersectionSelected(date, [](double w1, double w2) { return w1 * w2; });
+  return getIntersectionSelected(date,
+                                 [](double w1, double w2) { return w1 * w2; });
 }
 
-HAYAKU_API SelectorPtr operator*(const SelectorPtr& se1, const SelectorPtr& se2) {
-    return make_shared<OperatorMulSelector>(se1, se2);
+HAYAKU_API SelectorPtr operator*(const SelectorPtr& se1,
+                                 const SelectorPtr& se2) {
+  return make_shared<OperatorMulSelector>(se1, se2);
 }
 
 }  // namespace hayaku
@@ -206,7 +204,6 @@ HAYAKU_API SelectorPtr operator*(const SelectorPtr& se1, const SelectorPtr& se2)
  *  Created on: 2024-05-27
  *      Author: fasiondog
  */
-
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::OperatorMulValueSelector)
@@ -215,19 +212,19 @@ BOOST_CLASS_EXPORT(hayaku::OperatorMulValueSelector)
 namespace hayaku {
 
 StrategyWeightList OperatorMulValueSelector::_getSelected(Datetime date) {
-    StrategyWeightList ret;
-    HAYAKU_IF_RETURN(!m_se, ret);
+  StrategyWeightList ret;
+  HAYAKU_IF_RETURN(!m_se, ret);
 
-    ret = m_se->getSelected(date);
-    for (auto& sw : ret) {
-        sw.weight *= m_value;
-    }
+  ret = m_se->getSelected(date);
+  for (auto& sw : ret) {
+    sw.weight *= m_value;
+  }
 
-    return ret;
+  return ret;
 }
 
 HAYAKU_API SelectorPtr operator*(const SelectorPtr& se, double value) {
-    return make_shared<OperatorMulValueSelector>(se, value);
+  return make_shared<OperatorMulValueSelector>(se, value);
 }
 
 }  // namespace hayaku
@@ -238,7 +235,6 @@ HAYAKU_API SelectorPtr operator*(const SelectorPtr& se, double value) {
  *  Created on: 2024-05-27
  *      Author: fasiondog
  */
-
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::OperatorSubSelector)
@@ -247,11 +243,12 @@ BOOST_CLASS_EXPORT(hayaku::OperatorSubSelector)
 namespace hayaku {
 
 StrategyWeightList OperatorSubSelector::_getSelected(Datetime date) {
-    return getUnionSelected(date, [](double w1, double w2) { return w1 - w2; });
+  return getUnionSelected(date, [](double w1, double w2) { return w1 - w2; });
 }
 
-HAYAKU_API SelectorPtr operator-(const SelectorPtr& se1, const SelectorPtr& se2) {
-    return make_shared<OperatorSubSelector>(se1, se2);
+HAYAKU_API SelectorPtr operator-(const SelectorPtr& se1,
+                                 const SelectorPtr& se2) {
+  return make_shared<OperatorSubSelector>(se1, se2);
 }
 
 }  // namespace hayaku
@@ -263,7 +260,6 @@ HAYAKU_API SelectorPtr operator-(const SelectorPtr& se1, const SelectorPtr& se2)
  *      Author: fasiondog
  */
 
-
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::OperatorSubValueSelector)
 #endif
@@ -271,19 +267,19 @@ BOOST_CLASS_EXPORT(hayaku::OperatorSubValueSelector)
 namespace hayaku {
 
 StrategyWeightList OperatorSubValueSelector::_getSelected(Datetime date) {
-    StrategyWeightList ret;
-    HAYAKU_IF_RETURN(!m_se, ret);
+  StrategyWeightList ret;
+  HAYAKU_IF_RETURN(!m_se, ret);
 
-    ret = m_se->getSelected(date);
-    for (auto& sw : ret) {
-        sw.weight -= m_value;
-    }
+  ret = m_se->getSelected(date);
+  for (auto& sw : ret) {
+    sw.weight -= m_value;
+  }
 
-    return ret;
+  return ret;
 }
 
 HAYAKU_API SelectorPtr operator-(const SelectorPtr& se, double value) {
-    return make_shared<OperatorSubValueSelector>(se, value);
+  return make_shared<OperatorSubValueSelector>(se, value);
 }
 
 }  // namespace hayaku

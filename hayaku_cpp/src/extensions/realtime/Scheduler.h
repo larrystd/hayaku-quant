@@ -7,7 +7,6 @@
  *     Author: fasiondog
  */
 
-
 #include "data/MarketTypes.h"
 #include "extensions/realtime/TimerManager.h"
 
@@ -19,7 +18,8 @@ namespace hayaku {
 HAYAKU_API TimerManager* getScheduler();
 
 /**
- * Used to release the global scheduler instance on program exit, for internal use only
+ * Used to release the global scheduler instance on program exit, for internal
+ * use only
  */
 void releaseScheduler();
 

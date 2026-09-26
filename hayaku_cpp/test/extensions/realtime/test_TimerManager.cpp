@@ -5,9 +5,10 @@
  *     Author: fasiondog
  */
 
-#include "doctest/doctest.h"
 #include <extensions/realtime/TimerManager.h>
+
 #include "common/Log.h"
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -17,41 +18,46 @@ using namespace hayaku;
  * @{
  */
 
-static void hello_test() {
-    HAYAKU_TRACE("hello");
-}
+static void hello_test() { HAYAKU_TRACE("hello"); }
 
 TEST_CASE("test_TimerManager") {
-    TimerManager tm;
-    tm.start();
+  TimerManager tm;
+  tm.start();
 
-    CHECK_THROWS_AS(tm.addDurationFunc(1, TimeDelta(), hello_test), hayaku::exception);
-    CHECK_THROWS_AS(tm.addDurationFunc(0, TimeDelta(1), hello_test), hayaku::exception);
-    CHECK_THROWS_AS(tm.addDurationFunc(-1, TimeDelta(1), hello_test), hayaku::exception);
+  CHECK_THROWS_AS(tm.addDurationFunc(1, TimeDelta(), hello_test),
+                  hayaku::exception);
+  CHECK_THROWS_AS(tm.addDurationFunc(0, TimeDelta(1), hello_test),
+                  hayaku::exception);
+  CHECK_THROWS_AS(tm.addDurationFunc(-1, TimeDelta(1), hello_test),
+                  hayaku::exception);
 
-    CHECK_THROWS_AS(tm.addDelayFunc(TimeDelta(0), hello_test), hayaku::exception);
-    CHECK_THROWS_AS(tm.addDelayFunc(TimeDelta(-1), hello_test), hayaku::exception);
+  CHECK_THROWS_AS(tm.addDelayFunc(TimeDelta(0), hello_test), hayaku::exception);
+  CHECK_THROWS_AS(tm.addDelayFunc(TimeDelta(-1), hello_test),
+                  hayaku::exception);
 
-    CHECK_THROWS_AS(tm.addFuncAtTime(Datetime::min(), hello_test), hayaku::exception);
+  CHECK_THROWS_AS(tm.addFuncAtTime(Datetime::min(), hello_test),
+                  hayaku::exception);
 
-    CHECK_THROWS_AS(tm.addFuncAtTimeEveryDay(TimeDelta(-1), hello_test), hayaku::exception);
-    CHECK_THROWS_AS(tm.addFuncAtTimeEveryDay(TimeDelta(1), hello_test), hayaku::exception);
+  CHECK_THROWS_AS(tm.addFuncAtTimeEveryDay(TimeDelta(-1), hello_test),
+                  hayaku::exception);
+  CHECK_THROWS_AS(tm.addFuncAtTimeEveryDay(TimeDelta(1), hello_test),
+                  hayaku::exception);
 
-    CHECK_THROWS_AS(
-      tm.addFuncAtTimeEveryDay(Datetime::min(), Datetime::max(), TimeDelta(-1), hello_test),
-      hayaku::exception);
-    CHECK_THROWS_AS(
-      tm.addFuncAtTimeEveryDay(Datetime::min(), Datetime::max(), TimeDelta(1), hello_test),
-      hayaku::exception);
-    CHECK_THROWS_AS(
-      tm.addFuncAtTimeEveryDay(Datetime::max(), Datetime::min(), TimeDelta(0, 1), hello_test),
-      hayaku::exception);
-    CHECK_THROWS_AS(
-      tm.addFuncAtTimeEveryDay(Datetime::min(), Datetime(), TimeDelta(0, 1), hello_test),
-      hayaku::exception);
-    CHECK_THROWS_AS(
-      tm.addFuncAtTimeEveryDay(Datetime(), Datetime::max(), TimeDelta(0, 1), hello_test),
-      hayaku::exception);
+  CHECK_THROWS_AS(tm.addFuncAtTimeEveryDay(Datetime::min(), Datetime::max(),
+                                           TimeDelta(-1), hello_test),
+                  hayaku::exception);
+  CHECK_THROWS_AS(tm.addFuncAtTimeEveryDay(Datetime::min(), Datetime::max(),
+                                           TimeDelta(1), hello_test),
+                  hayaku::exception);
+  CHECK_THROWS_AS(tm.addFuncAtTimeEveryDay(Datetime::max(), Datetime::min(),
+                                           TimeDelta(0, 1), hello_test),
+                  hayaku::exception);
+  CHECK_THROWS_AS(tm.addFuncAtTimeEveryDay(Datetime::min(), Datetime(),
+                                           TimeDelta(0, 1), hello_test),
+                  hayaku::exception);
+  CHECK_THROWS_AS(tm.addFuncAtTimeEveryDay(Datetime(), Datetime::max(),
+                                           TimeDelta(0, 1), hello_test),
+                  hayaku::exception);
 
 #if 0
     Datetime now = Datetime::now();

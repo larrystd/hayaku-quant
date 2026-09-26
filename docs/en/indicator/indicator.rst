@@ -4,6 +4,9 @@
 Built-in Technical Indicators
 =============================
 
+Examples that query a security assume an open ``session`` from
+:func:`hayaku.open_session`; see :ref:`quickstart`.
+
 
 .. py:function:: ABS([data])
 
@@ -53,8 +56,8 @@ Built-in Technical Indicators
     **Usage example**::
     
         # Get the adjustment factor of a stock
-        stock = sm.getStock("sh000001")
-        kdata = stock.getKData(Query(-100))
+        stock = session.data.get_stock("sh000001")
+        kdata = stock.get_kdata(Query(-100))
         adj_factor = ADJ_FACTOR()
         adj_factor.setContext(kdata)
         
@@ -981,7 +984,7 @@ Built-in Technical Indicators
 
 .. py:function:: FINANCE([kdata, ix, name])
 
-    Get the historical finance information. (The corresponding historical finance field information can be queried through StockManager.get_history_finance_all_fields)
+    Get the historical finance information. (The corresponding historical finance field information can be queried through session.data.get_history_finance_all_fields)
 
     When ix and name are used, choose one of them. That is, either use ix or use name to get.
 
@@ -1143,7 +1146,7 @@ Built-in Technical Indicators
     B: the benchmark return
     TE: the standard deviation between p and b of each day within the investment period
     In actual use, P is generally the asset curve of the TM, and B is the close price of the CSI 300, e.g.:
-    ref_k = sm["sh000300"].get_kdata(query)
+    ref_k = session.data.get_stock("sh000300").get_kdata(query)
     funds = my_tm.get_funds_curve(ref_k.get_datetime.list())
     ir = IR(PRICELIST(funds), ref_k.close, 0)
 
@@ -2043,8 +2046,8 @@ Built-in Technical Indicators
         stktype = STKTYPE()
         
         # Specify the K-line data
-        stock = sm.getStock("sh000001")
-        kdata = stock.getKData(Query(0, 100))
+        stock = session.data.get_stock("sh000001")
+        kdata = stock.get_kdata(Query(0, 100))
         stktype = STKTYPE(kdata)
 
     :param KData k: the K-line data context

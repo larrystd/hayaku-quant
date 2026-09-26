@@ -5,11 +5,13 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/MarketOperators.h>
 #include <operators/SeriesOperators.h>
+
+#include <fstream>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -21,52 +23,53 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_INDEXO") {
-    /** @arg An empty indicator */
-    Indicator result = INDEXO();
-    CHECK_UNARY(result.empty());
-    CHECK_EQ(result.name(), "INDEXO");
+  /** @arg An empty indicator */
+  Indicator result = INDEXO();
+  CHECK_UNARY(result.empty());
+  CHECK_EQ(result.name(), "INDEXO");
 
-    /** @arg The Shanghai Composite daily line */
-    KQuery query = KQueryByDate(Datetime(20111130), Datetime(20111206));
-    auto k = getKData("sh600004", query);
-    REQUIRE(k.size() > 0);
-    result = INDEXO(k);
-    CHECK_EQ(result.name(), "INDEXO");
-    CHECK_EQ(result.size(), k.size());
+  /** @arg The Shanghai Composite daily line */
+  KQuery query = KQueryByDate(Datetime(20111130), Datetime(20111206));
+  auto k = getKData("sh600004", query);
+  REQUIRE(k.size() > 0);
+  result = INDEXO(k);
+  CHECK_EQ(result.name(), "INDEXO");
+  CHECK_EQ(result.size(), k.size());
 
-    auto expect_k = getKData("sh000001", query);
-    Indicator expect = OPEN(expect_k);
-    for (size_t i = 0, total = result.size(); i < total; ++i) {
-        CHECK_EQ(result[i], expect[i]);
-    }
+  auto expect_k = getKData("sh000001", query);
+  Indicator expect = OPEN(expect_k);
+  for (size_t i = 0, total = result.size(); i < total; ++i) {
+    CHECK_EQ(result[i], expect[i]);
+  }
 
-    /** @arg The Shanghai Composite 5-minute line */
-    query = KQueryByDate(Datetime(201111300930), Datetime(201111301400), KQuery::MIN5);
-    k = getKData("sh600004", query);
-    REQUIRE(k.size() > 0);
-    result = INDEXO(k);
-    CHECK_EQ(result.name(), "INDEXO");
-    CHECK_EQ(result.size(), k.size());
+  /** @arg The Shanghai Composite 5-minute line */
+  query = KQueryByDate(Datetime(201111300930), Datetime(201111301400),
+                       KQuery::MIN5);
+  k = getKData("sh600004", query);
+  REQUIRE(k.size() > 0);
+  result = INDEXO(k);
+  CHECK_EQ(result.name(), "INDEXO");
+  CHECK_EQ(result.size(), k.size());
 
-    expect_k = getKData("sh000001", query);
-    expect = OPEN(expect_k);
-    for (size_t i = 0, total = result.size(); i < total; ++i) {
-        CHECK_EQ(result[i], expect[i]);
-    }
+  expect_k = getKData("sh000001", query);
+  expect = OPEN(expect_k);
+  for (size_t i = 0, total = result.size(); i < total; ++i) {
+    CHECK_EQ(result[i], expect[i]);
+  }
 
-    /** @arg The Shanghai Composite weekly line */
-    query = KQueryByDate(Datetime(20111101), Datetime(20111201), KQuery::WEEK);
-    k = getKData("sh600004", query);
-    REQUIRE(k.size() > 0);
-    result = INDEXO(k);
-    CHECK_EQ(result.name(), "INDEXO");
-    CHECK_EQ(result.size(), k.size());
+  /** @arg The Shanghai Composite weekly line */
+  query = KQueryByDate(Datetime(20111101), Datetime(20111201), KQuery::WEEK);
+  k = getKData("sh600004", query);
+  REQUIRE(k.size() > 0);
+  result = INDEXO(k);
+  CHECK_EQ(result.name(), "INDEXO");
+  CHECK_EQ(result.size(), k.size());
 
-    expect_k = getKData("sh000001", query);
-    expect = OPEN(expect_k);
-    for (size_t i = 0, total = result.size(); i < total; ++i) {
-        CHECK_EQ(result[i], expect[i]);
-    }
+  expect_k = getKData("sh000001", query);
+  expect = OPEN(expect_k);
+  for (size_t i = 0, total = result.size(); i < total; ++i) {
+    CHECK_EQ(result[i], expect[i]);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -76,37 +79,37 @@ TEST_CASE("test_INDEXO") {
 
 /** @par Test points */
 TEST_CASE("test_INDEX_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/INDEX.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/INDEX.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-5));
-    Indicator x1 = INDEXC(kdata);
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-5));
+  Indicator x1 = INDEXC(kdata);
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x1.name(), x2.name());
-    CHECK_EQ(x1.size(), x2.size());
-    CHECK_EQ(x1.discard(), x2.discard());
-    CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
-    for (size_t i = x1.discard(); i < x1.size(); ++i) {
-        if (std::isinf(x1[i])) {
-            CHECK_UNARY(std::isinf(x2[i]));
-        } else {
-            CHECK_EQ(x1[i], doctest::Approx(x2[i]));
-        }
+  CHECK_EQ(x1.name(), x2.name());
+  CHECK_EQ(x1.size(), x2.size());
+  CHECK_EQ(x1.discard(), x2.discard());
+  CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
+  for (size_t i = x1.discard(); i < x1.size(); ++i) {
+    if (std::isinf(x1[i])) {
+      CHECK_UNARY(std::isinf(x2[i]));
+    } else {
+      CHECK_EQ(x1[i], doctest::Approx(x2[i]));
     }
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

@@ -7,20 +7,19 @@
  *      Author: fasiondog
  */
 
-
 #include "ProfitGoalBase.h"
 
 namespace hayaku {
 
 class FixedHoldDays : public ProfitGoalBase {
-    PROFITGOAL_IMP(FixedHoldDays)
-    PROFIT_GOAL_NO_PRIVATE_MEMBER_SERIALIZATION
+  PROFITGOAL_IMP(FixedHoldDays)
+  PROFIT_GOAL_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    FixedHoldDays();
-    virtual ~FixedHoldDays();
+ public:
+  FixedHoldDays();
+  virtual ~FixedHoldDays();
 
-    virtual void _checkParam(const string& name) const override;
+  virtual void _checkParam(const string& name) const override;
 };
 
 } /* namespace hayaku */

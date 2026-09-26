@@ -7,170 +7,170 @@
  *      Author: fasiondog
  */
 
-
 #include "common/Config.h"
 #if !HAYAKU_ENABLE_NODE
 #error "Don't enable node client, please config with --node=y"
 #endif
 
-#include <atomic>
 #include <nng/nng.h>
 #include <nng/protocol/reqrep0/req.h>
-#include "common/time/Datetime.h"
+
+#include <atomic>
+
 #include "NodeMessage.h"
+#include "common/time/Datetime.h"
 
 namespace hayaku {
 
 class NodeClient {
-public:
-    NodeClient() = default;
+ public:
+  NodeClient() = default;
 
-    explicit NodeClient(const std::string& serverAddr) : m_server_addr(serverAddr) {}
+  explicit NodeClient(const std::string& serverAddr)
+      : m_server_addr(serverAddr) {}
 
-    virtual ~NodeClient() {
-        close();
+  virtual ~NodeClient() { close(); }
+
+  /** Set the server address */
+  void setServerAddr(const std::string& serverAddr) {
+    m_server_addr = serverAddr;
+  }
+
+  /** Connect to the server */
+  bool dial() noexcept {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    close();
+    // HAYAKU_TRACE("dial: {}", m_server_addr);
+    int rv = nng_req0_open(&m_socket);
+    // HAYAKU_ERROR_IF_RETURN(rv != 0, false, "Failed open req socket! {}",
+    // nng_strerror(rv));
+    HAYAKU_IF_RETURN(rv != 0, false);
+    m_connected = true;
+
+    try {
+      // Set the socket connection parameters for sending the result
+      rv = nng_socket_set_ms(m_socket, NNG_OPT_RECONNMINT, 10);
+      NODE_NNG_CHECK(rv, "Failed nng_socket_set_ms!");
+
+      rv = nng_socket_set_ms(m_socket, NNG_OPT_RECONNMAXT, 15000);
+      NODE_NNG_CHECK(rv, "Failed nng_socket_set_ms!");
+
+      rv = nng_socket_set_ms(m_socket, NNG_OPT_SENDTIMEO, 10000);
+      NODE_NNG_CHECK(rv, "Failed nng_socket_set_ms!");
+
+      rv = nng_socket_set_ms(m_socket, NNG_OPT_RECVTIMEO, 10000);
+      NODE_NNG_CHECK(rv, "Failed nng_socket_set_ms!");
+
+      rv = nng_dial(m_socket, m_server_addr.c_str(), NULL, 0);
+      NODE_NNG_CHECK(rv, "Failed dial server: {}!", m_server_addr);
+
+      return true;
+
+    } catch (const std::exception& e) {
+      HAYAKU_ERROR_IF(m_show_log, "Failed dail server: {}! {}", m_server_addr,
+                      e.what());
+    } catch (...) {
+      HAYAKU_ERROR_IF(m_show_log, "Failed dail server: {}! Unknown error!",
+                      m_server_addr);
     }
 
-    /** Set the server address */
-    void setServerAddr(const std::string& serverAddr) {
-        m_server_addr = serverAddr;
+    m_connected = false;
+    nng_close(m_socket);
+    return false;
+  }
+
+  /** Close the connection */
+  void close() noexcept {
+    if (m_connected) {
+      nng_close(m_socket);
+      m_connected = false;
+    }
+  }
+
+  /** Current connection state */
+  bool connected() const { return m_connected; }
+
+  /** Get the time of the last received server response */
+  Datetime getLastAckTime() const { return m_last_ack_time; }
+
+  /**
+   * Send a message
+   * @param req the request message to be sent
+   * @param res the returned response
+   */
+  bool post(const json& req, json& res) noexcept {
+    // Guarantee that the communication with the server must be in the req/res
+    // mode
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return _send(req) && _recv(res);
+  }
+
+  void showLog(bool show) { m_show_log = show; }
+
+ private:
+  bool _send(const json& req) const noexcept {
+    bool success = false;
+    // HAYAKU_ERROR_IF_RETURN(!m_connected, success, "Not connected!");
+    HAYAKU_IF_RETURN(!m_connected, success);
+
+    nng_msg* msg = nullptr;
+    int rv = nng_msg_alloc(&msg, 0);
+    // HAYAKU_ERROR_IF_RETURN(rv != 0, success, "Failed nng_msg_alloc! {}",
+    // nng_strerror(rv));
+    HAYAKU_IF_RETURN(rv != 0, success);
+
+    try {
+      encodeMsg(msg, req);
+      rv = nng_sendmsg(m_socket, msg, 0);
+      NODE_NNG_CHECK(rv, "Failed nng_sendmsg!");
+      success = true;
+
+    } catch (const std::exception& e) {
+      HAYAKU_ERROR_IF(m_show_log, "Failed send result! {}", e.what());
+    } catch (...) {
+      HAYAKU_ERROR_IF(m_show_log, "Failed send result! Unknown error!");
     }
 
-    /** Connect to the server */
-    bool dial() noexcept {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        close();
-        // HAYAKU_TRACE("dial: {}", m_server_addr);
-        int rv = nng_req0_open(&m_socket);
-        // HAYAKU_ERROR_IF_RETURN(rv != 0, false, "Failed open req socket! {}", nng_strerror(rv));
-        HAYAKU_IF_RETURN(rv != 0, false);
-        m_connected = true;
-
-        try {
-            // Set the socket connection parameters for sending the result
-            rv = nng_socket_set_ms(m_socket, NNG_OPT_RECONNMINT, 10);
-            NODE_NNG_CHECK(rv, "Failed nng_socket_set_ms!");
-
-            rv = nng_socket_set_ms(m_socket, NNG_OPT_RECONNMAXT, 15000);
-            NODE_NNG_CHECK(rv, "Failed nng_socket_set_ms!");
-
-            rv = nng_socket_set_ms(m_socket, NNG_OPT_SENDTIMEO, 10000);
-            NODE_NNG_CHECK(rv, "Failed nng_socket_set_ms!");
-
-            rv = nng_socket_set_ms(m_socket, NNG_OPT_RECVTIMEO, 10000);
-            NODE_NNG_CHECK(rv, "Failed nng_socket_set_ms!");
-
-            rv = nng_dial(m_socket, m_server_addr.c_str(), NULL, 0);
-            NODE_NNG_CHECK(rv, "Failed dial server: {}!", m_server_addr);
-
-            return true;
-
-        } catch (const std::exception& e) {
-            HAYAKU_ERROR_IF(m_show_log, "Failed dail server: {}! {}", m_server_addr, e.what());
-        } catch (...) {
-            HAYAKU_ERROR_IF(m_show_log, "Failed dail server: {}! Unknown error!", m_server_addr);
-        }
-
-        m_connected = false;
-        nng_close(m_socket);
-        return false;
+    if (!success) {
+      nng_msg_free(msg);
     }
 
-    /** Close the connection */
-    void close() noexcept {
-        if (m_connected) {
-            nng_close(m_socket);
-            m_connected = false;
-        }
+    return success;
+  }
+
+  bool _recv(json& res) noexcept {
+    bool success = false;
+    nng_msg* msg{nullptr};
+    int rv = nng_recvmsg(m_socket, &msg, 0);
+    if (rv != 0) {
+      HAYAKU_ERROR_IF(m_show_log, "Failed nng_recvmsg! {}", nng_strerror(rv));
+      return success;
     }
 
-    /** Current connection state */
-    bool connected() const {
-        return m_connected;
+    m_last_ack_time = Datetime::now();
+
+    try {
+      res = decodeMsg(msg);
+      success = true;
+
+    } catch (const std::exception& e) {
+      HAYAKU_ERROR_IF(m_show_log, "Failed recv response! {}", e.what());
+    } catch (...) {
+      HAYAKU_ERROR_IF(m_show_log, "Failed recv response! Unknown error!");
     }
 
-    /** Get the time of the last received server response */
-    Datetime getLastAckTime() const {
-        return m_last_ack_time;
-    }
+    nng_msg_free(msg);
+    return success;
+  }
 
-    /**
-     * Send a message
-     * @param req the request message to be sent
-     * @param res the returned response
-     */
-    bool post(const json& req, json& res) noexcept {
-        // Guarantee that the communication with the server must be in the req/res mode
-        std::lock_guard<std::mutex> lock(m_mutex);
-        return _send(req) && _recv(res);
-    }
-
-    void showLog(bool show) {
-        m_show_log = show;
-    }
-
-private:
-    bool _send(const json& req) const noexcept {
-        bool success = false;
-        // HAYAKU_ERROR_IF_RETURN(!m_connected, success, "Not connected!");
-        HAYAKU_IF_RETURN(!m_connected, success);
-
-        nng_msg* msg = nullptr;
-        int rv = nng_msg_alloc(&msg, 0);
-        // HAYAKU_ERROR_IF_RETURN(rv != 0, success, "Failed nng_msg_alloc! {}", nng_strerror(rv));
-        HAYAKU_IF_RETURN(rv != 0, success);
-
-        try {
-            encodeMsg(msg, req);
-            rv = nng_sendmsg(m_socket, msg, 0);
-            NODE_NNG_CHECK(rv, "Failed nng_sendmsg!");
-            success = true;
-
-        } catch (const std::exception& e) {
-            HAYAKU_ERROR_IF(m_show_log, "Failed send result! {}", e.what());
-        } catch (...) {
-            HAYAKU_ERROR_IF(m_show_log, "Failed send result! Unknown error!");
-        }
-
-        if (!success) {
-            nng_msg_free(msg);
-        }
-
-        return success;
-    }
-
-    bool _recv(json& res) noexcept {
-        bool success = false;
-        nng_msg* msg{nullptr};
-        int rv = nng_recvmsg(m_socket, &msg, 0);
-        if (rv != 0) {
-            HAYAKU_ERROR_IF(m_show_log, "Failed nng_recvmsg! {}", nng_strerror(rv));
-            return success;
-        }
-
-        m_last_ack_time = Datetime::now();
-
-        try {
-            res = decodeMsg(msg);
-            success = true;
-
-        } catch (const std::exception& e) {
-            HAYAKU_ERROR_IF(m_show_log, "Failed recv response! {}", e.what());
-        } catch (...) {
-            HAYAKU_ERROR_IF(m_show_log, "Failed recv response! Unknown error!");
-        }
-
-        nng_msg_free(msg);
-        return success;
-    }
-
-private:
-    std::mutex m_mutex;
-    std::string m_server_addr;  // Server address
-    nng_socket m_socket;
-    Datetime m_last_ack_time{Datetime::now()};  // The time of the last received server response
-    std::atomic_bool m_connected{false};
-    std::atomic_bool m_show_log{true};
+ private:
+  std::mutex m_mutex;
+  std::string m_server_addr;  // Server address
+  nng_socket m_socket;
+  Datetime m_last_ack_time{
+      Datetime::now()};  // The time of the last received server response
+  std::atomic_bool m_connected{false};
+  std::atomic_bool m_show_log{true};
 };
 
 }  // namespace hayaku

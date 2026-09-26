@@ -7,11 +7,13 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
 #include <data/DataRuntime.h>
 #include <operators/SeriesOperators.h>
 #include <operators/StatisticsOperators.h>
+
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -23,49 +25,50 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_VAR") {
-    /** @arg The normal case with n > 1 */
-    PriceList d;
-    for (size_t i = 0; i < 15; ++i) {
-        d.push_back(i + 1);
-    }
-    d[5] = 4.0;
-    d[7] = 4.0;
-    d[11] = 6.0;
+  /** @arg The normal case with n > 1 */
+  PriceList d;
+  for (size_t i = 0; i < 15; ++i) {
+    d.push_back(i + 1);
+  }
+  d[5] = 4.0;
+  d[7] = 4.0;
+  d[11] = 6.0;
 
-    Indicator ind = PRICELIST(d);
-    Indicator dev = VAR(ind, 10);
-    CHECK_EQ(dev.name(), "VAR");
-    CHECK_EQ(dev.size(), 15);
-    CHECK_EQ(dev.discard(), 9);
+  Indicator ind = PRICELIST(d);
+  Indicator dev = VAR(ind, 10);
+  CHECK_EQ(dev.name(), "VAR");
+  CHECK_EQ(dev.size(), 15);
+  CHECK_EQ(dev.discard(), 9);
 
-    price_t nan = Null<price_t>();
-    vector<price_t> expected{nan, nan,     nan,     nan,     nan,     nan,     nan,    nan,
-                             nan, 8.54444, 9.87778, 8.01111, 10.6778, 13.3444, 16.0111};
-    for (size_t i = 0; i < dev.discard(); i++) {
-        CHECK_UNARY(std::isnan(dev[i]));
-    }
-    for (size_t i = dev.discard(); i < dev.size(); i++) {
-        CHECK_EQ(dev[i], doctest::Approx(expected[i]).epsilon(0.001));
-    }
+  price_t nan = Null<price_t>();
+  vector<price_t> expected{nan,     nan,     nan,     nan,     nan,
+                           nan,     nan,     nan,     nan,     8.54444,
+                           9.87778, 8.01111, 10.6778, 13.3444, 16.0111};
+  for (size_t i = 0; i < dev.discard(); i++) {
+    CHECK_UNARY(std::isnan(dev[i]));
+  }
+  for (size_t i = dev.discard(); i < dev.size(); i++) {
+    CHECK_EQ(dev[i], doctest::Approx(expected[i]).epsilon(0.001));
+  }
 
-    /** @arg The invalid parameter n = 1 */
-    CHECK_THROWS_AS(VAR(ind, 1), std::exception);
+  /** @arg The invalid parameter n = 1 */
+  CHECK_THROWS_AS(VAR(ind, 1), std::exception);
 
-    /** @arg operator() */
-    Indicator expect = VAR(ind, 10);
-    dev = VAR(10);
-    CHECK_EQ(dev.name(), "VAR");
-    Indicator result = dev(ind);
-    CHECK_EQ(result.size(), expect.size());
-    for (size_t i = expect.discard(); i < expect.size(); ++i) {
-        CHECK_EQ(result[i], expect[i]);
-    }
+  /** @arg operator() */
+  Indicator expect = VAR(ind, 10);
+  dev = VAR(10);
+  CHECK_EQ(dev.name(), "VAR");
+  Indicator result = dev(ind);
+  CHECK_EQ(result.size(), expect.size());
+  for (size_t i = expect.discard(); i < expect.size(); ++i) {
+    CHECK_EQ(result[i], expect[i]);
+  }
 
-    /** @arg When n =0 */
-    dev = VAR(ind, 0);
-    CHECK_EQ(dev.size(), 15);
-    CHECK_EQ(dev.discard(), 14);
-    CHECK_EQ(dev[14], doctest::Approx(20.457143).epsilon(0.0001));
+  /** @arg When n =0 */
+  dev = VAR(ind, 0);
+  CHECK_EQ(dev.size(), 15);
+  CHECK_EQ(dev.discard(), 14);
+  CHECK_EQ(dev[14], doctest::Approx(20.457143).epsilon(0.0001));
 }
 
 //-----------------------------------------------------------------------------
@@ -73,48 +76,49 @@ TEST_CASE("test_VAR") {
 //-----------------------------------------------------------------------------
 #if ENABLE_BENCHMARK_TEST
 TEST_CASE("test_VAR_benchmark") {
-    Stock stock = getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(0));
-    Indicator c = kdata.close();
-    int cycle = 1000;  // Test loop count
+  Stock stock = getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(0));
+  Indicator c = kdata.close();
+  int cycle = 1000;  // Test loop count
 
-    {
-        BENCHMARK_TIME_MSG(test_VAR_benchmark, cycle, fmt::format("data len: {}", c.size()));
-        SPEND_TIME_CONTROL(false);
-        for (int i = 0; i < cycle; i++) {
-            Indicator ind = VAR();
-            Indicator result = ind(c);
-        }
+  {
+    BENCHMARK_TIME_MSG(test_VAR_benchmark, cycle,
+                       fmt::format("data len: {}", c.size()));
+    SPEND_TIME_CONTROL(false);
+    for (int i = 0; i < cycle; i++) {
+      Indicator ind = VAR();
+      Indicator result = ind(c);
     }
+  }
 }
 #endif
 
 /** @par Test points */
 TEST_CASE("test_VAR_dyn") {
-    Stock stock = getDataRuntime().getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-30));
-    // KData kdata = stock.getKData(KQuery(0, Null<size_t>(), KQuery::MIN));
-    Indicator c = CLOSE(kdata);
-    Indicator expect = VAR(c, 10);
-    Indicator result = VAR(c, CVAL(c, 10));
-    // CHECK_EQ(expect.discard(), result.discard());
-    CHECK_EQ(expect.size(), result.size());
-    for (size_t i = 0; i < result.discard(); i++) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
-    for (size_t i = expect.discard(); i < expect.size(); i++) {
-        CHECK_EQ(expect[i], doctest::Approx(result[i]));
-    }
+  Stock stock = getDataRuntime().getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-30));
+  // KData kdata = stock.getKData(KQuery(0, Null<size_t>(), KQuery::MIN));
+  Indicator c = CLOSE(kdata);
+  Indicator expect = VAR(c, 10);
+  Indicator result = VAR(c, CVAL(c, 10));
+  // CHECK_EQ(expect.discard(), result.discard());
+  CHECK_EQ(expect.size(), result.size());
+  for (size_t i = 0; i < result.discard(); i++) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
+  for (size_t i = expect.discard(); i < expect.size(); i++) {
+    CHECK_EQ(expect[i], doctest::Approx(result[i]));
+  }
 
-    result = VAR(c, IndParam(CVAL(c, 10)));
-    // CHECK_EQ(expect.discard(), result.discard());
-    CHECK_EQ(expect.size(), result.size());
-    for (size_t i = 0; i < result.discard(); i++) {
-        CHECK_UNARY(std::isnan(result[i]));
-    }
-    for (size_t i = expect.discard(); i < expect.size(); i++) {
-        CHECK_EQ(expect[i], doctest::Approx(result[i]));
-    }
+  result = VAR(c, IndParam(CVAL(c, 10)));
+  // CHECK_EQ(expect.discard(), result.discard());
+  CHECK_EQ(expect.size(), result.size());
+  for (size_t i = 0; i < result.discard(); i++) {
+    CHECK_UNARY(std::isnan(result[i]));
+  }
+  for (size_t i = expect.discard(); i < expect.size(); i++) {
+    CHECK_EQ(expect[i], doctest::Approx(result[i]));
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -124,33 +128,33 @@ TEST_CASE("test_VAR_dyn") {
 
 /** @par Test points */
 TEST_CASE("test_VAR_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/VAR.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/VAR.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator ma1 = VAR(CLOSE(kdata), 10);
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(ma1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator ma1 = VAR(CLOSE(kdata), 10);
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(ma1);
+  }
 
-    Indicator ma2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(ma2);
-    }
+  Indicator ma2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(ma2);
+  }
 
-    CHECK_EQ(ma2.name(), "VAR");
-    CHECK_EQ(ma1.size(), ma2.size());
-    CHECK_EQ(ma1.discard(), ma2.discard());
-    CHECK_EQ(ma1.getResultNumber(), ma2.getResultNumber());
-    for (size_t i = ma1.discard(); i < ma1.size(); ++i) {
-        CHECK_EQ(ma1[i], doctest::Approx(ma2[i]).epsilon(0.00001));
-    }
+  CHECK_EQ(ma2.name(), "VAR");
+  CHECK_EQ(ma1.size(), ma2.size());
+  CHECK_EQ(ma1.discard(), ma2.discard());
+  CHECK_EQ(ma1.getResultNumber(), ma2.getResultNumber());
+  for (size_t i = ma1.discard(); i < ma1.size(); ++i) {
+    CHECK_EQ(ma1[i], doctest::Approx(ma2[i]).epsilon(0.00001));
+  }
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

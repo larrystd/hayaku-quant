@@ -7,7 +7,6 @@
  *      Author: fasiondog
  */
 
-
 #include <common/Exception.h>
 
 namespace hayaku {
@@ -16,52 +15,54 @@ namespace hayaku {
  * Node return code
  */
 enum NodeErrorCode {
-    SUCCESS = 0,
-    UNKNOWN_ERROR = 1,  ///< Unknown error
-    NNG_ERROR,          ///< The internal nng error
-    MISSING_CMD,        ///< Missing command
-    INVALID_CMD,        ///< Invalid command, there is no corresponding processing service
+  SUCCESS = 0,
+  UNKNOWN_ERROR = 1,  ///< Unknown error
+  NNG_ERROR,          ///< The internal nng error
+  MISSING_CMD,        ///< Missing command
+  INVALID_CMD,        ///< Invalid command, there is no corresponding processing
+                      ///< service
 };
 
 class NodeError : public hayaku::exception {
-public:
-    NodeError() : NodeError(NodeErrorCode::UNKNOWN_ERROR, "Unknow error!") {}
-    NodeError(NodeErrorCode errcode, const char* errmsg)
-    : hayaku::exception(fmt::format("{} errcode: {}", errmsg, int(errcode))), m_errcode(errcode) {}
-    NodeError(NodeErrorCode errcode, const std::string& errmsg)
-    : hayaku::exception(errmsg), m_errcode(errcode) {}
+ public:
+  NodeError() : NodeError(NodeErrorCode::UNKNOWN_ERROR, "Unknow error!") {}
+  NodeError(NodeErrorCode errcode, const char* errmsg)
+      : hayaku::exception(fmt::format("{} errcode: {}", errmsg, int(errcode))),
+        m_errcode(errcode) {}
+  NodeError(NodeErrorCode errcode, const std::string& errmsg)
+      : hayaku::exception(errmsg), m_errcode(errcode) {}
 
-    NodeErrorCode errcode() const {
-        return m_errcode;
-    }
+  NodeErrorCode errcode() const { return m_errcode; }
 
-private:
-    NodeErrorCode m_errcode = NodeErrorCode::UNKNOWN_ERROR;
+ private:
+  NodeErrorCode m_errcode = NodeErrorCode::UNKNOWN_ERROR;
 };
 
 class NodeNngError : public NodeError {
-public:
-    NodeNngError() = delete;
-    NodeNngError(int rv, const char* msg)
-    : NodeError(NodeErrorCode::NNG_ERROR,
-                fmt::format("{} nng error: {} (errcode: {})", msg, nng_strerror(rv), rv)) {}
-    NodeNngError(int rv, const std::string& msg)
-    : NodeError(NodeErrorCode::NNG_ERROR,
-                fmt::format("{} nng error: {} (errcode: {})", msg, nng_strerror(rv), rv)) {}
+ public:
+  NodeNngError() = delete;
+  NodeNngError(int rv, const char* msg)
+      : NodeError(NodeErrorCode::NNG_ERROR,
+                  fmt::format("{} nng error: {} (errcode: {})", msg,
+                              nng_strerror(rv), rv)) {}
+  NodeNngError(int rv, const std::string& msg)
+      : NodeError(NodeErrorCode::NNG_ERROR,
+                  fmt::format("{} nng error: {} (errcode: {})", msg,
+                              nng_strerror(rv), rv)) {}
 };
 
-#define NODE_CHECK(expr, errcode, ...)                          \
-    {                                                           \
-        if (!(expr)) {                                          \
-            throw NodeError(errcode, fmt::format(__VA_ARGS__)); \
-        }                                                       \
-    }
+#define NODE_CHECK(expr, errcode, ...)                    \
+  {                                                       \
+    if (!(expr)) {                                        \
+      throw NodeError(errcode, fmt::format(__VA_ARGS__)); \
+    }                                                     \
+  }
 
-#define NODE_NNG_CHECK(rv, ...)                               \
-    {                                                         \
-        if (rv != 0) {                                        \
-            throw NodeNngError(rv, fmt::format(__VA_ARGS__)); \
-        }                                                     \
-    }
+#define NODE_NNG_CHECK(rv, ...)                         \
+  {                                                     \
+    if (rv != 0) {                                      \
+      throw NodeNngError(rv, fmt::format(__VA_ARGS__)); \
+    }                                                   \
+  }
 
 }  // namespace hayaku

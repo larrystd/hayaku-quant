@@ -7,18 +7,17 @@
  *      Author: fasiondog
  */
 
-
 #include "NormalizeBase.h"
 
 namespace hayaku {
 
 class NormMinMax : public NormalizeBase {
-    NORMALIZE_IMP(NormMinMax)
-    NORMALIZE_NO_PRIVATE_MEMBER_SERIALIZATION
+  NORMALIZE_IMP(NormMinMax)
+  NORMALIZE_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    NormMinMax();
-    virtual ~NormMinMax() override;
+ public:
+  NormMinMax();
+  virtual ~NormMinMax() override;
 };
 
 }  // namespace hayaku

@@ -9,13 +9,14 @@
 
 namespace hayaku {
 
-HAYAKU_API std::ostream& operator<<(std::ostream& os, const LoanRecord& record) {
-    os << std::fixed;
-    (void)os.precision(2);
-    os << "LoanRecord(" << record.datetime << ", " << record.value << ")";
-    os.unsetf(std::ostream::floatfield);
-    (void)os.precision();
-    return os;
+HAYAKU_API std::ostream& operator<<(std::ostream& os,
+                                    const LoanRecord& record) {
+  os << std::fixed;
+  (void)os.precision(2);
+  os << "LoanRecord(" << record.datetime << ", " << record.value << ")";
+  os.unsetf(std::ostream::floatfield);
+  (void)os.precision();
+  return os;
 }
 
 }  // namespace hayaku

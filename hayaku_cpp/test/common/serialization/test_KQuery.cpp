@@ -5,12 +5,14 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
-#include <fstream>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <data/DataRuntime.h>
 #include <common/serialization/KQuery_serialization.h>
+#include <data/DataRuntime.h>
+
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <fstream>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -24,76 +26,76 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_KQuery_serialize") {
-    string filename(getDataRuntime().tmpdir());
-    filename += "/KQuery.xml";
+  string filename(getDataRuntime().tmpdir());
+  filename += "/KQuery.xml";
 
-    KQuery q1(10, 100);
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(q1);
-    }
+  KQuery q1(10, 100);
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(q1);
+  }
 
-    KQuery q2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(q2);
-    }
+  KQuery q2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(q2);
+  }
 
-    CHECK_EQ(q1.queryType(), q1.queryType());
-    CHECK_EQ(q1.kType(), q1.kType());
-    CHECK_EQ(q1.recoverType(), q1.recoverType());
-    CHECK_EQ(q1.start(), q1.start());
-    CHECK_EQ(q1.end(), q1.end());
+  CHECK_EQ(q1.queryType(), q1.queryType());
+  CHECK_EQ(q1.kType(), q1.kType());
+  CHECK_EQ(q1.recoverType(), q1.recoverType());
+  CHECK_EQ(q1.start(), q1.start());
+  CHECK_EQ(q1.end(), q1.end());
 }
 
 /** @par Test points */
 TEST_CASE("test_KQueryByDate_serialize") {
-    string filename(getDataRuntime().tmpdir());
-    filename += "/KQueryByDate.xml";
+  string filename(getDataRuntime().tmpdir());
+  filename += "/KQueryByDate.xml";
 
-    /** Saved as KQueryByDate and read as KQuery */
-    KQuery q1 = KQueryByDate(Datetime(200101010000), Datetime(200102100000));
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(q1);
-    }
+  /** Saved as KQueryByDate and read as KQuery */
+  KQuery q1 = KQueryByDate(Datetime(200101010000), Datetime(200102100000));
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(q1);
+  }
 
-    KQuery q2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(q2);
-    }
+  KQuery q2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(q2);
+  }
 
-    CHECK_EQ(q1.queryType(), q1.queryType());
-    CHECK_EQ(q1.kType(), q1.kType());
-    CHECK_EQ(q1.recoverType(), q1.recoverType());
-    CHECK_EQ(q1.startDatetime(), q1.startDatetime());
-    CHECK_EQ(q1.endDatetime(), q1.endDatetime());
+  CHECK_EQ(q1.queryType(), q1.queryType());
+  CHECK_EQ(q1.kType(), q1.kType());
+  CHECK_EQ(q1.recoverType(), q1.recoverType());
+  CHECK_EQ(q1.startDatetime(), q1.startDatetime());
+  CHECK_EQ(q1.endDatetime(), q1.endDatetime());
 
-    /* Read as KQueryByDate */
-    KQuery q3 = KQueryByDate(Datetime(200101010000), Datetime(200102100000));
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(q3);
-    }
+  /* Read as KQueryByDate */
+  KQuery q3 = KQueryByDate(Datetime(200101010000), Datetime(200102100000));
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(q3);
+  }
 
-    KQuery q4;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(q4);
-    }
+  KQuery q4;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(q4);
+  }
 
-    CHECK_EQ(q3.queryType(), q4.queryType());
-    CHECK_EQ(q3.kType(), q4.kType());
-    CHECK_EQ(q3.recoverType(), q4.recoverType());
-    CHECK_EQ(q3.startDatetime(), q4.startDatetime());
-    CHECK_EQ(q3.endDatetime(), q4.endDatetime());
+  CHECK_EQ(q3.queryType(), q4.queryType());
+  CHECK_EQ(q3.kType(), q4.kType());
+  CHECK_EQ(q3.recoverType(), q4.recoverType());
+  CHECK_EQ(q3.startDatetime(), q4.startDatetime());
+  CHECK_EQ(q3.endDatetime(), q4.endDatetime());
 }
 /** @} */
 

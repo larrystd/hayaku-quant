@@ -7,28 +7,26 @@
  *      Author: fasiondog
  */
 
-
 #include "MoneyManagerBase.h"
 
 namespace hayaku {
 
 /*
  * Percentage risk model
- * See "Financial Freedom Through Electronic Day Trading" (June 2008, China Machine Press) by Van
- * K. Tharp, P312
- * Formula: P (position size) = C (total risk) / R (risk per share) [here C, the cash, is the total
- * risk]
- * Parameter: percent: the percentage of the total risk of every trade in the total assets, e.g.
- * 0.02 means 2% of the total assets
+ * See "Financial Freedom Through Electronic Day Trading" (June 2008, China
+ * Machine Press) by Van K. Tharp, P312 Formula: P (position size) = C (total
+ * risk) / R (risk per share) [here C, the cash, is the total risk] Parameter:
+ * percent: the percentage of the total risk of every trade in the total assets,
+ * e.g. 0.02 means 2% of the total assets
  */
 class HAYAKU_API FixedPercentMoneyManager : public MoneyManagerBase {
-    MONEY_MANAGER_IMP(FixedPercentMoneyManager)
-    MONEY_MANAGER_NO_PRIVATE_MEMBER_SERIALIZATION
+  MONEY_MANAGER_IMP(FixedPercentMoneyManager)
+  MONEY_MANAGER_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    FixedPercentMoneyManager();
-    virtual ~FixedPercentMoneyManager();
-    virtual void _checkParam(const string& name) const override;
+ public:
+  FixedPercentMoneyManager();
+  virtual ~FixedPercentMoneyManager();
+  virtual void _checkParam(const string& name) const override;
 };
 
 } /* namespace hayaku */

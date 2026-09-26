@@ -7,11 +7,11 @@
  *      Author: fasiondog
  */
 
-
 #include "data/MarketTypes.h"
 
 namespace hayaku {
 
-PriceList quantile_trunc(const PriceList &src, double quantile_min, double quantile_max);
+PriceList quantile_trunc(const PriceList &src, double quantile_min,
+                         double quantile_max);
 
 }

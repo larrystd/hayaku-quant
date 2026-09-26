@@ -7,11 +7,10 @@
  *      Author: fasiondog
  */
 
-
-#include "DriverConnectPool.h"
 #include "BaseInfoDriver.h"
-#include "KDataDriver.h"
 #include "BlockInfoDriver.h"
+#include "DriverConnectPool.h"
+#include "KDataDriver.h"
 
 namespace hayaku {
 
@@ -23,35 +22,37 @@ typedef shared_ptr<KDataDriverConnectPool> KDataDriverConnectPoolPtr;
  * @ingroup DataDriver
  */
 class HAYAKU_API DataDriverFactory {
-public:
-    /**
-     * Initialize the supported default drivers
-     */
-    static void init();
+ public:
+  /**
+   * Initialize the supported default drivers
+   */
+  static void init();
 
-    /**
-     * Release the resources proactively, mainly used for memory leak detection, cleaning up
-     * proactively on exit to avoid false positives
-     */
-    static void release();
+  /**
+   * Release the resources proactively, mainly used for memory leak detection,
+   * cleaning up proactively on exit to avoid false positives
+   */
+  static void release();
 
-    static void regBaseInfoDriver(const BaseInfoDriverPtr &);
-    static void removeBaseInfoDriver(const string &name);
-    static BaseInfoDriverPtr getBaseInfoDriver(const Parameter &);
+  static void regBaseInfoDriver(const BaseInfoDriverPtr &);
+  static void removeBaseInfoDriver(const string &name);
+  static BaseInfoDriverPtr getBaseInfoDriver(const Parameter &);
 
-    static void regBlockDriver(const BlockInfoDriverPtr &);
-    static void removeBlockDriver(const string &name);
-    static BlockInfoDriverPtr getBlockDriver(const Parameter &);
+  static void regBlockDriver(const BlockInfoDriverPtr &);
+  static void removeBlockDriver(const string &name);
+  static BlockInfoDriverPtr getBlockDriver(const Parameter &);
 
-    static void regKDataDriver(const KDataDriverPtr &);
-    static void removeKDataDriver(const string &name);
-    static KDataDriverConnectPoolPtr getKDataDriverPool(const Parameter &);
+  static void regKDataDriver(const KDataDriverPtr &);
+  static void removeKDataDriver(const string &name);
+  static KDataDriverConnectPoolPtr getKDataDriverPool(const Parameter &);
 
-private:
-    static map<string, BaseInfoDriverPtr> *m_baseInfoDrivers;
-    static map<string, BlockInfoDriverPtr> *m_blockDrivers;
-    static map<string, KDataDriverPtr> *m_kdataPrototypeDrivers;        // K-line driver prototype
-    static map<string, KDataDriverConnectPoolPtr> *m_kdataDriverPools;  // K-line driver pool
+ private:
+  static map<string, BaseInfoDriverPtr> *m_baseInfoDrivers;
+  static map<string, BlockInfoDriverPtr> *m_blockDrivers;
+  static map<string, KDataDriverPtr>
+      *m_kdataPrototypeDrivers;  // K-line driver prototype
+  static map<string, KDataDriverConnectPoolPtr>
+      *m_kdataDriverPools;  // K-line driver pool
 };
 
 } /* namespace hayaku */

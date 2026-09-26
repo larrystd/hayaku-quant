@@ -5,8 +5,9 @@
  *      Author: fasiondog
  */
 
-#include "QuantileTrunc.h"
 #include "NormQuantileUniform.h"
+
+#include "QuantileTrunc.h"
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 BOOST_CLASS_EXPORT(hayaku::NormQuantileUniform)
@@ -14,114 +15,119 @@ BOOST_CLASS_EXPORT(hayaku::NormQuantileUniform)
 
 namespace hayaku {
 
-NormQuantileUniform::NormQuantileUniform() : NormalizeBase("NORM_Quantile_Uniform") {
-    setParam<double>("quantile_min", 0.01);
-    setParam<double>("quantile_max", 0.99);
+NormQuantileUniform::NormQuantileUniform()
+    : NormalizeBase("NORM_Quantile_Uniform") {
+  setParam<double>("quantile_min", 0.01);
+  setParam<double>("quantile_max", 0.99);
 }
 
-NormQuantileUniform::NormQuantileUniform(double quantile_min, double quantile_max)
-: NormalizeBase("NORM_Quantile_Uniform") {
-    setParam<double>("quantile_min", quantile_min);
-    setParam<double>("quantile_max", quantile_max);
+NormQuantileUniform::NormQuantileUniform(double quantile_min,
+                                         double quantile_max)
+    : NormalizeBase("NORM_Quantile_Uniform") {
+  setParam<double>("quantile_min", quantile_min);
+  setParam<double>("quantile_max", quantile_max);
 }
 
 NormQuantileUniform::~NormQuantileUniform() {}
 
 void NormQuantileUniform::_checkParam(const string &name) const {
-    if ("quantile_min" == name) {
-        double quantile_min = getParam<double>("quantile_min");
-        HAYAKU_ASSERT(quantile_min > 0.0 && quantile_min < 1.0);
-        if (haveParam("quantile_max")) {
-            double quantile_max = getParam<double>("quantile_max");
-            HAYAKU_ASSERT(quantile_min < quantile_max);
-        }
-    } else if ("quantile_max" == name) {
-        double quantile_max = getParam<double>("quantile_max");
-        HAYAKU_ASSERT(quantile_max > 0.0 && quantile_max < 1.0);
-        if (haveParam("quantile_min")) {
-            double quantile_min = getParam<double>("quantile_min");
-            HAYAKU_ASSERT(quantile_min < quantile_max);
-        }
+  if ("quantile_min" == name) {
+    double quantile_min = getParam<double>("quantile_min");
+    HAYAKU_ASSERT(quantile_min > 0.0 && quantile_min < 1.0);
+    if (haveParam("quantile_max")) {
+      double quantile_max = getParam<double>("quantile_max");
+      HAYAKU_ASSERT(quantile_min < quantile_max);
     }
+  } else if ("quantile_max" == name) {
+    double quantile_max = getParam<double>("quantile_max");
+    HAYAKU_ASSERT(quantile_max > 0.0 && quantile_max < 1.0);
+    if (haveParam("quantile_min")) {
+      double quantile_min = getParam<double>("quantile_min");
+      HAYAKU_ASSERT(quantile_min < quantile_max);
+    }
+  }
 }
 
 PriceList NormQuantileUniform::normalize(const PriceList &src) {
-    PriceList result(src.size());
-    HAYAKU_IF_RETURN(src.empty(), result);
+  PriceList result(src.size());
+  HAYAKU_IF_RETURN(src.empty(), result);
 
-    auto data =
-      quantile_trunc(src, getParam<double>("quantile_min"), getParam<double>("quantile_max"));
+  auto data = quantile_trunc(src, getParam<double>("quantile_min"),
+                             getParam<double>("quantile_max"));
 
-    size_t total = data.size();
-    std::vector<std::pair<double, int64_t>> valueIndices;
-    valueIndices.reserve(total);
-    for (size_t i = 0; i < total; ++i) {
-        if (!std::isnan(data[i])) {
-            valueIndices.emplace_back(data[i], int64_t(i));
-        }
+  size_t total = data.size();
+  std::vector<std::pair<double, int64_t>> valueIndices;
+  valueIndices.reserve(total);
+  for (size_t i = 0; i < total; ++i) {
+    if (!std::isnan(data[i])) {
+      valueIndices.emplace_back(data[i], int64_t(i));
     }
+  }
 
-    // Sort by value (ascending)
-    std::sort(valueIndices.begin(), valueIndices.end());
+  // Sort by value (ascending)
+  std::sort(valueIndices.begin(), valueIndices.end());
 
-    // Calculate the average rank (handling the duplicate values)
-    int64_t i = 0;
-    int64_t n = static_cast<int64_t>(valueIndices.size());
-    if (n >= 50) {
-        // For a large sample use (k - 0.5) / n
-        while (i < n) {
-            double currentValue = valueIndices[i].first;
-            size_t start = i;
+  // Calculate the average rank (handling the duplicate values)
+  int64_t i = 0;
+  int64_t n = static_cast<int64_t>(valueIndices.size());
+  if (n >= 50) {
+    // For a large sample use (k - 0.5) / n
+    while (i < n) {
+      double currentValue = valueIndices[i].first;
+      size_t start = i;
 
-            // Find the range of all the equal values
-            while (i < n && valueIndices[i].first == currentValue) {
-                ++i;
-            }
-            int end = i - 1;  // The last index of the equal values
+      // Find the range of all the equal values
+      while (i < n && valueIndices[i].first == currentValue) {
+        ++i;
+      }
+      int end = i - 1;  // The last index of the equal values
 
-            // Calculate the average rank: (start+1 + end+1) / 2 (the rank starts from 1)
-            double avgRank = (start + 1 + end + 1) / 2.0;
+      // Calculate the average rank: (start+1 + end+1) / 2 (the rank starts from
+      // 1)
+      double avgRank = (start + 1 + end + 1) / 2.0;
 
-            // Calculate the quantile percentage: (the average rank - 0.5) / n
-            double quantile = (avgRank - 0.5) / n;
+      // Calculate the quantile percentage: (the average rank - 0.5) / n
+      double quantile = (avgRank - 0.5) / n;
 
-            // Assign to the original positions of all the equal values
-            for (int64_t j = start; j <= end; ++j) {
-                int originalIndex = valueIndices[j].second;
-                result[originalIndex] = quantile;
-            }
-        }
-    } else {
-        // For a small sample use (k) / (n+1)
-        double denominator = n + 1.0;
-        while (i < n) {
-            double currentValue = valueIndices[i].first;
-            size_t start = i;
-
-            // Find the range of all the equal values
-            while (i < n && valueIndices[i].first == currentValue) {
-                ++i;
-            }
-            int end = i - 1;  // The last index of the equal values
-
-            // Calculate the average rank: (start+1 + end+1) / 2 (the rank starts from 1)
-            double avgRank = (start + 1 + end + 1) / 2.0;
-
-            // Calculate the quantile percentage: (the average rank) / (n+1)
-            double quantile = avgRank / denominator;
-
-            // Assign to the original positions of all the equal values
-            for (int64_t j = start; j <= end; ++j) {
-                int originalIndex = valueIndices[j].second;
-                result[originalIndex] = quantile;
-            }
-        }
+      // Assign to the original positions of all the equal values
+      for (int64_t j = start; j <= end; ++j) {
+        int originalIndex = valueIndices[j].second;
+        result[originalIndex] = quantile;
+      }
     }
-    return result;
+  } else {
+    // For a small sample use (k) / (n+1)
+    double denominator = n + 1.0;
+    while (i < n) {
+      double currentValue = valueIndices[i].first;
+      size_t start = i;
+
+      // Find the range of all the equal values
+      while (i < n && valueIndices[i].first == currentValue) {
+        ++i;
+      }
+      int end = i - 1;  // The last index of the equal values
+
+      // Calculate the average rank: (start+1 + end+1) / 2 (the rank starts from
+      // 1)
+      double avgRank = (start + 1 + end + 1) / 2.0;
+
+      // Calculate the quantile percentage: (the average rank) / (n+1)
+      double quantile = avgRank / denominator;
+
+      // Assign to the original positions of all the equal values
+      for (int64_t j = start; j <= end; ++j) {
+        int originalIndex = valueIndices[j].second;
+        result[originalIndex] = quantile;
+      }
+    }
+  }
+  return result;
 }
 
-NormPtr HAYAKU_API NORM_Quantile_Uniform(double quantile_min, double quantile_max) {
-    return std::make_shared<NormQuantileUniform>(quantile_min, quantile_max);
+NormPtr HAYAKU_API NORM_Quantile_Uniform(double quantile_min,
+                                         double quantile_max) {
+  return std::make_shared<NormQuantileUniform>(quantile_min, quantile_max);
 }
 
 }  // namespace hayaku

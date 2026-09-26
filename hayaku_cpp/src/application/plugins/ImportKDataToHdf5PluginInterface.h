@@ -7,91 +7,96 @@
  *      Author: fasiondog
  */
 
-
-#include "data/KRecord.h"
+#include "application/plugins/PluginBase.h"
 #include "data/KQuery.h"
+#include "data/KRecord.h"
 #include "data/TimeLineRecord.h"
 #include "data/TransRecord.h"
-#include "application/plugins/PluginBase.h"
 
 namespace hayaku {
 
 class ImportKDataToHdf5PluginInterface : public PluginBase {
-public:
-    static constexpr uint32_t PLUGIN_INTERFACE_VERSION = 1;
-    ImportKDataToHdf5PluginInterface() = default;
-    virtual ~ImportKDataToHdf5PluginInterface() = default;
+ public:
+  static constexpr uint32_t PLUGIN_INTERFACE_VERSION = 1;
+  ImportKDataToHdf5PluginInterface() = default;
+  virtual ~ImportKDataToHdf5PluginInterface() = default;
 
-    /**
-     * @brief Set the K-line data saving path and the baseinfo database file (sqlite3)
-     * @param datapath the directory where the HDF5 K-line data is saved
-     * @param markets the market list whose h5 files need to be initialized
-     * @param ktypes the K-line type list to be initialized (DAY/MIN/MIN5/TIMELINE/TRANSDATA)
-     * @param baseinfo_path the baseinfo sqlite3 database file path; addMarket / addStockType is not
-     *                      available when it is empty
-     * @note baseinfo_path and the K-line datapath are independent of each other, it usually points
-     *       to ~/.hayaku/stock.db
-     */
-    virtual bool setConfig(const string& datapath, const vector<string>& markets,
-                           const vector<string>& ktypes, const string& baseinfo_path) = 0;
+  /**
+   * @brief Set the K-line data saving path and the baseinfo database file
+   * (sqlite3)
+   * @param datapath the directory where the HDF5 K-line data is saved
+   * @param markets the market list whose h5 files need to be initialized
+   * @param ktypes the K-line type list to be initialized
+   * (DAY/MIN/MIN5/TIMELINE/TRANSDATA)
+   * @param baseinfo_path the baseinfo sqlite3 database file path; addMarket /
+   * addStockType is not available when it is empty
+   * @note baseinfo_path and the K-line datapath are independent of each other,
+   * it usually points to ~/.hayaku/stock.db
+   */
+  virtual bool setConfig(const string& datapath, const vector<string>& markets,
+                         const vector<string>& ktypes,
+                         const string& baseinfo_path) = 0;
 
-    virtual Datetime getLastDatetime(const string& market, const string& code,
-                                     const KQuery::KType& ktype) = 0;
+  virtual Datetime getLastDatetime(const string& market, const string& code,
+                                   const KQuery::KType& ktype) = 0;
 
-    virtual void addKRecordList(const string& market, const string& code,
-                                const vector<KRecord>& krecords, const KQuery::KType& ktype) = 0;
+  virtual void addKRecordList(const string& market, const string& code,
+                              const vector<KRecord>& krecords,
+                              const KQuery::KType& ktype) = 0;
 
-    virtual void addTimeLineList(const string& market, const string& code,
-                                 const TimeLineList& timeline) = 0;
+  virtual void addTimeLineList(const string& market, const string& code,
+                               const TimeLineList& timeline) = 0;
 
-    virtual void addTransList(const string& market, const string& code,
-                              const TransRecordList& translist) = 0;
+  virtual void addTransList(const string& market, const string& code,
+                            const TransRecordList& translist) = 0;
 
-    virtual void updateIndex(const string& market, const string& code,
-                             const KQuery::KType& ktype) = 0;
+  virtual void updateIndex(const string& market, const string& code,
+                           const KQuery::KType& ktype) = 0;
 
-    virtual void remove(const string& market, const string& code, const KQuery::KType& ktype,
-                        Datetime start) = 0;
+  virtual void remove(const string& market, const string& code,
+                      const KQuery::KType& ktype, Datetime start) = 0;
 
-    /**
-     * @brief Register a new market into the baseinfo database (idempotent: it is skipped and true
-     * is returned if it already exists)
-     * @param market market abbreviation (converted to uppercase automatically)
-     * @param name market name
-     * @param description description (it is recommended to note the time zone, such as
-     *                     "NASDAQ/UTC-5")
-     * @param index_code the representative index code of the market (getMarketStock / the trading
-     *                   calendar depend on {market}{index_code})
-     * @param open1 morning opening time HHMM
-     * @param close1 morning closing time HHMM
-     * @param open2 afternoon opening time HHMM
-     * @param close2 afternoon closing time HHMM
-     * @return true success or it already exists; false failure (invalid license, baseinfo not
-     *         configured, SQL exception, and so on)
-     * @note It takes effect only after reopening HayakuSession following the registration; the
-     *       representative index K-lines must be imported separately
-     */
-    virtual bool addMarket(const string& market, const string& name, const string& description,
-                           const string& index_code, uint64_t open1, uint64_t close1,
-                           uint64_t open2, uint64_t close2) = 0;
+  /**
+   * @brief Register a new market into the baseinfo database (idempotent: it is
+   * skipped and true is returned if it already exists)
+   * @param market market abbreviation (converted to uppercase automatically)
+   * @param name market name
+   * @param description description (it is recommended to note the time zone,
+   * such as "NASDAQ/UTC-5")
+   * @param index_code the representative index code of the market
+   * (getMarketStock / the trading calendar depend on {market}{index_code})
+   * @param open1 morning opening time HHMM
+   * @param close1 morning closing time HHMM
+   * @param open2 afternoon opening time HHMM
+   * @param close2 afternoon closing time HHMM
+   * @return true success or it already exists; false failure (invalid license,
+   * baseinfo not configured, SQL exception, and so on)
+   * @note It takes effect only after reopening HayakuSession following the
+   * registration; the representative index K-lines must be imported separately
+   */
+  virtual bool addMarket(const string& market, const string& name,
+                         const string& description, const string& index_code,
+                         uint64_t open1, uint64_t close1, uint64_t open2,
+                         uint64_t close2) = 0;
 
-    /**
-     * @brief Register a security type into the baseinfo database (idempotent: it is skipped and
-     * true is returned if it already exists)
-     * @param type_id the type value; id == type is stipulated; only 10 (CRYPTO reuse) or >= 12
-     *                (custom) is allowed
-     * @param description type description
-     * @param precision price precision (decimal places)
-     * @param tick minimum tick size
-     * @param tick_value value of every tick
-     * @param min_trade minimum trade volume per order
-     * @param max_trade maximum trade volume per order
-     * @return true success or it already exists; false failure
-     * @note It takes effect only after reopening HayakuSession following the registration
-     */
-    virtual bool addStockType(uint32_t type_id, const string& description, uint32_t precision,
-                              double tick, double tick_value, double min_trade,
-                              double max_trade) = 0;
+  /**
+   * @brief Register a security type into the baseinfo database (idempotent: it
+   * is skipped and true is returned if it already exists)
+   * @param type_id the type value; id == type is stipulated; only 10 (CRYPTO
+   * reuse) or >= 12 (custom) is allowed
+   * @param description type description
+   * @param precision price precision (decimal places)
+   * @param tick minimum tick size
+   * @param tick_value value of every tick
+   * @param min_trade minimum trade volume per order
+   * @param max_trade maximum trade volume per order
+   * @return true success or it already exists; false failure
+   * @note It takes effect only after reopening HayakuSession following the
+   * registration
+   */
+  virtual bool addStockType(uint32_t type_id, const string& description,
+                            uint32_t precision, double tick, double tick_value,
+                            double min_trade, double max_trade) = 0;
 };
 
 }  // namespace hayaku

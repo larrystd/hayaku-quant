@@ -9,49 +9,50 @@
  *      Author: fasiondog
  */
 
+#include <memory>
 
+#include "AsyncMySQLStatement.h"
 #include "common/Parameter.h"
 #include "common/database/AsyncDBConnectBase.h"
-#include "AsyncMySQLStatement.h"
-
-#include <memory>
 
 namespace hayaku {
 
 class HAYAKU_UTILS_API AsyncMySQLConnect : public AsyncDBConnectBase {
-public:
-    explicit AsyncMySQLConnect(const Parameter &param);
-    virtual ~AsyncMySQLConnect() override;
+ public:
+  explicit AsyncMySQLConnect(const Parameter &param);
+  virtual ~AsyncMySQLConnect() override;
 
-    AsyncMySQLConnect(const AsyncMySQLConnect &) = delete;
-    AsyncMySQLConnect &operator=(const AsyncMySQLConnect &) = delete;
+  AsyncMySQLConnect(const AsyncMySQLConnect &) = delete;
+  AsyncMySQLConnect &operator=(const AsyncMySQLConnect &) = delete;
 
-    virtual net::awaitable<bool> ping() override;
-    virtual net::awaitable<int64_t> exec(const std::string &sql_string) override;
-    virtual net::awaitable<AsyncSQLStatementPtr> getStatement(
+  virtual net::awaitable<bool> ping() override;
+  virtual net::awaitable<int64_t> exec(const std::string &sql_string) override;
+  virtual net::awaitable<AsyncSQLStatementPtr> getStatement(
       const std::string &sql_statement) override;
-    virtual net::awaitable<bool> tableExist(const std::string &tablename) override;
-    virtual net::awaitable<void> resetAutoIncrement(const std::string &tablename) override;
+  virtual net::awaitable<bool> tableExist(
+      const std::string &tablename) override;
+  virtual net::awaitable<void> resetAutoIncrement(
+      const std::string &tablename) override;
 
-    virtual net::awaitable<void> transaction() override;
-    virtual net::awaitable<void> commit() override;
-    virtual net::awaitable<void> rollback() noexcept override;
+  virtual net::awaitable<void> transaction() override;
+  virtual net::awaitable<void> commit() override;
+  virtual net::awaitable<void> rollback() noexcept override;
 
-private:
-    friend class AsyncMySQLStatement;
+ private:
+  friend class AsyncMySQLStatement;
 
-    // The method provided to AsyncMySQLStatement to access the original connection (void* is used
-    // to avoid exposing the boost.mysql types)
-    void *getRawConnection() const;
+  // The method provided to AsyncMySQLStatement to access the original
+  // connection (void* is used to avoid exposing the boost.mysql types)
+  void *getRawConnection() const;
 
-    // Internal helper methods
-    net::awaitable<bool> tryConnect();
-    net::awaitable<void> connect();
-    void close();
+  // Internal helper methods
+  net::awaitable<bool> tryConnect();
+  net::awaitable<void> connect();
+  void close();
 
-private:
-    struct Impl;
-    std::unique_ptr<Impl> m_impl;
+ private:
+  struct Impl;
+  std::unique_ptr<Impl> m_impl;
 };
 
 }  // namespace hayaku

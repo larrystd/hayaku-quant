@@ -17,13 +17,13 @@ namespace hayaku {
  * Round up (round in the direction of increasing value) to an integer
  */
 class ICeil : public IndicatorImp {
-    INDICATOR_IMP(ICeil)
-    INDICATOR_IMP_SUPPORT_INCREMENT
-    INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
+  INDICATOR_IMP(ICeil)
+  INDICATOR_IMP_SUPPORT_INCREMENT
+  INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    ICeil();
-    virtual ~ICeil() override;
+ public:
+  ICeil();
+  virtual ~ICeil() override;
 };
 
 } /* namespace hayaku */
@@ -44,13 +44,13 @@ namespace hayaku {
  * Round down (round in the direction of decreasing value) to an integer
  */
 class IFloor : public IndicatorImp {
-    INDICATOR_IMP(IFloor)
-    INDICATOR_IMP_SUPPORT_INCREMENT
-    INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
+  INDICATOR_IMP(IFloor)
+  INDICATOR_IMP_SUPPORT_INCREMENT
+  INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    IFloor();
-    virtual ~IFloor() override;
+ public:
+  IFloor();
+  virtual ~IFloor() override;
 };
 
 } /* namespace hayaku */
@@ -68,16 +68,17 @@ public:
 namespace hayaku {
 
 /*
- * Round to an integer (rounded toward a smaller absolute value, i.e. the integer part of the data)
+ * Round to an integer (rounded toward a smaller absolute value, i.e. the
+ * integer part of the data)
  */
 class IIntpart : public IndicatorImp {
-    INDICATOR_IMP(IIntpart)
-    INDICATOR_IMP_SUPPORT_INCREMENT
-    INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
+  INDICATOR_IMP(IIntpart)
+  INDICATOR_IMP_SUPPORT_INCREMENT
+  INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    IIntpart();
-    virtual ~IIntpart() override;
+ public:
+  IIntpart();
+  virtual ~IIntpart() override;
 };
 
 } /* namespace hayaku */
@@ -98,14 +99,14 @@ namespace hayaku {
  * Rounding
  */
 class IRound : public IndicatorImp {
-    INDICATOR_IMP(IRound)
-    INDICATOR_IMP_SUPPORT_INCREMENT
-    INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
+  INDICATOR_IMP(IRound)
+  INDICATOR_IMP_SUPPORT_INCREMENT
+  INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    IRound();
-    virtual ~IRound() override;
-    virtual void _checkParam(const string& name) const override;
+ public:
+  IRound();
+  virtual ~IRound() override;
+  virtual void _checkParam(const string& name) const override;
 };
 
 } /* namespace hayaku */
@@ -126,14 +127,14 @@ namespace hayaku {
  * Truncate downward, e.g. 10.1 is truncated to 10
  */
 class IRoundDown : public IndicatorImp {
-    INDICATOR_IMP(IRoundDown)
-    INDICATOR_IMP_SUPPORT_INCREMENT
-    INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
+  INDICATOR_IMP(IRoundDown)
+  INDICATOR_IMP_SUPPORT_INCREMENT
+  INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    IRoundDown();
-    virtual ~IRoundDown() override;
-    virtual void _checkParam(const string& name) const override;
+ public:
+  IRoundDown();
+  virtual ~IRoundDown() override;
+  virtual void _checkParam(const string& name) const override;
 };
 
 } /* namespace hayaku */
@@ -154,14 +155,14 @@ namespace hayaku {
  * Truncate upward, e.g. 10.1 is truncated to 11
  */
 class IRoundUp : public IndicatorImp {
-    INDICATOR_IMP(IRoundUp)
-    INDICATOR_IMP_SUPPORT_INCREMENT
-    INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
+  INDICATOR_IMP(IRoundUp)
+  INDICATOR_IMP_SUPPORT_INCREMENT
+  INDICATOR_IMP_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    IRoundUp();
-    virtual ~IRoundUp() override;
-    virtual void _checkParam(const string& name) const override;
+ public:
+  IRoundUp();
+  virtual ~IRoundUp() override;
+  virtual void _checkParam(const string& name) const override;
 };
 
 } /* namespace hayaku */
@@ -185,28 +186,26 @@ ICeil::ICeil() : IndicatorImp("CEILING", 1) {}
 
 ICeil::~ICeil() {}
 
-void ICeil::_calculate(const Indicator &data) {
-    size_t total = data.size();
-    m_discard = data.discard();
-    if (m_discard >= total) {
-        m_discard = total;
-        return;
-    }
+void ICeil::_calculate(const Indicator& data) {
+  size_t total = data.size();
+  m_discard = data.discard();
+  if (m_discard >= total) {
+    m_discard = total;
+    return;
+  }
 
-    _increment_calculate(data, m_discard);
+  _increment_calculate(data, m_discard);
 }
 
-void ICeil::_increment_calculate(const Indicator &data, size_t start_pos) {
-    auto const *src = data.data();
-    auto *dst = this->data();
-    for (size_t i = start_pos, end = data.size(); i < end; ++i) {
-        dst[i] = std::ceil(src[i]);
-    }
+void ICeil::_increment_calculate(const Indicator& data, size_t start_pos) {
+  auto const* src = data.data();
+  auto* dst = this->data();
+  for (size_t i = start_pos, end = data.size(); i < end; ++i) {
+    dst[i] = std::ceil(src[i]);
+  }
 }
 
-Indicator HAYAKU_API CEILING() {
-    return Indicator(make_shared<ICeil>());
-}
+Indicator HAYAKU_API CEILING() { return Indicator(make_shared<ICeil>()); }
 
 } /* namespace hayaku */
 
@@ -230,27 +229,25 @@ IFloor::IFloor() : IndicatorImp("FLOOR", 1) {}
 IFloor::~IFloor() {}
 
 void IFloor::_calculate(const Indicator& data) {
-    size_t total = data.size();
-    m_discard = data.discard();
-    if (m_discard >= total) {
-        m_discard = total;
-        return;
-    }
+  size_t total = data.size();
+  m_discard = data.discard();
+  if (m_discard >= total) {
+    m_discard = total;
+    return;
+  }
 
-    _increment_calculate(data, m_discard);
+  _increment_calculate(data, m_discard);
 }
 
 void IFloor::_increment_calculate(const Indicator& data, size_t start_pos) {
-    auto const* src = data.data();
-    auto* dst = this->data();
-    for (size_t i = start_pos, end = data.size(); i < end; ++i) {
-        dst[i] = std::floor(src[i]);
-    }
+  auto const* src = data.data();
+  auto* dst = this->data();
+  for (size_t i = start_pos, end = data.size(); i < end; ++i) {
+    dst[i] = std::floor(src[i]);
+  }
 }
 
-Indicator HAYAKU_API FLOOR() {
-    return Indicator(make_shared<IFloor>());
-}
+Indicator HAYAKU_API FLOOR() { return Indicator(make_shared<IFloor>()); }
 
 } /* namespace hayaku */
 
@@ -274,27 +271,25 @@ IIntpart::IIntpart() : IndicatorImp("INTPART", 1) {}
 IIntpart::~IIntpart() {}
 
 void IIntpart::_calculate(const Indicator& data) {
-    size_t total = data.size();
-    m_discard = data.discard();
-    if (m_discard >= total) {
-        m_discard = total;
-        return;
-    }
+  size_t total = data.size();
+  m_discard = data.discard();
+  if (m_discard >= total) {
+    m_discard = total;
+    return;
+  }
 
-    _increment_calculate(data, m_discard);
+  _increment_calculate(data, m_discard);
 }
 
 void IIntpart::_increment_calculate(const Indicator& data, size_t start_pos) {
-    auto const* src = data.data();
-    auto* dst = this->data();
-    for (size_t i = start_pos, end = data.size(); i < end; ++i) {
-        dst[i] = int(src[i]);
-    }
+  auto const* src = data.data();
+  auto* dst = this->data();
+  for (size_t i = start_pos, end = data.size(); i < end; ++i) {
+    dst[i] = int(src[i]);
+  }
 }
 
-Indicator HAYAKU_API INTPART() {
-    return Indicator(make_shared<IIntpart>());
-}
+Indicator HAYAKU_API INTPART() { return Indicator(make_shared<IIntpart>()); }
 
 } /* namespace hayaku */
 
@@ -313,42 +308,40 @@ BOOST_CLASS_EXPORT(hayaku::IRound)
 
 namespace hayaku {
 
-IRound::IRound() : IndicatorImp("ROUND", 1) {
-    setParam<int>("ndigits", 2);
-}
+IRound::IRound() : IndicatorImp("ROUND", 1) { setParam<int>("ndigits", 2); }
 
 IRound::~IRound() {}
 
 void IRound::_checkParam(const string& name) const {
-    if ("ndigits" == name) {
-        HAYAKU_ASSERT(getParam<int>("ndigits") >= 0);
-    }
+  if ("ndigits" == name) {
+    HAYAKU_ASSERT(getParam<int>("ndigits") >= 0);
+  }
 }
 
 void IRound::_calculate(const Indicator& data) {
-    size_t total = data.size();
-    m_discard = data.discard();
-    if (m_discard >= total) {
-        m_discard = total;
-        return;
-    }
+  size_t total = data.size();
+  m_discard = data.discard();
+  if (m_discard >= total) {
+    m_discard = total;
+    return;
+  }
 
-    _increment_calculate(data, m_discard);
+  _increment_calculate(data, m_discard);
 }
 
 void IRound::_increment_calculate(const Indicator& data, size_t start_pos) {
-    int n = getParam<int>("ndigits");
-    auto const* src = data.data();
-    auto* dst = this->data();
-    for (size_t i = start_pos, total = data.size(); i < total; ++i) {
-        dst[i] = roundEx(src[i], n);
-    }
+  int n = getParam<int>("ndigits");
+  auto const* src = data.data();
+  auto* dst = this->data();
+  for (size_t i = start_pos, total = data.size(); i < total; ++i) {
+    dst[i] = roundEx(src[i], n);
+  }
 }
 
 Indicator HAYAKU_API ROUND(int ndigits) {
-    IndicatorImpPtr p = make_shared<IRound>();
-    p->setParam<int>("ndigits", ndigits);
-    return Indicator(p);
+  IndicatorImpPtr p = make_shared<IRound>();
+  p->setParam<int>("ndigits", ndigits);
+  return Indicator(p);
 }
 
 } /* namespace hayaku */
@@ -369,41 +362,41 @@ BOOST_CLASS_EXPORT(hayaku::IRoundDown)
 namespace hayaku {
 
 IRoundDown::IRoundDown() : IndicatorImp("ROUNDDOWN", 1) {
-    setParam<int>("ndigits", 2);
+  setParam<int>("ndigits", 2);
 }
 
 IRoundDown::~IRoundDown() {}
 
 void IRoundDown::_checkParam(const string& name) const {
-    if ("ndigits" == name) {
-        HAYAKU_ASSERT(getParam<int>("ndigits") >= 0);
-    }
+  if ("ndigits" == name) {
+    HAYAKU_ASSERT(getParam<int>("ndigits") >= 0);
+  }
 }
 
 void IRoundDown::_calculate(const Indicator& data) {
-    size_t total = data.size();
-    m_discard = data.discard();
-    if (m_discard >= total) {
-        m_discard = total;
-        return;
-    }
+  size_t total = data.size();
+  m_discard = data.discard();
+  if (m_discard >= total) {
+    m_discard = total;
+    return;
+  }
 
-    _increment_calculate(data, m_discard);
+  _increment_calculate(data, m_discard);
 }
 
 void IRoundDown::_increment_calculate(const Indicator& data, size_t start_pos) {
-    int n = getParam<int>("ndigits");
-    auto const* src = data.data();
-    auto* dst = this->data();
-    for (size_t i = start_pos, total = data.size(); i < total; ++i) {
-        dst[i] = roundDown(src[i], n);
-    }
+  int n = getParam<int>("ndigits");
+  auto const* src = data.data();
+  auto* dst = this->data();
+  for (size_t i = start_pos, total = data.size(); i < total; ++i) {
+    dst[i] = roundDown(src[i], n);
+  }
 }
 
 Indicator HAYAKU_API ROUNDDOWN(int ndigits) {
-    IndicatorImpPtr p = make_shared<IRoundDown>();
-    p->setParam<int>("ndigits", ndigits);
-    return Indicator(p);
+  IndicatorImpPtr p = make_shared<IRoundDown>();
+  p->setParam<int>("ndigits", ndigits);
+  return Indicator(p);
 }
 
 } /* namespace hayaku */
@@ -424,41 +417,41 @@ BOOST_CLASS_EXPORT(hayaku::IRoundUp)
 namespace hayaku {
 
 IRoundUp::IRoundUp() : IndicatorImp("ROUNDUP", 1) {
-    setParam<int>("ndigits", 2);
+  setParam<int>("ndigits", 2);
 }
 
 IRoundUp::~IRoundUp() {}
 
 void IRoundUp::_checkParam(const string& name) const {
-    if ("ndigits" == name) {
-        HAYAKU_ASSERT(getParam<int>("ndigits") >= 0);
-    }
+  if ("ndigits" == name) {
+    HAYAKU_ASSERT(getParam<int>("ndigits") >= 0);
+  }
 }
 
 void IRoundUp::_calculate(const Indicator& data) {
-    size_t total = data.size();
-    m_discard = data.discard();
-    if (m_discard >= total) {
-        m_discard = total;
-        return;
-    }
+  size_t total = data.size();
+  m_discard = data.discard();
+  if (m_discard >= total) {
+    m_discard = total;
+    return;
+  }
 
-    _increment_calculate(data, m_discard);
+  _increment_calculate(data, m_discard);
 }
 
 void IRoundUp::_increment_calculate(const Indicator& data, size_t start_pos) {
-    int n = getParam<int>("ndigits");
-    auto const* src = data.data();
-    auto* dst = this->data();
-    for (size_t i = start_pos, total = data.size(); i < total; ++i) {
-        dst[i] = roundUp(src[i], n);
-    }
+  int n = getParam<int>("ndigits");
+  auto const* src = data.data();
+  auto* dst = this->data();
+  for (size_t i = start_pos, total = data.size(); i < total; ++i) {
+    dst[i] = roundUp(src[i], n);
+  }
 }
 
 Indicator HAYAKU_API ROUNDUP(int ndigits) {
-    IndicatorImpPtr p = make_shared<IRoundUp>();
-    p->setParam<int>("ndigits", ndigits);
-    return Indicator(p);
+  IndicatorImpPtr p = make_shared<IRoundUp>();
+  p->setParam<int>("ndigits", ndigits);
+  return Indicator(p);
 }
 
 } /* namespace hayaku */

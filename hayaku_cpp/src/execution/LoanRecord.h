@@ -7,9 +7,8 @@
  *      Author: fasiondog
  */
 
-
-#include "data/MarketTypes.h"
 #include "../config.h"
+#include "data/MarketTypes.h"
 
 namespace hayaku {
 
@@ -18,34 +17,35 @@ namespace hayaku {
  * @ingroup ExecutionAccount
  */
 class HAYAKU_API LoanRecord {
-public:
-    LoanRecord() : datetime(Null<Datetime>()), value(0.0) {}
-    LoanRecord(const Datetime& datetime, price_t value) : datetime(datetime), value(value) {}
+ public:
+  LoanRecord() : datetime(Null<Datetime>()), value(0.0) {}
+  LoanRecord(const Datetime& datetime, price_t value)
+      : datetime(datetime), value(value) {}
 
-    Datetime datetime;
-    price_t value;
+  Datetime datetime;
+  price_t value;
 
 #if HAYAKU_SUPPORT_SERIALIZATION
-private:
-    friend class boost::serialization::access;
-    template <class Archive>
-    void save(Archive& ar, const unsigned int version) const {
-        namespace bs = boost::serialization;
-        hayaku::uint64_t date_number = datetime.number();
-        ar& bs::make_nvp("datetime", date_number);
-        ar& BOOST_SERIALIZATION_NVP(value);
-    }
+ private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void save(Archive& ar, const unsigned int version) const {
+    namespace bs = boost::serialization;
+    hayaku::uint64_t date_number = datetime.number();
+    ar& bs::make_nvp("datetime", date_number);
+    ar& BOOST_SERIALIZATION_NVP(value);
+  }
 
-    template <class Archive>
-    void load(Archive& ar, const unsigned int version) {
-        namespace bs = boost::serialization;
-        hayaku::uint64_t date_number;
-        ar& bs::make_nvp("datetime", date_number);
-        datetime = Datetime(date_number);
-        ar& BOOST_SERIALIZATION_NVP(value);
-    }
+  template <class Archive>
+  void load(Archive& ar, const unsigned int version) {
+    namespace bs = boost::serialization;
+    hayaku::uint64_t date_number;
+    ar& bs::make_nvp("datetime", date_number);
+    datetime = Datetime(date_number);
+    ar& BOOST_SERIALIZATION_NVP(value);
+  }
 
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
+  BOOST_SERIALIZATION_SPLIT_MEMBER()
 #endif
 };
 

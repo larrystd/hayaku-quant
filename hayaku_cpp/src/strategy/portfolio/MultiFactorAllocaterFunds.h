@@ -7,22 +7,21 @@
  *      Author: fasiondog
  */
 
-
 #include "AllocateFundsBase.h"
 
 namespace hayaku {
 
 /*
- * Create an asset allocation algorithm instance with the MultiFactor score weights, i.e. the scores
- * returned by SE are used as the weights directly.
+ * Create an asset allocation algorithm instance with the MultiFactor score
+ * weights, i.e. the scores returned by SE are used as the weights directly.
  */
 class MultiFactorAllocaterFunds : public AllocateFundsBase {
-    ALLOCATEFUNDS_IMP(MultiFactorAllocaterFunds)
-    ALLOCATEFUNDS_NO_PRIVATE_MEMBER_SERIALIZATION
+  ALLOCATEFUNDS_IMP(MultiFactorAllocaterFunds)
+  ALLOCATEFUNDS_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    MultiFactorAllocaterFunds();
-    virtual ~MultiFactorAllocaterFunds();
+ public:
+  MultiFactorAllocaterFunds();
+  virtual ~MultiFactorAllocaterFunds();
 };
 
 }  // namespace hayaku

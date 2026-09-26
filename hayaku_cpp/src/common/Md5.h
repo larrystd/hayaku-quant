@@ -7,7 +7,6 @@
  *      Author: fasiondog
  */
 
-
 #include <string>
 
 #ifndef HAYAKU_UTILS_API
@@ -32,7 +31,7 @@ std::string HAYAKU_UTILS_API md5(const unsigned char* input, size_t len);
  * @return std::string
  */
 inline std::string md5(const std::string& src) {
-    return md5((const unsigned char*)src.data(), src.size());
+  return md5((const unsigned char*)src.data(), src.size());
 }
 
 }  // namespace hayaku

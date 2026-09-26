@@ -19,16 +19,11 @@ namespace hayaku {
  */
 Indicator HAYAKU_API ACOS();
 
-inline Indicator ACOS(const Indicator& ind) {
-    return ACOS()(ind);
-}
+inline Indicator ACOS(const Indicator& ind) { return ACOS()(ind); }
 
-inline Indicator ACOS(Indicator::value_t val) {
-    return ACOS(CVAL(val));
-}
+inline Indicator ACOS(Indicator::value_t val) { return ACOS(CVAL(val)); }
 
 }  // namespace hayaku
-
 
 // ---- Merged from ASIN.h ----
 /*
@@ -48,16 +43,11 @@ namespace hayaku {
  */
 Indicator HAYAKU_API ASIN();
 
-inline Indicator ASIN(const Indicator& ind) {
-    return ASIN()(ind);
-}
+inline Indicator ASIN(const Indicator& ind) { return ASIN()(ind); }
 
-inline Indicator ASIN(Indicator::value_t val) {
-    return ASIN(CVAL(val));
-}
+inline Indicator ASIN(Indicator::value_t val) { return ASIN(CVAL(val)); }
 
 }  // namespace hayaku
-
 
 // ---- Merged from ATAN.h ----
 /*
@@ -77,16 +67,11 @@ namespace hayaku {
  */
 Indicator HAYAKU_API ATAN();
 
-inline Indicator ATAN(const Indicator& ind) {
-    return ATAN()(ind);
-}
+inline Indicator ATAN(const Indicator& ind) { return ATAN()(ind); }
 
-inline Indicator ATAN(Indicator::value_t val) {
-    return ATAN(CVAL(val));
-}
+inline Indicator ATAN(Indicator::value_t val) { return ATAN(CVAL(val)); }
 
 }  // namespace hayaku
-
 
 // ---- Merged from COS.h ----
 /*
@@ -106,16 +91,11 @@ namespace hayaku {
  */
 Indicator HAYAKU_API COS();
 
-inline Indicator COS(const Indicator& ind) {
-    return COS()(ind);
-}
+inline Indicator COS(const Indicator& ind) { return COS()(ind); }
 
-inline Indicator COS(Indicator::value_t val) {
-    return COS(CVAL(val));
-}
+inline Indicator COS(Indicator::value_t val) { return COS(CVAL(val)); }
 
 }  // namespace hayaku
-
 
 // ---- Merged from SIN.h ----
 /*
@@ -135,16 +115,11 @@ namespace hayaku {
  */
 Indicator HAYAKU_API SIN();
 
-inline Indicator SIN(const Indicator& ind) {
-    return SIN()(ind);
-}
+inline Indicator SIN(const Indicator& ind) { return SIN()(ind); }
 
-inline Indicator SIN(Indicator::value_t val) {
-    return SIN(CVAL(val));
-}
+inline Indicator SIN(Indicator::value_t val) { return SIN(CVAL(val)); }
 
 }  // namespace hayaku
-
 
 // ---- Merged from TAN.h ----
 /*
@@ -164,12 +139,8 @@ namespace hayaku {
  */
 Indicator HAYAKU_API TAN();
 
-inline Indicator TAN(const Indicator& ind) {
-    return TAN()(ind);
-}
+inline Indicator TAN(const Indicator& ind) { return TAN()(ind); }
 
-inline Indicator TAN(Indicator::value_t val) {
-    return TAN(CVAL(val));
-}
+inline Indicator TAN(Indicator::value_t val) { return TAN(CVAL(val)); }
 
 }  // namespace hayaku

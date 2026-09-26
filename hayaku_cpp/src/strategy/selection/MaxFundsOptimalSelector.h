@@ -7,18 +7,17 @@
  *      Author: fasiondog
  */
 
-
 #include "OptimalSelectorBase.h"
 
 namespace hayaku {
 
 class MaxFundsOptimalSelector : public OptimalSelectorBase {
-    OPTIMAL_SELECTOR_IMP(MaxFundsOptimalSelector)
-    OPTIMAL_SELECTOR_NO_PRIVATE_MEMBER_SERIALIZATION
+  OPTIMAL_SELECTOR_IMP(MaxFundsOptimalSelector)
+  OPTIMAL_SELECTOR_NO_PRIVATE_MEMBER_SERIALIZATION
 
-public:
-    MaxFundsOptimalSelector();
-    virtual ~MaxFundsOptimalSelector();
+ public:
+  MaxFundsOptimalSelector();
+  virtual ~MaxFundsOptimalSelector();
 };
 
 }  // namespace hayaku

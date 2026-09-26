@@ -5,11 +5,13 @@
  *      Author: fasiondog
  */
 
-#include "test_config.h"
-#include <fstream>
 #include <data/DataRuntime.h>
-#include <operators/WindowOperators.h>
 #include <operators/SeriesOperators.h>
+#include <operators/WindowOperators.h>
+
+#include <fstream>
+
+#include "test_config.h"
 
 using namespace hayaku;
 
@@ -21,12 +23,12 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_BARSLASTCOUNT") {
-    auto k = getKData("sz000001", KQuery(-10));
-    Indicator ret = BARSLASTCOUNT(CLOSE() > (OPEN()))(k);
-    CHECK_EQ(ret.name(), "BARSLASTCOUNT");
+  auto k = getKData("sz000001", KQuery(-10));
+  Indicator ret = BARSLASTCOUNT(CLOSE() > (OPEN()))(k);
+  CHECK_EQ(ret.name(), "BARSLASTCOUNT");
 
-    auto expect = PRICELIST(PriceList{1, 0, 1, 2, 0, 1, 0, 0, 1, 2});
-    check_indicator(ret, expect);
+  auto expect = PRICELIST(PriceList{1, 0, 1, 2, 0, 1, 0, 0, 1, 2});
+  check_indicator(ret, expect);
 }
 
 //-----------------------------------------------------------------------------
@@ -36,31 +38,31 @@ TEST_CASE("test_BARSLASTCOUNT") {
 
 /** @par Test points */
 TEST_CASE("test_BARSLASTCOUNT_export") {
-    DataRuntime& sm = getDataRuntime();
-    string filename(sm.tmpdir());
-    filename += "/BARSLASTCOUNT.xml";
+  DataRuntime& sm = getDataRuntime();
+  string filename(sm.tmpdir());
+  filename += "/BARSLASTCOUNT.xml";
 
-    Stock stock = sm.getStock("sh000001");
-    KData kdata = stock.getKData(KQuery(-20));
-    Indicator x1 = BARSLASTCOUNT(CLOSE() > OPEN())(kdata);
-    {
-        std::ofstream ofs(filename);
-        boost::archive::xml_oarchive oa(ofs);
-        oa << BOOST_SERIALIZATION_NVP(x1);
-    }
+  Stock stock = sm.getStock("sh000001");
+  KData kdata = stock.getKData(KQuery(-20));
+  Indicator x1 = BARSLASTCOUNT(CLOSE() > OPEN())(kdata);
+  {
+    std::ofstream ofs(filename);
+    boost::archive::xml_oarchive oa(ofs);
+    oa << BOOST_SERIALIZATION_NVP(x1);
+  }
 
-    Indicator x2;
-    {
-        std::ifstream ifs(filename);
-        boost::archive::xml_iarchive ia(ifs);
-        ia >> BOOST_SERIALIZATION_NVP(x2);
-    }
+  Indicator x2;
+  {
+    std::ifstream ifs(filename);
+    boost::archive::xml_iarchive ia(ifs);
+    ia >> BOOST_SERIALIZATION_NVP(x2);
+  }
 
-    CHECK_EQ(x2.name(), "BARSLASTCOUNT");
-    CHECK_EQ(x1.size(), x2.size());
-    CHECK_EQ(x1.discard(), x2.discard());
-    CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
-    check_indicator(x2, x1);
+  CHECK_EQ(x2.name(), "BARSLASTCOUNT");
+  CHECK_EQ(x1.size(), x2.size());
+  CHECK_EQ(x1.discard(), x2.discard());
+  CHECK_EQ(x1.getResultNumber(), x2.getResultNumber());
+  check_indicator(x2, x1);
 }
 #endif /* #if HAYAKU_SUPPORT_SERIALIZATION */
 

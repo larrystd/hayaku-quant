@@ -5,9 +5,10 @@
  *      Author: fasiondog
  */
 
-#include "doctest/doctest.h"
 #include <common/Arithmetic.h>
+
 #include "common/Log.h"
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 
@@ -19,136 +20,136 @@ using namespace hayaku;
 
 /** @par Test points */
 TEST_CASE("test_round") {
-    double x;
+  double x;
 
-    x = 10.11;
-    CHECK(roundEx(x) == 10.0);
-    CHECK(roundDown(x) == 10.0);
-    CHECK(roundUp(x) == 11.0);
-    CHECK_EQ(roundEx(x, 1), doctest::Approx(10.1));
-    CHECK(roundDown(x, 1) == 10.1);
-    CHECK(roundUp(x, 1) == 10.2);
+  x = 10.11;
+  CHECK(roundEx(x) == 10.0);
+  CHECK(roundDown(x) == 10.0);
+  CHECK(roundUp(x) == 11.0);
+  CHECK_EQ(roundEx(x, 1), doctest::Approx(10.1));
+  CHECK(roundDown(x, 1) == 10.1);
+  CHECK(roundUp(x, 1) == 10.2);
 
-    x = 10.55;
-    CHECK(roundEx(x) == 11);
-    CHECK(roundDown(x) == 10);
-    CHECK(roundUp(x) == 11.0);
-    CHECK_EQ(roundEx(x, 1), doctest::Approx(10.6));
-    CHECK(roundDown(x, 1) == 10.5);
-    CHECK(roundUp(x, 1) == 10.6);
+  x = 10.55;
+  CHECK(roundEx(x) == 11);
+  CHECK(roundDown(x) == 10);
+  CHECK(roundUp(x) == 11.0);
+  CHECK_EQ(roundEx(x, 1), doctest::Approx(10.6));
+  CHECK(roundDown(x, 1) == 10.5);
+  CHECK(roundUp(x, 1) == 10.6);
 
-    x = -10.11;
-    CHECK(roundEx(x) == -10);
-    CHECK(roundDown(x) == -10);
-    CHECK(roundUp(x) == -11.0);
-    CHECK_EQ(roundEx(x, 1), doctest::Approx(-10.1));
-    CHECK(roundDown(x, 1) == -10.1);
-    CHECK(roundUp(x, 1) == -10.2);
+  x = -10.11;
+  CHECK(roundEx(x) == -10);
+  CHECK(roundDown(x) == -10);
+  CHECK(roundUp(x) == -11.0);
+  CHECK_EQ(roundEx(x, 1), doctest::Approx(-10.1));
+  CHECK(roundDown(x, 1) == -10.1);
+  CHECK(roundUp(x, 1) == -10.2);
 
-    x = -10.55;
-    CHECK(roundEx(x) == -11);
-    CHECK(roundDown(x) == -10);
-    CHECK(roundUp(x) == -11.0);
-    CHECK_EQ(roundEx(x, 1), doctest::Approx(-10.6));
-    CHECK(roundDown(x, 1) == -10.5);
-    CHECK_EQ(roundUp(x, 1), doctest::Approx(-10.6));
+  x = -10.55;
+  CHECK(roundEx(x) == -11);
+  CHECK(roundDown(x) == -10);
+  CHECK(roundUp(x) == -11.0);
+  CHECK_EQ(roundEx(x, 1), doctest::Approx(-10.6));
+  CHECK(roundDown(x, 1) == -10.5);
+  CHECK_EQ(roundUp(x, 1), doctest::Approx(-10.6));
 }
 
 TEST_CASE("test_string_to_upper") {
-    std::string x("abcd");
-    to_upper(x);
-    CHECK(x == "ABCD");
+  std::string x("abcd");
+  to_upper(x);
+  CHECK(x == "ABCD");
 
-    std::string y("中abcdD");
-    to_upper(y);
-    CHECK(y == "中ABCDD");
+  std::string y("中abcdD");
+  to_upper(y);
+  CHECK(y == "中ABCDD");
 }
 
 TEST_CASE("test_string_to_lower") {
-    std::string x("ABcD");
-    to_lower(x);
-    CHECK(x == "abcd");
+  std::string x("ABcD");
+  to_lower(x);
+  CHECK(x == "abcd");
 
-    std::string y("中abCdD");
-    to_lower(y);
-    CHECK(y == "中abcdd");
+  std::string y("中abCdD");
+  to_lower(y);
+  CHECK(y == "中abcdd");
 }
 
 TEST_CASE("test_byteToHexStr") {
-    const char *x = "abcd";
-    std::string hex = byteToHexStr(x, 4);
-    CHECK_EQ(hex, "61626364");
+  const char *x = "abcd";
+  std::string hex = byteToHexStr(x, 4);
+  CHECK_EQ(hex, "61626364");
 
-    std::string y(x);
-    hex = byteToHexStr(y);
-    CHECK_EQ(hex, "61626364");
+  std::string y(x);
+  hex = byteToHexStr(y);
+  CHECK_EQ(hex, "61626364");
 
-    CHECK_EQ("", byteToHexStr(""));
+  CHECK_EQ("", byteToHexStr(""));
 }
 
 TEST_CASE("test_byteToHexStrForPrint") {
-    const char *x = "abcd";
-    std::string hex = byteToHexStrForPrint(x, 4);
-    CHECK_EQ(hex, "0x61 0x62 0x63 0x64");
+  const char *x = "abcd";
+  std::string hex = byteToHexStrForPrint(x, 4);
+  CHECK_EQ(hex, "0x61 0x62 0x63 0x64");
 
-    CHECK_EQ("", byteToHexStrForPrint(""));
+  CHECK_EQ("", byteToHexStrForPrint(""));
 }
 
 TEST_CASE("test_split_by_char") {
-    std::string x("");
-    auto splits = split(x, '.');
-    CHECK_EQ(splits.size(), 1);
-    CHECK_EQ(splits[0], x);
+  std::string x("");
+  auto splits = split(x, '.');
+  CHECK_EQ(splits.size(), 1);
+  CHECK_EQ(splits[0], x);
 
-    x = "100.1.";
-    splits = split(x, '.');
-    CHECK_EQ(splits.size(), 3);
-    CHECK_EQ(splits[0], "100");
-    CHECK_EQ(splits[1], "1");
+  x = "100.1.";
+  splits = split(x, '.');
+  CHECK_EQ(splits.size(), 3);
+  CHECK_EQ(splits[0], "100");
+  CHECK_EQ(splits[1], "1");
 
-    x = "..";
-    splits = split(x, '.');
-    CHECK_EQ(splits.size(), 3);
-    CHECK_EQ(splits[0], "");
-    CHECK_EQ(splits[1], "");
-    CHECK_EQ(splits[2], "");
+  x = "..";
+  splits = split(x, '.');
+  CHECK_EQ(splits.size(), 3);
+  CHECK_EQ(splits[0], "");
+  CHECK_EQ(splits[1], "");
+  CHECK_EQ(splits[2], "");
 }
 
 TEST_CASE("test_split_by_string") {
-    std::string x("");
+  std::string x("");
 
-    // The split string is empty
-    auto splits = split(x, "");
-    CHECK_EQ(splits.size(), 1);
-    CHECK_EQ(splits[0], x);
+  // The split string is empty
+  auto splits = split(x, "");
+  CHECK_EQ(splits.size(), 1);
+  CHECK_EQ(splits[0], x);
 
-    x = "123";
-    splits = split(x, "");
-    CHECK_EQ(splits.size(), 1);
-    CHECK_EQ(splits[0], x);
+  x = "123";
+  splits = split(x, "");
+  CHECK_EQ(splits.size(), 1);
+  CHECK_EQ(splits[0], x);
 
-    // The split string length is 1
-    x = "100.1.";
-    splits = split(x, ".");
-    CHECK_EQ(splits.size(), 3);
-    CHECK_EQ(splits[0], "100");
-    CHECK_EQ(splits[1], "1");
-    CHECK_EQ(splits[2], "");
+  // The split string length is 1
+  x = "100.1.";
+  splits = split(x, ".");
+  CHECK_EQ(splits.size(), 3);
+  CHECK_EQ(splits[0], "100");
+  CHECK_EQ(splits[1], "1");
+  CHECK_EQ(splits[2], "");
 
-    // The split string length is 2
-    x = "100.1.234.1.56";
-    splits = split(x, ".1");
-    CHECK_EQ(splits.size(), 3);
-    CHECK_EQ(splits[0], "100");
-    CHECK_EQ(splits[1], ".234");
-    CHECK_EQ(splits[2], ".56");
+  // The split string length is 2
+  x = "100.1.234.1.56";
+  splits = split(x, ".1");
+  CHECK_EQ(splits.size(), 3);
+  CHECK_EQ(splits[0], "100");
+  CHECK_EQ(splits[1], ".234");
+  CHECK_EQ(splits[2], ".56");
 
-    x = "..";
-    splits = split(x, ".");
-    CHECK_EQ(splits.size(), 3);
-    CHECK_EQ(splits[0], "");
-    CHECK_EQ(splits[1], "");
-    CHECK_EQ(splits[2], "");
+  x = "..";
+  splits = split(x, ".");
+  CHECK_EQ(splits.size(), 3);
+  CHECK_EQ(splits[0], "");
+  CHECK_EQ(splits[1], "");
+  CHECK_EQ(splits[2], "");
 }
 
 /** @} */
