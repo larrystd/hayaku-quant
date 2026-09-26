@@ -27,7 +27,7 @@ class HAYAKU_API HistoryFinanceReader {
                                   const string& code);
 
  private:
-  string m_dir;  // The directory where the historical financial information
+  string dir_;  // The directory where the historical financial information
                  // files are stored
 };
 

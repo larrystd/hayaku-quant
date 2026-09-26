@@ -28,8 +28,8 @@ class HAYAKU_API OperatorValueSelector : public SelectorBase {
   }
 
  protected:
-  SelectorPtr m_se;
-  double m_value{0.0};
+  SelectorPtr se_;
+  double value_{0.0};
 
  private:
   //============================================
@@ -40,23 +40,23 @@ class HAYAKU_API OperatorValueSelector : public SelectorBase {
   // template <class Archive>
   // void serialize(Archive& ar, const unsigned int version) {
   //     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SelectorBase);
-  //     ar& BOOST_SERIALIZATION_NVP(m_se);
-  //     ar& BOOST_SERIALIZATION_NVP(m_value);
+  //     ar& boost::serialization::make_nvp("m_se", se_);
+  //     ar& boost::serialization::make_nvp("m_value", value_);
   // }
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SelectorBase);
-    ar& BOOST_SERIALIZATION_NVP(m_se);
-    ar& BOOST_SERIALIZATION_NVP(m_value);
+    ar& boost::serialization::make_nvp("m_se", se_);
+    ar& boost::serialization::make_nvp("m_value", value_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SelectorBase);
-    ar& BOOST_SERIALIZATION_NVP(m_se);
-    ar& BOOST_SERIALIZATION_NVP(m_value);
-    if (m_se) {
-      m_pro_sys_list = m_se->getProtoSystemList();
+    ar& boost::serialization::make_nvp("m_se", se_);
+    ar& boost::serialization::make_nvp("m_value", value_);
+    if (se_) {
+      pro_sys_list_ = se_->getProtoSystemList();
     }
   }
 
@@ -74,10 +74,10 @@ class HAYAKU_API OperatorValueSelector : public SelectorBase {
                                                                    \
   virtual SelectorPtr _clone() override {                          \
     auto p = std::make_shared<classname>();                        \
-    if (m_se) {                                                    \
-      p->m_se = m_se->clone();                                     \
+    if (se_) {                                                    \
+      p->se_ = se_->clone();                                     \
     }                                                              \
-    p->m_value = m_value;                                          \
+    p->value_ = value_;                                          \
     return p;                                                      \
   }
 

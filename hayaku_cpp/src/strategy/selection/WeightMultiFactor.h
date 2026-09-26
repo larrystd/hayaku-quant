@@ -26,7 +26,7 @@ class WeightMultiFactor : public MultiFactorBase {
   virtual ~WeightMultiFactor() override = default;
 
  private:
-  PriceList m_weights;  // The weight of every indicator, it is as long as the
+  PriceList weights_;  // The weight of every indicator, it is as long as the
                         // input inds list
 
 #if HAYAKU_SUPPORT_SERIALIZATION
@@ -35,7 +35,7 @@ class WeightMultiFactor : public MultiFactorBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(MultiFactorBase);
-    ar& BOOST_SERIALIZATION_NVP(m_weights);
+    ar& boost::serialization::make_nvp("m_weights", weights_);
   }
 #endif
 };

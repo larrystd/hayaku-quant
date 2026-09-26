@@ -1,434 +1,149 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from setuptools import setup, find_packages
-import sys
-import json
-import os
+from pathlib import Path
+import re
 import shutil
-import platform
-import click
+import sys
+try:
+    from setuptools import find_packages, setup
+    from setuptools.command.build_py import build_py
+    from setuptools.dist import Distribution
+except ImportError:
+    from distutils.core import find_packages, setup
+    from distutils.command.build_py import build_py
+    from distutils.dist import Distribution
 
 
-# ------------------------------------------------------------------------------
-# Pre-check
-# ------------------------------------------------------------------------------
-def check_xmake():
-    """Check whether the build tool xmake is installed"""
-    print("checking xmake ...")
-    xmake = os.system("xmake --version")
-    return False if xmake != 0 else True
+class BinaryDistribution(Distribution):
+    """Mark wheels as platform-specific: native modules are bundled as package data."""
+
+    def has_ext_modules(self):
+        return True
 
 
-def get_python_version():
-    """Get the current python version"""
-    py_version = platform.python_version_tuple()
-    min_version = int(py_version[1])
-    main_version = int(py_version[0])
-    # py_version = main_version * 10 + min_version if min_version < 10 else main_version * 100 + min_version
-    py_version = f"{main_version}.{min_version}"
-    print(f'current python version: {py_version}')
-    return py_version
+class CleanBuildPy(build_py):
+    """Discard stale modules after a package directory is moved or removed."""
+
+    def run(self):
+        build_root = Path("build/package-core").resolve()
+        build_lib = Path(self.build_lib).resolve()
+        if build_root in build_lib.parents and build_lib.is_dir():
+            shutil.rmtree(build_lib)
+        super().run()
 
 
-def get_current_compile_info():
-    """Get the current build information; mode is invalid here"""
-    current_bits = 64 if sys.maxsize > 2**32 else 32
-    if sys.platform == 'win32':
-        current_arch = 'x64' if current_bits == 64 else 'x86'
-    else:
-        current_arch = 'x86_64' if current_bits == 64 else 'i386'
-
-    py_version = get_python_version()
-    current_compile_info = {
-        'plat': sys.platform,
-        'arch': current_arch,
-        'mode': '',
-        'py_version': py_version,
-    }
-    return current_compile_info
+def parse_requirements(filename):
+    line_iter = (line.strip() for line in open(filename))
+    return [line for line in line_iter if line and not line.startswith('#')]
 
 
-def get_history_compile_info():
-    """Get the historical build information"""
-    try:
-        with open('compile_info', 'r') as f:
-            result = json.load(f)
-    except:
-        result = {
-            'plat': '',
-            'arch': '',
-            'mode': '',
-            'py_version': 0,
-        }
-    return result
+requirements = parse_requirements('requirements.txt')
 
+current_plat = sys.platform
+# Remove the special handling of PyQt5
+# if current_plat == 'linux':
+#     requirements.remove('PyQt5')
 
-def save_current_compile_info(compile_info):
-    """Save the current build information"""
-    with open('compile_info', 'w') as f:
-        json.dump(compile_info, f)
+root = Path(__file__).resolve().parent
+module_text = (root / 'MODULE.bazel').read_text(encoding='utf-8')
+version_match = re.search(r'^module\(name = "hayaku", version = "([^"]+)"\)', module_text, re.MULTILINE)
+if version_match is None:
+    raise RuntimeError('Cannot read Hayaku version from MODULE.bazel')
+hayaku_version = version_match.group(1)
 
+if any(command in sys.argv for command in ('bdist_wheel', 'install')):
+    for native_name in ('core310.so', 'libhayaku.so'):
+        if not (root / 'hayaku/cpp' / native_name).is_file():
+            raise RuntimeError('Run ./op.sh build to stage Bazel native libraries before packaging')
 
-def clear_with_python_changed(mode):
-    """
-    Clean up the previous python build results when the python version changes
-    Should be called only when the python version changes
-    """
-    current_plat = sys.platform
-    current_bits = 64 if sys.maxsize > 2**32 else 32
-    if current_plat == 'win32' and current_bits == 64:
-        build_pywrap_dir = 'build\\{mode}\\windows\\x64\\.objs\\windows\\x64\\{mode}\\hayaku_pywrap'.format(
-            mode=mode)
-    elif current_plat == 'win32' and current_bits == 32:
-        build_pywrap_dir = 'build\\{mode}\\windows\\x86\\.objs\\windows\\x86\\{mode}\\hayaku_pywrap'.format(
-            mode=mode)
-    elif current_plat == 'linux' and current_bits == 64:
-        build_pywrap_dir = 'build/{mode}/linux/x86_64/.objs/linux/x86_64/{mode}/hayaku_pywrap'.format(
-            mode=mode)
-    elif current_plat == 'linux' and current_bits == 32:
-        build_pywrap_dir = 'build/{mode}/linux/i386/.objs/linux/i386/{mode}/hayaku_pywrap'.format(
-            mode=mode)
-    elif current_plat == "darwin" and current_bits == 64:
-        build_pywrap_dir = 'build/{mode}/macosx/x86_64/.objs/macosx/x86_64/{mode}/hayaku_pywrap'.format(
-            mode=mode)
-    elif current_plat == "darwin" and current_bits == 32:
-        build_pywrap_dir = 'build/{mode}/macosx/i386/.objs/macosx/i386/{mode}/hayaku_pywrap'.format(
-            mode=mode)
-    else:
-        print("************Unsupported platform**************")
-        exit(0)
-    if os.path.lexists(build_pywrap_dir):
-        shutil.rmtree(build_pywrap_dir)
+print('current hayaku version:', hayaku_version)
 
+hayaku_name = "hayaku"  # "hayaku-noarrow"
+# hayaku_version = "1.0.9"
+hayaku_author = "fasiondog"
+hayaku_author_email = "fasiondog@sina.com"
 
-# ------------------------------------------------------------------------------
-# Execute the build
-# ------------------------------------------------------------------------------
-def start_build(verbose=False, mode='release', feedback=True, worker_num=2, low_precision=False, arrow=False):
-    """ Execute the build """
-    global g_verbose
-    g_verbose = verbose
-    if not check_xmake():
-        print("Please install xmake")
-        return
+hayaku_license = "MIT"
+hayaku_keywords = [
+    "quant", "trade", "System Trading", "backtester", "量化", "程序化交易", "量化交易",
+    "系统交易"
+]
+hayaku_platforms = "Independant"
+hayaku_url = "https://github.com/larrystd/hayaku-quant"
 
-    current_compile_info = get_current_compile_info()
-    current_compile_info['mode'] = mode
-    current_compile_info['feedback'] = feedback
-    current_compile_info['low_precision'] = low_precision
-    current_compile_info['arrow'] = arrow
+hayaku_description = "Hayaku Quant Framework for System Trading Analysis and backtester"
+with open("./readme.md", encoding='utf-8') as f:
+    hayaku_long_description = f.read()
 
-    # If the python version or the build mode changed, rebuild
-    history_compile_info = get_history_compile_info()
-    if current_compile_info != history_compile_info:
-        clear_with_python_changed(mode)
-        # kind = "shared" if mode == 'release' and sys.platform != 'darwin' else "static"
-        kind = "shared" if mode == 'release' else "static"
-        cmd = "xmake f {} -c -y -m {} --feedback={} -k {} --low_precision={} --arrow={} --log_level={}".format(
-            "-v -D" if verbose else "", mode, feedback, kind, low_precision, arrow,
-            2 if mode == 'release' else 0)
-        print(cmd)
-        os.system(cmd)
+hayaku_data_files = []
 
-    cmd = "xmake -j {} -b {} core".format(worker_num,
-                                          "-v -D" if verbose else "")
-    print(cmd)
-    os.system(cmd)
+packages = find_packages(include=['hayaku', 'hayaku.*'])
 
-    # Save the current build information
-    save_current_compile_info(current_compile_info)
+setup(
+    distclass=BinaryDistribution,
+    cmdclass={'build_py': CleanBuildPy},
+    name=hayaku_name,
+    version=hayaku_version,
+    description=hayaku_description,
+    # long_description_content_type="text/x-rst",
+    long_description_content_type='text/markdown',
+    long_description=hayaku_long_description,
+    author=hayaku_author,
+    author_email=hayaku_author_email,
+    license=hayaku_license,
+    license_files=['LICENSE'],
+    keywords=hayaku_keywords,
+    platforms=hayaku_platforms,
+    url=hayaku_url,
+    packages=packages,
+    options={'build': {'build_base': 'build/package-core'}},
+    zip_safe=False,
+    include_package_data=False,
+    package_data={
+        '': [
+            '*.rst', '*.png', '*.md', '*.ipynb', '*.ini', '*.sql', '*.ui', '*.properties', '*.xml',
+            'LICENSE.txt', '*.ico', '*.h', '*.mo', '*.qm',
+        ],
+        'hayaku.cpp': ['core310.so', 'libhayaku.so'],
+    },
+    data_files=hayaku_data_files,
+    classifiers=[
+        # How mature is this project? Common values are
+        #   3 - Alpha
+        #   4 - Beta
+        #   5 - Production/Stable
+        'Development Status :: 5 - Production/Stable',
 
+        # Indicate who your project is intended for
+        'Intended Audience :: Developers',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: Office/Business :: Financial',
+        'Topic :: Office/Business :: Financial :: Investment',
+        'Topic :: Scientific/Engineering :: Mathematics',
 
-# ------------------------------------------------------------------------------
-# Console commands
-# ------------------------------------------------------------------------------
+        # Pick your license as you wish (should match "license" above)
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: POSIX :: Linux',
+        'Operating System :: MacOS :: MacOS X',
 
-
-@click.group()
-def cli():
-    pass
-
-
-@click.command()
-@click.option('-v', '--verbose', is_flag=True, help='show the detailed build information')
-@click.option('-feedback',
-              '--feedback',
-              default=True,
-              type=bool,
-              help='allow sending feedback information')
-@click.option('-j', '--j', default=2, help="the number of parallel builds")
-@click.option('-m',
-              '--mode',
-              default='release',
-              type=click.Choice([
-                  'release', 'debug', 'coverage', 'asan', 'tsan', 'msan',
-                  'lsan'
-              ]),
-              help='the build mode')
-@click.option('-low_precision',
-              '--low_precision',
-              default=False,
-              type=bool,
-              help='use the low precision version')
-@click.option('-arrow',
-              '--arrow',
-              default=False,
-              type=bool,
-              help='arrow support')
-def build(verbose, mode, feedback, j, low_precision, arrow):
-    """ Execute the build """
-    start_build(verbose, mode, feedback, j, low_precision, arrow)
-
-
-@click.command()
-@click.option('-all', "--all", is_flag=True, help="run all the tests, otherwise only the minimal test scope)")
-@click.option("-compile", "--compile", is_flag=False, help='force rebuilding')
-@click.option('-feedback',
-              '--feedback',
-              default=True,
-              type=bool,
-              help='allow sending feedback information')
-@click.option('-v', '--verbose', is_flag=True, help='show the detailed build information')
-@click.option('-j', '--j', default=2, help="the number of parallel builds")
-@click.option('-m',
-              '--mode',
-              default='release',
-              type=click.Choice([
-                  'release', 'debug', 'coverage', 'asan', 'msan', 'tsan',
-                  'lsan'
-              ]),
-              help='the build mode')
-@click.option('-case', '--case', default='', help="run the specified TestCase")
-@click.option('-low_precision',
-              '--low_precision',
-              default=False,
-              type=bool,
-              help='use the low precision version')
-@click.option('-arrow',
-              '--arrow',
-              default=False,
-              type=bool,
-              help='arrow support')
-def test(all, compile, verbose, mode, case, feedback, j, low_precision, arrow):
-    """ Run the unit tests """
-    start_build(verbose, mode, feedback, j, low_precision, arrow)
-    if all:
-        os.system("xmake -j {} -b {} unit-test".format(
-            j, "-v -D" if verbose else ""))
-        os.system("xmake r unit-test {}".format(
-            '' if case == '' else '--test-case={}'.format(case)))
-    else:
-        os.system("xmake -j {} -b {} small-test".format(
-            j, "-v -D" if verbose else ""))
-        os.system("xmake r small-test {}".format(
-            '' if case == '' else '--test-case={}'.format(case)))
-
-
-def clear_build():
-    """ Clear the current build settings and results """
-    if os.path.lexists('.xmake'):
-        print('delete .xmake')
-        shutil.rmtree('.xmake', True)
-        if sys.platform == 'win32':
-            os.system("rmdir .xmake /s /q")
-    if os.path.lexists('build'):
-        print('delete build')
-        shutil.rmtree('build')
-    if os.path.lexists('Hayaku.egg-info'):
-        print('delete Hayaku.egg-info')
-        shutil.rmtree('Hayaku.egg-info')
-    if os.path.exists('compile_info'):
-        print('delete compile_info')
-        os.remove('compile_info')
-    lib_files = os.listdir('hayaku/cpp')
-    for file in lib_files:
-        if file not in ("__init__.py", "__pycache__", "i18n"):
-            os.remove(f'hayaku/cpp/{file}')
-    plugin_files = os.listdir('hayaku/plugin')
-    for file in plugin_files:
-        if file not in ("__init__.py", "__pycache__"):
-            os.remove(f'hayaku/plugin/{file}')
-    print('clear finished!')
-
-
-@click.command()
-def clear():
-    clear_build()
-
-
-@click.command()
-def uninstall():
-    """ Uninstall the installed python package """
-    if sys.platform == 'win32':
-        site_lib_dir = sys.base_prefix + "/lib/site-packages"
-    else:
-        usr_dir = os.path.expanduser('~')
-        py_version = get_python_version()
-        site_lib_dir = '{}/.local/lib/python{}/site-packages'.format(
-            usr_dir, py_version)
-    for dir in os.listdir(site_lib_dir):
-        if dir == 'hayaku' or (len(dir) > 6 and dir[:6] == 'Hayaku'):
-            print('delete', site_lib_dir + '/' + dir)
-            shutil.rmtree(site_lib_dir + '/' + dir)
-    if os.path.exists("./hayaku.egg-info"):
-        shutil.rmtree("./hayaku.egg-info")
-    print("Uninstall finished!")
-
-
-def copy_include(install_dir):
-    src_path = 'hayaku_cpp/src'
-    dst_path = f'{install_dir}/include/hayaku'
-
-    for root, dirs, files in os.walk(src_path):
-        rel_root = os.path.relpath(root, src_path)
-        dst_root = dst_path if rel_root == '.' else os.path.join(dst_path, rel_root)
-        for p in dirs:
-            dst_p = os.path.join(dst_root, p)
-            if not os.path.lexists(dst_p):
-                os.makedirs(dst_p)
-            shutil.copy('hayaku/cpp/__init__.py', dst_p)
-
-        for fname in files:
-            if len(fname) > 2 and fname[-2:] == ".h":
-                if not os.path.lexists(dst_root):
-                    os.makedirs(dst_root)
-                shutil.copy(os.path.join(root, fname), dst_root)
-
-    dst_path = f'{install_dir}/include/hayaku/python'
-    if not os.path.lexists(dst_path):
-        os.makedirs(dst_path)
-    shutil.copy('hayaku_pywrap/common/PybindSupport.h', dst_path)
-    shutil.copy('hayaku_pywrap/common/PickleSupport.h', dst_path)
-    shutil.copy('hayaku_pywrap/common/AnyConversion.h', dst_path)
-    shutil.copy('hayaku/cpp/__init__.py', dst_path)
-    shutil.copy('hayaku/cpp/__init__.py', f'{install_dir}/include')
-    shutil.copy('hayaku/cpp/__init__.py', f'{install_dir}/include/hayaku')
-
-
-@click.command()
-@click.option('-j', '--j', default=2, help="the number of parallel builds")
-@click.option('-o', '--o', help="the specified installation directory")
-@click.option('-low_precision',
-              '--low_precision',
-              default=False,
-              type=bool,
-              help='use the low precision version')
-@click.option('-arrow',
-              '--arrow',
-              default=False,
-              type=bool,
-              help='arrow support')
-def install(j, o, low_precision, arrow):
-    """ Build and install the Hayaku python library """
-    install_dir = o
-    if install_dir is None:
-        if sys.platform == 'win32':
-            install_dir = sys.base_prefix + "\\Lib\\site-packages\\hayaku"
-        else:
-            usr_dir = os.path.expanduser('~')
-            install_dir = '{}/.local/lib/python{}/site-packages/hayaku'.format(
-                usr_dir, get_python_version())
-            try:
-                shutil.rmtree(install_dir)
-            except:
-                pass
-
-    start_build(False, 'release', True, j, low_precision, arrow)
-
-    shutil.copytree("./hayaku", install_dir)
-
-    copy_include(install_dir)
-
-
-@click.command()
-@click.option('-j', '--j', default=2, help="the number of parallel builds")
-@click.option('-feedback',
-              '--feedback',
-              default=True,
-              type=bool,
-              help='allow sending feedback information')
-@click.option('-low_precision',
-              '--low_precision',
-              default=False,
-              type=bool,
-              help='use the low precision version')
-@click.option('-arrow',
-              '--arrow',
-              default=False,
-              type=bool,
-              help='arrow support')
-@click.option('-c', '--clear', is_flag=False, help='clear the previous build results first')
-def wheel(feedback, j, low_precision, clear, arrow):
-    """ Generate the python wheel package """
-    # Clean up the leftover packaging artifacts
-    if clear:
-        clear_build()
-
-    # Try to build
-    start_build(False, 'release', feedback, j, low_precision, arrow)
-
-    copy_include('hayaku')
-
-    # Build the packaging command
-    print("start pacakaging bdist_wheel ...")
-    current_plat = sys.platform
-    cpu_arch = platform.machine()
-    current_bits = 64 if sys.maxsize > 2**32 else 32
-    if current_plat == 'win32' and current_bits == 64:
-        plat = "win_amd64"
-    elif current_plat == 'win32' and current_bits == 32:
-        plat = "win32"
-    elif current_plat == 'linux' and current_bits == 64:
-        plat = f"manylinux2014_{cpu_arch}"
-    elif current_plat == 'linux' and current_bits == 32:
-        plat = f"manylinux2014_{cpu_arch}"
-    elif current_plat == 'darwin' and cpu_arch != 'arm64' and current_bits == 32:
-        plat = "macosx_i686"
-    elif current_plat == 'darwin' and cpu_arch != 'arm64' and current_bits == 64:
-        plat = "macosx_x86_64"
-    elif current_plat == 'darwin' and cpu_arch == 'arm64':
-        plat = "macosx_11_0_arm64"
-    else:
-        print("*********The support for this platform is not implemented yet*******")
-        return
-
-    py_version = get_python_version()
-    main_ver, min_ver = py_version.split('.')
-    cmd = 'python sub_setup.py bdist_wheel -p {}'.format(plat)
-    print(cmd)
-    os.system(cmd)
-
-    shutil.rmtree('hayaku/include', True)
-
-
-@click.command()
-def upload():
-    """ Publish and upload to pypi, for the publisher only!!! """
-    if not os.path.lexists('dist'):
-        print("Not found wheel package! Pleae wheel first")
-        return
-    if os.path.lexists('dist/.DS_Store'):
-        os.remove('dist/.DS_Store')
-    print("current wheel:")
-    for bdist in os.listdir('dist'):
-        print(bdist)
-    print("")
-    val = input('Are you sure upload now (y/n)? (deault: n) ')
-    if val == 'y':
-        os.system("twine upload dist/*")
-
-
-# ------------------------------------------------------------------------------
-# Add the click commands
-# ------------------------------------------------------------------------------
-cli.add_command(build)
-cli.add_command(test)
-cli.add_command(clear)
-cli.add_command(install)
-cli.add_command(uninstall)
-cli.add_command(wheel)
-cli.add_command(upload)
-
-if __name__ == "__main__":
-    cli()
+        # Specify the Python versions you support here. In particular, ensure
+        # that you indicate whether you support Python 2, Python 3 or both.
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.10',
+    ],
+    python_requires='>=3.10,<3.11',
+    entry_points={
+        # On win11, using the GUI mode times out immediately, so the download fails
+        # 'gui_scripts': [
+        #     'HayakuTDX=hayaku.application.gui.HayakuTDX:start',
+        # ],
+        'console_scripts': [
+            'HayakuTDX=hayaku.application.gui.HayakuTDX:start',
+            'importdata=hayaku.application.gui.importdata:main',
+            'dataserver=hayaku.application.gui.dataserver:main',
+            'shmserver=hayaku.application.gui.shmserver:main',
+        ]
+    },
+    install_requires=requirements,
+)

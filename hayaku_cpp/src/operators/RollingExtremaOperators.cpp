@@ -168,18 +168,18 @@ void IHighLine::_checkParam(const string& name) const {
 void IHighLine::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   if (0 == total) {
-    m_discard = 0;
+    discard_ = 0;
     return;
   }
 
   if (ind.discard() >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = ind.discard();
+  discard_ = ind.discard();
   if (1 == total) {
-    if (0 == m_discard) {
+    if (0 == discard_) {
       _set(ind[0], 0);
     }
     return;
@@ -187,12 +187,12 @@ void IHighLine::_calculate(const Indicator& ind) {
 
   int n = getParam<int>("n");
   if (n <= 0) {
-    n = total - m_discard;
+    n = total - discard_;
   } else if (n > total) {
     n = total;
   }
 
-  size_t startPos = m_discard;
+  size_t startPos = discard_;
   size_t first_end = startPos + n >= total ? total : startPos + n;
 
   auto const* src = ind.data();
@@ -237,9 +237,9 @@ size_t IHighLine::min_increment_start() const { return getParam<int>("n"); }
 
 void IHighLine::_increment_calculate(const Indicator& ind, size_t start_pos) {
   size_t total = ind.size();
-  m_discard = ind.discard();
+  discard_ = ind.discard();
   if (1 == total) {
-    if (0 == m_discard) {
+    if (0 == discard_) {
       _set(ind[0], 0);
     }
     return;
@@ -250,8 +250,8 @@ void IHighLine::_increment_calculate(const Indicator& ind, size_t start_pos) {
   auto* dst = this->data();
 
   if (n >= total) {
-    dst[m_discard] = src[m_discard];
-    for (size_t i = m_discard + 1; i < total; i++) {
+    dst[discard_] = src[discard_];
+    for (size_t i = discard_ + 1; i < total; i++) {
       if (src[i] > dst[i - 1]) {
         dst[i] = src[i];
       }
@@ -335,18 +335,18 @@ void IHhvbars::_checkParam(const string& name) const {
 void IHhvbars::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   if (0 == total) {
-    m_discard = 0;
+    discard_ = 0;
     return;
   }
 
   if (ind.discard() >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = ind.discard();
+  discard_ = ind.discard();
   if (1 == total) {
-    if (0 == m_discard) {
+    if (0 == discard_) {
       _set(0, 0);
     }
     return;
@@ -354,7 +354,7 @@ void IHhvbars::_calculate(const Indicator& ind) {
 
   int n = getParam<int>("n");
   if (0 == n) {
-    n = total - m_discard;
+    n = total - discard_;
   } else if (n > total) {
     n = total;
   }
@@ -362,10 +362,10 @@ void IHhvbars::_calculate(const Indicator& ind) {
   auto const* src = ind.data();
   auto* dst = this->data();
 
-  price_t max = src[m_discard];
-  size_t pre_pos = m_discard;
-  size_t start_pos = m_discard + n < total ? m_discard + n : total;
-  for (size_t i = m_discard; i < start_pos; i++) {
+  price_t max = src[discard_];
+  size_t pre_pos = discard_;
+  size_t start_pos = discard_ + n < total ? discard_ + n : total;
+  for (size_t i = discard_; i < start_pos; i++) {
     if (src[i] >= max) {
       max = src[i];
       pre_pos = i;
@@ -404,7 +404,7 @@ size_t IHhvbars::min_increment_start() const { return getParam<int>("n"); }
 void IHhvbars::_increment_calculate(const Indicator& ind, size_t start_pos) {
   size_t total = ind.size();
   if (1 == total) {
-    if (0 == m_discard) {
+    if (0 == discard_) {
       _set(0, 0);
     }
     return;
@@ -506,18 +506,18 @@ void ILowLine::_checkParam(const string& name) const {
 void ILowLine::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   if (0 == total) {
-    m_discard = 0;
+    discard_ = 0;
     return;
   }
 
   if (ind.discard() >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = ind.discard();
+  discard_ = ind.discard();
   if (1 == total) {
-    if (0 == m_discard) {
+    if (0 == discard_) {
       _set(ind[0], 0);
     }
     return;
@@ -525,7 +525,7 @@ void ILowLine::_calculate(const Indicator& ind) {
 
   int n = getParam<int>("n");
   if (n <= 0) {
-    n = total - m_discard;
+    n = total - discard_;
   } else if (n > total) {
     n = total;
   }
@@ -533,7 +533,7 @@ void ILowLine::_calculate(const Indicator& ind) {
   auto const* src = ind.data();
   auto* dst = this->data();
 
-  size_t startPos = m_discard;
+  size_t startPos = discard_;
   size_t first_end = startPos + n >= total ? total : startPos + n;
 
   price_t min = src[startPos];
@@ -580,8 +580,8 @@ void ILowLine::_increment_calculate(const Indicator& ind, size_t start_pos) {
   auto* dst = this->data();
 
   if (n >= total) {
-    dst[m_discard] = src[m_discard];
-    for (size_t i = m_discard + 1; i < total; i++) {
+    dst[discard_] = src[discard_];
+    for (size_t i = discard_ + 1; i < total; i++) {
       if (src[i] < dst[i - 1]) {
         dst[i] = src[i];
       }
@@ -667,18 +667,18 @@ void ILowLineBars::_checkParam(const string& name) const {
 void ILowLineBars::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   if (0 == total) {
-    m_discard = 0;
+    discard_ = 0;
     return;
   }
 
   if (ind.discard() >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = ind.discard();
+  discard_ = ind.discard();
   if (1 == total) {
-    if (0 == m_discard) {
+    if (0 == discard_) {
       _set(0, 0);
     }
     return;
@@ -686,7 +686,7 @@ void ILowLineBars::_calculate(const Indicator& ind) {
 
   int n = getParam<int>("n");
   if (0 == n) {
-    n = total - m_discard;
+    n = total - discard_;
   } else if (n > total) {
     n = total;
   }
@@ -694,10 +694,10 @@ void ILowLineBars::_calculate(const Indicator& ind) {
   auto const* src = ind.data();
   auto* dst = this->data();
 
-  price_t min = src[m_discard];
-  size_t pre_pos = m_discard;
-  size_t start_pos = m_discard + n < total ? m_discard + n : total;
-  for (size_t i = m_discard; i < start_pos; i++) {
+  price_t min = src[discard_];
+  size_t pre_pos = discard_;
+  size_t start_pos = discard_ + n < total ? discard_ + n : total;
+  for (size_t i = discard_; i < start_pos; i++) {
     if (src[i] <= min) {
       min = src[i];
       pre_pos = i;
@@ -736,7 +736,7 @@ void ILowLineBars::_increment_calculate(const Indicator& ind,
                                         size_t start_pos) {
   size_t total = ind.size();
   if (1 == total) {
-    if (0 == m_discard) {
+    if (0 == discard_) {
       _set(0, 0);
     }
     return;

@@ -44,15 +44,15 @@ class HAYAKU_UTILS_API DBCondition {
  public:
   DBCondition() = default;
   DBCondition(const DBCondition &) = default;
-  DBCondition(DBCondition &&rv) : m_condition(std::move(rv.m_condition)) {}
+  DBCondition(DBCondition &&rv) : condition_(std::move(rv.condition_)) {}
 
-  explicit DBCondition(const char *cond) : m_condition(cond) {}
-  explicit DBCondition(const std::string &cond) : m_condition(cond) {}
+  explicit DBCondition(const char *cond) : condition_(cond) {}
+  explicit DBCondition(const std::string &cond) : condition_(cond) {}
 
   DBCondition &operator=(const DBCondition &) = default;
   DBCondition &operator=(DBCondition &&rv) {
     if (this != &rv) {
-      m_condition = std::move(rv.m_condition);
+      condition_ = std::move(rv.condition_);
     }
     return *this;
   }
@@ -63,9 +63,9 @@ class HAYAKU_UTILS_API DBCondition {
   enum ORDERBY { ORDER_ASC, ORDER_DESC };
 
   void orderBy(const std::string &field, ORDERBY order) {
-    m_condition = order == ORDERBY::ORDER_ASC
-                      ? fmt::format("{} order by {} ASC", m_condition, field)
-                      : fmt::format("{} order by {} DESC", m_condition, field);
+    condition_ = order == ORDERBY::ORDER_ASC
+                      ? fmt::format("{} order by {} ASC", condition_, field)
+                      : fmt::format("{} order by {} DESC", condition_, field);
   }
 
   DBCondition &operator+(const ASC &asc) {
@@ -79,14 +79,14 @@ class HAYAKU_UTILS_API DBCondition {
   }
 
   DBCondition &operator+(const LIMIT &limit) {
-    m_condition = fmt::format("{} limit {}", m_condition, limit.limit);
+    condition_ = fmt::format("{} limit {}", condition_, limit.limit);
     return *this;
   }
 
-  const std::string &str() const { return m_condition; }
+  const std::string &str() const { return condition_; }
 
  private:
-  std::string m_condition;
+  std::string condition_;
 };
 
 struct Field {

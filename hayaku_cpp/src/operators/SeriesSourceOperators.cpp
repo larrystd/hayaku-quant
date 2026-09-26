@@ -80,13 +80,13 @@ class IContext : public IndicatorImp {
   KData getContextKdata() const;
 
   // Forcefully set its own context data
-  void setSelfContext(const KData& kdata) { m_ref_ind.setContext(kdata); }
+  void setSelfContext(const KData& kdata) { ref_ind_.setContext(kdata); }
 
   // Get its own context data
-  KData getSelfContext() const { return m_ref_ind.getContext(); }
+  KData getSelfContext() const { return ref_ind_.getContext(); }
 
  private:
-  Indicator m_ref_ind;
+  Indicator ref_ind_;
 
 //============================================
 // Serialization support
@@ -97,7 +97,7 @@ class IContext : public IndicatorImp {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(IndicatorImp);
-    ar& BOOST_SERIALIZATION_NVP(m_ref_ind);
+    ar& boost::serialization::make_nvp("m_ref_ind", ref_ind_);
   }
 #endif
 };
@@ -107,28 +107,28 @@ class IContext : public IndicatorImp {
 namespace hayaku {
 
 Indicator Indicator::operator()(const Indicator& ind) {
-  HAYAKU_IF_RETURN(!m_imp, Indicator());
-  HAYAKU_IF_RETURN(!ind.getImp(), Indicator(m_imp));
+  HAYAKU_IF_RETURN(!impl_, Indicator());
+  HAYAKU_IF_RETURN(!ind.getImp(), Indicator(impl_));
 
-  IndicatorImp const* context_ptr = dynamic_cast<IContext const*>(m_imp.get());
+  IndicatorImp const* context_ptr = dynamic_cast<IContext const*>(impl_.get());
   if (context_ptr != nullptr) {
     auto p = make_shared<IContext>(ind);
     return p->calculate();
   }
 
-  // AST node pruning: when the operator (m_imp) is semantically equivalent to
+  // AST node pruning: when the operator (impl_) is semantically equivalent to
   // the operand (ind), reuse the already calculated ind (which holds a valid
-  // buffer), instead of returning an empty clone shell of m_imp (the size of
-  // m_imp is 0 when it has not been calculated). Note: reusing ind makes the
+  // buffer), instead of returning an empty clone shell of impl_ (the size of
+  // impl_ is 0 when it has not been calculated). Note: reusing ind makes the
   // return value share the underlying node with ind, which relies on the
   // immutable parameter semantics of hayaku (alike has verified that m_params
   // are the same, setParam triggers an in-place recalculation and the sharing
   // is safe).
-  if (m_imp->alike(*ind.getImp())) {
+  if (impl_->alike(*ind.getImp())) {
     return ind;
   }
 
-  IndicatorImpPtr p = m_imp->clone();
+  IndicatorImpPtr p = impl_->clone();
   p->add(IndicatorImp::OP, IndicatorImpPtr(), ind.getImp());
   return p->calculate();
 }
@@ -174,13 +174,13 @@ BOOST_CLASS_EXPORT(hayaku::ICval)
 namespace hayaku {
 
 ICval::ICval() : IndicatorImp("CVAL", 1) {
-  m_need_self_alike_compare = true;
+  need_self_alike_compare_ = true;
   setParam<double>("value", 0.0);
   setParam<int>("discard", 0);
 }
 
 ICval::ICval(double value, size_t discard) : IndicatorImp("CVAL", 1) {
-  m_need_self_alike_compare = true;
+  need_self_alike_compare_ = true;
   setParam<double>("value", value);
   setParam<int>("discard", discard);
 }
@@ -195,7 +195,7 @@ void ICval::_checkParam(const string& name) const {
 
 bool ICval::selfAlike(const IndicatorImp& other) const noexcept {
   HAYAKU_IF_RETURN(isLeaf() && other.isLeaf(), true);
-  return m_right && m_right->alike(*other.getRightNode());
+  return right_ && right_->alike(*other.getRightNode());
 }
 
 void ICval::_calculate(const Indicator& data) {
@@ -209,10 +209,10 @@ void ICval::_calculate(const Indicator& data) {
     if (k.getStock().isNull()) {
       _readyBuffer(1, 1);
       if (discard < 1) {
-        m_discard = 0;
+        discard_ = 0;
         _set(value, 0, 0);
       } else {
-        m_discard = 1;
+        discard_ = 1;
       }
       return;
     }
@@ -235,7 +235,7 @@ void ICval::_calculate(const Indicator& data) {
     discard = data.discard() > discard ? data.discard() : discard;
   }
 
-  m_discard = discard > total ? total : discard;
+  discard_ = discard > total ? total : discard;
 
   size_t ret_num = data.getResultNumber();
   if (ret_num == 0) {
@@ -245,7 +245,7 @@ void ICval::_calculate(const Indicator& data) {
 
   for (size_t r = 0; r < ret_num; ++r) {
     auto* dst = this->data(r);
-    for (size_t i = m_discard; i < total; ++i) {
+    for (size_t i = discard_; i < total; ++i) {
       dst[i] = value;
     }
   }
@@ -268,7 +268,7 @@ void ICval::_increment_calculate(const Indicator& data, size_t start_pos) {
     total = data.size();
   }
 
-  for (size_t r = 0; r < m_result_num; ++r) {
+  for (size_t r = 0; r < result_num_; ++r) {
     auto* dst = this->data(r);
     for (size_t i = start_pos; i < total; ++i) {
       dst[i] = value;
@@ -312,7 +312,7 @@ BOOST_CLASS_EXPORT(hayaku::IKData)
 namespace hayaku {
 
 IKData::IKData() : IndicatorImp("KDATA") {
-  m_need_context = true;
+  need_context_ = true;
   setParam<string>("kpart", "KDATA");
 }
 
@@ -333,12 +333,12 @@ void IKData::_calculate(const Indicator& ind) {
                  "The input is ignored because {} depends on the context!",
                  getParam<string>("kpart"));
 
-  m_name = getParam<string>("kpart");
+  name_ = getParam<string>("kpart");
   const KData& kdata = getContext();
   size_t total = kdata.size();
   HAYAKU_IF_RETURN(total == 0, void());
 
-  if ("KDATA" == m_name) {
+  if ("KDATA" == name_) {
     _readyBuffer(total, 6);
   } else {
     _readyBuffer(total, 1);
@@ -352,7 +352,7 @@ void IKData::_increment_calculate(const Indicator& data, size_t start_pos) {
   HAYAKU_IF_RETURN(total == 0, void());
 
   auto const* ks = kdata.data();
-  if ("KDATA" == m_name) {
+  if ("KDATA" == name_) {
     auto* dst0 = this->data(0);
     auto* dst1 = this->data(1);
     auto* dst2 = this->data(2);
@@ -367,34 +367,34 @@ void IKData::_increment_calculate(const Indicator& data, size_t start_pos) {
       dst4[i] = ks[i].transAmount;
       dst5[i] = ks[i].transCount;
     }
-  } else if ("OPEN" == m_name) {
+  } else if ("OPEN" == name_) {
     auto* dst = this->data();
     for (size_t i = start_pos; i < total; ++i) {
       dst[i] = ks[i].openPrice;
     }
-  } else if ("HIGH" == m_name) {
+  } else if ("HIGH" == name_) {
     auto* dst = this->data();
     for (size_t i = start_pos; i < total; ++i) {
       dst[i] = ks[i].highPrice;
     }
-  } else if ("LOW" == m_name) {
+  } else if ("LOW" == name_) {
     auto* dst = this->data();
     for (size_t i = start_pos; i < total; ++i) {
       dst[i] = ks[i].lowPrice;
     }
 
-  } else if ("CLOSE" == m_name) {
+  } else if ("CLOSE" == name_) {
     auto* dst = this->data();
     for (size_t i = start_pos; i < total; ++i) {
       dst[i] = ks[i].closePrice;
     }
-  } else if ("AMO" == m_name) {
+  } else if ("AMO" == name_) {
     auto* dst = this->data();
     for (size_t i = start_pos; i < total; ++i) {
       dst[i] = ks[i].transAmount;
     }
 
-  } else if ("VOL" == m_name) {
+  } else if ("VOL" == name_) {
     auto* dst = this->data();
     for (size_t i = start_pos; i < total; ++i) {
       dst[i] = ks[i].transCount;
@@ -589,14 +589,14 @@ void IPriceList::_calculate(const Indicator& data) {
     for (size_t i = tmp.discard(); i < total; ++i) {
       dst[i] = src[i];
     }
-    m_discard = tmp.discard();
+    discard_ = tmp.discard();
     return;
   }
 
   // If a context is given, align at the right end by the context values,
   // keeping the same length as the context
   if (x_discard >= x_total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -616,7 +616,7 @@ void IPriceList::_calculate(const Indicator& data) {
   for (size_t i = x_start; i < x_total; ++i) {
     dst[i] = x[i];
   }
-  m_discard = total + x_start - x_total;
+  discard_ = total + x_start - x_total;
   return;
 }
 
@@ -688,7 +688,7 @@ BOOST_CLASS_EXPORT(hayaku::IContext)
 namespace hayaku {
 
 IContext::IContext() : IndicatorImp("CONTEXT") {
-  m_need_self_alike_compare = true;
+  need_self_alike_compare_ = true;
   setParam<bool>("fill_null", false);
   setParam<bool>("use_self_ktype",
                  false);  // Use the K-line type of its own context
@@ -697,8 +697,8 @@ IContext::IContext() : IndicatorImp("CONTEXT") {
 }
 
 IContext::IContext(const Indicator& ref_ind)
-    : IndicatorImp("CONTEXT"), m_ref_ind(ref_ind) {
-  m_need_self_alike_compare = true;
+    : IndicatorImp("CONTEXT"), ref_ind_(ref_ind) {
+  need_self_alike_compare_ = true;
   setParam<bool>("fill_null", false);
   setParam<bool>("use_self_ktype", false);
   setParam<bool>("use_self_recover_type", false);
@@ -708,21 +708,21 @@ IContext::~IContext() {}
 
 IndicatorImpPtr IContext::_clone() {
   auto p = make_shared<IContext>();
-  p->m_ref_ind = m_ref_ind.clone();
+  p->ref_ind_ = ref_ind_.clone();
   return p;
 }
 
 string IContext::str() const {
   std::ostringstream os;
   os << "Indicator{\n"
-     << "  context: " << m_ref_ind.getContext().getStock().market_code()
+     << "  context: " << ref_ind_.getContext().getStock().market_code()
      << "\n  name: " << name() << "\n  size: " << size()
      << "\n  discard: " << discard() << "\n  result sets: " << getResultNumber()
      << "\n  params: " << getParameter();
   os << "\n  formula: " << formula();
   for (size_t r = 0; r < getResultNumber(); ++r) {
-    if (m_pBuffer[r]) {
-      os << "\n  values" << r << ": " << *m_pBuffer[r];
+    if (p_buffer_[r]) {
+      os << "\n  values" << r << ": " << *p_buffer_[r];
     }
   }
   os << "\n}";
@@ -730,15 +730,15 @@ string IContext::str() const {
 }
 
 string IContext::formula() const {
-  return fmt::format("CONTEXT({})", m_ref_ind.formula());
+  return fmt::format("CONTEXT({})", ref_ind_.formula());
 }
 
-KData IContext::getContextKdata() const { return m_ref_ind.getContext(); }
+KData IContext::getContextKdata() const { return ref_ind_.getContext(); }
 
 bool IContext::selfAlike(const IndicatorImp& other) const noexcept {
   const auto* other_ctx = dynamic_cast<const IContext*>(&other);
   HAYAKU_IF_RETURN(other_ctx == nullptr, false);
-  return m_ref_ind.getImp()->alike(*(other_ctx->m_ref_ind.getImp()));
+  return ref_ind_.getImp()->alike(*(other_ctx->ref_ind_.getImp()));
 }
 
 void IContext::_calculate(const Indicator& ind) {
@@ -746,16 +746,16 @@ void IContext::_calculate(const Indicator& ind) {
 
   auto null_k = Null<KData>();
   const auto& in_k = getContext();
-  auto self_k = m_ref_ind.getContext();
+  auto self_k = ref_ind_.getContext();
   HAYAKU_IF_RETURN((self_k == in_k || in_k == null_k) && this->size() != 0,
                    void());
 
-  auto self_dates = m_ref_ind.getDatetimeList();
+  auto self_dates = ref_ind_.getDatetimeList();
   // HAYAKU_WARN_IF((self_k == null_k && m_ref_ind.empty() &&
   // self_dates.empty()),
   //             "The data length of context is zero! ");
 
-  auto ref = m_ref_ind;
+  auto ref = ref_ind_;
 
   if (in_k != null_k && in_k != self_k) {
     if (self_dates.empty() && self_k.getStock().isNull()) {
@@ -808,16 +808,16 @@ void IContext::_calculate(const Indicator& ind) {
   size_t rtotal = ref.getResultNumber();
   _readyBuffer(total, rtotal);
 
-  m_discard = ref.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ref.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  size_t len = sizeof(value_t) * (total - m_discard);
+  size_t len = sizeof(value_t) * (total - discard_);
   for (size_t r = 0; r < rtotal; ++r) {
-    const auto* src = ref.data(r) + m_discard;
-    auto* dst = this->data(r) + m_discard;
+    const auto* src = ref.data(r) + discard_;
+    auto* dst = this->data(r) + discard_;
     memcpy(dst, src, len);
   }
 }
@@ -908,13 +908,13 @@ void IResult::_calculate(const Indicator& ind) {
                "The input indicator has only {} results, but result_ix({}) is "
                "out_of range!",
                ind.getResultNumber(), result_ix);
-  m_discard = ind.discard();
-  HAYAKU_IF_RETURN(m_discard >= ind.size(), void());
+  discard_ = ind.discard();
+  HAYAKU_IF_RETURN(discard_ >= ind.size(), void());
 
   const auto* src = ind.data(result_ix);
   auto* dst = this->data();
-  memcpy(dst + m_discard, src + m_discard,
-         sizeof(value_t) * (ind.size() - m_discard));
+  memcpy(dst + discard_, src + discard_,
+         sizeof(value_t) * (ind.size() - discard_));
 }
 
 void IResult::_increment_calculate(const Indicator& ind, size_t start_pos) {

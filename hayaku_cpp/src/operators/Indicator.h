@@ -41,7 +41,7 @@ class HAYAKU_API Indicator {
   typedef IndicatorImp::value_t value_t;
 
  public:
-  Indicator() : m_imp(make_shared<IndicatorImp>()) {}
+  Indicator() : impl_(make_shared<IndicatorImp>()) {}
   explicit Indicator(const IndicatorImpPtr& imp) noexcept;
   Indicator(const Indicator& ind) noexcept;
   Indicator(Indicator&& ind) noexcept;
@@ -168,22 +168,22 @@ class HAYAKU_API Indicator {
   bool alike(const Indicator& other) const;
 
   bool haveParam(const string& name) const {
-    return m_imp ? m_imp->haveParam(name) : false;
+    return impl_ ? impl_->haveParam(name) : false;
   }
 
   template <typename ValueType>
   void setParam(const string& name, const ValueType& value) {
-    if (m_imp) {
-      m_imp->setParam<ValueType>(name, value);
+    if (impl_) {
+      impl_->setParam<ValueType>(name, value);
     }
   }
 
   template <typename ValueType>
   ValueType getParam(const string& name) const {
-    if (!m_imp) {
+    if (!impl_) {
       throw std::out_of_range("out_of_range in Parameter::get : " + name);
     }
-    return m_imp->getParam<ValueType>(name);
+    return impl_->getParam<ValueType>(name);
   }
 
   bool haveIndParam(const string& name) const;
@@ -192,14 +192,14 @@ class HAYAKU_API Indicator {
   IndParam getIndParam(const string& name) const;
   const IndicatorImpPtr getIndParamImp(const string& name) const;
 
-  IndicatorImpPtr getImp() const noexcept { return m_imp; }
+  IndicatorImpPtr getImp() const noexcept { return impl_; }
 
   value_t* data(size_t result_idx = 0) noexcept {
-    return m_imp ? m_imp->data(result_idx) : nullptr;
+    return impl_ ? impl_->data(result_idx) : nullptr;
   }
 
   value_t const* data(size_t result_idx = 0) const noexcept {
-    return m_imp ? m_imp->data(result_idx) : nullptr;
+    return impl_ ? impl_->data(result_idx) : nullptr;
   }
 
   /**
@@ -211,13 +211,13 @@ class HAYAKU_API Indicator {
 
   /** Judge whether it is the same instance */
   bool isSame(const Indicator& other) const noexcept {
-    return !m_imp && m_imp == other.m_imp;
+    return !impl_ && impl_ == other.impl_;
   }
 
   /** Judge whether the indicator formula contains the indicator with the given
    * name (for special use) */
   bool contains(const string& name) const {
-    return m_imp ? m_imp->contains(name) : false;
+    return impl_ ? impl_->contains(name) : false;
   }
 
   string str() const;
@@ -265,14 +265,14 @@ class HAYAKU_API Indicator {
   }
 
  protected:
-  IndicatorImpPtr m_imp;
+  IndicatorImpPtr impl_;
 
 #if HAYAKU_SUPPORT_SERIALIZATION
  private:
   friend class boost::serialization::access;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_imp);
+    ar& boost::serialization::make_nvp("m_imp", impl_);
   }
 #endif /* HAYAKU_SUPPORT_SERIALIZATION */
 };
@@ -281,68 +281,68 @@ class HAYAKU_API Indicator {
 typedef vector<Indicator> IndicatorList;
 
 inline string Indicator::name() const noexcept {
-  return m_imp ? m_imp->name() : "IndicatorImp";
+  return impl_ ? impl_->name() : "IndicatorImp";
 }
 
 inline void Indicator::name(const string& name) noexcept {
-  if (m_imp) {
-    m_imp->name(name);
+  if (impl_) {
+    impl_->name(name);
   }
 }
 
 inline IndicatorImp::OPType Indicator::getOPType() const noexcept {
-  return m_imp ? m_imp->getOPType() : IndicatorImp::INVALID;
+  return impl_ ? impl_->getOPType() : IndicatorImp::INVALID;
 }
 
 inline string Indicator::long_name() const {
-  return m_imp ? m_imp->long_name() : "IndicatorImp()";
+  return impl_ ? impl_->long_name() : "IndicatorImp()";
 }
 
 inline size_t Indicator::discard() const noexcept {
-  return m_imp ? m_imp->discard() : 0;
+  return impl_ ? impl_->discard() : 0;
 }
 
 inline void Indicator::setDiscard(size_t discard) noexcept {
-  if (m_imp) {
-    m_imp->setDiscard(discard);
+  if (impl_) {
+    impl_->setDiscard(discard);
   }
 }
 
 inline void Indicator::updateDiscard(bool force) noexcept {
-  if (m_imp) {
-    m_imp->updateDiscard(force);
+  if (impl_) {
+    impl_->updateDiscard(force);
   }
 }
 
 inline size_t Indicator::getResultNumber() const noexcept {
-  return m_imp ? m_imp->getResultNumber() : 0;
+  return impl_ ? impl_->getResultNumber() : 0;
 }
 
 inline bool Indicator::empty() const noexcept {
-  return (!m_imp || m_imp->size() == 0) ? true : false;
+  return (!impl_ || impl_->size() == 0) ? true : false;
 }
 
 inline size_t Indicator::size() const noexcept {
-  return m_imp ? m_imp->size() : 0;
+  return impl_ ? impl_->size() : 0;
 }
 
 inline Indicator Indicator::operator()() { return clone(); }
 
 inline Indicator Indicator::clone() const {
-  return m_imp ? Indicator(m_imp->clone()) : Indicator();
+  return impl_ ? Indicator(impl_->clone()) : Indicator();
 }
 
 inline DatetimeList Indicator::getDatetimeList() const {
-  return m_imp ? m_imp->getDatetimeList() : DatetimeList();
+  return impl_ ? impl_->getDatetimeList() : DatetimeList();
 }
 
 inline bool Indicator::existNan(size_t result_idx) const {
-  return m_imp ? m_imp->existNan(result_idx) : false;
+  return impl_ ? impl_->existNan(result_idx) : false;
 }
 
 inline Indicator::value_t Indicator::getByDate(Datetime date,
                                                size_t num) const {
-  return m_imp ? m_imp->getByDate(date, num) : Null<Indicator::value_t>();
+  return impl_ ? impl_->getByDate(date, num) : Null<Indicator::value_t>();
 }
 
 inline Indicator::value_t Indicator::operator[](size_t pos) const {
@@ -350,23 +350,23 @@ inline Indicator::value_t Indicator::operator[](size_t pos) const {
 }
 
 inline Indicator::value_t Indicator::get(size_t pos, size_t num) const {
-  return m_imp->get(pos, num);
+  return impl_->get(pos, num);
 }
 
 inline Indicator::value_t Indicator::front(size_t num) const {
-  return m_imp->front(num);
+  return impl_->front(num);
 }
 
 inline Indicator::value_t Indicator::back(size_t num) const {
-  return m_imp->back(num);
+  return impl_->back(num);
 }
 
 inline Datetime Indicator::getDatetime(size_t pos) const {
-  return m_imp ? m_imp->getDatetime(pos) : Null<Datetime>();
+  return impl_ ? impl_->getDatetime(pos) : Null<Datetime>();
 }
 
 inline size_t Indicator::getPos(Datetime date) const {
-  return m_imp ? m_imp->getPos(date) : Null<size_t>();
+  return impl_ ? impl_->getPos(date) : Null<size_t>();
 }
 
 inline Indicator::value_t Indicator::operator[](Datetime date) const {
@@ -374,32 +374,32 @@ inline Indicator::value_t Indicator::operator[](Datetime date) const {
 }
 
 inline bool Indicator::haveIndParam(const string& name) const {
-  return m_imp ? m_imp->haveIndParam(name) : false;
+  return impl_ ? impl_->haveIndParam(name) : false;
 }
 
 inline void Indicator::setIndParam(const string& name, const Indicator& ind) {
-  if (m_imp) {
-    m_imp->setIndParam(name, ind);
+  if (impl_) {
+    impl_->setIndParam(name, ind);
   }
 }
 
 inline void Indicator::setIndParam(const string& name, const IndParam& ind) {
-  if (m_imp) {
-    m_imp->setIndParam(name, ind);
+  if (impl_) {
+    impl_->setIndParam(name, ind);
   }
 }
 
 inline IndParam Indicator::getIndParam(const string& name) const {
-  return m_imp ? m_imp->getIndParam(name) : IndParam();
+  return impl_ ? impl_->getIndParam(name) : IndParam();
 }
 
 inline const IndicatorImpPtr Indicator::getIndParamImp(
     const string& name) const {
-  return m_imp ? m_imp->getIndParamImp(name) : IndicatorImpPtr();
+  return impl_ ? impl_->getIndParamImp(name) : IndicatorImpPtr();
 }
 
 inline bool Indicator::isPythonObject() const noexcept {
-  return m_imp ? m_imp->isPythonObject() : false;
+  return impl_ ? impl_->isPythonObject() : false;
 }
 
 //--------------------------------------------------------------

@@ -34,7 +34,7 @@ class HAYAKU_API OperatorSelector : public SelectorBase {
   virtual void bindRealToProto(
       const internal::StrategyRuntimePtr& real,
       const internal::StrategyRuntimePtr& proto) override {
-    m_real_to_proto[real] = proto;
+    real_to_proto_[real] = proto;
   }
 
   StrategyWeightList getUnionSelected(
@@ -50,14 +50,14 @@ class HAYAKU_API OperatorSelector : public SelectorBase {
   void cloneRebuild(const SelectorPtr& se1, const SelectorPtr& se2);
 
  protected:
-  SelectorPtr m_se1;
-  SelectorPtr m_se2;
+  SelectorPtr se1_;
+  SelectorPtr se2_;
   std::unordered_set<internal::StrategyRuntimePtr>
-      m_se1_set;  // The prototype system instance set of se1
+      se1_set_;  // The prototype system instance set of se1
   std::unordered_set<internal::StrategyRuntimePtr>
-      m_se2_set;  // The prototype system instance set of se2
+      se2_set_;  // The prototype system instance set of se2
   std::unordered_map<internal::StrategyRuntimePtr, internal::StrategyRuntimePtr>
-      m_real_to_proto;
+      real_to_proto_;
 
  private:
   static std::unordered_set<internal::StrategyRuntime*> findIntersection(
@@ -72,15 +72,15 @@ class HAYAKU_API OperatorSelector : public SelectorBase {
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SelectorBase);
-    ar& BOOST_SERIALIZATION_NVP(m_se1);
-    ar& BOOST_SERIALIZATION_NVP(m_se2);
+    ar& boost::serialization::make_nvp("m_se1", se1_);
+    ar& boost::serialization::make_nvp("m_se2", se2_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SelectorBase);
-    ar& BOOST_SERIALIZATION_NVP(m_se1);
-    ar& BOOST_SERIALIZATION_NVP(m_se2);
+    ar& boost::serialization::make_nvp("m_se1", se1_);
+    ar& boost::serialization::make_nvp("m_se2", se2_);
     build();
   }
 #endif

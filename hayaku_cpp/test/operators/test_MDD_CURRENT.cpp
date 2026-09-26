@@ -125,17 +125,17 @@ TEST_CASE("test_MDD_CURRENT_increment") {
 
   // Verify the incremental calculation with consecutive calls
   KData kdata_more = stock.getKData(KQuery(-25));
-  Indicator m_more = m(kdata_more);
-  CHECK_EQ(m_more.size(), kdata_more.size());
+  Indicator more_ = m(kdata_more);
+  CHECK_EQ(more_.size(), kdata_more.size());
 
   // Compare with the direct calculation
-  Indicator m_direct = MDD_CURRENT(CLOSE())(kdata_more);
-  CHECK_EQ(m_more.size(), m_direct.size());
-  for (size_t i = 0; i < m_more.size(); ++i) {
-    if (std::isnan(m_more[i]) && std::isnan(m_direct[i])) {
+  Indicator direct_ = MDD_CURRENT(CLOSE())(kdata_more);
+  CHECK_EQ(more_.size(), direct_.size());
+  for (size_t i = 0; i < more_.size(); ++i) {
+    if (std::isnan(more_[i]) && std::isnan(direct_[i])) {
       continue;
     }
-    CHECK_EQ(m_more[i], doctest::Approx(m_direct[i]).epsilon(0.0001));
+    CHECK_EQ(more_[i], doctest::Approx(direct_[i]).epsilon(0.0001));
   }
 }
 

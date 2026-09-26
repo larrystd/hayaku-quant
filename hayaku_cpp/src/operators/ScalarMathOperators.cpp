@@ -221,13 +221,13 @@ IAbs::~IAbs() {}
 
 void IAbs::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IAbs::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -261,13 +261,13 @@ IExp::~IExp() {}
 
 void IExp::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IExp::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -301,13 +301,13 @@ ILn::~ILn() {}
 
 void ILn::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void ILn::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -341,13 +341,13 @@ ILog::~ILog() {}
 
 void ILog::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void ILog::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -385,13 +385,13 @@ void IPow::_checkParam(const string& name) const {}
 
 void IPow::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IPow::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -442,13 +442,13 @@ ISqrt::~ISqrt() {}
 
 void ISqrt::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void ISqrt::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -484,13 +484,13 @@ ISign::~ISign() {}
 
 void ISign::_calculate(const Indicator& ind) {
   size_t total = ind.size();
-  m_discard = ind.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(ind, m_discard);
+  _increment_calculate(ind, discard_);
   return;
 }
 
@@ -534,13 +534,13 @@ void ISignedPower::_checkParam(const string& name) const {}
 
 void ISignedPower::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void ISignedPower::_increment_calculate(const Indicator& data,

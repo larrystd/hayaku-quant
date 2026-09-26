@@ -23,8 +23,8 @@ class TwoLineEnvironment : public EnvironmentBase {
   virtual EnvironmentPtr _clone() override;
 
  private:
-  Indicator m_fast;
-  Indicator m_slow;
+  Indicator fast_;
+  Indicator slow_;
 
 //============================================
 // Serialization support
@@ -34,8 +34,8 @@ class TwoLineEnvironment : public EnvironmentBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(EnvironmentBase);
-    ar& BOOST_SERIALIZATION_NVP(m_fast);
-    ar& BOOST_SERIALIZATION_NVP(m_slow);
+    ar& boost::serialization::make_nvp("m_fast", fast_);
+    ar& boost::serialization::make_nvp("m_slow", slow_);
   }
 #endif
 };

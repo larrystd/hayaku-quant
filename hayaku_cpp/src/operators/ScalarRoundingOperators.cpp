@@ -188,13 +188,13 @@ ICeil::~ICeil() {}
 
 void ICeil::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void ICeil::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -230,13 +230,13 @@ IFloor::~IFloor() {}
 
 void IFloor::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IFloor::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -272,13 +272,13 @@ IIntpart::~IIntpart() {}
 
 void IIntpart::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IIntpart::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -320,13 +320,13 @@ void IRound::_checkParam(const string& name) const {
 
 void IRound::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IRound::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -375,13 +375,13 @@ void IRoundDown::_checkParam(const string& name) const {
 
 void IRoundDown::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IRoundDown::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -430,13 +430,13 @@ void IRoundUp::_checkParam(const string& name) const {
 
 void IRoundUp::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IRoundUp::_increment_calculate(const Indicator& data, size_t start_pos) {

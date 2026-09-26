@@ -22,8 +22,8 @@ class HAYAKU_API AddEnvironment : public EnvironmentBase {
   virtual EnvironmentPtr _clone() override;
 
  private:
-  EnvironmentPtr m_ev1;
-  EnvironmentPtr m_ev2;
+  EnvironmentPtr ev1_;
+  EnvironmentPtr ev2_;
 
 //============================================
 // Serialization support
@@ -33,8 +33,8 @@ class HAYAKU_API AddEnvironment : public EnvironmentBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(EnvironmentBase);
-    ar& BOOST_SERIALIZATION_NVP(m_ev1);
-    ar& BOOST_SERIALIZATION_NVP(m_ev2);
+    ar& boost::serialization::make_nvp("m_ev1", ev1_);
+    ar& boost::serialization::make_nvp("m_ev2", ev2_);
   }
 #endif
 };
@@ -61,8 +61,8 @@ class HAYAKU_API AndEnvironment : public EnvironmentBase {
   virtual EnvironmentPtr _clone() override;
 
  private:
-  EnvironmentPtr m_ev1;
-  EnvironmentPtr m_ev2;
+  EnvironmentPtr ev1_;
+  EnvironmentPtr ev2_;
 
 //============================================
 // Serialization support
@@ -72,8 +72,8 @@ class HAYAKU_API AndEnvironment : public EnvironmentBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(EnvironmentBase);
-    ar& BOOST_SERIALIZATION_NVP(m_ev1);
-    ar& BOOST_SERIALIZATION_NVP(m_ev2);
+    ar& boost::serialization::make_nvp("m_ev1", ev1_);
+    ar& boost::serialization::make_nvp("m_ev2", ev2_);
   }
 #endif
 };
@@ -100,8 +100,8 @@ class HAYAKU_API DivEnvironment : public EnvironmentBase {
   virtual EnvironmentPtr _clone() override;
 
  private:
-  EnvironmentPtr m_ev1;
-  EnvironmentPtr m_ev2;
+  EnvironmentPtr ev1_;
+  EnvironmentPtr ev2_;
 
 //============================================
 // Serialization support
@@ -111,8 +111,8 @@ class HAYAKU_API DivEnvironment : public EnvironmentBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(EnvironmentBase);
-    ar& BOOST_SERIALIZATION_NVP(m_ev1);
-    ar& BOOST_SERIALIZATION_NVP(m_ev2);
+    ar& boost::serialization::make_nvp("m_ev1", ev1_);
+    ar& boost::serialization::make_nvp("m_ev2", ev2_);
   }
 #endif
 };
@@ -139,8 +139,8 @@ class HAYAKU_API MultiEnvironment : public EnvironmentBase {
   virtual EnvironmentPtr _clone() override;
 
  private:
-  EnvironmentPtr m_ev1;
-  EnvironmentPtr m_ev2;
+  EnvironmentPtr ev1_;
+  EnvironmentPtr ev2_;
 
 //============================================
 // Serialization support
@@ -150,8 +150,8 @@ class HAYAKU_API MultiEnvironment : public EnvironmentBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(EnvironmentBase);
-    ar& BOOST_SERIALIZATION_NVP(m_ev1);
-    ar& BOOST_SERIALIZATION_NVP(m_ev2);
+    ar& boost::serialization::make_nvp("m_ev1", ev1_);
+    ar& boost::serialization::make_nvp("m_ev2", ev2_);
   }
 #endif
 };
@@ -178,8 +178,8 @@ class HAYAKU_API OrEnvironment : public EnvironmentBase {
   virtual EnvironmentPtr _clone() override;
 
  private:
-  EnvironmentPtr m_ev1;
-  EnvironmentPtr m_ev2;
+  EnvironmentPtr ev1_;
+  EnvironmentPtr ev2_;
 
 //============================================
 // Serialization support
@@ -189,8 +189,8 @@ class HAYAKU_API OrEnvironment : public EnvironmentBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(EnvironmentBase);
-    ar& BOOST_SERIALIZATION_NVP(m_ev1);
-    ar& BOOST_SERIALIZATION_NVP(m_ev2);
+    ar& boost::serialization::make_nvp("m_ev1", ev1_);
+    ar& boost::serialization::make_nvp("m_ev2", ev2_);
   }
 #endif
 };
@@ -217,8 +217,8 @@ class HAYAKU_API SubEnvironment : public EnvironmentBase {
   virtual EnvironmentPtr _clone() override;
 
  private:
-  EnvironmentPtr m_ev1;
-  EnvironmentPtr m_ev2;
+  EnvironmentPtr ev1_;
+  EnvironmentPtr ev2_;
 
 //============================================
 // Serialization support
@@ -228,8 +228,8 @@ class HAYAKU_API SubEnvironment : public EnvironmentBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(EnvironmentBase);
-    ar& BOOST_SERIALIZATION_NVP(m_ev1);
-    ar& BOOST_SERIALIZATION_NVP(m_ev2);
+    ar& boost::serialization::make_nvp("m_ev1", ev1_);
+    ar& boost::serialization::make_nvp("m_ev2", ev2_);
   }
 #endif
 };

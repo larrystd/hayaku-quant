@@ -24,9 +24,9 @@ Block::Block() noexcept {}
 Block::~Block() {}
 
 Block::Block(const string& category, const string& name)
-    : m_data(make_shared<Data>()) {
-  m_data->m_category = category;
-  m_data->m_name = name;
+    : data_(make_shared<Data>()) {
+  data_->category_ = category;
+  data_->name_ = name;
 }
 
 Block::Block(const string& category, const string& name,
@@ -35,7 +35,7 @@ Block::Block(const string& category, const string& name,
   if (!indexCode.empty()) {
     auto stock = getDataRuntime().getStock(indexCode);
     if (!stock.isNull()) {
-      m_data->m_indexStock = stock;
+      data_->index_stock_ = stock;
     } else {
       // Ignore it directly, no more printing
       HAYAKU_TRACE("Can't find index stock: {}, will ignore!", indexCode);
@@ -44,58 +44,58 @@ Block::Block(const string& category, const string& name,
 }
 
 Block::Block(const Block& block) noexcept {
-  if (!block.m_data) return;
-  m_data = block.m_data;
+  if (!block.data_) return;
+  data_ = block.data_;
 }
 
 Block::Block(Block&& block) noexcept {
-  if (!block.m_data) return;
-  m_data = std::move(block.m_data);
+  if (!block.data_) return;
+  data_ = std::move(block.data_);
 }
 
-Block::Block(const StockList& stocks) : m_data(make_shared<Data>()) {
+Block::Block(const StockList& stocks) : data_(make_shared<Data>()) {
   for (const auto& stock : stocks) {
     add(stock);
   }
 }
 
-Block::Block(const StringList& market_codes) : m_data(make_shared<Data>()) {
+Block::Block(const StringList& market_codes) : data_(make_shared<Data>()) {
   for (const auto& market_code : market_codes) {
     add(market_code);
   }
 }
 
 Block& Block::operator=(const Block& block) noexcept {
-  HAYAKU_IF_RETURN(this == &block || m_data == block.m_data, *this);
-  m_data = block.m_data;
+  HAYAKU_IF_RETURN(this == &block || data_ == block.data_, *this);
+  data_ = block.data_;
   return *this;
 }
 
 Block& Block::operator=(Block&& block) noexcept {
-  HAYAKU_IF_RETURN(this == &block || m_data == block.m_data, *this);
-  m_data = std::move(block.m_data);
+  HAYAKU_IF_RETURN(this == &block || data_ == block.data_, *this);
+  data_ = std::move(block.data_);
   return *this;
 }
 
 bool Block::have(const string& market_code) const {
-  HAYAKU_IF_RETURN(!m_data, false);
+  HAYAKU_IF_RETURN(!data_, false);
   string query_str = market_code;
   to_upper(query_str);
-  return m_data->m_stockDict.count(query_str) ? true : false;
+  return data_->stock_dict_.count(query_str) ? true : false;
 }
 
 bool Block::have(const Stock& stock) const {
-  HAYAKU_IF_RETURN(!m_data, false);
-  return m_data->m_stockDict.count(stock.market_code()) ? true : false;
+  HAYAKU_IF_RETURN(!data_, false);
+  return data_->stock_dict_.count(stock.market_code()) ? true : false;
 }
 
 Stock Block::get(const string& market_code) const {
   Stock result;
-  HAYAKU_IF_RETURN(!m_data, result);
+  HAYAKU_IF_RETURN(!data_, result);
   string query_str = market_code;
   to_upper(query_str);
-  auto iter = m_data->m_stockDict.find(query_str);
-  if (iter != m_data->m_stockDict.end()) {
+  auto iter = data_->stock_dict_.find(query_str);
+  if (iter != data_->stock_dict_.end()) {
     result = iter->second;
   }
   return result;
@@ -105,15 +105,15 @@ StockList Block::getStockList(
     std::function<bool(const Stock&)>&& filter) const {
   StockList ret;
   ret.reserve(size());
-  auto iter = m_data->m_stockDict.begin();
+  auto iter = data_->stock_dict_.begin();
   if (filter) {
-    for (; iter != m_data->m_stockDict.end(); ++iter) {
+    for (; iter != data_->stock_dict_.end(); ++iter) {
       if (filter(iter->second)) {
         ret.emplace_back(iter->second);
       }
     }
   } else {
-    for (; iter != m_data->m_stockDict.end(); ++iter) {
+    for (; iter != data_->stock_dict_.end(); ++iter) {
       ret.emplace_back(iter->second);
     }
   }
@@ -122,9 +122,9 @@ StockList Block::getStockList(
 
 bool Block::add(const Stock& stock) {
   HAYAKU_IF_RETURN(stock.isNull() || have(stock), false);
-  if (!m_data) m_data = make_shared<Data>();
+  if (!data_) data_ = make_shared<Data>();
 
-  m_data->m_stockDict[stock.market_code()] = stock;
+  data_->stock_dict_[stock.market_code()] = stock;
   return true;
 }
 
@@ -135,10 +135,10 @@ bool Block::add(const string& market_code) {
   // especially because some accumulating and unused blocks print a lot of logs
   // during the initialization
   HAYAKU_IF_RETURN(stock.isNull() || have(stock), false);
-  if (!m_data) [[unlikely]]
-    m_data = make_shared<Data>();
+  if (!data_) [[unlikely]]
+    data_ = make_shared<Data>();
 
-  m_data->m_stockDict[stock.market_code()] = stock;
+  data_->stock_dict_[stock.market_code()] = stock;
   return true;
 }
 
@@ -162,23 +162,23 @@ bool Block::remove(const string& market_code) {
   HAYAKU_IF_RETURN(!have(market_code), false);
   string query_str = market_code;
   to_upper(query_str);
-  m_data->m_stockDict.erase(query_str);
+  data_->stock_dict_.erase(query_str);
   return true;
 }
 
 bool Block::remove(const Stock& stock) {
   HAYAKU_IF_RETURN(!have(stock), false);
-  m_data->m_stockDict.erase(stock.market_code());
+  data_->stock_dict_.erase(stock.market_code());
   return true;
 }
 
 void Block::setIndexStock(const Stock& stk) {
-  if (!m_data) m_data = make_shared<Data>();
-  m_data->m_indexStock = stk;
+  if (!data_) data_ = make_shared<Data>();
+  data_->index_stock_ = stk;
 }
 
 uint64_t Block::strongHash() const {
-  HAYAKU_IF_RETURN(!m_data, 0);
+  HAYAKU_IF_RETURN(!data_, 0);
 
   XXH64_state_t* state = XXH64_createState();
   HAYAKU_IF_RETURN(!state, 0);
@@ -186,8 +186,8 @@ uint64_t Block::strongHash() const {
   uint64_t seed = 0;
   XXH64_reset(state, seed);
 
-  XXH64_update(state, m_data->m_category.data(), m_data->m_category.size());
-  XXH64_update(state, m_data->m_name.data(), m_data->m_name.size());
+  XXH64_update(state, data_->category_.data(), data_->category_.size());
+  XXH64_update(state, data_->name_.data(), data_->name_.size());
 
   StockList stocks = getStockList();
   std::sort(stocks.begin(), stocks.end(), [](const Stock& a, const Stock& b) {
@@ -205,7 +205,7 @@ uint64_t Block::strongHash() const {
 }
 
 bool Block::operator==(const Block& blk) const noexcept {
-  HAYAKU_IF_RETURN(this == &blk || m_data == blk.m_data, true);
+  HAYAKU_IF_RETURN(this == &blk || data_ == blk.data_, true);
   HAYAKU_IF_RETURN(category() != blk.category() || name() != blk.name() ||
                        size() != blk.size() ||
                        getIndexStock() != blk.getIndexStock(),

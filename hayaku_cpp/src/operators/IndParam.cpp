@@ -12,16 +12,16 @@
 namespace hayaku {
 
 HAYAKU_API std::ostream& operator<<(std::ostream& os, const IndParam& ind) {
-  os << "IndParam: \n" << ind.m_ind->formula();
+  os << "IndParam: \n" << ind.ind_->formula();
   return os;
 }
 
 IndParam::IndParam() {}
 
-IndParam::IndParam(const IndicatorImpPtr& ind) : m_ind(ind) {};
+IndParam::IndParam(const IndicatorImpPtr& ind) : ind_(ind) {};
 
-IndParam::IndParam(const Indicator& ind) : m_ind(ind.getImp()) {};
+IndParam::IndParam(const Indicator& ind) : ind_(ind.getImp()) {};
 
-Indicator IndParam::get() const { return Indicator(m_ind); }
+Indicator IndParam::get() const { return Indicator(ind_); }
 
 }  // namespace hayaku

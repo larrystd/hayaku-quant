@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Hayaku\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-26 11:38+0800\n"
+"POT-Creation-Date: 2026-09-26 10:06+0800\n"
 "PO-Revision-Date: 2026-09-26 10:06+0800\n"
 "Last-Translator: \n"
 "Language-Team: zh_CN\n"
@@ -117,7 +117,7 @@ msgstr ""
 "证券代码 证券名称 建仓日期 持有天数 持有数量 投入资金 当前市值 当前收益 当前"
 "收益率 相对账户初始资金收益率\n"
 
-#: hayaku_cpp/src/extensions/realtime/SpotAgent.cpp:60
+#: hayaku_cpp/src/extensions/realtime/SpotAgent.cpp:61
 msgid "Start spot agent."
 msgstr "启动行情接收."
 
@@ -342,16 +342,16 @@ msgstr "总资产"
 #: hayaku_cpp/src/strategy/portfolio/SimplePortfolio.cpp:157
 #: hayaku_cpp/src/strategy/portfolio/SimplePortfolio.cpp:347
 #: hayaku_cpp/src/strategy/portfolio/SimplePortfolio.cpp:397
-#: hayaku_pywrap/execution/Bindings.cpp:1082
-#: hayaku_pywrap/execution/Bindings.cpp:1196
+#: hayaku_pywrap/execution/_TradeRecord.cpp:132
+#: hayaku_pywrap/execution/_TradeRecord.cpp:246
 msgid "cash"
 msgstr "现金余额"
 
 #: hayaku_cpp/src/strategy/portfolio/SimplePortfolio.cpp:157
 #: hayaku_cpp/src/strategy/portfolio/SimplePortfolio.cpp:348
 #: hayaku_cpp/src/strategy/portfolio/SimplePortfolio.cpp:398
-#: hayaku_pywrap/execution/Bindings.cpp:628
-#: hayaku_pywrap/execution/Bindings.cpp:774
+#: hayaku_pywrap/execution/_PositionRecord.cpp:192
+#: hayaku_pywrap/execution/_PositionRecord.cpp:338
 msgid "market_value"
 msgstr "当前市值"
 
@@ -468,368 +468,363 @@ msgstr ""
 "mf 参数 “save_all_factors” 为关闭状态，无法获取全部因子！若需要获取信息系"
 "数 / 信息系数比率，请将该参数设置为开启状态!"
 
-#: hayaku_pywrap/execution/Bindings.cpp:626
-#: hayaku_pywrap/execution/Bindings.cpp:765
-#: hayaku_pywrap/execution/Bindings.cpp:1079
-#: hayaku_pywrap/execution/Bindings.cpp:1183
-#: hayaku_pywrap/strategy/Bindings.cpp:728
-#: hayaku_pywrap/strategy/Bindings.cpp:763
-msgid "market_code"
-msgstr "证券代码"
-
-#: hayaku_pywrap/execution/Bindings.cpp:626
-#: hayaku_pywrap/execution/Bindings.cpp:767
-#: hayaku_pywrap/execution/Bindings.cpp:1079
-#: hayaku_pywrap/execution/Bindings.cpp:1185
-msgid "stock_name"
-msgstr "证券名称"
-
-#: hayaku_pywrap/execution/Bindings.cpp:626
-#: hayaku_pywrap/execution/Bindings.cpp:769
-msgid "take_time"
-msgstr "买入时间"
-
-#: hayaku_pywrap/execution/Bindings.cpp:627
-#: hayaku_pywrap/execution/Bindings.cpp:771
-msgid "hold_days"
-msgstr "持仓天数"
-
-#: hayaku_pywrap/execution/Bindings.cpp:627
-#: hayaku_pywrap/execution/Bindings.cpp:772
-msgid "hold_number"
-msgstr "持仓数量"
-
-#: hayaku_pywrap/execution/Bindings.cpp:627
-#: hayaku_pywrap/execution/Bindings.cpp:773
-msgid "invest"
-msgstr "投入金额"
-
-#: hayaku_pywrap/execution/Bindings.cpp:628
-#: hayaku_pywrap/execution/Bindings.cpp:775
-msgid "profit"
-msgstr "盈亏金额"
-
-#: hayaku_pywrap/execution/Bindings.cpp:628
-#: hayaku_pywrap/execution/Bindings.cpp:776
-msgid "profit_percent"
-msgstr "盈亏百分比"
-
-#: hayaku_pywrap/execution/Bindings.cpp:629
-#: hayaku_pywrap/execution/Bindings.cpp:777
-#: hayaku_pywrap/execution/Bindings.cpp:1081
-#: hayaku_pywrap/execution/Bindings.cpp:1195
-msgid "stoploss"
-msgstr "止损价"
-
-#: hayaku_pywrap/execution/Bindings.cpp:629
-#: hayaku_pywrap/execution/Bindings.cpp:778
-msgid "goal_price"
-msgstr "目标价"
-
-#: hayaku_pywrap/execution/Bindings.cpp:629
-#: hayaku_pywrap/execution/Bindings.cpp:779
-msgid "clean_time"
-msgstr "清仓时间"
-
-#: hayaku_pywrap/execution/Bindings.cpp:630
-#: hayaku_pywrap/execution/Bindings.cpp:781
-msgid "total_number"
-msgstr "累计持有数量"
-
-#: hayaku_pywrap/execution/Bindings.cpp:630
-#: hayaku_pywrap/execution/Bindings.cpp:782
-msgid "total_cost"
-msgstr "累计成本"
-
-#: hayaku_pywrap/execution/Bindings.cpp:630
-#: hayaku_pywrap/execution/Bindings.cpp:783
-msgid "total_risk"
-msgstr "累计风险"
-
-#: hayaku_pywrap/execution/Bindings.cpp:631
-#: hayaku_pywrap/execution/Bindings.cpp:784
-msgid "buy_money"
-msgstr "累计买入金额"
-
-#: hayaku_pywrap/execution/Bindings.cpp:631
-#: hayaku_pywrap/execution/Bindings.cpp:785
-msgid "sell_money"
-msgstr "累计卖出金额"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1079
-#: hayaku_pywrap/execution/Bindings.cpp:1187
-msgid "datetime"
-msgstr "交易时间"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1080
-#: hayaku_pywrap/execution/Bindings.cpp:1189
-msgid "business"
-msgstr "业务名称"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1080
-#: hayaku_pywrap/execution/Bindings.cpp:1191
-msgid "planPrice"
-msgstr "计划交易价格"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1080
-#: hayaku_pywrap/execution/Bindings.cpp:1192
-msgid "realPrice"
-msgstr "实际成交价格"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1081
-#: hayaku_pywrap/execution/Bindings.cpp:1193
-msgid "goalPrice"
-msgstr "目标价格"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1081
-#: hayaku_pywrap/execution/Bindings.cpp:1194
-msgid "number"
-msgstr "交易数量"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1082
-#: hayaku_pywrap/execution/Bindings.cpp:1197
-msgid "cost_total"
-msgstr "交易总成本"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1082
-#: hayaku_pywrap/execution/Bindings.cpp:1198
-msgid "cost_commission"
-msgstr "佣金"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1083
-#: hayaku_pywrap/execution/Bindings.cpp:1199
-msgid "cost_stamptax"
-msgstr "印花税"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1083
-#: hayaku_pywrap/execution/Bindings.cpp:1200
-msgid "cost_transferfee"
-msgstr "过户费"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1084
-#: hayaku_pywrap/execution/Bindings.cpp:1201
-msgid "cost_others"
-msgstr "其它成本"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1084
-#: hayaku_pywrap/execution/Bindings.cpp:1202
-msgid "origin"
-msgstr "来源"
-
-#: hayaku_pywrap/execution/Bindings.cpp:1084
-#: hayaku_pywrap/execution/Bindings.cpp:1204
-msgid "remark"
-msgstr "备注"
-
-#: hayaku_pywrap/operators/BuiltinBindings.cpp:1148
+#: hayaku_pywrap/data/indicator/_build_in.cpp:1145
 msgid "WEAVE: total must be 2 to 6"
 msgstr "WEAVE指标输入参数数量需大于等2并小于等于6"
 
-#: hayaku_pywrap/strategy/Bindings.cpp:728
-#: hayaku_pywrap/strategy/Bindings.cpp:765
+#: hayaku_pywrap/execution/_PositionRecord.cpp:190
+#: hayaku_pywrap/execution/_PositionRecord.cpp:329
+#: hayaku_pywrap/execution/_TradeRecord.cpp:129
+#: hayaku_pywrap/execution/_TradeRecord.cpp:233
+#: hayaku_pywrap/strategy/_MultiFactor.cpp:99
+#: hayaku_pywrap/strategy/_MultiFactor.cpp:134
+msgid "market_code"
+msgstr "证券代码"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:190
+#: hayaku_pywrap/execution/_PositionRecord.cpp:331
+#: hayaku_pywrap/execution/_TradeRecord.cpp:129
+#: hayaku_pywrap/execution/_TradeRecord.cpp:235
+msgid "stock_name"
+msgstr "证券名称"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:190
+#: hayaku_pywrap/execution/_PositionRecord.cpp:333
+msgid "take_time"
+msgstr "买入时间"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:191
+#: hayaku_pywrap/execution/_PositionRecord.cpp:335
+msgid "hold_days"
+msgstr "持仓天数"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:191
+#: hayaku_pywrap/execution/_PositionRecord.cpp:336
+msgid "hold_number"
+msgstr "持仓数量"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:191
+#: hayaku_pywrap/execution/_PositionRecord.cpp:337
+msgid "invest"
+msgstr "投入金额"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:192
+#: hayaku_pywrap/execution/_PositionRecord.cpp:339
+msgid "profit"
+msgstr "盈亏金额"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:192
+#: hayaku_pywrap/execution/_PositionRecord.cpp:340
+msgid "profit_percent"
+msgstr "盈亏百分比"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:193
+#: hayaku_pywrap/execution/_PositionRecord.cpp:341
+#: hayaku_pywrap/execution/_TradeRecord.cpp:131
+#: hayaku_pywrap/execution/_TradeRecord.cpp:245
+msgid "stoploss"
+msgstr "止损价"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:193
+#: hayaku_pywrap/execution/_PositionRecord.cpp:342
+msgid "goal_price"
+msgstr "目标价"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:193
+#: hayaku_pywrap/execution/_PositionRecord.cpp:343
+msgid "clean_time"
+msgstr "清仓时间"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:194
+#: hayaku_pywrap/execution/_PositionRecord.cpp:345
+msgid "total_number"
+msgstr "累计持有数量"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:194
+#: hayaku_pywrap/execution/_PositionRecord.cpp:346
+msgid "total_cost"
+msgstr "累计成本"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:194
+#: hayaku_pywrap/execution/_PositionRecord.cpp:347
+msgid "total_risk"
+msgstr "累计风险"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:195
+#: hayaku_pywrap/execution/_PositionRecord.cpp:348
+msgid "buy_money"
+msgstr "累计买入金额"
+
+#: hayaku_pywrap/execution/_PositionRecord.cpp:195
+#: hayaku_pywrap/execution/_PositionRecord.cpp:349
+msgid "sell_money"
+msgstr "累计卖出金额"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:129
+#: hayaku_pywrap/execution/_TradeRecord.cpp:237
+msgid "datetime"
+msgstr "交易时间"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:130
+#: hayaku_pywrap/execution/_TradeRecord.cpp:239
+msgid "business"
+msgstr "业务名称"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:130
+#: hayaku_pywrap/execution/_TradeRecord.cpp:241
+msgid "planPrice"
+msgstr "计划交易价格"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:130
+#: hayaku_pywrap/execution/_TradeRecord.cpp:242
+msgid "realPrice"
+msgstr "实际成交价格"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:131
+#: hayaku_pywrap/execution/_TradeRecord.cpp:243
+msgid "goalPrice"
+msgstr "目标价格"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:131
+#: hayaku_pywrap/execution/_TradeRecord.cpp:244
+msgid "number"
+msgstr "交易数量"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:132
+#: hayaku_pywrap/execution/_TradeRecord.cpp:247
+msgid "cost_total"
+msgstr "交易总成本"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:132
+#: hayaku_pywrap/execution/_TradeRecord.cpp:248
+msgid "cost_commission"
+msgstr "佣金"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:133
+#: hayaku_pywrap/execution/_TradeRecord.cpp:249
+msgid "cost_stamptax"
+msgstr "印花税"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:133
+#: hayaku_pywrap/execution/_TradeRecord.cpp:250
+msgid "cost_transferfee"
+msgstr "过户费"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:134
+#: hayaku_pywrap/execution/_TradeRecord.cpp:251
+msgid "cost_others"
+msgstr "其它成本"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:134
+#: hayaku_pywrap/execution/_TradeRecord.cpp:252
+msgid "origin"
+msgstr "来源"
+
+#: hayaku_pywrap/execution/_TradeRecord.cpp:134
+#: hayaku_pywrap/execution/_TradeRecord.cpp:254
+msgid "remark"
+msgstr "备注"
+
+#: hayaku_pywrap/strategy/_MultiFactor.cpp:99
+#: hayaku_pywrap/strategy/_MultiFactor.cpp:136
 msgid "name"
 msgstr "证券名称"
 
-#: hayaku_pywrap/strategy/Bindings.cpp:728
+#: hayaku_pywrap/strategy/_MultiFactor.cpp:99
 msgid "score"
 msgstr "评分分值"
 
-#: hayaku/extensions/visualization/backends/__init__.py:92
-#: hayaku/extensions/visualization/backends/__init__.py:154
-#: hayaku/extensions/visualization/backends/__init__.py:164
-#: hayaku/extensions/visualization/backends/__init__.py:174
-#: hayaku/extensions/visualization/backends/__init__.py:184
-#: hayaku/extensions/visualization/backends/__init__.py:202
-#: hayaku/extensions/visualization/backends/__init__.py:220
-#: hayaku/extensions/visualization/backends/__init__.py:242
-#: hayaku/extensions/visualization/backends/__init__.py:257
-#: hayaku/extensions/visualization/backends/__init__.py:274
+#: hayaku/draw/drawplot/__init__.py:92 hayaku/draw/drawplot/__init__.py:154
+#: hayaku/draw/drawplot/__init__.py:164 hayaku/draw/drawplot/__init__.py:174
+#: hayaku/draw/drawplot/__init__.py:184 hayaku/draw/drawplot/__init__.py:202
+#: hayaku/draw/drawplot/__init__.py:220 hayaku/draw/drawplot/__init__.py:242
+#: hayaku/draw/drawplot/__init__.py:257 hayaku/draw/drawplot/__init__.py:274
 #, python-brace-format
 msgid "Unknown engine: {}"
 msgstr "未知的引擎: {}"
 
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:195
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:306
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:407
+#: hayaku/draw/drawplot/bokeh_draw.py:194
+#: hayaku/draw/drawplot/bokeh_draw.py:305
+#: hayaku/draw/drawplot/bokeh_draw.py:406
 msgid "Date"
 msgstr "日期"
 
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:195
+#: hayaku/draw/drawplot/bokeh_draw.py:194
 msgid "Open"
 msgstr "开盘价"
 
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:196
+#: hayaku/draw/drawplot/bokeh_draw.py:195
 msgid "High"
 msgstr "最高价"
 
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:196
+#: hayaku/draw/drawplot/bokeh_draw.py:195
 msgid "Low"
 msgstr "最低价"
 
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:196
+#: hayaku/draw/drawplot/bokeh_draw.py:195
 msgid "Close"
 msgstr "收盘价"
 
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:197
+#: hayaku/draw/drawplot/bokeh_draw.py:196
 msgid "Amount"
 msgstr "成交金额"
 
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:197
+#: hayaku/draw/drawplot/bokeh_draw.py:196
 msgid "Volume"
 msgstr "成交量"
 
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:210
-#: hayaku/extensions/visualization/backends/echarts_draw.py:180
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:283
+#: hayaku/draw/drawplot/bokeh_draw.py:209
+#: hayaku/draw/drawplot/echarts_draw.py:179
+#: hayaku/draw/drawplot/matplotlib_draw.py:281
 #, python-brace-format
 msgid "{} Open:{:.2f} High:{:.2f} Low:{:.2f} Close:{:.2f} Change:{:.2f}%"
 msgstr "{} 开:{:.2f} 高:{:.2f} 低:{:.2f} 收:{:.2f} 涨幅:{:.2f}%"
 
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:240
+#: hayaku/draw/drawplot/bokeh_draw.py:239
 msgid ""
 "Bokeh does not support the American K-line chart yet, please use matplotlib"
 msgstr "Bokeh 暂不支持绘制美式K线图, 请使用 matplotlib"
 
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:306
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:325
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:407
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:425
+#: hayaku/draw/drawplot/bokeh_draw.py:305
+#: hayaku/draw/drawplot/bokeh_draw.py:324
+#: hayaku/draw/drawplot/bokeh_draw.py:406
+#: hayaku/draw/drawplot/bokeh_draw.py:424
 msgid "Indicator"
 msgstr "指标"
 
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:307
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:326
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:408
-#: hayaku/extensions/visualization/backends/bokeh_draw.py:426
+#: hayaku/draw/drawplot/bokeh_draw.py:306
+#: hayaku/draw/drawplot/bokeh_draw.py:325
+#: hayaku/draw/drawplot/bokeh_draw.py:407
+#: hayaku/draw/drawplot/bokeh_draw.py:425
 msgid "Value"
 msgstr "值"
 
-#: hayaku/extensions/visualization/backends/common.py:51
+#: hayaku/draw/drawplot/common.py:51
 msgid " (Daily)"
 msgstr " （日线）"
 
-#: hayaku/extensions/visualization/backends/common.py:53
+#: hayaku/draw/drawplot/common.py:53
 msgid " (Weekly)"
 msgstr " （周线）"
 
-#: hayaku/extensions/visualization/backends/common.py:55
+#: hayaku/draw/drawplot/common.py:55
 msgid " (Monthly)"
 msgstr " （月线）"
 
-#: hayaku/extensions/visualization/backends/common.py:57
+#: hayaku/draw/drawplot/common.py:57
 msgid " (Quarterly)"
 msgstr " （季线）"
 
-#: hayaku/extensions/visualization/backends/common.py:59
+#: hayaku/draw/drawplot/common.py:59
 msgid " (Half-Yearly)"
 msgstr " （半年线）"
 
-#: hayaku/extensions/visualization/backends/common.py:61
+#: hayaku/draw/drawplot/common.py:61
 msgid " (Yearly)"
 msgstr " （年线）"
 
-#: hayaku/extensions/visualization/backends/common.py:63
+#: hayaku/draw/drawplot/common.py:63
 msgid " (1-min)"
 msgstr " （1分钟线）"
 
-#: hayaku/extensions/visualization/backends/common.py:65
+#: hayaku/draw/drawplot/common.py:65
 msgid " (3-min)"
 msgstr " （3分钟线）"
 
-#: hayaku/extensions/visualization/backends/common.py:67
+#: hayaku/draw/drawplot/common.py:67
 msgid " (5-min)"
 msgstr " （5分钟线）"
 
-#: hayaku/extensions/visualization/backends/common.py:69
+#: hayaku/draw/drawplot/common.py:69
 msgid " (15-min)"
 msgstr " （15分钟线）"
 
-#: hayaku/extensions/visualization/backends/common.py:71
+#: hayaku/draw/drawplot/common.py:71
 msgid " (30-min)"
 msgstr " （30分钟线）"
 
-#: hayaku/extensions/visualization/backends/common.py:73
+#: hayaku/draw/drawplot/common.py:73
 msgid " (60-min)"
 msgstr " （60分钟线）"
 
-#: hayaku/extensions/visualization/backends/common.py:75
+#: hayaku/draw/drawplot/common.py:75
 msgid " (2-hour)"
 msgstr " （2小时线）"
 
-#: hayaku/extensions/visualization/backends/common.py:77
+#: hayaku/draw/drawplot/common.py:77
 msgid " (4-hour)"
 msgstr " （4小时线）"
 
-#: hayaku/extensions/visualization/backends/common.py:79
+#: hayaku/draw/drawplot/common.py:79
 msgid " (6-hour)"
 msgstr " （6小时线）"
 
-#: hayaku/extensions/visualization/backends/common.py:81
+#: hayaku/draw/drawplot/common.py:81
 msgid " (12-hour)"
 msgstr " （12小时线）"
 
-#: hayaku/extensions/visualization/backends/echarts_draw.py:545
+#: hayaku/draw/drawplot/echarts_draw.py:544
 msgid "Strategy Cumulative Return"
 msgstr "策略累计收益率"
 
-#: hayaku/extensions/visualization/backends/echarts_draw.py:563
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:920
+#: hayaku/draw/drawplot/echarts_draw.py:562
+#: hayaku/draw/drawplot/matplotlib_draw.py:918
 #, python-brace-format
 msgid ""
 "Total Invested Assets: {:<.2f}    Current Total Assets: {:<.2f}    Current "
 "Profit: {:<.2f}"
 msgstr "投入总资产: {:<.2f}    当前总资产: {:<.2f}    当前盈利: {:<.2f}"
 
-#: hayaku/extensions/visualization/backends/echarts_draw.py:565
+#: hayaku/draw/drawplot/echarts_draw.py:564
 #, python-brace-format
 msgid ""
 "Current Strategy Return: {:<.2f}%    Annualized Return: {:<.2f}%    Max "
 "Drawdown: {:<.2f}%"
 msgstr "当前策略收益: {:<.2f}%    年化收益率: {:<.2f}%    最大回撤: {:<.2f}%"
 
-#: hayaku/extensions/visualization/backends/echarts_draw.py:567
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:926
+#: hayaku/draw/drawplot/echarts_draw.py:566
+#: hayaku/draw/drawplot/matplotlib_draw.py:924
 #, python-brace-format
 msgid ""
 "Win Rate: {:<.2f}%    Avg Win/Avg Loss: 1 : {:<.2f}    Sharpe Ratio: {:<.2f}"
 msgstr "系统胜率: {:<.2f}%    盈/亏比: 1 : {:<.2f}    夏普比率: {:<.2f}"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:334
+#: hayaku/draw/drawplot/matplotlib_draw.py:332
 #, python-brace-format
 msgid "{} Open:{:.2f} High:{:.2f} Low:{:.2f} Close:{:.2f}"
 msgstr "{} 开:{:.2f} 高:{:.2f} 低:{:.2f} 收:{:.2f}"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:537
+#: hayaku/draw/drawplot/matplotlib_draw.py:535
 msgid ""
 "The indicator length is 0; the indicator should have been calculated (i.e. "
 "it has values)"
 msgstr "指标长度为0, 指标应已计算（即有值"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:542
+#: hayaku/draw/drawplot/matplotlib_draw.py:540
 msgid "Failed to get the date list! The indicator should be a time series"
 msgstr "获取日期列表失败！指标应为时间序列"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:560
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1039
+#: hayaku/draw/drawplot/matplotlib_draw.py:558
+#: hayaku/draw/drawplot/matplotlib_draw.py:1037
 msgid "Insufficient monthly data!"
 msgstr "月数据不足！"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:569
+#: hayaku/draw/drawplot/matplotlib_draw.py:567
 msgid "Year-Month Return (%) Heatmap"
 msgstr "年-月度收益率(%)热力图"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:570
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1090
+#: hayaku/draw/drawplot/matplotlib_draw.py:568
+#: hayaku/draw/drawplot/matplotlib_draw.py:1088
 msgid "Month"
 msgstr "月度"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:571
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1091
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1190
+#: hayaku/draw/drawplot/matplotlib_draw.py:569
+#: hayaku/draw/drawplot/matplotlib_draw.py:1089
+#: hayaku/draw/drawplot/matplotlib_draw.py:1188
 msgid "Year"
 msgstr "年份"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:923
+#: hayaku/draw/drawplot/matplotlib_draw.py:921
 #, python-brace-format
 msgid ""
 "Current Strategy Return: {:<.2f}%    Annualized Return: {:<.2f}%    Max "
@@ -838,29 +833,29 @@ msgstr ""
 "当前策略收益: {:<.2f}%    年化收益率: {:<.2f}%    最大回撤: {:<.2f}%    当前"
 "距历史最高点回撤: {:<.2f}%"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:940
+#: hayaku/draw/drawplot/matplotlib_draw.py:938
 #, python-brace-format
 msgid "{} Return Curve"
 msgstr "{} 收益曲线"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:943
+#: hayaku/draw/drawplot/matplotlib_draw.py:941
 #, python-brace-format
 msgid "{} Cumulative Return {:<.2f}%"
 msgstr "{} 累积收益率 {:<.2f}%"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:944
+#: hayaku/draw/drawplot/matplotlib_draw.py:942
 #, python-brace-format
 msgid "Account({}) Cumulative Return"
 msgstr "账户({}) 累积收益率"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1015
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1113
+#: hayaku/draw/drawplot/matplotlib_draw.py:1013
+#: hayaku/draw/drawplot/matplotlib_draw.py:1111
 #, python-brace-format
 msgid "No data, please check the date range! start_date={}, end_date={}"
 msgstr "没有数据，请检查日期范围！start_date={}, end_date={}"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1021
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1119
+#: hayaku/draw/drawplot/matplotlib_draw.py:1019
+#: hayaku/draw/drawplot/matplotlib_draw.py:1117
 #, python-brace-format
 msgid ""
 "Failed to get the tm return curve, please check the tm initial date! "
@@ -869,309 +864,309 @@ msgstr ""
 "获取 tm 收益曲线失败，请检查 tm 初始日期！tm.init_datetime={} start_date={}, "
 "end_date={}"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1059
+#: hayaku/draw/drawplot/matplotlib_draw.py:1057
 msgid "Annual Return"
 msgstr "年度收益"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1089
+#: hayaku/draw/drawplot/matplotlib_draw.py:1087
 #, python-brace-format
 msgid "{} Year-Month Return (%) Heatmap"
 msgstr "{} 年-月度收益率(%)热力图"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1136
+#: hayaku/draw/drawplot/matplotlib_draw.py:1134
 msgid "Insufficient yearly data!"
 msgstr "年度数据不足！"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1168
+#: hayaku/draw/drawplot/matplotlib_draw.py:1166
 msgid "Highest Return Range"
 msgstr "最高收益范围"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1171
+#: hayaku/draw/drawplot/matplotlib_draw.py:1169
 msgid "Lowest Return Range"
 msgstr "最低收益范围"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1189
+#: hayaku/draw/drawplot/matplotlib_draw.py:1187
 #, python-brace-format
 msgid "{} Annual Return (%) Bar Chart"
 msgstr "{} 年度收益率(%)柱状图"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1191
+#: hayaku/draw/drawplot/matplotlib_draw.py:1189
 msgid "Return (%)"
 msgstr "收益率(%)"
 
-#: hayaku/extensions/visualization/backends/matplotlib_draw.py:1199
+#: hayaku/draw/drawplot/matplotlib_draw.py:1197
 msgid "The system has no trade manager initialized"
 msgstr "系统未初始化交易账户"
 
-#: hayaku/extensions/visualization/studies/elder.py:61
+#: hayaku/draw/elder.py:60
 msgid "The lengths of the two sequences are not equal"
 msgstr "数据长度不等"
 
-#: hayaku/extensions/visualization/studies/elder.py:62
+#: hayaku/draw/elder.py:61
 msgid "Number must be greater than 0"
 msgstr "Number必须大于0"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Account Initial Capital"
 msgstr "帐户初始金额"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Total Invested Principal"
 msgstr "累计投入本金"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Total Invested Assets"
 msgstr "累计投入资产"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Total Borrowed Cash"
 msgstr "累计借入现金"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Total Borrowed Assets"
 msgstr "累计借入资产"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Total Dividends"
 msgstr "累计红利"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Cash Balance"
 msgstr "现金余额"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Open Position Net Value"
 msgstr "未平仓头寸净值"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Current Total Assets"
 msgstr "当前总资产"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Total Cost of Closed Trades"
 msgstr "已平仓交易总成本"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Total Net Profit of Closed Trades"
 msgstr "已平仓净利润总额"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Cash Usage per Trade %"
 msgstr "单笔交易最大占用现金比例%"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Avg Cash Usage per Trade %"
 msgstr "交易平均占用现金比例%"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Open Position Account Return %"
 msgstr "未平仓帐户收益率%"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Closed Trade Account Return %"
 msgstr "已平仓帐户收益率%"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Account CAGR %"
 msgstr "帐户年复合收益率%"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Account Avg Annual Return %"
 msgstr "帐户平均年收益率%"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Total Profit of Winning Trades"
 msgstr "赢利交易赢利总额"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Total Loss of Losing Trades"
 msgstr "亏损交易亏损总额"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Total Closed Trades"
 msgstr "已平仓交易总数"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Number of Winning Trades"
 msgstr "赢利交易数"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Number of Losing Trades"
 msgstr "亏损交易数"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Win Rate %"
 msgstr "赢利交易比例%"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Profit Expectancy"
 msgstr "赢利期望值"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Avg Profit per Winning Trade"
 msgstr "赢利交易平均赢利"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Avg Loss per Losing Trade"
 msgstr "亏损交易平均亏损"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Avg Win / Avg Loss Ratio"
 msgstr "平均赢利/平均亏损比例"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Profit Factor"
 msgstr "净赢利/亏损比例"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Largest Single Win"
 msgstr "最大单笔赢利"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Largest Single Win %"
 msgstr "最大单笔盈利百分比%"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Largest Single Loss"
 msgstr "最大单笔亏损"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Largest Single Loss %"
 msgstr "最大单笔亏损百分比%"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Avg Holding Period of Winning Trades"
 msgstr "赢利交易平均持仓时间"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Holding Period of Winning Trades"
 msgstr "赢利交易最大持仓时间"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Avg Holding Period of Losing Trades"
 msgstr "亏损交易平均持仓时间"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Holding Period of Losing Trades"
 msgstr "亏损交易最大持仓时间"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Total Time Flat"
 msgstr "空仓总时间"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Time Flat / Total Time %"
 msgstr "空仓时间/总时间%"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Avg Time Flat"
 msgstr "平均空仓时间"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Time Flat"
 msgstr "最长空仓时间"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Consecutive Wins"
 msgstr "最大连续赢利笔数"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Consecutive Losses"
 msgstr "最大连续亏损笔数"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Consecutive Win Amount"
 msgstr "最大连续赢利金额"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Consecutive Loss Amount"
 msgstr "最大连续亏损金额"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "R-Multiple Expectancy"
 msgstr "R乘数期望值"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Trade Opportunities per Year"
 msgstr "交易机会频率/年"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Annual Expected R-Multiple"
 msgstr "年度期望R乘数"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Avg R-Multiple of Winning Trades"
 msgstr "赢利交易平均R乘数"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Avg R-Multiple of Losing Trades"
 msgstr "亏损交易平均R乘数"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Single Win R-Multiple"
 msgstr "最大单笔赢利R乘数"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Single Loss R-Multiple"
 msgstr "最大单笔亏损R乘数"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Consecutive Win R-Multiple"
 msgstr "最大连续赢利R乘数"
 
-#. Dynamic Performance.report key; keep this entry.
+#. Dynamic Performance.report() key; keep in the catalog.
 #: hayaku_cpp/src/metrics/Performance.cpp
 msgid "Max Consecutive Loss R-Multiple"
 msgstr "最大连续亏损R乘数"

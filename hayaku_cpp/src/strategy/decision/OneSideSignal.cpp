@@ -22,7 +22,7 @@ OneSideSignal::OneSideSignal() : SignalBase("SG_OneSide") {
 }
 
 OneSideSignal::OneSideSignal(const Indicator& ind, bool is_buy)
-    : SignalBase("SG_OneSide"), m_ind(ind.clone()) {
+    : SignalBase("SG_OneSide"), ind_(ind.clone()) {
   setParam<bool>("alternate", false);
   setParam<bool>("is_buy", is_buy);
 }
@@ -37,12 +37,12 @@ void OneSideSignal::_checkParam(const string& name) const {
 
 SignalPtr OneSideSignal::_clone() {
   auto p = make_shared<OneSideSignal>();
-  p->m_ind = m_ind.clone();
+  p->ind_ = ind_.clone();
   return p;
 }
 
 void OneSideSignal::_calculate(const KData& kdata) {
-  Indicator ind = m_ind(kdata);
+  Indicator ind = ind_(kdata);
   HAYAKU_IF_RETURN(ind.empty() || ind.size() != kdata.size(), void());
 
   bool is_buy = getParam<bool>("is_buy");

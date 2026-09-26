@@ -28,14 +28,14 @@ class NodeError : public hayaku::exception {
   NodeError() : NodeError(NodeErrorCode::UNKNOWN_ERROR, "Unknow error!") {}
   NodeError(NodeErrorCode errcode, const char* errmsg)
       : hayaku::exception(fmt::format("{} errcode: {}", errmsg, int(errcode))),
-        m_errcode(errcode) {}
+        errcode_(errcode) {}
   NodeError(NodeErrorCode errcode, const std::string& errmsg)
-      : hayaku::exception(errmsg), m_errcode(errcode) {}
+      : hayaku::exception(errmsg), errcode_(errcode) {}
 
-  NodeErrorCode errcode() const { return m_errcode; }
+  NodeErrorCode errcode() const { return errcode_; }
 
  private:
-  NodeErrorCode m_errcode = NodeErrorCode::UNKNOWN_ERROR;
+  NodeErrorCode errcode_ = NodeErrorCode::UNKNOWN_ERROR;
 };
 
 class NodeNngError : public NodeError {

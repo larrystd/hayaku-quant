@@ -31,7 +31,7 @@ class Indicator2InImp : public IndicatorImp {
   Indicator prepare(const Indicator& ind);
 
  protected:
-  Indicator m_ref_ind;
+  Indicator ref_ind_;
 
 //============================================
 // Serialization support
@@ -42,7 +42,7 @@ class Indicator2InImp : public IndicatorImp {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(IndicatorImp);
-    ar& BOOST_SERIALIZATION_NVP(m_ref_ind);
+    ar& boost::serialization::make_nvp("m_ref_ind", ref_ind_);
   }
 #endif
 };
@@ -65,7 +65,7 @@ class Indicator2InImp : public IndicatorImp {
   virtual void _calculate(const Indicator& data) override; \
   virtual IndicatorImpPtr _clone() override {              \
     auto p = make_shared<classname>();                     \
-    p->m_ref_ind = m_ref_ind.clone();                      \
+    p->ref_ind_ = ref_ind_.clone();                      \
     return p;                                              \
   }
 

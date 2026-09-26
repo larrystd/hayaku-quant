@@ -15,7 +15,7 @@
 
 namespace hayaku {
 
-HistoryFinanceReader::HistoryFinanceReader(const string& dir) : m_dir(dir) {}
+HistoryFinanceReader::HistoryFinanceReader(const string& dir) : dir_(dir) {}
 
 HistoryFinanceReader::~HistoryFinanceReader() {}
 
@@ -24,7 +24,7 @@ PriceList HistoryFinanceReader ::getHistoryFinanceInfo(Datetime date,
                                                        const string& code) {
   PriceList result;
 
-  string filename(m_dir + "/gpcw" +
+  string filename(dir_ + "/gpcw" +
                   boost::lexical_cast<string>(date.number() / 10000) + ".dat");
   FILE* fp = fopen(filename.c_str(), "rb");
   HAYAKU_INFO_IF_RETURN(NULL == fp, result, "Can't found {}", filename);

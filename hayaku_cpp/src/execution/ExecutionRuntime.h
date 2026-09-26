@@ -44,29 +44,29 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
   explicit ExecutionRuntime(const AccountConfig& config);
   ~ExecutionRuntime();
 
-  [[nodiscard]] const string& name() const noexcept { return m_name; }
+  [[nodiscard]] const string& name() const noexcept { return name_; }
 
   [[nodiscard]] const TradeCostPtr& costFunc() const noexcept {
-    return m_costfunc;
+    return costfunc_;
   }
 
   [[nodiscard]] CostRecord getSellCost(const Datetime& datetime,
                                        const Stock& stock, price_t price,
                                        double number) const {
-    return m_costfunc ? m_costfunc->getSellCost(datetime, stock, price, number)
+    return costfunc_ ? costfunc_->getSellCost(datetime, stock, price, number)
                       : CostRecord();
   }
 
   [[nodiscard]] CostRecord getBorrowCashCost(const Datetime& datetime,
                                              price_t cash) const {
-    return m_costfunc ? m_costfunc->getBorrowCashCost(datetime, cash)
+    return costfunc_ ? costfunc_->getBorrowCashCost(datetime, cash)
                       : CostRecord();
   }
 
   [[nodiscard]] CostRecord getReturnCashCost(const Datetime& borrowDatetime,
                                              const Datetime& returnDatetime,
                                              price_t cash) const {
-    return m_costfunc ? m_costfunc->getReturnCashCost(borrowDatetime,
+    return costfunc_ ? costfunc_->getReturnCashCost(borrowDatetime,
                                                       returnDatetime, cash)
                       : CostRecord();
   }
@@ -74,8 +74,8 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
   [[nodiscard]] CostRecord getBorrowStockCost(const Datetime& datetime,
                                               const Stock& stock, price_t price,
                                               double number) const {
-    return m_costfunc
-               ? m_costfunc->getBorrowStockCost(datetime, stock, price, number)
+    return costfunc_
+               ? costfunc_->getBorrowStockCost(datetime, stock, price, number)
                : CostRecord();
   }
 
@@ -83,26 +83,26 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
                                               const Datetime& returnDatetime,
                                               const Stock& stock, price_t price,
                                               double number) const {
-    return m_costfunc
-               ? m_costfunc->getReturnStockCost(borrowDatetime, returnDatetime,
+    return costfunc_
+               ? costfunc_->getReturnStockCost(borrowDatetime, returnDatetime,
                                                 stock, price, number)
                : CostRecord();
   }
 
   void regBroker(const OrderBrokerPtr& broker) override {
     if (broker) {
-      m_broker_list.push_back(broker);
+      broker_list_.push_back(broker);
     }
   }
 
-  void clearBroker() override { m_broker_list.clear(); }
+  void clearBroker() override { broker_list_.clear(); }
 
   [[nodiscard]] Datetime getBrokerLastDatetime() const noexcept override {
-    return m_broker_last_datetime;
+    return broker_last_datetime_;
   }
 
   void setBrokerLastDatetime(const Datetime& datetime) noexcept override {
-    m_broker_last_datetime = datetime;
+    broker_last_datetime_ = datetime;
   }
 
   void fetchAssetInfoFromBroker(
@@ -110,7 +110,7 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
       const Datetime& datetime = Null<Datetime>()) override;
 
   [[nodiscard]] AccountId accountId() const noexcept override {
-    return m_ledger.m_accountId;
+    return ledger_.account_id_;
   }
 
   void reset() override { _reset(); }
@@ -124,7 +124,7 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
   [[nodiscard]] CostRecord getBuyCost(const Datetime& datetime,
                                       const Stock& stock, price_t price,
                                       double number) const override {
-    return m_costfunc ? m_costfunc->getBuyCost(datetime, stock, price, number)
+    return costfunc_ ? costfunc_->getBuyCost(datetime, stock, price, number)
                       : CostRecord();
   }
 
@@ -155,10 +155,10 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
   virtual double getMarginRate(const Datetime& datetime, const Stock& stock);
 
   /** Initial cash */
-  price_t initCash() const override { return m_ledger.m_initCash; }
+  price_t initCash() const override { return ledger_.init_cash_; }
 
   /** Account creation date */
-  Datetime initDatetime() const override { return m_ledger.m_initDatetime; }
+  Datetime initDatetime() const override { return ledger_.init_datetime_; }
 
   /** Date of the first buy trade; Null<Datetime>() is returned if no trade has
    * happened */
@@ -167,8 +167,8 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
   /** Date of the last trade, regardless of the trade type; the account creation
    * date is returned if no trade has happened */
   Datetime lastDatetime() const override {
-    return m_ledger.m_tradeList.empty() ? m_ledger.m_initDatetime
-                                        : m_ledger.m_tradeList.back().datetime;
+    return ledger_.trade_list_.empty() ? ledger_.init_datetime_
+                                        : ledger_.trade_list_.back().datetime;
   }
 
   /**
@@ -184,7 +184,7 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
    * @note Only the current information is returned, it is not adjusted
    * according to the weight information
    */
-  price_t currentCash() const override { return m_ledger.m_cash; }
+  price_t currentCash() const override { return ledger_.cash_; }
 
   /**
    * Get the cash of the given date
@@ -202,7 +202,7 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
    * @return true yes | false no
    */
   bool have(const Stock& stock) const override {
-    return m_ledger.m_position.count(stock.id()) ? true : false;
+    return ledger_.position_.count(stock.id()) ? true : false;
   }
 
   /**
@@ -213,15 +213,15 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
    * @return true yes | false no
    */
   bool haveShort(const Stock& stock) const override {
-    return m_ledger.m_shortPosition.count(stock.id()) ? true : false;
+    return ledger_.short_position_.count(stock.id()) ? true : false;
   }
 
   /** Number of security types currently held */
-  size_t getStockNumber() const override { return m_ledger.m_position.size(); }
+  size_t getStockNumber() const override { return ledger_.position_.size(); }
 
   /** Number of security types currently held short */
   virtual size_t getShortStockNumber() const {
-    return m_ledger.m_shortPosition.size();
+    return ledger_.short_position_.size();
   }
 
   /** Get the held quantity of a security at the given moment */
@@ -238,7 +238,7 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
   virtual price_t getDebtCash(const Datetime& datetime);
 
   /** Get all the trade records */
-  TradeRecordList getTradeList() const override { return m_ledger.m_tradeList; }
+  TradeRecordList getTradeList() const override { return ledger_.trade_list_; }
 
   /**
    * Get the trade records within the given date range [start, end)
@@ -255,7 +255,7 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
   /** Get all the historical position records, i.e. the closed position records
    */
   PositionRecordList getHistoryPositionList() const override {
-    return m_ledger.m_positionHistory;
+    return ledger_.position_history_;
   }
 
   /** Get all the current short position records */
@@ -263,7 +263,7 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
 
   /** Get all the historical short position records */
   virtual PositionRecordList getShortHistoryPositionList() const {
-    return m_ledger.m_shortPositionHistory;
+    return ledger_.short_position_history_;
   }
 
   /**
@@ -519,11 +519,11 @@ class ExecutionRuntime final : public internal::PortfolioAccountPort,
   using borrow_stock_map_type = Ledger::BorrowStockMap;
   using position_map_type = Ledger::PositionMap;
 
-  string m_name;
-  TradeCostPtr m_costfunc;
-  Datetime m_broker_last_datetime;
-  list<OrderBrokerPtr> m_broker_list;
-  Ledger m_ledger;
+  string name_;
+  TradeCostPtr costfunc_;
+  Datetime broker_last_datetime_;
+  list<OrderBrokerPtr> broker_list_;
+  Ledger ledger_;
 };
 
 inline void ExecutionRuntime::baseCheckParam(const string& name) const {

@@ -18,20 +18,20 @@ namespace hayaku {
 CrossSignal::CrossSignal() : SignalBase("SG_Cross") {}
 
 CrossSignal::CrossSignal(const Indicator& fast, const Indicator& slow)
-    : SignalBase("SG_Cross"), m_fast(fast), m_slow(slow) {}
+    : SignalBase("SG_Cross"), fast_(fast), slow_(slow) {}
 
 CrossSignal::~CrossSignal() {}
 
 SignalPtr CrossSignal::_clone() {
   auto p = make_shared<CrossSignal>();
-  p->m_fast = m_fast.clone();
-  p->m_slow = m_slow.clone();
+  p->fast_ = fast_.clone();
+  p->slow_ = slow_.clone();
   return p;
 }
 
 void CrossSignal::_calculate(const KData& kdata) {
-  Indicator fast = m_fast(kdata);
-  Indicator slow = m_slow(kdata);
+  Indicator fast = fast_(kdata);
+  Indicator slow = slow_(kdata);
   HAYAKU_ERROR_IF_RETURN(fast.size() != slow.size(), void(),
                          "fast.size() != slow.size()");
 

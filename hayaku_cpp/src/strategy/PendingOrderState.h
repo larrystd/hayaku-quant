@@ -39,38 +39,38 @@ struct PendingOrder {
 
 class PendingOrderState {
  public:
-  [[nodiscard]] PendingOrder& buy() noexcept { return m_buy; }
+  [[nodiscard]] PendingOrder& buy() noexcept { return buy_; }
 
-  [[nodiscard]] const PendingOrder& buy() const noexcept { return m_buy; }
+  [[nodiscard]] const PendingOrder& buy() const noexcept { return buy_; }
 
-  [[nodiscard]] PendingOrder& sell() noexcept { return m_sell; }
+  [[nodiscard]] PendingOrder& sell() noexcept { return sell_; }
 
-  [[nodiscard]] const PendingOrder& sell() const noexcept { return m_sell; }
+  [[nodiscard]] const PendingOrder& sell() const noexcept { return sell_; }
 
-  [[nodiscard]] PendingOrder& sellShort() noexcept { return m_sellShort; }
+  [[nodiscard]] PendingOrder& sellShort() noexcept { return sell_short_; }
 
   [[nodiscard]] const PendingOrder& sellShort() const noexcept {
-    return m_sellShort;
+    return sell_short_;
   }
 
-  [[nodiscard]] PendingOrder& buyShort() noexcept { return m_buyShort; }
+  [[nodiscard]] PendingOrder& buyShort() noexcept { return buy_short_; }
 
   [[nodiscard]] const PendingOrder& buyShort() const noexcept {
-    return m_buyShort;
+    return buy_short_;
   }
 
   void clear() noexcept {
-    m_buy.clear();
-    m_sell.clear();
-    m_sellShort.clear();
-    m_buyShort.clear();
+    buy_.clear();
+    sell_.clear();
+    sell_short_.clear();
+    buy_short_.clear();
   }
 
  private:
-  PendingOrder m_buy;
-  PendingOrder m_sell;
-  PendingOrder m_sellShort;
-  PendingOrder m_buyShort;
+  PendingOrder buy_;
+  PendingOrder sell_;
+  PendingOrder sell_short_;
+  PendingOrder buy_short_;
 };
 
 }  // namespace hayaku::internal

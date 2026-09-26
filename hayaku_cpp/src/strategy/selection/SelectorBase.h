@@ -45,9 +45,9 @@ class HAYAKU_API SelectorBase : public enable_shared_from_this<SelectorBase> {
   void name(const string& name);
 
   using PFPtr = shared_ptr<Portfolio>;
-  PFPtr getPF() const { return m_pf.lock(); }
+  PFPtr getPF() const { return pf_.lock(); }
 
-  void setPF(const PFPtr& pf) { m_pf = pf; }
+  void setPF(const PFPtr& pf) { pf_ = pf; }
 
   /**
    * Add a candidate stock and its trading strategy prototype
@@ -152,14 +152,14 @@ class HAYAKU_API SelectorBase : public enable_shared_from_this<SelectorBase> {
   // so that SEPtr can get the MF related information directly It is useless for
   // the Selector not related to MF
   //------------------------------------------------------------------------
-  MFPtr getMF() const { return m_mf; }
+  MFPtr getMF() const { return mf_; }
 
   void setMF(const MFPtr& mf) {
-    m_mf = mf;
-    m_calculated = false;
+    mf_ = mf;
+    calculated_ = false;
   }
 
-  ScoresFilterPtr getScoresFilter() const { return m_sc_filter; }
+  ScoresFilterPtr getScoresFilter() const { return sc_filter_; }
 
   /** Set the cross-section score record filter, it is used for the MF related
    * Selector only, to filter when the Score list is got from MF */
@@ -169,31 +169,31 @@ class HAYAKU_API SelectorBase : public enable_shared_from_this<SelectorBase> {
    * MF related Selector only, to filter when the Score list is got from MF */
   void addScoresFilter(const ScoresFilterPtr& filter);
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  private:
   void initParam();
 
  protected:
-  ScoresFilterPtr m_sc_filter;
-  MFPtr m_mf;
+  ScoresFilterPtr sc_filter_;
+  MFPtr mf_;
 
  protected:
-  string m_name;
-  bool m_is_python_object{false};
-  bool m_calculated{false};  // Whether it has been calculated
-  bool m_proto_calculated{false};
-  KQuery m_query;
-  KQuery m_proto_query;
+  string name_;
+  bool is_python_object_{false};
+  bool calculated_{false};  // Whether it has been calculated
+  bool proto_calculated_{false};
+  KQuery query_;
+  KQuery proto_query_;
 
-  internal::StrategyRuntimeList m_pro_sys_list;  // Prototype system list
+  internal::StrategyRuntimeList pro_sys_list_;  // Prototype system list
   internal::StrategyRuntimeList
-      m_real_sys_list;  // The systems actually run in the PF portfolio, set
+      real_sys_list_;  // The systems actually run in the PF portfolio, set
                         // when PF executes, in the same order as the prototype
                         // list
 
   std::weak_ptr<Portfolio>
-      m_pf;  // Stored but not serialized, the reference to PF
+      pf_;  // Stored but not serialized, the reference to PF
 
 //============================================
 // Serialization support
@@ -203,21 +203,21 @@ class HAYAKU_API SelectorBase : public enable_shared_from_this<SelectorBase> {
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_sc_filter);
-    ar& BOOST_SERIALIZATION_NVP(m_mf);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_sc_filter", sc_filter_);
+    ar& boost::serialization::make_nvp("m_mf", mf_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    m_pro_sys_list.clear();
-    ar& BOOST_SERIALIZATION_NVP(m_sc_filter);
-    ar& BOOST_SERIALIZATION_NVP(m_mf);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    pro_sys_list_.clear();
+    ar& boost::serialization::make_nvp("m_sc_filter", sc_filter_);
+    ar& boost::serialization::make_nvp("m_mf", mf_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -273,28 +273,28 @@ typedef shared_ptr<SelectorBase> SEPtr;
 HAYAKU_API std::ostream& operator<<(std::ostream&, const SelectorBase&);
 HAYAKU_API std::ostream& operator<<(std::ostream&, const SelectorPtr&);
 
-inline const string& SelectorBase::name() const { return m_name; }
+inline const string& SelectorBase::name() const { return name_; }
 
-inline void SelectorBase::name(const string& name) { m_name = name; }
+inline void SelectorBase::name(const string& name) { name_ = name; }
 
 inline const internal::StrategyRuntimeList& SelectorBase::getRealSystemList()
     const {
-  return m_real_sys_list;
+  return real_sys_list_;
 }
 
 inline const internal::StrategyRuntimeList& SelectorBase::getProtoSystemList()
     const {
-  return m_pro_sys_list;
+  return pro_sys_list_;
 }
 
 inline void SelectorBase::setScoresFilter(const ScoresFilterPtr& filter) {
-  m_sc_filter = filter;
-  m_calculated = false;
+  sc_filter_ = filter;
+  calculated_ = false;
 }
 
 inline void SelectorBase::addScoresFilter(const ScoresFilterPtr& filter) {
-  m_sc_filter = m_sc_filter | filter;
-  m_calculated = false;
+  sc_filter_ = sc_filter_ | filter;
+  calculated_ = false;
 }
 
 } /* namespace hayaku */

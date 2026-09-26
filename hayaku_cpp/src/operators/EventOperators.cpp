@@ -66,13 +66,13 @@ IJumpDown::~IJumpDown() {}
 
 void IJumpDown::_calculate(const Indicator& ind) {
   size_t total = ind.size();
-  m_discard = ind.discard() + 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(ind, m_discard);
+  _increment_calculate(ind, discard_);
 }
 
 void IJumpDown::_increment_calculate(const Indicator& ind, size_t start_pos) {
@@ -110,13 +110,13 @@ IJumpUp::~IJumpUp() {}
 
 void IJumpUp::_calculate(const Indicator& ind) {
   size_t total = ind.size();
-  m_discard = ind.discard() + 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(ind, m_discard);
+  _increment_calculate(ind, discard_);
 }
 
 void IJumpUp::_increment_calculate(const Indicator& ind, size_t start_pos) {

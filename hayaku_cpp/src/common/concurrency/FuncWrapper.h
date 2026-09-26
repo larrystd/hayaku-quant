@@ -11,7 +11,6 @@
 
 #include <functional>
 #include <memory>
-#include <utility>
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -36,7 +35,7 @@ class FuncWrapper {
   template <typename F>
   // cppcheck-suppress noExplicitConstructor ; the explicit modifier cannot be
   // added here, the conversion copy is needed
-  FuncWrapper(F&& f) : impl(std::make_unique<impl_type<F>>(std::move(f))) {}
+  FuncWrapper(F&& f) : impl(new impl_type<F>(std::move(f))) {}
 
   /** Execute the wrapped task */
   void operator()() {

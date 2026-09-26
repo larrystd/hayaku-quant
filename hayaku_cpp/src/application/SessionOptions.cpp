@@ -14,12 +14,12 @@ namespace hayaku {
 SessionOptions::SessionOptions(Parameter baseInfoParam, Parameter blockParam,
                                Parameter kdataParam, Parameter preloadParam,
                                Parameter hayakuParam, StrategyContext context)
-    : m_baseInfoParam(std::move(baseInfoParam)),
-      m_blockParam(std::move(blockParam)),
-      m_kdataParam(std::move(kdataParam)),
-      m_preloadParam(std::move(preloadParam)),
-      m_hayakuParam(std::move(hayakuParam)),
-      m_context(std::move(context)) {}
+    : base_info_param_(std::move(baseInfoParam)),
+      block_param_(std::move(blockParam)),
+      kdata_param_(std::move(kdataParam)),
+      preload_param_(std::move(preloadParam)),
+      hayaku_param_(std::move(hayakuParam)),
+      context_(std::move(context)) {}
 
 SessionOptions SessionOptions::fromIni(const string& filename,
                                        bool ignorePreload,

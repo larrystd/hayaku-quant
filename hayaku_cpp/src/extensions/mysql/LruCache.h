@@ -61,12 +61,12 @@ class LruCache final {
    * only when the cache size >= the capacity + the overflow capacity
    */
   explicit LruCache(size_type capacity = 64, size_type overflow = 8)
-      : m_capacity(capacity), m_overflow(overflow) {}
+      : capacity_(capacity), overflow_(overflow) {}
 
   ~LruCache() {
-    UniqueGuard lock(m_mutex);
-    m_cache.clear();
-    m_lru_list.clear();
+    UniqueGuard lock(mutex_);
+    cache_.clear();
+    lru_list_.clear();
   }
 
   /**
@@ -75,17 +75,17 @@ class LruCache final {
    * @param value value
    */
   void insert(const key_type& key, const value_type& value) {
-    UniqueGuard lock(m_mutex);
+    UniqueGuard lock(mutex_);
     _batch_update_dirty_nodes();
-    auto it = m_cache.find(key);
-    if (it != m_cache.end()) {
+    auto it = cache_.find(key);
+    if (it != cache_.end()) {
       it->second.second.first = value;
       it->second.second.second.store(false, std::memory_order_relaxed);
-      m_lru_list.splice(m_lru_list.begin(), m_lru_list, it->second.first);
+      lru_list_.splice(lru_list_.begin(), lru_list_, it->second.first);
     } else {
-      m_lru_list.emplace_front(key);
-      m_cache.emplace(
-          key, std::make_pair(m_lru_list.begin(),
+      lru_list_.emplace_front(key);
+      cache_.emplace(
+          key, std::make_pair(lru_list_.begin(),
                               std::make_pair(value, false)  // The initial dirty
                                                             // flag is false
                               ));
@@ -99,17 +99,17 @@ class LruCache final {
    * @param value value (an rvalue reference)
    */
   void insert(const key_type& key, value_type&& value) {
-    UniqueGuard lock(m_mutex);
+    UniqueGuard lock(mutex_);
     _batch_update_dirty_nodes();
-    auto it = m_cache.find(key);
-    if (it != m_cache.end()) {
+    auto it = cache_.find(key);
+    if (it != cache_.end()) {
       it->second.second.first = std::move(value);
       it->second.second.second.store(false, std::memory_order_relaxed);
-      m_lru_list.splice(m_lru_list.begin(), m_lru_list, it->second.first);
+      lru_list_.splice(lru_list_.begin(), lru_list_, it->second.first);
     } else {
-      m_lru_list.emplace_front(key);
-      m_cache.emplace(key,
-                      std::make_pair(m_lru_list.begin(),
+      lru_list_.emplace_front(key);
+      cache_.emplace(key,
+                      std::make_pair(lru_list_.begin(),
                                      std::make_pair(std::move(value), false)));
       _prune_if_needed();
     }
@@ -122,9 +122,9 @@ class LruCache final {
    * constructed value of ValueType is returned
    */
   value_type get(const key_type& key) {
-    SharedGuard lock(m_mutex);
-    auto it = m_cache.find(key);
-    if (it != m_cache.end()) {
+    SharedGuard lock(mutex_);
+    auto it = cache_.find(key);
+    if (it != cache_.end()) {
       it->second.second.second.store(true, std::memory_order_relaxed);
       return it->second.second.first;
     }
@@ -138,9 +138,9 @@ class LruCache final {
    * @return true is returned if the key exists, otherwise false
    */
   bool tryGet(const key_type& key, value_type& value) {
-    SharedGuard lock(m_mutex);
-    auto it = m_cache.find(key);
-    if (it != m_cache.end()) {
+    SharedGuard lock(mutex_);
+    auto it = cache_.find(key);
+    if (it != cache_.end()) {
       it->second.second.second.store(true, std::memory_order_relaxed);
       value = it->second.second.first;
       return true;
@@ -154,8 +154,8 @@ class LruCache final {
    * @return true is returned if it exists, otherwise false
    */
   bool contains(const key_type& key) {
-    SharedGuard lock(m_mutex);
-    return m_cache.find(key) != m_cache.end();
+    SharedGuard lock(mutex_);
+    return cache_.find(key) != cache_.end();
   }
 
   /**
@@ -165,11 +165,11 @@ class LruCache final {
    * exist
    */
   bool remove(const key_type& key) {
-    UniqueGuard lock(m_mutex);
-    auto it = m_cache.find(key);
-    if (it != m_cache.end()) {
-      m_lru_list.erase(it->second.first);
-      m_cache.erase(it);
+    UniqueGuard lock(mutex_);
+    auto it = cache_.find(key);
+    if (it != cache_.end()) {
+      lru_list_.erase(it->second.first);
+      cache_.erase(it);
       return true;
     }
     return false;
@@ -179,9 +179,9 @@ class LruCache final {
    * @brief Clear the cache
    */
   void clear() {
-    UniqueGuard lock(m_mutex);
-    m_cache.clear();
-    m_lru_list.clear();
+    UniqueGuard lock(mutex_);
+    cache_.clear();
+    lru_list_.clear();
   }
 
   /**
@@ -189,8 +189,8 @@ class LruCache final {
    * @return the current number of the cache elements
    */
   size_type size() const {
-    SharedGuard lock(m_mutex);
-    return m_cache.size();
+    SharedGuard lock(mutex_);
+    return cache_.size();
   }
 
   /**
@@ -198,8 +198,8 @@ class LruCache final {
    * @return true is returned when it is empty, otherwise false
    */
   bool empty() const {
-    SharedGuard lock(m_mutex);
-    return m_cache.empty();
+    SharedGuard lock(mutex_);
+    return cache_.empty();
   }
 
   /**
@@ -207,8 +207,8 @@ class LruCache final {
    * @return cache capacity
    */
   size_type capacity() const {
-    SharedGuard lock(m_mutex);
-    return m_capacity;
+    SharedGuard lock(mutex_);
+    return capacity_;
   }
 
   /**
@@ -216,8 +216,8 @@ class LruCache final {
    * @return cache overflow capacity
    */
   size_type overflow() const {
-    SharedGuard lock(m_mutex);
-    return m_overflow;
+    SharedGuard lock(mutex_);
+    return overflow_;
   }
 
   /**
@@ -225,8 +225,8 @@ class LruCache final {
    * @param capacity the new capacity; 0 means an unlimited capacity
    */
   void resize(size_type capacity) {
-    UniqueGuard lock(m_mutex);
-    m_capacity = capacity;
+    UniqueGuard lock(mutex_);
+    capacity_ = capacity;
     _prune_if_needed();
   }
 
@@ -235,22 +235,22 @@ class LruCache final {
    * @param overflow the new overflow capacity
    */
   void setOverflow(size_type overflow) {
-    UniqueGuard lock(m_mutex);
-    m_overflow = overflow;
+    UniqueGuard lock(mutex_);
+    overflow_ = overflow;
     _prune_if_needed();
   }
 
  private:
   // If the cache is full, the least recently used item is removed
   size_t _prune_if_needed() {
-    size_t maxAllowed = m_capacity + m_overflow;
-    if (m_capacity == 0 || m_cache.size() <= maxAllowed) {
+    size_t maxAllowed = capacity_ + overflow_;
+    if (capacity_ == 0 || cache_.size() <= maxAllowed) {
       return 0;
     }
     size_t count = 0;
-    while (m_cache.size() > m_capacity) {
-      m_cache.erase(m_lru_list.back());
-      m_lru_list.pop_back();
+    while (cache_.size() > capacity_) {
+      cache_.erase(lru_list_.back());
+      lru_list_.pop_back();
       ++count;
     }
     return count;
@@ -266,10 +266,10 @@ class LruCache final {
 
     // Traverse the list backward: from the tail to the head, find the first
     // dirty node (the most recently accessed node)
-    for (auto it = m_lru_list.rbegin(); it != m_lru_list.rend(); ++it) {
+    for (auto it = lru_list_.rbegin(); it != lru_list_.rend(); ++it) {
       const key_type& key = *it;
-      auto cache_it = m_cache.find(key);
-      if (cache_it == m_cache.end()) {
+      auto cache_it = cache_.find(key);
+      if (cache_it == cache_.end()) {
         continue;
       }
 
@@ -293,23 +293,23 @@ class LruCache final {
                      // iterator, it needs to be decreased by 1
 
       const key_type& key = *forward_it;
-      auto cache_it = m_cache.find(key);
-      if (cache_it != m_cache.end()) {
+      auto cache_it = cache_.find(key);
+      if (cache_it != cache_.end()) {
         // Clear the dirty flag
         cache_it->second.second.second.store(false, std::memory_order_relaxed);
         // Move the node to the head of the list (splice supports the forward
         // iterators only)
-        m_lru_list.splice(m_lru_list.begin(), m_lru_list, forward_it);
+        lru_list_.splice(lru_list_.begin(), lru_list_, forward_it);
       }
     }
   }
 
  private:
-  size_type m_capacity;
-  size_type m_overflow;
-  LruList m_lru_list;
-  CacheMap m_cache;
-  mutable lock_type m_mutex;
+  size_type capacity_;
+  size_type overflow_;
+  LruList lru_list_;
+  CacheMap cache_;
+  mutable lock_type mutex_;
 };
 
 }  // namespace hayaku

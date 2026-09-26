@@ -27,8 +27,8 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-BlockInfoDriver::BlockInfoDriver(const string& name) : m_name(name) {
-  to_upper(m_name);
+BlockInfoDriver::BlockInfoDriver(const string& name) : name_(name) {
+  to_upper(name_);
 }
 
 bool BlockInfoDriver::checkType() {
@@ -36,11 +36,11 @@ bool BlockInfoDriver::checkType() {
   try {
     string type = getParam<string>("type");
     to_upper(type);
-    if (type == m_name) {
+    if (type == name_) {
       result = true;
     } else {
       result = false;
-      HAYAKU_WARN("Type of driver mismatch! ({} != {})", type, m_name);
+      HAYAKU_WARN("Type of driver mismatch! ({} != {})", type, name_);
     }
 
   } catch (...) {
@@ -52,8 +52,8 @@ bool BlockInfoDriver::checkType() {
 }
 
 bool BlockInfoDriver::init(const Parameter& params) {
-  HAYAKU_IF_RETURN(m_params == params, true);
-  m_params = params;
+  HAYAKU_IF_RETURN(params_ == params, true);
+  params_ = params;
   HAYAKU_IF_RETURN(!checkType(), false);
   return _init();
 }

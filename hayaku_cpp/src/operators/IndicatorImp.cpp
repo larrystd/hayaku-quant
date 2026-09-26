@@ -158,77 +158,77 @@ uint64_t IndicatorImp::nextOriginId() noexcept {
   return seq.fetch_add(1, std::memory_order_relaxed);
 }
 
-uint64_t IndicatorImp::originId() const noexcept { return m_origin_id; }
+uint64_t IndicatorImp::originId() const noexcept { return origin_id_; }
 
-IndicatorImp::IndicatorImp() : m_name("IndicatorImp") {
-  memset(m_pBuffer, 0, sizeof(buffer_t *) * MAX_RESULT_NUM);
+IndicatorImp::IndicatorImp() : name_("IndicatorImp") {
+  memset(p_buffer_, 0, sizeof(buffer_t *) * MAX_RESULT_NUM);
 }
 
-IndicatorImp::IndicatorImp(const string &name) : m_name(name) {
-  memset(m_pBuffer, 0, sizeof(buffer_t *) * MAX_RESULT_NUM);
+IndicatorImp::IndicatorImp(const string &name) : name_(name) {
+  memset(p_buffer_, 0, sizeof(buffer_t *) * MAX_RESULT_NUM);
 }
 
 IndicatorImp::IndicatorImp(const string &name, size_t result_num)
-    : m_name(name) {
-  memset(m_pBuffer, 0, sizeof(buffer_t *) * MAX_RESULT_NUM);
-  m_result_num = result_num < MAX_RESULT_NUM ? result_num : MAX_RESULT_NUM;
-  _readyBuffer(0, m_result_num);
+    : name_(name) {
+  memset(p_buffer_, 0, sizeof(buffer_t *) * MAX_RESULT_NUM);
+  result_num_ = result_num < MAX_RESULT_NUM ? result_num : MAX_RESULT_NUM;
+  _readyBuffer(0, result_num_);
 }
 
 void IndicatorImp::baseCheckParam(const string &name) const {}
 
 void IndicatorImp::paramChanged() {
-  m_need_calculate = true;
-  m_param_changed = true;
+  need_calculate_ = true;
+  param_changed_ = true;
 }
 
 void IndicatorImp::setIndParam(const string &name, const Indicator &ind) {
   IndicatorImpPtr imp = ind.getImp();
   HAYAKU_CHECK(imp, "Invalid input ind, no concrete implementation!");
-  m_ind_params[name] = imp;
+  ind_params_[name] = imp;
 }
 
 void IndicatorImp::setIndParam(const string &name, const IndParam &ind) {
   IndicatorImpPtr imp = ind.getImp();
   HAYAKU_CHECK(imp, "Invalid input ind, no concrete implementation!");
-  m_ind_params[name] = imp;
+  ind_params_[name] = imp;
 }
 
 IndParam IndicatorImp::getIndParam(const string &name) const {
-  return IndParam(m_ind_params.at(name));
+  return IndParam(ind_params_.at(name));
 }
 
 const IndicatorImpPtr &IndicatorImp::getIndParamImp(const string &name) const {
-  return m_ind_params.at(name);
+  return ind_params_.at(name);
 }
 
 bool IndicatorImp::supportIncrementCalculate() const { return false; }
 
 bool IndicatorImp::can_inner_calculate() {
-  if (m_need_calculate || !ms_enable_increment_calculate || m_result_num == 0 ||
-      m_context.empty() || size() < m_context.size() ||
-      m_old_context.size() < m_context.size() || !supportIncrementCalculate()) {
+  if (need_calculate_ || !ms_enable_increment_calculate || result_num_ == 0 ||
+      context_.empty() || size() < context_.size() ||
+      old_context_.size() < context_.size() || !supportIncrementCalculate()) {
     return false;
   }
 
-  if (m_context.front().datetime < m_old_context.front().datetime ||
-      m_context.back().datetime > m_old_context.back().datetime) {
+  if (context_.front().datetime < old_context_.front().datetime ||
+      context_.back().datetime > old_context_.back().datetime) {
     return false;
   }
 
-  if (m_context.getStock() != m_old_context.getStock() ||
-      m_old_context.getQuery().kType() != m_context.getQuery().kType() ||
-      m_old_context.getQuery().recoverType() !=
-          m_context.getQuery().recoverType()) {
+  if (context_.getStock() != old_context_.getStock() ||
+      old_context_.getQuery().kType() != context_.getQuery().kType() ||
+      old_context_.getQuery().recoverType() !=
+          context_.getQuery().recoverType()) {
     return false;
   }
 
-  size_t start_pos = m_old_context.getPos(m_context.front().datetime);
+  size_t start_pos = old_context_.getPos(context_.front().datetime);
   if (start_pos == Null<size_t>()) {
     return false;
   }
 
-  size_t last_pos = m_old_context.getPos(m_context.back().datetime);
+  size_t last_pos = old_context_.getPos(context_.back().datetime);
   if (last_pos == Null<size_t>()) {
     return false;
   }
@@ -237,22 +237,22 @@ bool IndicatorImp::can_inner_calculate() {
     return false;
   }
 
-  size_t total = m_context.size();
+  size_t total = context_.size();
   if (total != last_pos - start_pos + 1) {
     return false;
   }
 
-  for (size_t r = 0; r < m_result_num; ++r) {
-    if (m_pBuffer[r] == nullptr) {
+  for (size_t r = 0; r < result_num_; ++r) {
+    if (p_buffer_[r] == nullptr) {
       return false;
     }
-    auto *dst = m_pBuffer[r]->data();
+    auto *dst = p_buffer_[r]->data();
     memmove(dst, dst + start_pos, sizeof(value_t) * (total));
-    m_pBuffer[r]->resize(total);
+    p_buffer_[r]->resize(total);
   }
 
-  m_discard = start_pos >= m_discard ? 0 : m_discard - start_pos;
-  m_need_calculate = false;
+  discard_ = start_pos >= discard_ ? 0 : discard_ - start_pos;
+  need_calculate_ = false;
 
   return true;
 }
@@ -262,7 +262,7 @@ void IndicatorImp::setContext(const KData &k) {
 
   // Calculate according to its own identifier when the context has not changed
   if (old_k == k) {
-    if (m_need_calculate) {
+    if (need_calculate_) {
       calculate();
     }
     return;
@@ -273,15 +273,15 @@ void IndicatorImp::setContext(const KData &k) {
     return;
   }
 
-  m_need_calculate = true;
+  need_calculate_ = true;
 
   // Set the context for the child nodes
-  if (m_left) m_left->setContext(k);
-  if (m_right) m_right->setContext(k);
-  if (m_three) m_three->setContext(k);
+  if (left_) left_->setContext(k);
+  if (right_) right_->setContext(k);
+  if (three_) three_->setContext(k);
 
   // Set the context for the dynamic parameters
-  for (auto iter = m_ind_params.begin(); iter != m_ind_params.end(); ++iter) {
+  for (auto iter = ind_params_.begin(); iter != ind_params_.end(); ++iter) {
     iter->second->setContext(k);
   }
 
@@ -290,20 +290,20 @@ void IndicatorImp::setContext(const KData &k) {
 
   // Clean up the intermediate calculation data of all the nodes below the root
   // node
-  if (!m_parent) {
+  if (!parent_) {
     vector<IndicatorImpPtr> nodes;
     getAllSubNodes(nodes);
     if (ms_enable_increment_calculate) {
       for (const auto &node : nodes) {
-        if (!node->m_need_calculate &&
-            ((node->m_optype == LEAF || node->m_optype == OP) &&
+        if (!node->need_calculate_ &&
+            ((node->optype_ == LEAF || node->optype_ == OP) &&
              !node->supportIncrementCalculate())) {
           node->_clearBuffer();
         }
       }
     } else {
       for (const auto &node : nodes) {
-        if (!node->m_need_calculate) {
+        if (!node->need_calculate_) {
           node->_clearBuffer();
         }
       }
@@ -318,39 +318,39 @@ void IndicatorImp::_readyBuffer(size_t len, size_t result_num) {
 
   value_t null_price = Null<value_t>();
   for (size_t i = 0; i < result_num; ++i) {
-    if (!m_pBuffer[i]) {
-      m_pBuffer[i] = new buffer_t(len, null_price);
+    if (!p_buffer_[i]) {
+      p_buffer_[i] = new buffer_t(len, null_price);
 
     } else {
-      m_pBuffer[i]->resize(len);
+      p_buffer_[i]->resize(len);
       for (size_t j = 0; j < len; ++j) {
-        (*m_pBuffer[i])[j] = null_price;
+        (*p_buffer_[i])[j] = null_price;
       }
     }
   }
 
-  for (size_t i = result_num; i < m_result_num; ++i) {
-    if (m_pBuffer[i]) {
-      delete m_pBuffer[i];
-      m_pBuffer[i] = NULL;
+  for (size_t i = result_num; i < result_num_; ++i) {
+    if (p_buffer_[i]) {
+      delete p_buffer_[i];
+      p_buffer_[i] = NULL;
     }
   }
 
-  m_result_num = result_num;
+  result_num_ = result_num;
 }
 
 void IndicatorImp::_clearBuffer() {
-  for (size_t i = 0; i < m_result_num; ++i) {
-    if (m_pBuffer[i]) {
-      delete m_pBuffer[i];
-      m_pBuffer[i] = NULL;
+  for (size_t i = 0; i < result_num_; ++i) {
+    if (p_buffer_[i]) {
+      delete p_buffer_[i];
+      p_buffer_[i] = NULL;
     }
   }
 }
 
 IndicatorImp::~IndicatorImp() {
-  for (size_t i = 0; i < m_result_num; ++i) {
-    delete m_pBuffer[i];
+  for (size_t i = 0; i < result_num_; ++i) {
+    delete p_buffer_[i];
   }
 }
 
@@ -378,8 +378,8 @@ string IndicatorImp::str() const {
     os << "\n  last: " << dates.back();
   }
   for (size_t r = 0; r < getResultNumber(); ++r) {
-    if (m_pBuffer[r]) {
-      os << "\n  values" << r << ": " << *m_pBuffer[r];
+    if (p_buffer_[r]) {
+      os << "\n  values" << r << ": " << *p_buffer_[r];
     }
   }
   os << "\n}";
@@ -389,12 +389,12 @@ string IndicatorImp::str() const {
 void IndicatorImp::swap(IndicatorImp *other) {
   HAYAKU_ASSERT(other != nullptr);
   HAYAKU_IF_RETURN(this == other, void());
-  HAYAKU_ASSERT(other->m_result_num == m_result_num);
+  HAYAKU_ASSERT(other->result_num_ == result_num_);
   HAYAKU_ASSERT(other->size() == size());
-  for (size_t r = 0; r < m_result_num; ++r) {
-    buffer_t *tmp = m_pBuffer[r];
-    m_pBuffer[r] = other->m_pBuffer[r];
-    other->m_pBuffer[r] = tmp;
+  for (size_t r = 0; r < result_num_; ++r) {
+    buffer_t *tmp = p_buffer_[r];
+    p_buffer_[r] = other->p_buffer_[r];
+    other->p_buffer_[r] = tmp;
   }
 }
 
@@ -402,73 +402,73 @@ void IndicatorImp::swap(IndicatorImp *other, size_t other_result_idx,
                         size_t self_result_idx) {
   HAYAKU_ASSERT(other != nullptr);
   HAYAKU_ASSERT(other->size() == size());
-  HAYAKU_ASSERT(other_result_idx < other->m_result_num);
-  HAYAKU_ASSERT(self_result_idx < m_result_num);
-  buffer_t *tmp = m_pBuffer[self_result_idx];
-  m_pBuffer[self_result_idx] = other->m_pBuffer[other_result_idx];
-  other->m_pBuffer[other_result_idx] = tmp;
+  HAYAKU_ASSERT(other_result_idx < other->result_num_);
+  HAYAKU_ASSERT(self_result_idx < result_num_);
+  buffer_t *tmp = p_buffer_[self_result_idx];
+  p_buffer_[self_result_idx] = other->p_buffer_[other_result_idx];
+  other->p_buffer_[other_result_idx] = tmp;
 }
 
 IndicatorImpPtr IndicatorImp::clone() {
   IndicatorImpPtr p = _clone();
-  p->m_params = m_params;
-  p->m_name = m_name;
-  p->m_origin_id =
-      m_origin_id;  // Copy the origin id: the clone chain shares the identity
-  p->m_is_python_object = m_is_python_object;
-  p->m_need_self_alike_compare = m_need_self_alike_compare;
-  p->m_is_serial = m_is_serial;
-  p->m_discard = m_discard;
-  p->m_result_num = m_result_num;
-  p->m_context = m_context;
-  p->m_old_context = m_old_context;
-  p->m_need_calculate = m_need_calculate;
-  p->m_param_changed = m_param_changed;
-  p->m_optype = m_optype;
-  p->m_parent = m_parent;
+  p->params_ = params_;
+  p->name_ = name_;
+  p->origin_id_ =
+      origin_id_;  // Copy the origin id: the clone chain shares the identity
+  p->is_python_object_ = is_python_object_;
+  p->need_self_alike_compare_ = need_self_alike_compare_;
+  p->is_serial_ = is_serial_;
+  p->discard_ = discard_;
+  p->result_num_ = result_num_;
+  p->context_ = context_;
+  p->old_context_ = old_context_;
+  p->need_calculate_ = need_calculate_;
+  p->param_changed_ = param_changed_;
+  p->optype_ = optype_;
+  p->parent_ = parent_;
 
-  p->_readyBuffer(size(), m_result_num);
-  for (size_t i = 0; i < m_result_num; ++i) {
-    if (m_pBuffer[i])
-      std::copy(m_pBuffer[i]->begin(), m_pBuffer[i]->end(),
-                p->m_pBuffer[i]->begin());
-  }
-
-  if (m_left) {
-    p->m_left = m_left->clone();
-    p->m_left->m_parent = this;
-  }
-  if (m_right) {
-    p->m_right = m_right->clone();
-    p->m_right->m_parent = this;
-  }
-  if (m_three) {
-    p->m_three = m_three->clone();
-    p->m_three->m_parent = this;
+  p->_readyBuffer(size(), result_num_);
+  for (size_t i = 0; i < result_num_; ++i) {
+    if (p_buffer_[i])
+      std::copy(p_buffer_[i]->begin(), p_buffer_[i]->end(),
+                p->p_buffer_[i]->begin());
   }
 
-  for (auto iter = m_ind_params.begin(); iter != m_ind_params.end(); ++iter) {
-    p->m_ind_params[iter->first] = iter->second->clone();
+  if (left_) {
+    p->left_ = left_->clone();
+    p->left_->parent_ = this;
+  }
+  if (right_) {
+    p->right_ = right_->clone();
+    p->right_->parent_ = this;
+  }
+  if (three_) {
+    p->three_ = three_->clone();
+    p->three_->parent_ = this;
   }
 
-  if (!m_parent) {
+  for (auto iter = ind_params_.begin(); iter != ind_params_.end(); ++iter) {
+    p->ind_params_[iter->first] = iter->second->clone();
+  }
+
+  if (!parent_) {
     // Rebuild the parent node of every child node
     std::forward_list<IndicatorImp *> stack;
     stack.push_front(p.get());
     while (!stack.empty()) {
       IndicatorImp *node = stack.front();
       stack.pop_front();
-      if (node->m_three) {
-        node->m_three->m_parent = node;
-        stack.push_front(node->m_three.get());
+      if (node->three_) {
+        node->three_->parent_ = node;
+        stack.push_front(node->three_.get());
       }
-      if (node->m_left) {
-        node->m_left->m_parent = node;
-        stack.push_front(node->m_left.get());
+      if (node->left_) {
+        node->left_->parent_ = node;
+        stack.push_front(node->left_.get());
       }
-      if (node->m_right) {
-        node->m_right->m_parent = node;
-        stack.push_front(node->m_right.get());
+      if (node->right_) {
+        node->right_->parent_ = node;
+        stack.push_front(node->right_.get());
       }
     }
 
@@ -483,48 +483,48 @@ IndicatorImpPtr IndicatorImp::operator()(const Indicator &ind) {
   // Guarantee the alignment
   IndicatorImpPtr result = make_shared<IndicatorImp>();
   size_t total = ind.size();
-  result->_readyBuffer(total, m_result_num);
+  result->_readyBuffer(total, result_num_);
   result->setDiscard(total);
   return result;
 }
 
 void IndicatorImp::setDiscard(size_t discard) noexcept {
   size_t tmp_discard = discard > size() ? size() : discard;
-  if (tmp_discard > m_discard) {
+  if (tmp_discard > discard_) {
     value_t null_price = Null<value_t>();
-    for (size_t i = 0; i < m_result_num; ++i) {
+    for (size_t i = 0; i < result_num_; ++i) {
       auto *dst = this->data(i);
-      for (size_t j = m_discard; j < tmp_discard; ++j) {
+      for (size_t j = discard_; j < tmp_discard; ++j) {
         // _set(null_price, j, i);
         dst[j] = null_price;
       }
     }
   }
-  m_discard = tmp_discard;
+  discard_ = tmp_discard;
 }
 
 string IndicatorImp::long_name() const {
-  return name() + "(" + m_params.getNameValueList() + ")";
+  return name() + "(" + params_.getNameValueList() + ")";
 }
 
 PriceList IndicatorImp::getResultAsPriceList(size_t result_num) {
-  HAYAKU_IF_RETURN(result_num >= m_result_num || m_pBuffer[result_num] == NULL,
+  HAYAKU_IF_RETURN(result_num >= result_num_ || p_buffer_[result_num] == NULL,
                    PriceList());
 #if HAYAKU_USE_LOW_PRECISION
   size_t total = size();
   PriceList result(total);
-  const auto &src = (*m_pBuffer[result_num]);
+  const auto &src = (*p_buffer_[result_num]);
   std::copy(src.begin(), src.end(), result.begin());
   return result;
 #else
   // return (*m_pBuffer[result_num]);
-  return PriceList(m_pBuffer[result_num]->begin(),
-                   m_pBuffer[result_num]->end());
+  return PriceList(p_buffer_[result_num]->begin(),
+                   p_buffer_[result_num]->end());
 #endif
 }
 
 IndicatorImpPtr IndicatorImp::getResult(size_t result_num) {
-  HAYAKU_IF_RETURN(result_num >= m_result_num || m_pBuffer[result_num] == NULL,
+  HAYAKU_IF_RETURN(result_num >= result_num_ || p_buffer_[result_num] == NULL,
                    IndicatorImpPtr());
   IndicatorImpPtr imp = make_shared<IndicatorImp>();
   size_t total = size();
@@ -543,46 +543,46 @@ IndicatorImp::value_t IndicatorImp::get(size_t pos, size_t num) const {
 #if CHECK_ACCESS_BOUND
   // cppcheck-suppress [arrayIndexOutOfBoundsCond]
   HAYAKU_CHECK_THROW(
-      (num <= MAX_RESULT_NUM && m_pBuffer[num] && pos < m_pBuffer[num]->size()),
+      (num <= MAX_RESULT_NUM && p_buffer_[num] && pos < p_buffer_[num]->size()),
       std::out_of_range,
       "Try to access value out of bounds! num: {}, pos: {}, name: {}", num, pos,
       name());
 #endif
-  return (*m_pBuffer[num])[pos];
+  return (*p_buffer_[num])[pos];
 }
 
 IndicatorImp::value_t IndicatorImp::front(size_t num) const {
 #if CHECK_ACCESS_BOUND
   // cppcheck-suppress [arrayIndexOutOfBoundsCond]
   HAYAKU_CHECK_THROW(
-      (num <= MAX_RESULT_NUM && m_pBuffer[num] && !m_pBuffer[num]->empty()),
+      (num <= MAX_RESULT_NUM && p_buffer_[num] && !p_buffer_[num]->empty()),
       std::out_of_range, "Try to access value out of bounds! num: {}, name: {}",
       num, name());
 #endif
-  return m_pBuffer[num]->front();
+  return p_buffer_[num]->front();
 }
 
 IndicatorImp::value_t IndicatorImp::back(size_t num) const {
 #if CHECK_ACCESS_BOUND
   // cppcheck-suppress [arrayIndexOutOfBoundsCond]
   HAYAKU_CHECK_THROW(
-      (num <= MAX_RESULT_NUM && m_pBuffer[num] && !m_pBuffer[num]->empty()),
+      (num <= MAX_RESULT_NUM && p_buffer_[num] && !p_buffer_[num]->empty()),
       std::out_of_range, "Try to access value out of bounds! num: {}, name: {}",
       num, name());
 #endif
-  return m_pBuffer[num]->back();
+  return p_buffer_[num]->back();
 }
 
 void IndicatorImp::_set(value_t val, size_t pos, size_t num) {
 #if CHECK_ACCESS_BOUND
   // cppcheck-suppress [arrayIndexOutOfBoundsCond]
   HAYAKU_CHECK_THROW(
-      (num <= MAX_RESULT_NUM && m_pBuffer[num] && pos < m_pBuffer[num]->size()),
+      (num <= MAX_RESULT_NUM && p_buffer_[num] && pos < p_buffer_[num]->size()),
       std::out_of_range,
       "Try to access value out of bounds! num: {}, pos: {}, name: {}", num, pos,
       name());
 #endif
-  (*m_pBuffer[num])[pos] = val;
+  (*p_buffer_[num])[pos] = val;
 }
 
 DatetimeList IndicatorImp::getDatetimeList() const {
@@ -621,9 +621,9 @@ size_t IndicatorImp::getPos(Datetime date) const {
 }
 
 bool IndicatorImp::existNan(size_t result_idx) const {
-  HAYAKU_CHECK(result_idx < m_result_num, "result_idx: {}", result_idx);
+  HAYAKU_CHECK(result_idx < result_num_, "result_idx: {}", result_idx);
   const value_t *src = data(result_idx);
-  for (size_t i = m_discard, total = size(); i < total; i++) {
+  for (size_t i = discard_, total = size(); i < total; i++) {
     if (std::isnan(src[i])) {
       return true;
     }
@@ -634,79 +634,79 @@ bool IndicatorImp::existNan(size_t result_idx) const {
 string IndicatorImp::formula() const {
   std::stringstream buf;
 
-  switch (m_optype) {
+  switch (optype_) {
     case LEAF:
-      buf << m_name;
+      buf << name_;
       break;
 
     case OP:
-      buf << m_name << "(" << m_right->formula() << ")";
+      buf << name_ << "(" << right_->formula() << ")";
       break;
 
     case ADD:
-      buf << m_left->formula() << " + " << m_right->formula();
+      buf << left_->formula() << " + " << right_->formula();
       break;
 
     case SUB:
-      buf << m_left->formula() << " - " << m_right->formula();
+      buf << left_->formula() << " - " << right_->formula();
       break;
 
     case MUL:
-      buf << m_left->formula() << " * " << m_right->formula();
+      buf << left_->formula() << " * " << right_->formula();
       break;
 
     case DIV:
-      buf << m_left->formula() << " / " << m_right->formula();
+      buf << left_->formula() << " / " << right_->formula();
       break;
 
     case MOD:
-      buf << m_left->formula() << " % " << m_right->formula();
+      buf << left_->formula() << " % " << right_->formula();
       break;
 
     case EQ:
-      buf << m_left->formula() << " == " << m_right->formula();
+      buf << left_->formula() << " == " << right_->formula();
       break;
 
     case GT:
-      buf << m_left->formula() << " > " << m_right->formula();
+      buf << left_->formula() << " > " << right_->formula();
       break;
 
     case LT:
-      buf << m_left->formula() << " < " << m_right->formula();
+      buf << left_->formula() << " < " << right_->formula();
       break;
 
     case NE:
-      buf << m_left->formula() << " != " << m_right->formula();
+      buf << left_->formula() << " != " << right_->formula();
       break;
 
     case GE:
-      buf << m_left->formula() << " >= " << m_right->formula();
+      buf << left_->formula() << " >= " << right_->formula();
       break;
 
     case LE:
-      buf << m_left->formula() << " <= " << m_right->formula();
+      buf << left_->formula() << " <= " << right_->formula();
       break;
 
     case AND:
-      buf << m_left->formula() << " & " << m_right->formula();
+      buf << left_->formula() << " & " << right_->formula();
       break;
 
     case OR:
-      buf << m_left->formula() << " | " << m_right->formula();
+      buf << left_->formula() << " | " << right_->formula();
       break;
 
     case WEAVE:
-      buf << m_name << "(" << m_left->formula() << ", " << m_right->formula()
+      buf << name_ << "(" << left_->formula() << ", " << right_->formula()
           << ")";
       break;
 
     case OP_IF:
-      buf << "IF(" << m_three->formula() << ", " << m_left->formula() << ", "
-          << m_right->formula() << ")";
+      buf << "IF(" << three_->formula() << ", " << left_->formula() << ", "
+          << right_->formula() << ")";
       break;
 
     default:
-      HAYAKU_ERROR("Wrong optype! {}", int(m_optype));
+      HAYAKU_ERROR("Wrong optype! {}", int(optype_));
       break;
   }
 
@@ -717,11 +717,11 @@ void IndicatorImp::add(OPType op, IndicatorImpPtr left, IndicatorImpPtr right) {
   HAYAKU_ERROR_IF_RETURN(op == LEAF || op >= INVALID || !right, void(),
                          "Wrong used!");
   if (OP == op && !isLeaf()) {
-    if (m_left) {
-      if (m_left->isNeedContext()) {
-        if (m_left->isLeaf()) {
-          m_need_calculate = true;
-          m_left = right->clone();
+    if (left_) {
+      if (left_->isNeedContext()) {
+        if (left_->isLeaf()) {
+          need_calculate_ = true;
+          left_ = right->clone();
         } else {
           HAYAKU_WARN(
               "Context-dependent indicator can only be at the leaf node!"
@@ -729,14 +729,14 @@ void IndicatorImp::add(OPType op, IndicatorImpPtr left, IndicatorImpPtr right) {
               name(), right->name());
         }
       } else {
-        m_left->add(OP, left, right);
+        left_->add(OP, left, right);
       }
     }
-    if (m_right) {
-      if (m_right->isNeedContext()) {
-        if (m_right->isLeaf()) {
-          m_need_calculate = true;
-          m_right = right->clone();
+    if (right_) {
+      if (right_->isNeedContext()) {
+        if (right_->isLeaf()) {
+          need_calculate_ = true;
+          right_ = right->clone();
         } else {
           HAYAKU_WARN(
               "Context-dependent indicator can only be at the leaf node!"
@@ -744,14 +744,14 @@ void IndicatorImp::add(OPType op, IndicatorImpPtr left, IndicatorImpPtr right) {
               name(), right->name());
         }
       } else {
-        m_right->add(OP, left, right);
+        right_->add(OP, left, right);
       }
     }
-    if (m_three) {
-      if (m_three->isNeedContext()) {
-        if (m_three->isLeaf()) {
-          m_need_calculate = true;
-          m_three = right->clone();
+    if (three_) {
+      if (three_->isNeedContext()) {
+        if (three_->isLeaf()) {
+          need_calculate_ = true;
+          three_ = right->clone();
         } else {
           HAYAKU_WARN(
               "Context-dependent indicator can only be at the leaf node!"
@@ -759,33 +759,33 @@ void IndicatorImp::add(OPType op, IndicatorImpPtr left, IndicatorImpPtr right) {
               name(), right->name());
         }
       } else {
-        m_three->add(OP, left, right);
+        three_->add(OP, left, right);
       }
     }
   } else {
-    m_need_calculate = true;
-    m_optype = op;
-    m_left = left ? left->clone() : left;
-    m_right = right->clone();
+    need_calculate_ = true;
+    optype_ = op;
+    left_ = left ? left->clone() : left;
+    right_ = right->clone();
   }
 
-  if (m_left) {
-    m_left->m_parent = this;
+  if (left_) {
+    left_->parent_ = this;
   }
 
-  if (m_right) {
-    m_right->m_parent = this;
+  if (right_) {
+    right_->parent_ = this;
   }
 
-  if (m_three) {
-    m_three->m_parent = this;
+  if (three_) {
+    three_->parent_ = this;
   }
 
-  if (m_name == "IndicatorImp") {
-    m_name = getOPTypeName(op);
+  if (name_ == "IndicatorImp") {
+    name_ = getOPTypeName(op);
   }
 
-  if (!m_parent) {
+  if (!parent_) {
     repeatALikeNodes();
   }
 }
@@ -793,52 +793,52 @@ void IndicatorImp::add(OPType op, IndicatorImpPtr left, IndicatorImpPtr right) {
 void IndicatorImp::add_if(IndicatorImpPtr cond, IndicatorImpPtr left,
                           IndicatorImpPtr right) {
   HAYAKU_ERROR_IF_RETURN(!cond || !left || !right, void(), "Wrong used!");
-  m_need_calculate = true;
-  m_optype = IndicatorImp::OP_IF;
-  m_three = cond->clone();
-  m_left = left->clone();
-  m_right = right->clone();
-  m_three->m_parent = this;
-  m_left->m_parent = this;
-  m_right->m_parent = this;
-  if (m_name == "IndicatorImp") {
-    m_name = getOPTypeName(IndicatorImp::OP_IF);
+  need_calculate_ = true;
+  optype_ = IndicatorImp::OP_IF;
+  three_ = cond->clone();
+  left_ = left->clone();
+  right_ = right->clone();
+  three_->parent_ = this;
+  left_->parent_ = this;
+  right_->parent_ = this;
+  if (name_ == "IndicatorImp") {
+    name_ = getOPTypeName(IndicatorImp::OP_IF);
   }
-  if (!m_parent) {
+  if (!parent_) {
     repeatALikeNodes();
   }
 }
 
 bool IndicatorImp::needCalculate() {
-  if (m_need_calculate) {
+  if (need_calculate_) {
     return true;
   }
 
   // Set the context for the child nodes
-  if (m_left) {
-    m_need_calculate = m_left->needCalculate();
-    if (m_need_calculate) {
+  if (left_) {
+    need_calculate_ = left_->needCalculate();
+    if (need_calculate_) {
       return true;
     }
   }
 
-  if (m_right) {
-    m_need_calculate = m_right->needCalculate();
-    if (m_need_calculate) {
+  if (right_) {
+    need_calculate_ = right_->needCalculate();
+    if (need_calculate_) {
       return true;
     }
   }
 
-  if (m_three) {
-    m_need_calculate = m_three->needCalculate();
-    if (m_need_calculate) {
+  if (three_) {
+    need_calculate_ = three_->needCalculate();
+    if (need_calculate_) {
       return true;
     }
   }
 
-  for (auto iter = m_ind_params.begin(); iter != m_ind_params.end(); ++iter) {
-    m_need_calculate = iter->second->needCalculate();
-    if (m_need_calculate) {
+  for (auto iter = ind_params_.begin(); iter != ind_params_.end(); ++iter) {
+    need_calculate_ = iter->second->needCalculate();
+    if (need_calculate_) {
       return true;
     }
   }
@@ -852,42 +852,42 @@ void IndicatorImp::_calculate(const Indicator &ind) {
     size_t total = k.size();
     HAYAKU_IF_RETURN(total == 0, void());
     _readyBuffer(total, 1);
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
   size_t total = ind.size();
-  m_result_num = ind.getResultNumber();
+  result_num_ = ind.getResultNumber();
   HAYAKU_IF_RETURN(total == 0, void());
 
-  _readyBuffer(total, m_result_num);
-  m_discard = ind.discard();
-  for (size_t r = 0; r < m_result_num; ++r) {
+  _readyBuffer(total, result_num_);
+  discard_ = ind.discard();
+  for (size_t r = 0; r < result_num_; ++r) {
     const auto *src = ind.data(r);
     auto *dst = this->data(r);
-    for (size_t i = m_discard; i < total; ++i) {
+    for (size_t i = discard_; i < total; ++i) {
       dst[i] = src[i];
     }
   }
 }
 
 bool IndicatorImp::can_increment_calculate() {
-  if (m_result_num == 0 || m_context.empty() || m_old_context.empty()) {
+  if (result_num_ == 0 || context_.empty() || old_context_.empty()) {
     return false;
   }
 
-  if (m_context.front().datetime < m_old_context.front().datetime) {
+  if (context_.front().datetime < old_context_.front().datetime) {
     return false;
   }
 
-  if (m_context.getStock() != m_old_context.getStock() ||
-      m_old_context.getQuery().kType() != m_context.getQuery().kType() ||
-      m_old_context.getQuery().recoverType() !=
-          m_context.getQuery().recoverType()) {
+  if (context_.getStock() != old_context_.getStock() ||
+      old_context_.getQuery().kType() != context_.getQuery().kType() ||
+      old_context_.getQuery().recoverType() !=
+          context_.getQuery().recoverType()) {
     return false;
   }
 
-  if (m_context.back().datetime <= m_old_context.back().datetime) {
+  if (context_.back().datetime <= old_context_.back().datetime) {
     return false;
   }
 
@@ -895,23 +895,23 @@ bool IndicatorImp::can_increment_calculate() {
 }
 
 bool IndicatorImp::increment_execute_leaf_or_op(const Indicator &ind) {
-  if (m_param_changed || !ms_enable_increment_calculate ||
+  if (param_changed_ || !ms_enable_increment_calculate ||
       !supportIncrementCalculate() || !can_increment_calculate()) {
     return false;
   }
 
-  size_t copy_start_pos = m_old_context.getPos(m_context.front().datetime);
+  size_t copy_start_pos = old_context_.getPos(context_.front().datetime);
   if (copy_start_pos == Null<size_t>()) {
     return false;
   }
 
-  size_t total = m_context.size();
-  size_t copy_len = m_old_context.size() - copy_start_pos;
-  if (copy_len < m_discard) {
+  size_t total = context_.size();
+  size_t copy_len = old_context_.size() - copy_start_pos;
+  if (copy_len < discard_) {
     return false;
   }
 
-  size_t start_pos = m_context.getPos(m_old_context.back().datetime);
+  size_t start_pos = context_.getPos(old_context_.back().datetime);
   if (start_pos == Null<size_t>()) {
     return false;
   }
@@ -921,19 +921,19 @@ bool IndicatorImp::increment_execute_leaf_or_op(const Indicator &ind) {
   }
 
   if (copy_len > 0) {
-    for (size_t r = 0; r < m_result_num; ++r) {
-      HAYAKU_ASSERT(m_pBuffer[r]);
-      m_pBuffer[r]->resize(total, Null<value_t>());
+    for (size_t r = 0; r < result_num_; ++r) {
+      HAYAKU_ASSERT(p_buffer_[r]);
+      p_buffer_[r]->resize(total, Null<value_t>());
       auto *dst = this->data(r);
       memmove(dst, dst + copy_start_pos, sizeof(value_t) * (copy_len));
     }
   }
 
-  if (start_pos < m_discard) {
-    start_pos = m_discard;
+  if (start_pos < discard_) {
+    start_pos = discard_;
   }
 
-  m_discard = 0;
+  discard_ = 0;
 
   if (start_pos < total) {
     _increment_calculate(ind, start_pos);
@@ -954,9 +954,9 @@ Indicator IndicatorImp::calculate() {
     return Indicator(result);
   }
 
-  switch (m_optype) {
+  switch (optype_) {
     case LEAF:
-      if (m_ind_params.empty()) {
+      if (ind_params_.empty()) {
         if (!increment_execute_leaf_or_op(Indicator())) {
           _calculate(Indicator());
         }
@@ -970,25 +970,25 @@ Indicator IndicatorImp::calculate() {
         // before the call, so that even if _dyn_calculate writes nothing,
         // size()/data() return the correct (possibly shorter) length.
         if (isNeedContext()) {
-          _readyBuffer(getContext().size(), m_result_num);
+          _readyBuffer(getContext().size(), result_num_);
         }
         _dyn_calculate(Indicator());
       }
       break;
 
     case OP: {
-      if (m_ind_params.empty()) {
-        if (!increment_execute_leaf_or_op(Indicator(m_right))) {
-          m_right->calculate();
-          _readyBuffer(m_right->size(), m_result_num);
-          _calculate(Indicator(m_right));
-          onlySetContext(m_right->getContext());
+      if (ind_params_.empty()) {
+        if (!increment_execute_leaf_or_op(Indicator(right_))) {
+          right_->calculate();
+          _readyBuffer(right_->size(), result_num_);
+          _calculate(Indicator(right_));
+          onlySetContext(right_->getContext());
         }
       } else {
-        m_right->calculate();
-        _readyBuffer(m_right->size(), m_result_num);
-        _dyn_calculate(Indicator(m_right));
-        onlySetContext(m_right->getContext());
+        right_->calculate();
+        _readyBuffer(right_->size(), result_num_);
+        _dyn_calculate(Indicator(right_));
+        onlySetContext(right_->getContext());
       }
     } break;
 
@@ -1053,18 +1053,18 @@ Indicator IndicatorImp::calculate() {
       break;
 
     default:
-      HAYAKU_ERROR("Unkown Indicator::OPType! {}", int(m_optype));
+      HAYAKU_ERROR("Unkown Indicator::OPType! {}", int(optype_));
       break;
   }
 
   // When the prototype way is used, the recalculation cannot happen immediately
   // without this check
   if (size() != 0) {
-    m_need_calculate = false;
+    need_calculate_ = false;
   }
 
-  m_param_changed = false;
-  m_old_context = KData();
+  param_changed_ = false;
+  old_context_ = KData();
 
   try {
     result = shared_from_this();
@@ -1081,8 +1081,8 @@ Indicator IndicatorImp::calculate() {
 
 size_t IndicatorImp::increment_execute() {
   size_t null_pos = Null<size_t>();
-  if (m_param_changed || !ms_enable_increment_calculate ||
-      m_right->m_need_calculate || m_left->m_need_calculate) {
+  if (param_changed_ || !ms_enable_increment_calculate ||
+      right_->need_calculate_ || left_->need_calculate_) {
     return null_pos;
   }
 
@@ -1090,25 +1090,25 @@ size_t IndicatorImp::increment_execute() {
     return null_pos;
   }
 
-  size_t copy_start_pos = m_old_context.getPos(m_context.front().datetime);
+  size_t copy_start_pos = old_context_.getPos(context_.front().datetime);
   if (copy_start_pos == null_pos) {
     return null_pos;
   }
 
-  size_t total = m_context.size();
-  size_t copy_len = m_old_context.size() - copy_start_pos;
+  size_t total = context_.size();
+  size_t copy_len = old_context_.size() - copy_start_pos;
   if (copy_len == 0) {
     return null_pos;
   }
 
-  size_t start_pos = m_context.getPos(m_old_context.back().datetime);
+  size_t start_pos = context_.getPos(old_context_.back().datetime);
   if (start_pos == null_pos) {
     return null_pos;
   }
 
-  for (size_t r = 0; r < m_result_num; ++r) {
-    HAYAKU_ASSERT(m_pBuffer[r] != nullptr);
-    m_pBuffer[r]->resize(total, Null<value_t>());
+  for (size_t r = 0; r < result_num_; ++r) {
+    HAYAKU_ASSERT(p_buffer_[r] != nullptr);
+    p_buffer_[r]->resize(total, Null<value_t>());
     auto *dst = this->data(r);
     memmove(dst, dst + copy_start_pos, sizeof(value_t) * (copy_len));
   }
@@ -1119,17 +1119,17 @@ size_t IndicatorImp::increment_execute() {
 void IndicatorImp::execute_weave() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   const IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t diff = maxp->size() - minp->size();
@@ -1154,33 +1154,33 @@ void IndicatorImp::execute_weave() {
 
   value_t const *src = nullptr;
   value_t *dst = nullptr;
-  if (m_left->size() >= m_right->size()) {
-    size_t num = m_left->getResultNumber();
+  if (left_->size() >= right_->size()) {
+    size_t num = left_->getResultNumber();
     for (size_t r = 0; r < num; ++r) {
-      src = m_left->data(r);
+      src = left_->data(r);
       dst = this->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         dst[i] = src[i];
       }
     }
-    for (size_t r = num; r < m_result_num; r++) {
-      src = m_right->data(r - num);
+    for (size_t r = num; r < result_num_; r++) {
+      src = right_->data(r - num);
       dst = this->data(r);
       for (size_t i = start_pos; i < total; i++) {
         dst[i] = src[i - diff];
       }
     }
   } else {
-    size_t num = m_left->getResultNumber();
+    size_t num = left_->getResultNumber();
     for (size_t r = 0; r < num; ++r) {
-      src = m_left->data(r);
+      src = left_->data(r);
       dst = this->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         dst[i] = src[i - diff];
       }
     }
-    for (size_t r = num; r < m_result_num; r++) {
-      src = m_right->data(r - num);
+    for (size_t r = num; r < result_num_; r++) {
+      src = right_->data(r - num);
       dst = this->data(r);
       for (size_t i = start_pos; i < total; i++) {
         dst[i] = src[i];
@@ -1192,17 +1192,17 @@ void IndicatorImp::execute_weave() {
 void IndicatorImp::execute_add() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1223,7 +1223,7 @@ void IndicatorImp::execute_add() {
 
   setDiscard(discard);
 
-  for (size_t r = 0; r < m_result_num; ++r) {
+  for (size_t r = 0; r < result_num_; ++r) {
     auto const *data1 = maxp->data(r);
     auto const *data2 = minp->data(r);
     auto *result = this->data(r);
@@ -1236,17 +1236,17 @@ void IndicatorImp::execute_add() {
 void IndicatorImp::execute_sub() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1267,19 +1267,19 @@ void IndicatorImp::execute_sub() {
 
   setDiscard(discard);
 
-  if (m_left->size() > m_right->size()) {
-    for (size_t r = 0; r < m_result_num; ++r) {
-      auto *data1 = m_left->data(r);
-      auto *data2 = m_right->data(r);
+  if (left_->size() > right_->size()) {
+    for (size_t r = 0; r < result_num_; ++r) {
+      auto *data1 = left_->data(r);
+      auto *data2 = right_->data(r);
       auto *result = this->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         result[i] = data1[i] - data2[i - diff];
       }
     }
   } else {
-    for (size_t r = 0; r < m_result_num; ++r) {
-      auto *data1 = m_left->data(r);
-      auto *data2 = m_right->data(r);
+    for (size_t r = 0; r < result_num_; ++r) {
+      auto *data1 = left_->data(r);
+      auto *data2 = right_->data(r);
       auto *result = this->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         result[i] = data1[i - diff] - data2[i];
@@ -1291,17 +1291,17 @@ void IndicatorImp::execute_sub() {
 void IndicatorImp::execute_mul() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1322,7 +1322,7 @@ void IndicatorImp::execute_mul() {
 
   setDiscard(discard);
 
-  for (size_t r = 0; r < m_result_num; ++r) {
+  for (size_t r = 0; r < result_num_; ++r) {
     auto const *data1 = maxp->data(r);
     auto const *data2 = minp->data(r);
     auto *result = this->data(r);
@@ -1335,17 +1335,17 @@ void IndicatorImp::execute_mul() {
 void IndicatorImp::execute_div() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1366,19 +1366,19 @@ void IndicatorImp::execute_div() {
 
   setDiscard(discard);
 
-  if (m_left->size() > m_right->size()) {
-    for (size_t r = 0; r < m_result_num; ++r) {
-      auto const *data1 = m_left->data(r);
-      auto const *data2 = m_right->data(r);
+  if (left_->size() > right_->size()) {
+    for (size_t r = 0; r < result_num_; ++r) {
+      auto const *data1 = left_->data(r);
+      auto const *data2 = right_->data(r);
       auto *result = this->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         result[i] = data1[i] / data2[i - diff];
       }
     }
   } else {
-    for (size_t r = 0; r < m_result_num; ++r) {
-      auto const *data1 = m_left->data(r);
-      auto const *data2 = m_right->data(r);
+    for (size_t r = 0; r < result_num_; ++r) {
+      auto const *data1 = left_->data(r);
+      auto const *data2 = right_->data(r);
       auto *result = this->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         result[i] = data1[i - diff] / data2[i];
@@ -1390,17 +1390,17 @@ void IndicatorImp::execute_div() {
 void IndicatorImp::execute_mod() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1425,11 +1425,11 @@ void IndicatorImp::execute_mod() {
   value_t const *left = nullptr;
   value_t const *right = nullptr;
   value_t null_value = Null<value_t>();
-  if (m_left->size() > m_right->size()) {
-    for (size_t r = 0; r < m_result_num; ++r) {
+  if (left_->size() > right_->size()) {
+    for (size_t r = 0; r < result_num_; ++r) {
       dst = this->data(r);
-      left = m_left->data(r);
-      right = m_right->data(r);
+      left = left_->data(r);
+      right = right_->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         if (right[i - diff] == 0.0) {
           dst[i] = null_value;
@@ -1439,10 +1439,10 @@ void IndicatorImp::execute_mod() {
       }
     }
   } else {
-    for (size_t r = 0; r < m_result_num; ++r) {
+    for (size_t r = 0; r < result_num_; ++r) {
       dst = this->data(r);
-      left = m_left->data(r);
-      right = m_right->data(r);
+      left = left_->data(r);
+      right = right_->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         if (right[i] == 0.0) {
           dst[i] = null_value;
@@ -1457,17 +1457,17 @@ void IndicatorImp::execute_mod() {
 void IndicatorImp::execute_eq() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1488,7 +1488,7 @@ void IndicatorImp::execute_eq() {
 
   setDiscard(discard);
 
-  for (size_t r = 0; r < m_result_num; ++r) {
+  for (size_t r = 0; r < result_num_; ++r) {
     auto *dst = this->data(r);
     auto const *maxdata = maxp->data(r);
     auto const *mindata = minp->data(r);
@@ -1501,17 +1501,17 @@ void IndicatorImp::execute_eq() {
 void IndicatorImp::execute_ne() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1532,7 +1532,7 @@ void IndicatorImp::execute_ne() {
 
   setDiscard(discard);
 
-  for (size_t r = 0; r < m_result_num; ++r) {
+  for (size_t r = 0; r < result_num_; ++r) {
     auto *dst = this->data(r);
     auto const *maxdata = maxp->data(r);
     auto const *mindata = minp->data(r);
@@ -1545,17 +1545,17 @@ void IndicatorImp::execute_ne() {
 void IndicatorImp::execute_gt() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1579,20 +1579,20 @@ void IndicatorImp::execute_gt() {
   value_t *dst = nullptr;
   value_t const *left = nullptr;
   value_t const *right = nullptr;
-  if (m_left->size() > m_right->size()) {
-    for (size_t r = 0; r < m_result_num; ++r) {
+  if (left_->size() > right_->size()) {
+    for (size_t r = 0; r < result_num_; ++r) {
       dst = this->data(r);
-      left = m_left->data(r);
-      right = m_right->data(r);
+      left = left_->data(r);
+      right = right_->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         dst[i] = (left[i] > right[i - diff]) ? 1.0 : 0.0;
       }
     }
   } else {
-    for (size_t r = 0; r < m_result_num; ++r) {
+    for (size_t r = 0; r < result_num_; ++r) {
       dst = this->data(r);
-      left = m_left->data(r);
-      right = m_right->data(r);
+      left = left_->data(r);
+      right = right_->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         dst[i] = (left[i - diff] > right[i]) ? 1.0 : 0.0;
       }
@@ -1603,17 +1603,17 @@ void IndicatorImp::execute_gt() {
 void IndicatorImp::execute_lt() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1637,20 +1637,20 @@ void IndicatorImp::execute_lt() {
   value_t *dst = nullptr;
   value_t const *left = nullptr;
   value_t const *right = nullptr;
-  if (m_left->size() > m_right->size()) {
-    for (size_t r = 0; r < m_result_num; ++r) {
+  if (left_->size() > right_->size()) {
+    for (size_t r = 0; r < result_num_; ++r) {
       dst = this->data(r);
-      left = m_left->data(r);
-      right = m_right->data(r);
+      left = left_->data(r);
+      right = right_->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         dst[i] = (left[i] < right[i - diff]) ? 1.0 : 0.0;
       }
     }
   } else {
-    for (size_t r = 0; r < m_result_num; ++r) {
+    for (size_t r = 0; r < result_num_; ++r) {
       dst = this->data(r);
-      left = m_left->data(r);
-      right = m_right->data(r);
+      left = left_->data(r);
+      right = right_->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         dst[i] = left[i - diff] < right[i] ? 1.0 : 0.0;
       }
@@ -1661,17 +1661,17 @@ void IndicatorImp::execute_lt() {
 void IndicatorImp::execute_ge() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1695,20 +1695,20 @@ void IndicatorImp::execute_ge() {
   value_t *dst = nullptr;
   value_t const *left = nullptr;
   value_t const *right = nullptr;
-  if (m_left->size() > m_right->size()) {
-    for (size_t r = 0; r < m_result_num; ++r) {
+  if (left_->size() > right_->size()) {
+    for (size_t r = 0; r < result_num_; ++r) {
       dst = this->data(r);
-      left = m_left->data(r);
-      right = m_right->data(r);
+      left = left_->data(r);
+      right = right_->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         dst[i] = left[i] >= right[i - diff] ? 1.0 : 0.0;
       }
     }
   } else {
-    for (size_t r = 0; r < m_result_num; ++r) {
+    for (size_t r = 0; r < result_num_; ++r) {
       dst = this->data(r);
-      left = m_left->data(r);
-      right = m_right->data(r);
+      left = left_->data(r);
+      right = right_->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         dst[i] = left[i - diff] >= right[i] ? 1.0 : 0.0;
       }
@@ -1719,17 +1719,17 @@ void IndicatorImp::execute_ge() {
 void IndicatorImp::execute_le() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1753,20 +1753,20 @@ void IndicatorImp::execute_le() {
   value_t *dst = nullptr;
   value_t const *left = nullptr;
   value_t const *right = nullptr;
-  if (m_left->size() > m_right->size()) {
-    for (size_t r = 0; r < m_result_num; ++r) {
+  if (left_->size() > right_->size()) {
+    for (size_t r = 0; r < result_num_; ++r) {
       dst = this->data(r);
-      left = m_left->data(r);
-      right = m_right->data(r);
+      left = left_->data(r);
+      right = right_->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         dst[i] = left[i] <= right[i - diff] ? 1.0 : 0.0;
       }
     }
   } else {
-    for (size_t r = 0; r < m_result_num; ++r) {
+    for (size_t r = 0; r < result_num_; ++r) {
       dst = this->data(r);
-      left = m_left->data(r);
-      right = m_right->data(r);
+      left = left_->data(r);
+      right = right_->data(r);
       for (size_t i = start_pos; i < total; ++i) {
         dst[i] = left[i - diff] <= right[i] ? 1.0 : 0.0;
       }
@@ -1777,17 +1777,17 @@ void IndicatorImp::execute_le() {
 void IndicatorImp::execute_and() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1808,7 +1808,7 @@ void IndicatorImp::execute_and() {
 
   setDiscard(discard);
 
-  for (size_t r = 0; r < m_result_num; ++r) {
+  for (size_t r = 0; r < result_num_; ++r) {
     auto *dst = this->data(r);
     auto const *maxdata = maxp->data(r);
     auto const *mindata = minp->data(r);
@@ -1821,17 +1821,17 @@ void IndicatorImp::execute_and() {
 void IndicatorImp::execute_or() {
   size_t start_pos = increment_execute();
   if (start_pos == Null<size_t>()) {
-    m_right->calculate();
-    m_left->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1852,7 +1852,7 @@ void IndicatorImp::execute_or() {
 
   setDiscard(discard);
 
-  for (size_t r = 0; r < m_result_num; ++r) {
+  for (size_t r = 0; r < result_num_; ++r) {
     auto *dst = this->data(r);
     auto const *maxdata = maxp->data(r);
     auto const *mindata = minp->data(r);
@@ -1864,9 +1864,9 @@ void IndicatorImp::execute_or() {
 
 size_t IndicatorImp::increment_execute_if() {
   size_t null_pos = Null<size_t>();
-  if (m_param_changed || !ms_enable_increment_calculate ||
-      m_three->m_need_calculate || m_right->m_need_calculate ||
-      m_left->m_need_calculate) {
+  if (param_changed_ || !ms_enable_increment_calculate ||
+      three_->need_calculate_ || right_->need_calculate_ ||
+      left_->need_calculate_) {
     return null_pos;
   }
 
@@ -1874,25 +1874,25 @@ size_t IndicatorImp::increment_execute_if() {
     return null_pos;
   }
 
-  size_t copy_start_pos = m_old_context.getPos(m_context.front().datetime);
+  size_t copy_start_pos = old_context_.getPos(context_.front().datetime);
   if (copy_start_pos == null_pos) {
     return null_pos;
   }
 
-  size_t total = m_context.size();
-  size_t copy_len = m_old_context.size() - copy_start_pos;
+  size_t total = context_.size();
+  size_t copy_len = old_context_.size() - copy_start_pos;
   if (copy_len == 0) {
     return null_pos;
   }
 
-  size_t start_pos = m_context.getPos(m_old_context.back().datetime);
+  size_t start_pos = context_.getPos(old_context_.back().datetime);
   if (start_pos == null_pos) {
     return null_pos;
   }
 
-  for (size_t r = 0; r < m_result_num; ++r) {
-    HAYAKU_ASSERT(m_pBuffer[r]);
-    m_pBuffer[r]->resize(total, Null<value_t>());
+  for (size_t r = 0; r < result_num_; ++r) {
+    HAYAKU_ASSERT(p_buffer_[r]);
+    p_buffer_[r]->resize(total, Null<value_t>());
     auto *dst = this->data(r);
     memmove(dst, dst + copy_start_pos, sizeof(value_t) * (copy_len));
   }
@@ -1903,18 +1903,18 @@ size_t IndicatorImp::increment_execute_if() {
 void IndicatorImp::execute_if() {
   size_t start_pos = increment_execute_if();
   if (start_pos == Null<size_t>()) {
-    m_three->calculate();
-    m_right->calculate();
-    m_left->calculate();
+    three_->calculate();
+    right_->calculate();
+    left_->calculate();
   }
 
   const IndicatorImp *maxp, *minp;
-  if (m_right->size() > m_left->size()) {
-    maxp = m_right.get();
-    minp = m_left.get();
+  if (right_->size() > left_->size()) {
+    maxp = right_.get();
+    minp = left_.get();
   } else {
-    maxp = m_left.get();
-    minp = m_right.get();
+    maxp = left_.get();
+    minp = right_.get();
   }
 
   size_t total = maxp->size();
@@ -1922,20 +1922,20 @@ void IndicatorImp::execute_if() {
   if (discard < maxp->discard()) {
     discard = maxp->discard();
   }
-  if (discard < m_three->discard()) {
-    discard = m_three->discard();
+  if (discard < three_->discard()) {
+    discard = three_->discard();
   }
 
-  if (m_three->size() >= maxp->size()) {
-    total = m_three->size();
+  if (three_->size() >= maxp->size()) {
+    total = three_->size();
     discard = total + discard - maxp->size();
   } else {
-    discard = total - m_three->size();
+    discard = total - three_->size();
   }
 
-  size_t diff_right = total - m_right->size();
-  size_t diff_left = total - m_left->size();
-  size_t diff_cond = total - m_three->size();
+  size_t diff_right = total - right_->size();
+  size_t diff_left = total - left_->size();
+  size_t diff_cond = total - three_->size();
 
   if (start_pos == Null<size_t>()) {
     size_t result_number =
@@ -1948,10 +1948,10 @@ void IndicatorImp::execute_if() {
 
   setDiscard(discard);
 
-  auto *left = m_left->data(0);
-  auto *right = m_right->data(0);
-  auto *three = m_three->data(0);
-  for (size_t r = 0; r < m_result_num; ++r) {
+  auto *left = left_->data(0);
+  auto *right = right_->data(0);
+  auto *three = three_->data(0);
+  for (size_t r = 0; r < result_num_; ++r) {
     auto *dst = this->data(r);
     for (size_t i = start_pos; i < total; ++i) {
       if (three[i - diff_cond] > 0.0) {
@@ -1970,9 +1970,9 @@ void IndicatorImp::_dyn_calculate(const Indicator &ind) {
   HAYAKU_CHECK(ind_param->size() >= ind.size(),
                "ind_param->size()={}, ind.size()={}!", ind_param->size(),
                ind.size());
-  m_discard = std::max(ind.discard(), ind_param->discard());
+  discard_ = std::max(ind.discard(), ind_param->discard());
   size_t total = ind.size();
-  HAYAKU_IF_RETURN(0 == total || m_discard >= total, void());
+  HAYAKU_IF_RETURN(0 == total || discard_ >= total, void());
 
   const value_t *param_data = ind_param->data();
 
@@ -2007,40 +2007,40 @@ void IndicatorImp::_dyn_calculate(const Indicator &ind) {
 
 void IndicatorImp::updateDiscard(bool force) noexcept {
   if (force) {
-    m_discard = 0;
+    discard_ = 0;
   }
   size_t total = size();
-  for (size_t result_index = 0; result_index < m_result_num; result_index++) {
-    size_t discard = m_discard;
+  for (size_t result_index = 0; result_index < result_num_; result_index++) {
+    size_t discard = discard_;
     const auto *dst = this->data(result_index);
-    for (size_t i = m_discard; i < total; i++) {
+    for (size_t i = discard_; i < total; i++) {
       if (!std::isnan(dst[i])) {
         break;
       }
       discard++;
     }
-    if (discard > m_discard) {
-      m_discard = discard;
+    if (discard > discard_) {
+      discard_ = discard;
     }
   }
-  if (m_discard > total) {
-    m_discard = total;
+  if (discard_ > total) {
+    discard_ = total;
   }
 }
 
 bool IndicatorImp::alike(const IndicatorImp &other) const {
   HAYAKU_IF_RETURN(this == &other, true);
   HAYAKU_IF_RETURN(
-      m_optype != other.m_optype || m_discard != other.m_discard ||
-          m_result_num != other.m_result_num || (isLeaf() && !other.isLeaf()) ||
+      optype_ != other.optype_ || discard_ != other.discard_ ||
+          result_num_ != other.result_num_ || (isLeaf() && !other.isLeaf()) ||
           (!isLeaf() && other.isLeaf()) || typeid(*this) != typeid(other) ||
-          m_ind_params.size() != other.m_ind_params.size() ||
-          m_params != other.m_params,
+          ind_params_.size() != other.ind_params_.size() ||
+          params_ != other.params_,
       false);
 
-  auto iter1 = m_ind_params.cbegin();
-  auto iter2 = other.m_ind_params.cbegin();
-  for (; iter1 != m_ind_params.cend() && iter2 != other.m_ind_params.cend();
+  auto iter1 = ind_params_.cbegin();
+  auto iter2 = other.ind_params_.cbegin();
+  for (; iter1 != ind_params_.cend() && iter2 != other.ind_params_.cend();
        ++iter1, ++iter2) {
     HAYAKU_IF_RETURN(iter1->first != iter2->first, false);
     HAYAKU_IF_RETURN(!iter1->second->alike(*(iter2->second)), false);
@@ -2067,19 +2067,19 @@ bool IndicatorImp::alike(const IndicatorImp &other) const {
     return eq;
   }
 
-  HAYAKU_IF_RETURN(bool(m_three) != bool(other.m_three) ||
-                       bool(m_left) != bool(other.m_left) ||
-                       bool(m_right) != bool(other.m_right),
+  HAYAKU_IF_RETURN(bool(three_) != bool(other.three_) ||
+                       bool(left_) != bool(other.left_) ||
+                       bool(right_) != bool(other.right_),
                    false);
-  HAYAKU_IF_RETURN(m_three && !m_three->alike(*other.m_three), false);
-  HAYAKU_IF_RETURN(m_left && !m_left->alike(*other.m_left), false);
-  HAYAKU_IF_RETURN(m_right && !m_right->alike(*other.m_right), false);
+  HAYAKU_IF_RETURN(three_ && !three_->alike(*other.three_), false);
+  HAYAKU_IF_RETURN(left_ && !left_->alike(*other.left_), false);
+  HAYAKU_IF_RETURN(right_ && !right_->alike(*other.right_), false);
 
   return true;
 }
 
 bool IndicatorImp::contains(const string &name) const {
-  HAYAKU_IF_RETURN(m_name == name, true);
+  HAYAKU_IF_RETURN(name_ == name, true);
   vector<IndicatorImpPtr> all_nodes;
   getAllSubNodes(all_nodes);
   for (const auto &node : all_nodes) {
@@ -2097,14 +2097,14 @@ void IndicatorImp::getAllSubNodes(vector<IndicatorImpPtr> &nodes) const {
 
   // Push the child nodes of the current node onto the stack (in the reverse
   // order to keep the original processing order)
-  if (m_three) {
-    nodeStack.push(m_three);
+  if (three_) {
+    nodeStack.push(three_);
   }
-  if (m_left) {
-    nodeStack.push(m_left);
+  if (left_) {
+    nodeStack.push(left_);
   }
-  if (m_right) {
-    nodeStack.push(m_right);
+  if (right_) {
+    nodeStack.push(right_);
   }
 
   // Process the nodes in the stack
@@ -2117,14 +2117,14 @@ void IndicatorImp::getAllSubNodes(vector<IndicatorImpPtr> &nodes) const {
 
     // Push the child nodes of the current node onto the stack (in the reverse
     // order to keep the original processing order)
-    if (current->m_three) {
-      nodeStack.push(current->m_three);
+    if (current->three_) {
+      nodeStack.push(current->three_);
     }
-    if (current->m_left) {
-      nodeStack.push(current->m_left);
+    if (current->left_) {
+      nodeStack.push(current->left_);
     }
-    if (current->m_right) {
-      nodeStack.push(current->m_right);
+    if (current->right_) {
+      nodeStack.push(current->right_);
     }
 
     // Add the internal node of the current node (if there is one)
@@ -2143,27 +2143,27 @@ void IndicatorImp::inner_repeatALikeNodes(vector<IndicatorImpPtr> &sub_nodes) {
     // Detached private roots (such as Indicator2InImp::m_ref_ind) have no
     // generic parent edge and cannot participate in m_left/m_right/m_three
     // replacement.
-    if (!cur || !cur->m_parent) {
+    if (!cur || !cur->parent_) {
       continue;
     }
     for (size_t j = i + 1; j < total; j++) {
       auto &node = sub_nodes[j];
-      if (!node || !node->m_parent || cur == node) {
+      if (!node || !node->parent_ || cur == node) {
         continue;
       }
 
       if (cur->alike(*node)) {
-        IndicatorImp *node_parent = node->m_parent;
-        if (node_parent->m_left == node) {
-          node_parent->m_left = cur;
+        IndicatorImp *node_parent = node->parent_;
+        if (node_parent->left_ == node) {
+          node_parent->left_ = cur;
         }
 
-        if (node_parent->m_right == node) {
-          node_parent->m_right = cur;
+        if (node_parent->right_ == node) {
+          node_parent->right_ = cur;
         }
 
-        if (node_parent->m_three == node) {
-          node_parent->m_three = cur;
+        if (node_parent->three_ == node) {
+          node_parent->three_ = cur;
         }
 
         tmp_nodes.clear();
@@ -2242,12 +2242,12 @@ void IndicatorImp::_printTree(int depth, bool isLast,
 
   // Print the node name
   std::string name = (show_long_name ? long_name() : this->name());
-  if (m_parent) {
-    if (this == m_parent->m_three.get()) {
+  if (parent_) {
+    if (this == parent_->three_.get()) {
       name = "[T]" + name;
-    } else if (this == m_parent->m_left.get()) {
+    } else if (this == parent_->left_.get()) {
       name = "[L]" + name;
-    } else if (this == m_parent->m_right.get()) {
+    } else if (this == parent_->right_.get()) {
       name = "[R]" + name;
     }
   }
@@ -2264,14 +2264,14 @@ void IndicatorImp::_printTree(int depth, bool isLast,
   std::cout << std::endl;
 
   std::vector<IndicatorImp *> children;
-  if (m_three) {
-    children.emplace_back(m_three.get());
+  if (three_) {
+    children.emplace_back(three_.get());
   }
-  if (m_left) {
-    children.emplace_back(m_left.get());
+  if (left_) {
+    children.emplace_back(left_.get());
   }
-  if (m_right) {
-    children.emplace_back(m_right.get());
+  if (right_) {
+    children.emplace_back(right_.get());
   }
 
   if (children.empty()) return;
@@ -2302,9 +2302,9 @@ vector<IndicatorImp *> IndicatorImp::getAllSubTrees() const {
   std::unordered_set<IndicatorImp *> tree_set;
   for (const auto &leaf : leaves) {
     const IndicatorImp *tree = leaf.get();
-    while (tree->m_parent) {
-      tree_set.insert(tree->m_parent);
-      tree = tree->m_parent;
+    while (tree->parent_) {
+      tree_set.insert(tree->parent_);
+      tree = tree->parent_;
     }
   }
 
@@ -2324,14 +2324,14 @@ size_t IndicatorImp::treeSize(IndicatorImp *tree) {
   HAYAKU_IF_RETURN(tree->isLeaf(), 1);
 
   size_t ret = 1;
-  if (tree->m_three != nullptr) {
-    ret += treeSize(tree->m_three.get());
+  if (tree->three_ != nullptr) {
+    ret += treeSize(tree->three_.get());
   }
-  if (tree->m_left != nullptr) {
-    ret += treeSize(tree->m_left.get());
+  if (tree->left_ != nullptr) {
+    ret += treeSize(tree->left_.get());
   }
-  if (tree->m_right != nullptr) {
-    ret += treeSize(tree->m_right.get());
+  if (tree->right_ != nullptr) {
+    ret += treeSize(tree->right_.get());
   }
   return ret;
 }
@@ -2339,14 +2339,14 @@ size_t IndicatorImp::treeSize(IndicatorImp *tree) {
 bool IndicatorImp::nodeInTree(IndicatorImp *node, IndicatorImp *tree) {
   HAYAKU_IF_RETURN(node == nullptr || tree == nullptr, false);
   HAYAKU_IF_RETURN(node == tree, true);
-  if (tree->m_three) {
-    HAYAKU_IF_RETURN(nodeInTree(node, tree->m_three.get()), true);
+  if (tree->three_) {
+    HAYAKU_IF_RETURN(nodeInTree(node, tree->three_.get()), true);
   }
-  if (tree->m_left) {
-    HAYAKU_IF_RETURN(nodeInTree(node, tree->m_left.get()), true);
+  if (tree->left_) {
+    HAYAKU_IF_RETURN(nodeInTree(node, tree->left_.get()), true);
   }
-  if (tree->m_right) {
-    HAYAKU_IF_RETURN(nodeInTree(node, tree->m_right.get()), true);
+  if (tree->right_) {
+    HAYAKU_IF_RETURN(nodeInTree(node, tree->right_.get()), true);
   }
   return false;
 }

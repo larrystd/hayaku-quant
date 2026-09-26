@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <functional>
 
-#include "../config.h"
+#include "config.h"
 
 namespace hayaku {
 
@@ -15,18 +15,18 @@ namespace hayaku {
 class HAYAKU_API AccountId {
  public:
   constexpr AccountId() noexcept = default;
-  explicit constexpr AccountId(std::uint64_t value) noexcept : m_value(value) {}
+  explicit constexpr AccountId(std::uint64_t value) noexcept : value_(value) {}
 
   [[nodiscard]] constexpr std::uint64_t value() const noexcept {
-    return m_value;
+    return value_;
   }
 
-  [[nodiscard]] constexpr bool valid() const noexcept { return m_value != 0; }
+  [[nodiscard]] constexpr bool valid() const noexcept { return value_ != 0; }
 
   friend constexpr bool operator==(AccountId, AccountId) noexcept = default;
 
  private:
-  std::uint64_t m_value{0};
+  std::uint64_t value_{0};
 };
 
 }  // namespace hayaku

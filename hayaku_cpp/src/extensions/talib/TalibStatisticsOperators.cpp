@@ -68,13 +68,13 @@ void TaBbands::_calculate(const Indicator& data) {
   size_t total = data.size();
   int lookback = TA_BBANDS_Lookback(n, nbdevup, nbdevdn, matype);
   if (lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = data.discard() + lookback;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + lookback;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -86,10 +86,10 @@ void TaBbands::_calculate(const Indicator& data) {
 
   int outBegIdx;
   int outNbElement;
-  ::TA_BBANDS(m_discard, total - 1, src, n, nbdevup, nbdevdn, matype,
-              &outBegIdx, &outNbElement, dst0 + m_discard, dst1 + m_discard,
-              dst2 + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_BBANDS(discard_, total - 1, src, n, nbdevup, nbdevdn, matype,
+              &outBegIdx, &outNbElement, dst0 + discard_, dst1 + discard_,
+              dst2 + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 
@@ -164,13 +164,13 @@ void TaStddev::_calculate(const Indicator& data) {
   size_t total = data.size();
   int lookback = TA_STDDEV_Lookback(n, nbdev);
   if (lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = data.discard() + lookback;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + lookback;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -179,9 +179,9 @@ void TaStddev::_calculate(const Indicator& data) {
 
   int outBegIdx;
   int outNbElement;
-  ::TA_STDDEV(m_discard, total - 1, src, n, nbdev, &outBegIdx, &outNbElement,
-              dst + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_STDDEV(discard_, total - 1, src, n, nbdev, &outBegIdx, &outNbElement,
+              dst + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 
@@ -253,13 +253,13 @@ void TaVar::_calculate(const Indicator& data) {
   size_t total = data.size();
   int lookback = TA_VAR_Lookback(n, nbdev);
   if (lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = data.discard() + lookback;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + lookback;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -268,9 +268,9 @@ void TaVar::_calculate(const Indicator& data) {
 
   int outBegIdx;
   int outNbElement;
-  ::TA_VAR(m_discard, total - 1, src, n, nbdev, &outBegIdx, &outNbElement,
-           dst + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_VAR(discard_, total - 1, src, n, nbdev, &outBegIdx, &outNbElement,
+           dst + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 

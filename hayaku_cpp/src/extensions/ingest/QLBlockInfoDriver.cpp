@@ -179,7 +179,7 @@ BlockList QLBlockInfoDriver::getBlockList(const string& category) {
 BlockList QLBlockInfoDriver::getBlockList() {
   BlockList result;
   HAYAKU_ERROR_IF_RETURN(!haveParam("dir"), result, "Missing 'dir' param!");
-  StringList category_list = m_params.getNameList();
+  StringList category_list = params_.getNameList();
   for (auto iter = category_list.begin(); iter != category_list.end(); ++iter) {
     if (*iter == "dir" || *iter == "type") continue;
 

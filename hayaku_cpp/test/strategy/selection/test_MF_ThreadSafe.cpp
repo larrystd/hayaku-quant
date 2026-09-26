@@ -40,18 +40,18 @@ using namespace hayaku;
  * the threads start together */
 class SpinBarrier {
  public:
-  explicit SpinBarrier(size_t n) : m_target(n) {}
+  explicit SpinBarrier(size_t n) : target_(n) {}
 
   void wait() {
-    m_arrived.fetch_add(1, std::memory_order_acq_rel);
-    while (m_arrived.load(std::memory_order_acquire) < m_target) {
+    arrived_.fetch_add(1, std::memory_order_acq_rel);
+    while (arrived_.load(std::memory_order_acquire) < target_) {
       std::this_thread::yield();
     }
   }
 
  private:
-  std::atomic<size_t> m_arrived{0};
-  size_t m_target;
+  std::atomic<size_t> arrived_{0};
+  size_t target_;
 };
 
 //-----------------------------------------------------------------------------
@@ -74,9 +74,9 @@ IndicatorList TestCountingMF::_calculate(
   std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
   // The equal weight combination (the same logic as EqualWeightMultiFactor)
-  size_t days_total = m_ref_dates.size();
-  size_t stk_count = m_stks.size();
-  size_t ind_count = m_factorset.size();
+  size_t days_total = ref_dates_.size();
+  size_t stk_count = stks_.size();
+  size_t ind_count = factorset_.size();
   return global_parallel_for_index(0, stk_count, [&](size_t si) {
     vector<price_t> sumByDate(days_total);
     vector<size_t> countByDate(days_total);
@@ -183,21 +183,21 @@ IndicatorList TestFailOnceMF::_calculate(
     // Maliciously corrupt the base protected derived state, simulating a
     // half-finished product left by a custom subclass; if clearCalculatedData
     // does not work, the second run sees the dirty data
-    m_date_index[s_dirty_date] = 999;
-    m_ic = PRICELIST(PriceList{12345.0});
+    date_index_[s_dirty_date] = 999;
+    ic_ = PRICELIST(PriceList{12345.0});
     throw std::runtime_error("simulated first-call failure");
   }
 
   // Check at the start of the second calculation: the dirty state left by the
   // first is cleaned
-  if (m_date_index.find(s_dirty_date) != m_date_index.end()) {
+  if (date_index_.find(s_dirty_date) != date_index_.end()) {
     s_saw_dirty.store(true, std::memory_order_relaxed);
   }
 
   // The equal weight combination
-  size_t days_total = m_ref_dates.size();
-  size_t stk_count = m_stks.size();
-  size_t ind_count = m_factorset.size();
+  size_t days_total = ref_dates_.size();
+  size_t stk_count = stks_.size();
+  size_t ind_count = factorset_.size();
   return global_parallel_for_index(0, stk_count, [&](size_t si) {
     vector<price_t> sumByDate(days_total);
     vector<size_t> countByDate(days_total);
@@ -306,8 +306,8 @@ class TestNestedMFB : public MultiFactorBase {
 
 IndicatorList TestNestedMFB::_calculate(
     const vector<IndicatorList>& all_stk_inds) {
-  size_t days_total = m_ref_dates.size();
-  size_t stk_count = m_stks.size();
+  size_t days_total = ref_dates_.size();
+  size_t stk_count = stks_.size();
   return global_parallel_for_index(0, stk_count, [&](size_t si) {
     vector<price_t> sumByDate(days_total);
     const auto& curStkInds = all_stk_inds[si];
@@ -327,21 +327,21 @@ class TestNestedMFA : public MultiFactorBase {
  public:
   TestNestedMFA() : MultiFactorBase("TestNestedMFA") {}
 
-  void setB(const std::shared_ptr<TestNestedMFB>& b) { m_b = b; }
+  void setB(const std::shared_ptr<TestNestedMFB>& b) { b_ = b; }
 
  private:
-  std::shared_ptr<TestNestedMFB> m_b;
+  std::shared_ptr<TestNestedMFB> b_;
 };
 
 IndicatorList TestNestedMFA::_calculate(
     const vector<IndicatorList>& all_stk_inds) {
   // Trigger the lazy calculation of B during the calculation of A: different
   // mutexes, no cycle
-  if (m_b && !m_ref_dates.empty()) {
-    (void)m_b->getScores(m_ref_dates[m_ref_dates.size() / 2]);
+  if (b_ && !ref_dates_.empty()) {
+    (void)b_->getScores(ref_dates_[ref_dates_.size() / 2]);
   }
-  size_t days_total = m_ref_dates.size();
-  size_t stk_count = m_stks.size();
+  size_t days_total = ref_dates_.size();
+  size_t stk_count = stks_.size();
   return global_parallel_for_index(0, stk_count, [&](size_t si) {
     vector<price_t> sumByDate(days_total);
     const auto& curStkInds = all_stk_inds[si];

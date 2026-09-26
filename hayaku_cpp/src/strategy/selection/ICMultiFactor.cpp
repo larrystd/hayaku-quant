@@ -41,9 +41,9 @@ void ICMultiFactor::_checkParam(const string& name) const {
 
 IndicatorList ICMultiFactor::_calculate(
     const vector<IndicatorList>& all_stk_inds) {
-  size_t days_total = m_ref_dates.size();
-  size_t stk_count = m_stks.size();
-  size_t ind_count = m_factorset.size();
+  size_t days_total = ref_dates_.size();
+  size_t stk_count = stks_.size();
+  size_t ind_count = factorset_.size();
 
   int ic_n = getParam<int>("ic_n");
   int ic_rolling_n = getParam<int>("ic_rolling_n");

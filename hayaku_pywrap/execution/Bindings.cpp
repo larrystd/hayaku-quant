@@ -817,11 +817,11 @@ class PyTradeCostBase : public TradeCostBase {
 
  public:
   PyTradeCostBase() : TradeCostBase("PyTradeCostBase") {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PyTradeCostBase(const string& name) : TradeCostBase(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   CostRecord getBuyCost(const Datetime& datetime, const Stock& stock,
@@ -1324,4 +1324,6 @@ void export_execution_main(py::module& m) {
   export_ExecutionEngine(m);
 }
 
-void bindExecution(py::module_& m) { export_execution_main(m); }
+void bindExecution(py::module_& m) {
+  export_execution_main(m);
+}

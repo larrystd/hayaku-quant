@@ -38,45 +38,45 @@ class NodeServer {
 
  public:
   NodeServer() = default;
-  explicit NodeServer(const std::string& addr) : m_addr(addr) {}
+  explicit NodeServer(const std::string& addr) : addr_(addr) {}
   virtual ~NodeServer() { stop(); }
 
-  void setAddr(const std::string& addr) { m_addr = addr; }
+  void setAddr(const std::string& addr) { addr_ = addr; }
 
   void regHandle(const std::string& cmd,
                  const std::function<json(json&& req)>& handle) {
-    m_handles[cmd] = handle;
+    handles_[cmd] = handle;
   }
 
   void regHandle(const std::string& cmd,
                  std::function<json(json&& req)>&& handle) {
-    m_handles[cmd] = std::move(handle);
+    handles_[cmd] = std::move(handle);
   }
 
   void start(size_t max_parrel = 128) {
-    CLS_CHECK(!m_addr.empty(), "You must set NodeServer's addr first!");
+    CLS_CHECK(!addr_.empty(), "You must set NodeServer's addr first!");
 
     // Start the node server
-    int rv = nng_rep0_open(&m_socket);
+    int rv = nng_rep0_open(&socket_);
     CLS_CHECK(0 == rv, "Failed open server socket! {}", nng_strerror(rv));
-    rv = nng_listen(m_socket, m_addr.c_str(), &m_listener, 0);
-    CLS_CHECK(0 == rv, "Failed listen node server socket ({})! {}", m_addr,
+    rv = nng_listen(socket_, addr_.c_str(), &listener_, 0);
+    CLS_CHECK(0 == rv, "Failed listen node server socket ({})! {}", addr_,
               nng_strerror(rv));
-    CLS_TRACE("channel lisenter server: {}", m_addr);
+    CLS_TRACE("channel lisenter server: {}", addr_);
 
-    m_works.resize(max_parrel);
-    for (size_t i = 0, total = m_works.size(); i < total; i++) {
-      Work* w = &m_works[i];
+    works_.resize(max_parrel);
+    for (size_t i = 0, total = works_.size(); i < total; i++) {
+      Work* w = &works_[i];
       rv = nng_aio_alloc(&w->aio, _serverCallback, w);
       CLS_CHECK(0 == rv, "Failed create work {}! {}", i, nng_strerror(rv));
-      rv = nng_ctx_open(&w->ctx, m_socket);
+      rv = nng_ctx_open(&w->ctx, socket_);
       CLS_CHECK(0 == rv, "Failed open ctx {}! {}", i, nng_strerror(rv));
       w->state = Work::INIT;
       w->server = this;
     }
 
-    for (size_t i = 0, total = m_works.size(); i < total; i++) {
-      _serverCallback(&m_works[i]);
+    for (size_t i = 0, total = works_.size(); i < total; i++) {
+      _serverCallback(&works_[i]);
     }
   }
 
@@ -87,9 +87,9 @@ class NodeServer {
   }
 
   void stop() {
-    HAYAKU_IF_RETURN(m_works.empty(), void());
-    for (size_t i = 0, total = m_works.size(); i < total; i++) {
-      Work* w = &m_works[i];
+    HAYAKU_IF_RETURN(works_.empty(), void());
+    for (size_t i = 0, total = works_.size(); i < total; i++) {
+      Work* w = &works_[i];
       w->server = nullptr;
       w->state = Work::FINISH;
       if (w->aio) {
@@ -101,9 +101,9 @@ class NodeServer {
     }
 
     // Close the socket service node
-    nng_listener_close(m_listener);
-    nng_close(m_socket);
-    m_works.clear();
+    nng_listener_close(listener_);
+    nng_close(socket_);
+    works_.clear();
     CLS_INFO("stopped node server.");
   }
 
@@ -166,8 +166,8 @@ class NodeServer {
       std::string cmd = req["cmd"].is_number()
                             ? fmt::format("{}", req["cmd"].get<int>())
                             : req["cmd"].get<std::string>();
-      auto iter = server->m_handles.find(cmd);
-      NODE_CHECK(iter != server->m_handles.end(), NodeErrorCode::INVALID_CMD,
+      auto iter = server->handles_.find(cmd);
+      NODE_CHECK(iter != server->handles_.end(), NodeErrorCode::INVALID_CMD,
                  "The server does not know how to process the message: {}",
                  cmd);
 
@@ -241,11 +241,11 @@ class NodeServer {
   }
 
  private:
-  std::string m_addr;
-  nng_socket m_socket;
-  nng_listener m_listener;
-  std::vector<Work> m_works;
-  std::unordered_map<std::string, std::function<json(json&& req)>> m_handles;
+  std::string addr_;
+  nng_socket socket_;
+  nng_listener listener_;
+  std::vector<Work> works_;
+  std::unordered_map<std::string, std::function<json(json&& req)>> handles_;
 };
 
 }  // namespace hayaku

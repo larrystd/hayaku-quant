@@ -72,11 +72,11 @@ struct MySQLConnect::Impl {
 };
 
 MySQLConnect::MySQLConnect(const Parameter& param)
-    : DBConnectBase(param), m_impl(std::make_unique<Impl>()) {
+    : DBConnectBase(param), impl_(std::make_unique<Impl>()) {
   // Get the prepared statement cache size and create the cache
   int64_t cache_size = tryGetParam<int64_t>("statement_cache_size", 3);
-  m_params.set("statement_cache_size", cache_size);
-  m_impl->statement_cache = std::make_unique<
+  params_.set("statement_cache_size", cache_size);
+  impl_->statement_cache = std::make_unique<
       LruCache<std::string, std::shared_ptr<boost::mysql::statement>>>(
       cache_size);
   connect();
@@ -85,7 +85,7 @@ MySQLConnect::MySQLConnect(const Parameter& param)
 MySQLConnect::~MySQLConnect() { close(); }
 
 void* MySQLConnect::getRawConnection() const noexcept {
-  return m_impl->conn.get();
+  return impl_->conn.get();
 }
 
 bool MySQLConnect::tryConnect() noexcept {
@@ -109,13 +109,13 @@ void MySQLConnect::connect() {
     unsigned short port =
         static_cast<unsigned short>(tryGetParam<int>("port", 3306));
 
-    m_impl->conn =
-        std::make_unique<boost::mysql::tcp_connection>(m_impl->io_context);
+    impl_->conn =
+        std::make_unique<boost::mysql::tcp_connection>(impl_->io_context);
     boost::mysql::handshake_params params(usr, pwd, database);
 
     boost::mysql::error_code ec;
     boost::mysql::diagnostics diag;
-    m_impl->conn->connect(boost::asio::ip::tcp::endpoint(
+    impl_->conn->connect(boost::asio::ip::tcp::endpoint(
                               boost::asio::ip::make_address(host), port),
                           params, ec, diag);
 
@@ -143,22 +143,22 @@ void MySQLConnect::connect() {
 }
 
 void MySQLConnect::close() {
-  if (m_impl && m_impl->conn) {
-    m_impl->statement_cache->clear();
-    m_impl->conn->close();
-    m_impl->conn.reset();
+  if (impl_ && impl_->conn) {
+    impl_->statement_cache->clear();
+    impl_->conn->close();
+    impl_->conn.reset();
   }
 }
 
 bool MySQLConnect::ping() {
-  HAYAKU_ERROR_IF_RETURN((!m_impl || !m_impl->conn) && !tryConnect(), false,
+  HAYAKU_ERROR_IF_RETURN((!impl_ || !impl_->conn) && !tryConnect(), false,
                          "Failed connect to mysql!");
 
   try {
     boost::mysql::error_code ec;
     boost::mysql::diagnostics diag;
     boost::mysql::results results;
-    m_impl->conn->execute("SELECT 1", results, ec, diag);
+    impl_->conn->execute("SELECT 1", results, ec, diag);
 
     // Try to reconnect when the ping fails
     if (ec && !tryConnect()) [[unlikely]] {
@@ -179,19 +179,19 @@ int64_t MySQLConnect::exec(const std::string& sql_string) {
   HAYAKU_DEBUG(sql_string);
 #endif
 
-  if (!m_impl || !m_impl->conn) {
+  if (!impl_ || !impl_->conn) {
     SQL_CHECK(tryConnect(), -1, "Failed connect to mysql!");
   }
 
   boost::mysql::error_code ec;
   boost::mysql::diagnostics diag;
   boost::mysql::results results;
-  m_impl->conn->execute(sql_string, results, ec, diag);
+  impl_->conn->execute(sql_string, results, ec, diag);
 
   if (ec) [[unlikely]] {
     // The execution failed, try to reconnect and execute again
     if (ping()) {
-      m_impl->conn->execute(sql_string, results, ec, diag);
+      impl_->conn->execute(sql_string, results, ec, diag);
     }
 
     if (ec) {

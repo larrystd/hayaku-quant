@@ -7,9 +7,9 @@
  */
 
 #include <common/Os.h>
-#include <doctest/doctest.h>
 
 #include "common/Log.h"
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 

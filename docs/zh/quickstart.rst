@@ -42,5 +42,5 @@ Hayaku 通过显式 Session 加载数据。导入 ``hayaku`` 只定义类型，�
         session.wait_ready()
         print(session.execution.snapshot())
 
-策略的组合和运行方式见 :doc:`strategy`。可选的 ``hayaku.interactive``
+策略的组合和运行方式见 :doc:`strategy`。可选的 ``hayaku.application.interactive``
 模块提供更广的交互式研究接口，仅在显式导入时加载绘图等额外依赖。

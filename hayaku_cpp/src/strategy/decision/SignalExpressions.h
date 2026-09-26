@@ -28,8 +28,8 @@ class OperatorSignal : public SignalBase {
   void sub_sg_calculate(SignalPtr& sg, const KData& kdata);
 
  protected:
-  SignalPtr m_sg1;
-  SignalPtr m_sg2;
+  SignalPtr sg1_;
+  SignalPtr sg2_;
 
 //============================================
 // Serialization support
@@ -39,8 +39,8 @@ class OperatorSignal : public SignalBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SignalBase);
-    ar& BOOST_SERIALIZATION_NVP(m_sg1);
-    ar& BOOST_SERIALIZATION_NVP(m_sg2);
+    ar& boost::serialization::make_nvp("m_sg1", sg1_);
+    ar& boost::serialization::make_nvp("m_sg2", sg2_);
   }
 #endif
 };
@@ -52,7 +52,7 @@ class OperatorSignal : public SignalBase {
       : OperatorSignal(name, sg1, sg2) {}               \
   virtual ~classname() override {}                      \
   virtual SignalPtr _clone() override {                 \
-    return make_shared<classname>(m_sg1, m_sg2);        \
+    return make_shared<classname>(sg1_, sg2_);        \
   }                                                     \
   virtual void _calculate(const KData&) override;
 
@@ -93,9 +93,9 @@ class OperatorValueSignal : public SignalBase {
   virtual void _calculate(const KData& kdata) override {}
 
  protected:
-  double m_value{0.0};
-  SignalPtr m_sg;
-  int m_mode{
+  double value_{0.0};
+  SignalPtr sg_;
+  int mode_{
       0};  // It is valid for - and / only: 0: (sg, value), 1: (value, sg)
 
 //============================================
@@ -106,9 +106,9 @@ class OperatorValueSignal : public SignalBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SignalBase);
-    ar& BOOST_SERIALIZATION_NVP(m_sg);
-    ar& BOOST_SERIALIZATION_NVP(m_value);
-    ar& BOOST_SERIALIZATION_NVP(m_mode);
+    ar& boost::serialization::make_nvp("m_sg", sg_);
+    ar& boost::serialization::make_nvp("m_value", value_);
+    ar& boost::serialization::make_nvp("m_mode", mode_);
   }
 #endif
 };
@@ -120,7 +120,7 @@ class OperatorValueSignal : public SignalBase {
       : OperatorValueSignal(name, sg, value) {}    \
   virtual ~classname() override {}                 \
   virtual SignalPtr _clone() override {            \
-    return make_shared<classname>(m_sg, m_value);  \
+    return make_shared<classname>(sg_, value_);  \
   }                                                \
   virtual void _calculate(const KData&) override;
 

@@ -28,19 +28,19 @@ static int sqlite_busy_call_back_in_async(void *ptr, int count) {
 
 // The Pimpl implementation struct
 struct AsyncSQLiteConnect::Impl {
-  sqlite3 *m_db = nullptr;
-  std::string m_dbname;
+  sqlite3 *db_ = nullptr;
+  std::string dbname_;
   bool initialized = false;
-  ThreadPool m_thread_pool{
+  ThreadPool thread_pool_{
       1};  // A single thread pool used to run the synchronous SQLite operations
 };
 
 AsyncSQLiteConnect::AsyncSQLiteConnect(const Parameter &param)
-    : AsyncDBConnectBase(param), m_impl(std::make_unique<Impl>()) {
+    : AsyncDBConnectBase(param), impl_(std::make_unique<Impl>()) {
   // Note: co_await cannot be used in the constructor, the connection is
   // established at the first use
   try {
-    m_impl->m_dbname = getParam<std::string>("db");
+    impl_->dbname_ = getParam<std::string>("db");
   } catch (std::out_of_range &e) {
     HAYAKU_FATAL("Can't get database name! {}", e.what());
     throw;
@@ -50,16 +50,16 @@ AsyncSQLiteConnect::AsyncSQLiteConnect(const Parameter &param)
 AsyncSQLiteConnect::~AsyncSQLiteConnect() { close(); }
 
 void *AsyncSQLiteConnect::getRawConnection() const noexcept {
-  return m_impl->m_db;
+  return impl_->db_;
 }
 
 ThreadPool::ExecutorWrapper AsyncSQLiteConnect::getThreadPoolExecutor()
     const noexcept {
-  return m_impl->m_thread_pool.executor();
+  return impl_->thread_pool_.executor();
 }
 
 net::awaitable<void> AsyncSQLiteConnect::connect() {
-  if (m_impl->initialized) {
+  if (impl_->initialized) {
     co_return;
   }
 
@@ -73,15 +73,15 @@ net::awaitable<void> AsyncSQLiteConnect::connect() {
     }
   };
 
-  int rc = co_await co_run(m_impl->m_thread_pool.executor(), init_func);
+  int rc = co_await co_run(impl_->thread_pool_.executor(), init_func);
 
   SQL_CHECK(
       rc == SQLITE_OK, rc, "{}",
-      m_impl->m_db ? sqlite3_errmsg(m_impl->m_db) : "Failed to open database");
+      impl_->db_ ? sqlite3_errmsg(impl_->db_) : "Failed to open database");
 }
 
 void AsyncSQLiteConnect::_connect() {
-  if (m_impl->initialized) {
+  if (impl_->initialized) {
     return;
   }
 
@@ -99,41 +99,41 @@ void AsyncSQLiteConnect::_connect() {
 
   // 1. Open the database
   int rc =
-      sqlite3_open_v2(m_impl->m_dbname.c_str(), &m_impl->m_db, flags, NULL);
+      sqlite3_open_v2(impl_->dbname_.c_str(), &impl_->db_, flags, NULL);
   SQL_CHECK(
       rc == SQLITE_OK, rc, "{}",
-      m_impl->m_db ? sqlite3_errmsg(m_impl->m_db) : "Failed to open database");
+      impl_->db_ ? sqlite3_errmsg(impl_->db_) : "Failed to open database");
 
 #if HAYAKU_ENABLE_SQLCIPHER
   // 2. Set the key (if needed)
   if (!key.empty()) {
-    rc = sqlite3_key(m_impl->m_db, key.c_str(), static_cast<int>(key.size()));
-    SQL_CHECK(rc == SQLITE_OK, rc, "{}", sqlite3_errmsg(m_impl->m_db));
+    rc = sqlite3_key(impl_->db_, key.c_str(), static_cast<int>(key.size()));
+    SQL_CHECK(rc == SQLITE_OK, rc, "{}", sqlite3_errmsg(impl_->db_));
   }
 #endif
 
   // 3. Set the busy handler
-  sqlite3_busy_handler(m_impl->m_db, sqlite_busy_call_back_in_async,
-                       (void *)m_impl->m_db);
+  sqlite3_busy_handler(impl_->db_, sqlite_busy_call_back_in_async,
+                       (void *)impl_->db_);
 
   // 4. Enable the extended error codes
   if (sqlite3_libversion_number() >= 3003008) {
-    sqlite3_extended_result_codes(m_impl->m_db, true);
+    sqlite3_extended_result_codes(impl_->db_, true);
   }
 
-  m_impl->initialized = true;
+  impl_->initialized = true;
 }
 
 void AsyncSQLiteConnect::close() {
-  if (m_impl && m_impl->m_db) {
-    sqlite3_close(m_impl->m_db);
-    m_impl->m_db = nullptr;
-    m_impl->initialized = false;
+  if (impl_ && impl_->db_) {
+    sqlite3_close(impl_->db_);
+    impl_->db_ = nullptr;
+    impl_->initialized = false;
   }
 }
 
 net::awaitable<bool> AsyncSQLiteConnect::ping() {
-  if (!m_impl || !m_impl->m_db) {
+  if (!impl_ || !impl_->db_) {
     try {
       co_await connect();
     } catch (const std::exception &e) {
@@ -146,10 +146,10 @@ net::awaitable<bool> AsyncSQLiteConnect::ping() {
   // sqlite file, the SQLITE_NOTADB(26) error is reported only when an sql
   // statement is executed
   auto ping_func = [this]() -> int {
-    return sqlite3_exec(m_impl->m_db, "PRAGMA synchronous;", NULL, NULL, NULL);
+    return sqlite3_exec(impl_->db_, "PRAGMA synchronous;", NULL, NULL, NULL);
   };
 
-  int rc = co_await co_run(m_impl->m_thread_pool.executor(), ping_func);
+  int rc = co_await co_run(impl_->thread_pool_.executor(), ping_func);
   co_return (rc == SQLITE_OK);
 }
 
@@ -159,21 +159,21 @@ net::awaitable<int64_t> AsyncSQLiteConnect::exec(
   HAYAKU_DEBUG(sql_string);
 #endif
 
-  if (!m_impl || !m_impl->m_db) {
+  if (!impl_ || !impl_->db_) {
     co_await connect();
   }
 
   auto exec_func = [this, &sql_string]() -> std::pair<int, int> {
-    int rc = sqlite3_exec(m_impl->m_db, sql_string.c_str(), NULL, NULL, NULL);
-    int affect_rows = sqlite3_changes(m_impl->m_db);
+    int rc = sqlite3_exec(impl_->db_, sql_string.c_str(), NULL, NULL, NULL);
+    int affect_rows = sqlite3_changes(impl_->db_);
     return {rc, affect_rows};
   };
 
   auto [rc, affect_rows] =
-      co_await co_run(m_impl->m_thread_pool.executor(), exec_func);
+      co_await co_run(impl_->thread_pool_.executor(), exec_func);
 
   SQL_CHECK(rc == SQLITE_OK, rc, "SQL error: {}! ({})",
-            m_impl->m_db ? sqlite3_errmsg(m_impl->m_db) : "Unknown error",
+            impl_->db_ ? sqlite3_errmsg(impl_->db_) : "Unknown error",
             sql_string);
 
   co_return (affect_rows < 0 ? 0 : affect_rows);
@@ -181,7 +181,7 @@ net::awaitable<int64_t> AsyncSQLiteConnect::exec(
 
 net::awaitable<AsyncSQLStatementPtr> AsyncSQLiteConnect::getStatement(
     const std::string &sql_statement) {
-  if (!m_impl || !m_impl->m_db) {
+  if (!impl_ || !impl_->db_) {
     co_await connect();
   }
 
@@ -238,7 +238,7 @@ net::awaitable<void> AsyncSQLiteConnect::rollback() noexcept {
 }
 
 net::awaitable<bool> AsyncSQLiteConnect::check(bool quick) {
-  if (!m_impl || !m_impl->m_db) {
+  if (!impl_ || !impl_->db_) {
     co_await connect();
   }
 
@@ -249,7 +249,7 @@ net::awaitable<bool> AsyncSQLiteConnect::check(bool quick) {
     bool good = false;
     sqlite3_stmt *integrity = NULL;
 
-    if (sqlite3_prepare_v2(m_impl->m_db, check_pragma.c_str(), -1, &integrity,
+    if (sqlite3_prepare_v2(impl_->db_, check_pragma.c_str(), -1, &integrity,
                            NULL) == SQLITE_OK) {
       while (sqlite3_step(integrity) == SQLITE_ROW) {
         const unsigned char *result = sqlite3_column_text(integrity, 0);
@@ -264,13 +264,13 @@ net::awaitable<bool> AsyncSQLiteConnect::check(bool quick) {
     return good;
   };
 
-  bool result = co_await co_run(m_impl->m_thread_pool.executor(), check_func);
+  bool result = co_await co_run(impl_->thread_pool_.executor(), check_func);
   co_return result;
 }
 
 net::awaitable<bool> AsyncSQLiteConnect::backup(const char *zFilename,
                                                 int n_page, int step_sleep) {
-  if (!m_impl || !m_impl->m_db) {
+  if (!impl_ || !impl_->db_) {
     co_await connect();
   }
 
@@ -280,7 +280,7 @@ net::awaitable<bool> AsyncSQLiteConnect::backup(const char *zFilename,
     if (rc == SQLITE_OK) {
       /* Open the sqlite3_backup object used to accomplish the transfer */
       sqlite3_backup *pBackup =
-          sqlite3_backup_init(pFile, "main", m_impl->m_db, "main");
+          sqlite3_backup_init(pFile, "main", impl_->db_, "main");
       if (pBackup) {
         if (n_page <= 0) {
           sqlite3_backup_step(pBackup, -1);
@@ -305,7 +305,7 @@ net::awaitable<bool> AsyncSQLiteConnect::backup(const char *zFilename,
     return rc == SQLITE_OK;
   };
 
-  bool result = co_await co_run(m_impl->m_thread_pool.executor(), backup_func);
+  bool result = co_await co_run(impl_->thread_pool_.executor(), backup_func);
   co_return result;
 }
 

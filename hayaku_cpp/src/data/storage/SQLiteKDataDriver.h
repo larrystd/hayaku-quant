@@ -53,8 +53,8 @@ class SQLiteKDataDriver : public KDataDriver {
 
  private:
   unordered_map<string, SQLiteConnectPtr>
-      m_sqlite_connection_map;  // key: exchange+code
-  bool m_ifConvert = false;
+      sqlite_connection_map_;  // key: exchange+code
+  bool if_convert_ = false;
 };
 
 } /* namespace hayaku */

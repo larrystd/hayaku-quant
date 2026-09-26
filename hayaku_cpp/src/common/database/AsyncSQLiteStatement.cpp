@@ -19,45 +19,45 @@ namespace hayaku {
 
 // The Pimpl implementation struct
 struct AsyncSQLiteStatement::Impl {
-  sqlite3 *m_db = nullptr;
-  sqlite3_stmt *m_stmt = nullptr;
-  bool m_needs_reset = false;
-  int m_step_status = SQLITE_DONE;
-  bool m_at_first_step = true;
-  AsyncSQLiteConnect *m_connect =
+  sqlite3 *db_ = nullptr;
+  sqlite3_stmt *stmt_ = nullptr;
+  bool needs_reset_ = false;
+  int step_status_ = SQLITE_DONE;
+  bool at_first_step_ = true;
+  AsyncSQLiteConnect *connect_ =
       nullptr;  // Hold the connection pointer to get the thread pool executor
 
   Impl(AsyncSQLiteConnect *connect, sqlite3 *db, sqlite3_stmt *stmt)
-      : m_db(db), m_stmt(stmt), m_connect(connect) {}
+      : db_(db), stmt_(stmt), connect_(connect) {}
 
   ~Impl() {
-    if (m_stmt) {
-      sqlite3_finalize(m_stmt);
+    if (stmt_) {
+      sqlite3_finalize(stmt_);
     }
   }
 
   void reset() {
-    if (m_needs_reset) {
-      int status = sqlite3_reset(m_stmt);
+    if (needs_reset_) {
+      int status = sqlite3_reset(stmt_);
       if (status != SQLITE_OK) {
-        m_step_status = SQLITE_DONE;
-        SQL_THROW(status, "{}", sqlite3_errmsg(m_db));
+        step_status_ = SQLITE_DONE;
+        SQL_THROW(status, "{}", sqlite3_errmsg(db_));
       }
-      m_needs_reset = false;
-      m_step_status = SQLITE_DONE;
-      m_at_first_step = true;
+      needs_reset_ = false;
+      step_status_ = SQLITE_DONE;
+      at_first_step_ = true;
     }
   }
 
   // Get the thread pool executor from the connection
   ThreadPool::ExecutorWrapper getExecutor() const {
-    return m_connect->getThreadPoolExecutor();
+    return connect_->getThreadPoolExecutor();
   }
 };
 
 AsyncSQLiteStatement::AsyncSQLiteStatement(AsyncSQLiteConnect *connect,
                                            const std::string &sql)
-    : AsyncSQLStatementBase(connect, sql), m_impl(nullptr) {
+    : AsyncSQLStatementBase(connect, sql), impl_(nullptr) {
   HAYAKU_CHECK(connect != nullptr, "Invalid AsyncSQLiteConnect");
 
   // Make sure the connection is initialized (a synchronous operation)
@@ -81,7 +81,7 @@ AsyncSQLiteStatement::AsyncSQLiteStatement(AsyncSQLiteConnect *connect,
 
   HAYAKU_CHECK(stmt != nullptr, "Invalid SQL statement: {}", sql);
 
-  m_impl = std::make_unique<Impl>(connect, db, stmt);
+  impl_ = std::make_unique<Impl>(connect, db, stmt);
 }
 
 AsyncSQLiteStatement::~AsyncSQLiteStatement() {
@@ -89,73 +89,73 @@ AsyncSQLiteStatement::~AsyncSQLiteStatement() {
 }
 
 void AsyncSQLiteStatement::_reset() {
-  if (m_impl) {
-    m_impl->reset();
+  if (impl_) {
+    impl_->reset();
   }
 }
 
 net::awaitable<void> AsyncSQLiteStatement::sub_exec() {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
 
   // Merge reset and step into a single co_run
   auto exec_func = [this]() -> int {
     // 1. Reset the statement
-    if (m_impl->m_needs_reset) {
-      int status = sqlite3_reset(m_impl->m_stmt);
+    if (impl_->needs_reset_) {
+      int status = sqlite3_reset(impl_->stmt_);
       if (status != SQLITE_OK) {
         return status;
       }
-      m_impl->m_needs_reset = false;
-      m_impl->m_step_status = SQLITE_DONE;
-      m_impl->m_at_first_step = true;
+      impl_->needs_reset_ = false;
+      impl_->step_status_ = SQLITE_DONE;
+      impl_->at_first_step_ = true;
     }
 
     // 2. Execute the first step
-    m_impl->m_step_status = sqlite3_step(m_impl->m_stmt);
-    m_impl->m_needs_reset = true;
+    impl_->step_status_ = sqlite3_step(impl_->stmt_);
+    impl_->needs_reset_ = true;
 
-    if (m_impl->m_step_status != SQLITE_DONE &&
-        m_impl->m_step_status != SQLITE_ROW) {
-      return m_impl->m_step_status;
+    if (impl_->step_status_ != SQLITE_DONE &&
+        impl_->step_status_ != SQLITE_ROW) {
+      return impl_->step_status_;
     }
     return SQLITE_OK;
   };
 
-  int status = co_await co_run(m_impl->getExecutor(), exec_func);
+  int status = co_await co_run(impl_->getExecutor(), exec_func);
 
   if (status != SQLITE_OK) {
-    SQL_THROW(status, "{}", sqlite3_errmsg(m_impl->m_db));
+    SQL_THROW(status, "{}", sqlite3_errmsg(impl_->db_));
   }
   co_return;
 }
 
 net::awaitable<bool> AsyncSQLiteStatement::sub_moveNext() {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
 
   // moveNext is a local state check and can return synchronously directly
-  if (m_impl->m_step_status == SQLITE_ROW) {
-    if (m_impl->m_at_first_step) {
-      m_impl->m_at_first_step = false;
+  if (impl_->step_status_ == SQLITE_ROW) {
+    if (impl_->at_first_step_) {
+      impl_->at_first_step_ = false;
       co_return true;
     } else {
       // sqlite3_step needs to be executed, this is an I/O operation
       auto step_func = [this]() -> int {
-        m_impl->m_step_status = sqlite3_step(m_impl->m_stmt);
-        return m_impl->m_step_status;
+        impl_->step_status_ = sqlite3_step(impl_->stmt_);
+        return impl_->step_status_;
       };
 
-      int status = co_await co_run(m_impl->getExecutor(), step_func);
+      int status = co_await co_run(impl_->getExecutor(), step_func);
 
       if (status == SQLITE_DONE) {
         co_return false;
       } else if (status == SQLITE_ROW) {
         co_return true;
       } else {
-        SQL_THROW(status, "{}", sqlite3_errmsg(m_impl->m_db));
+        SQL_THROW(status, "{}", sqlite3_errmsg(impl_->db_));
       }
     }
   } else {
@@ -164,47 +164,47 @@ net::awaitable<bool> AsyncSQLiteStatement::sub_moveNext() {
 }
 
 uint64_t AsyncSQLiteStatement::sub_getLastRowid() {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
-  return sqlite3_last_insert_rowid(m_impl->m_db);
+  return sqlite3_last_insert_rowid(impl_->db_);
 }
 
 int AsyncSQLiteStatement::sub_getNumColumns() const {
-  if (!m_impl) {
+  if (!impl_) {
     return 0;
   }
-  return (m_impl->m_at_first_step == false) &&
-                 (m_impl->m_step_status == SQLITE_ROW)
-             ? sqlite3_column_count(m_impl->m_stmt)
+  return (impl_->at_first_step_ == false) &&
+                 (impl_->step_status_ == SQLITE_ROW)
+             ? sqlite3_column_count(impl_->stmt_)
              : 0;
 }
 
 void AsyncSQLiteStatement::sub_bindNull(int idx) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
   _reset();
-  int status = sqlite3_bind_null(m_impl->m_stmt, idx + 1);
-  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(m_impl->m_db));
+  int status = sqlite3_bind_null(impl_->stmt_, idx + 1);
+  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(impl_->db_));
 }
 
 void AsyncSQLiteStatement::sub_bindInt(int idx, int64_t value) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
   _reset();
-  int status = sqlite3_bind_int64(m_impl->m_stmt, idx + 1, value);
-  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(m_impl->m_db));
+  int status = sqlite3_bind_int64(impl_->stmt_, idx + 1, value);
+  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(impl_->db_));
 }
 
 void AsyncSQLiteStatement::sub_bindDouble(int idx, double item) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
   _reset();
-  int status = sqlite3_bind_double(m_impl->m_stmt, idx + 1, item);
-  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(m_impl->m_db));
+  int status = sqlite3_bind_double(impl_->stmt_, idx + 1, item);
+  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(impl_->db_));
 }
 
 void AsyncSQLiteStatement::sub_bindDatetime(int idx, const Datetime &item) {
@@ -216,61 +216,61 @@ void AsyncSQLiteStatement::sub_bindDatetime(int idx, const Datetime &item) {
 }
 
 void AsyncSQLiteStatement::sub_bindText(int idx, const std::string &item) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
   _reset();
   int status =
-      sqlite3_bind_text(m_impl->m_stmt, idx + 1, item.c_str(),
+      sqlite3_bind_text(impl_->stmt_, idx + 1, item.c_str(),
                         static_cast<int>(item.size()), SQLITE_TRANSIENT);
-  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(m_impl->m_db));
+  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(impl_->db_));
 }
 
 void AsyncSQLiteStatement::sub_bindText(int idx, const char *item, size_t len) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
   _reset();
-  int status = sqlite3_bind_text(m_impl->m_stmt, idx + 1, item,
+  int status = sqlite3_bind_text(impl_->stmt_, idx + 1, item,
                                  static_cast<int>(len), SQLITE_TRANSIENT);
-  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(m_impl->m_db));
+  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(impl_->db_));
 }
 
 void AsyncSQLiteStatement::sub_bindBlob(int idx, const std::string &item) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
   _reset();
   int status =
-      sqlite3_bind_blob(m_impl->m_stmt, idx + 1, item.data(),
+      sqlite3_bind_blob(impl_->stmt_, idx + 1, item.data(),
                         static_cast<int>(item.size()), SQLITE_TRANSIENT);
-  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(m_impl->m_db));
+  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(impl_->db_));
 }
 
 void AsyncSQLiteStatement::sub_bindBlob(int idx,
                                         const std::vector<char> &item) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
   _reset();
   int status =
-      sqlite3_bind_blob(m_impl->m_stmt, idx + 1, item.data(),
+      sqlite3_bind_blob(impl_->stmt_, idx + 1, item.data(),
                         static_cast<int>(item.size()), SQLITE_TRANSIENT);
-  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(m_impl->m_db));
+  SQL_CHECK(status == SQLITE_OK, status, "{}", sqlite3_errmsg(impl_->db_));
 }
 
 void AsyncSQLiteStatement::sub_getColumnAsInt64(int idx, int64_t &item) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
-  item = sqlite3_column_int64(m_impl->m_stmt, idx);
+  item = sqlite3_column_int64(impl_->stmt_, idx);
 }
 
 void AsyncSQLiteStatement::sub_getColumnAsDouble(int idx, double &item) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
-  item = sqlite3_column_double(m_impl->m_stmt, idx);
+  item = sqlite3_column_double(impl_->stmt_, idx);
 }
 
 void AsyncSQLiteStatement::sub_getColumnAsDatetime(int idx, Datetime &item) {
@@ -280,38 +280,38 @@ void AsyncSQLiteStatement::sub_getColumnAsDatetime(int idx, Datetime &item) {
 }
 
 void AsyncSQLiteStatement::sub_getColumnAsText(int idx, std::string &item) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
   const char *data =
-      reinterpret_cast<const char *>(sqlite3_column_text(m_impl->m_stmt, idx));
+      reinterpret_cast<const char *>(sqlite3_column_text(impl_->stmt_, idx));
   item = (data != nullptr) ? std::string(data) : std::string();
 }
 
 void AsyncSQLiteStatement::sub_getColumnAsBlob(int idx, std::string &item) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
   const char *data =
-      static_cast<const char *>(sqlite3_column_blob(m_impl->m_stmt, idx));
+      static_cast<const char *>(sqlite3_column_blob(impl_->stmt_, idx));
   if (data == nullptr) {
     throw null_blob_exception();
   }
-  const int size = sqlite3_column_bytes(m_impl->m_stmt, idx);
+  const int size = sqlite3_column_bytes(impl_->stmt_, idx);
   item = std::string(data, size);
 }
 
 void AsyncSQLiteStatement::sub_getColumnAsBlob(int idx,
                                                std::vector<char> &item) {
-  if (!m_impl) {
+  if (!impl_) {
     throw exception("AsyncSQLiteStatement is not initialized");
   }
   const char *data =
-      static_cast<const char *>(sqlite3_column_blob(m_impl->m_stmt, idx));
+      static_cast<const char *>(sqlite3_column_blob(impl_->stmt_, idx));
   if (data == nullptr) {
     throw null_blob_exception();
   }
-  const int size = sqlite3_column_bytes(m_impl->m_stmt, idx);
+  const int size = sqlite3_column_bytes(impl_->stmt_, idx);
   item.resize(size);
   memcpy(item.data(), data, size);
 }

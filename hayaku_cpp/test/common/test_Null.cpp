@@ -7,10 +7,11 @@
 
 #include <common/Null.h>
 #include <data/MarketTypes.h>
-#include <doctest/doctest.h>
 
 #include <cmath>
 #include <cstdint>
+
+#include "doctest/doctest.h"
 
 using namespace hayaku;
 

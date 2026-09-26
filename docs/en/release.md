@@ -6,7 +6,7 @@
 remain available temporarily but are deprecated and produce a warning.
 `Performance.report()` still uses the Chinese gettext catalog in a Chinese locale.
 The default key for `SE_PerformanceOptimal` is now
-`Account Avg Annual Return %`; defaults in `hayaku.analysis` and `hayaku.draw`
+`Account Avg Annual Return %`; defaults in `hayaku.metrics` and `hayaku.extensions.visualization`
 were updated accordingly.
 
 | Previous Chinese key | Current English key |

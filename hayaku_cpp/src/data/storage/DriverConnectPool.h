@@ -44,19 +44,19 @@ class DriverConnectPool {
   explicit DriverConnectPool(
       const DriverPtr &prototype, size_t maxConnect = 0,
       size_t maxIdleConnect = std::thread::hardware_concurrency())
-      : m_maxSize(maxConnect),
-        m_maxIdelSize(maxIdleConnect),
-        m_count(0),
-        m_prototype(prototype),
-        m_closer(this) {}
+      : max_size_(maxConnect),
+        max_idel_size_(maxIdleConnect),
+        count_(0),
+        prototype_(prototype),
+        closer_(this) {}
 
   /**
    * Destructor, it releases all the cached connections
    */
   virtual ~DriverConnectPool() {
-    while (!m_driverList.empty()) {
-      DriverConnectT *p = m_driverList.front();
-      m_driverList.pop();
+    while (!driver_list_.empty()) {
+      DriverConnectT *p = driver_list_.front();
+      driver_list_.pop();
       if (p) {
         delete p;
       }
@@ -66,36 +66,36 @@ class DriverConnectPool {
   /** Get an available connection; if the maximum number of connections allowed
    * is exceeded, it blocks and waits until an idle resource is obtained */
   DriverConnectPtr getConnect() noexcept {
-    std::unique_lock<std::mutex> lock(m_mutex);
-    if (m_driverList.empty()) {
-      if (m_maxSize > 0 && m_count >= m_maxSize) {
-        m_cond.wait(lock, [this] { return !m_driverList.empty(); });
+    std::unique_lock<std::mutex> lock(mutex_);
+    if (driver_list_.empty()) {
+      if (max_size_ > 0 && count_ >= max_size_) {
+        cond_.wait(lock, [this] { return !driver_list_.empty(); });
       } else {
-        m_count++;
-        return DriverConnectPtr(new DriverConnectT(m_prototype->clone()),
-                                m_closer);
+        count_++;
+        return DriverConnectPtr(new DriverConnectT(prototype_->clone()),
+                                closer_);
       }
     }
-    DriverConnectT *p = m_driverList.front();
-    m_driverList.pop();
-    return DriverConnectPtr(p, m_closer);
+    DriverConnectT *p = driver_list_.front();
+    driver_list_.pop();
+    return DriverConnectPtr(p, closer_);
   }
 
-  DriverPtr getPrototype() { return m_prototype; }
+  DriverPtr getPrototype() { return prototype_; }
 
   /** Number of the currently active connections */
-  size_t count() const { return m_count; }
+  size_t count() const { return count_; }
 
   /** Number of the currently idle resources */
-  size_t idleCount() const { return m_driverList.size(); }
+  size_t idleCount() const { return driver_list_.size(); }
 
   /** Release all the currently idle resources */
   void releaseIdleConnect() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    while (!m_driverList.empty()) {
-      DriverConnectT *p = m_driverList.front();
-      m_driverList.pop();
-      m_count--;
+    std::lock_guard<std::mutex> lock(mutex_);
+    while (!driver_list_.empty()) {
+      DriverConnectT *p = driver_list_.front();
+      driver_list_.pop();
+      count_--;
       if (p) {
         delete p;
       }
@@ -105,44 +105,44 @@ class DriverConnectPool {
  private:
   /** Return it to the connection pool */
   void returnDriver(DriverConnectT *p) {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(mutex_);
     if (p) {
-      if (m_driverList.size() < m_maxIdelSize) {
-        m_driverList.push(p);
-        m_cond.notify_all();
+      if (driver_list_.size() < max_idel_size_) {
+        driver_list_.push(p);
+        cond_.notify_all();
       } else {
         delete p;
-        m_count--;
+        count_--;
       }
     } else {
-      m_count--;
+      count_--;
       HAYAKU_WARN("Trying to return an empty pointer!");
     }
   }
 
  private:
-  size_t m_maxSize;       // The maximum number of connections allowed
-  size_t m_maxIdelSize;   // The maximum number of idle connections allowed
-  size_t m_count;         // The number of currently active connections
-  DriverPtr m_prototype;  // Driver prototype
-  std::mutex m_mutex;
-  std::condition_variable m_cond;
-  std::queue<DriverConnectT *> m_driverList;
+  size_t max_size_;       // The maximum number of connections allowed
+  size_t max_idel_size_;   // The maximum number of idle connections allowed
+  size_t count_;         // The number of currently active connections
+  DriverPtr prototype_;  // Driver prototype
+  std::mutex mutex_;
+  std::condition_variable cond_;
+  std::queue<DriverConnectT *> driver_list_;
 
   class DriverCloser {
    public:
-    explicit DriverCloser(DriverConnectPool *pool) : m_pool(pool) {}
+    explicit DriverCloser(DriverConnectPool *pool) : pool_(pool) {}
     void operator()(DriverConnectT *conn) {
-      if (m_pool && conn) {
-        m_pool->returnDriver(conn);
+      if (pool_ && conn) {
+        pool_->returnDriver(conn);
       }
     }
 
    private:
-    DriverConnectPool *m_pool;
+    DriverConnectPool *pool_;
   };
 
-  DriverCloser m_closer;
+  DriverCloser closer_;
 };
 
 }  // namespace hayaku

@@ -26,7 +26,7 @@ class HAYAKU_API Performance {
 
   Performance(const Performance& other) = default;
   Performance(Performance&& other) noexcept
-      : m_result(std::move(other.m_result)), m_keys(std::move(other.m_keys)) {}
+      : result_(std::move(other.result_)), keys_(std::move(other.keys_)) {}
 
   Performance& operator=(const Performance& other) noexcept;
   Performance& operator=(Performance&& other) noexcept;
@@ -67,7 +67,7 @@ class HAYAKU_API Performance {
                   const Datetime& datetime = Datetime::now());
 
   /** Get the names of all the statistics items, in the same order as values */
-  const StringList& names() const { return m_keys; }
+  const StringList& names() const { return keys_; }
 
   /** Get the values of all the statistics items, in the same order as names */
   PriceList values() const;
@@ -76,7 +76,7 @@ class HAYAKU_API Performance {
   typedef map_type::iterator iterator;
   typedef map_type::const_iterator const_iterator;
 
-  const map_type& getAll() const { return m_result; }
+  const map_type& getAll() const { return result_; }
 
   /** Add a new statistics item
    *  @note Since the i18n refactoring, only the English key is supported; a
@@ -97,9 +97,9 @@ class HAYAKU_API Performance {
   void setValue(const string& key, double value);
 
  private:
-  map_type m_result;
+  map_type result_;
   StringList
-      m_keys;  // Saves the order of the statistics items; neither map nor
+      keys_;  // Saves the order of the statistics items; neither map nor
                // unordered_map can keep the insertion order when iterating
 };
 

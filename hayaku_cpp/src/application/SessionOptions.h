@@ -25,36 +25,36 @@ class HAYAKU_API SessionOptions {
       const StrategyContext& context = StrategyContext({"all"}));
 
   [[nodiscard]] const Parameter& baseInfoParam() const noexcept {
-    return m_baseInfoParam;
+    return base_info_param_;
   }
 
   [[nodiscard]] const Parameter& blockParam() const noexcept {
-    return m_blockParam;
+    return block_param_;
   }
 
   [[nodiscard]] const Parameter& kdataParam() const noexcept {
-    return m_kdataParam;
+    return kdata_param_;
   }
 
   [[nodiscard]] const Parameter& preloadParam() const noexcept {
-    return m_preloadParam;
+    return preload_param_;
   }
 
   [[nodiscard]] const Parameter& hayakuParam() const noexcept {
-    return m_hayakuParam;
+    return hayaku_param_;
   }
 
   [[nodiscard]] const StrategyContext& context() const noexcept {
-    return m_context;
+    return context_;
   }
 
  private:
-  Parameter m_baseInfoParam;
-  Parameter m_blockParam;
-  Parameter m_kdataParam;
-  Parameter m_preloadParam;
-  Parameter m_hayakuParam;
-  StrategyContext m_context{{"all"}};
+  Parameter base_info_param_;
+  Parameter block_param_;
+  Parameter kdata_param_;
+  Parameter preload_param_;
+  Parameter hayaku_param_;
+  StrategyContext context_{{"all"}};
 };
 
 }  // namespace hayaku

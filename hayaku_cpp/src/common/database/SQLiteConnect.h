@@ -86,8 +86,8 @@ class HAYAKU_UTILS_API SQLiteConnect : public DBConnectBase {
 
  private:
   friend class SQLiteStatement;
-  std::string m_dbname;
-  sqlite3 *m_db;
+  std::string dbname_;
+  sqlite3 *db_;
 };
 
 typedef std::shared_ptr<SQLiteConnect> SQLiteConnectPtr;

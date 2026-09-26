@@ -26,8 +26,8 @@ namespace hayaku {
 struct KRecordView {
   const KRecord* data{nullptr};  ///< Pointer of the first record of the range
                                  ///< (count consecutive records)
-  size_t count{0};               ///< Number of the records in the range
-  shared_ptr<void> pin;          ///< Holds the mapping alive (type-erased)
+  size_t count{0};       ///< Number of the records in the range
+  shared_ptr<void> pin;  ///< Holds the mapping alive (type-erased)
 };
 
 /**
@@ -166,14 +166,14 @@ class HAYAKU_API KDataDriver {
       const std::atomic_bool& cancel_flag);
 
  protected:
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  private:
   bool checkType();
 
  protected:
-  string m_name;
-  bool m_is_python_object{false};
+  string name_;
+  bool is_python_object_{false};
 };
 
 typedef shared_ptr<KDataDriver> KDataDriverPtr;
@@ -181,7 +181,7 @@ typedef shared_ptr<KDataDriver> KDataDriverPtr;
 HAYAKU_API std::ostream& operator<<(std::ostream&, const KDataDriver&);
 HAYAKU_API std::ostream& operator<<(std::ostream&, const KDataDriverPtr&);
 
-inline const string& KDataDriver::name() const { return m_name; }
+inline const string& KDataDriver::name() const { return name_; }
 
 class KDataDriverConnect {
  public:
@@ -189,7 +189,7 @@ class KDataDriverConnect {
   typedef KDataDriverPtr DriverTypePtr;
 
   explicit KDataDriverConnect(const KDataDriverPtr& driver)
-      : m_driver(driver) {}
+      : driver_(driver) {}
   ~KDataDriverConnect() = default;
 
   KDataDriverConnect(const KDataDriverConnect&) = delete;
@@ -197,58 +197,58 @@ class KDataDriverConnect {
   KDataDriverConnect& operator=(const KDataDriverConnect&) = delete;
   KDataDriverConnect& operator=(KDataDriverConnect&&) = delete;
 
-  explicit operator bool() const noexcept { return m_driver.get() != nullptr; }
+  explicit operator bool() const noexcept { return driver_.get() != nullptr; }
 
-  const string& name() const { return m_driver->name(); }
+  const string& name() const { return driver_->name(); }
 
-  bool isIndexFirst() { return m_driver->isIndexFirst(); }
+  bool isIndexFirst() { return driver_->isIndexFirst(); }
 
-  bool canParallelLoad() { return m_driver->canParallelLoad(); }
+  bool canParallelLoad() { return driver_->canParallelLoad(); }
 
   size_t getCount(const string& market, const string& code,
                   const KQuery::KType& kType) {
-    return m_driver->getCount(market, code, kType);
+    return driver_->getCount(market, code, kType);
   }
 
   bool getIndexRangeByDate(const string& market, const string& code,
                            const KQuery& query, size_t& out_start,
                            size_t& out_end) {
-    return m_driver->getIndexRangeByDate(market, code, query, out_start,
+    return driver_->getIndexRangeByDate(market, code, query, out_start,
                                          out_end);
   }
 
   KRecordList getKRecordList(const string& market, const string& code,
                              const KQuery& query) {
-    return m_driver->getKRecordList(market, code, query);
+    return driver_->getKRecordList(market, code, query);
   }
 
   bool tryGetKRecordView(const string& market, const string& code,
                          const KQuery::KType& kType, size_t start_ix,
                          size_t end_ix, KRecordView& out) {
-    return m_driver->tryGetKRecordView(market, code, kType, start_ix, end_ix,
+    return driver_->tryGetKRecordView(market, code, kType, start_ix, end_ix,
                                        out);
   }
 
   TimeLineList getTimeLineList(const string& market, const string& code,
                                const KQuery& query) {
-    return m_driver->getTimeLineList(market, code, query);
+    return driver_->getTimeLineList(market, code, query);
   }
 
   TransList getTransList(const string& market, const string& code,
                          const KQuery& query) {
-    return m_driver->getTransList(market, code, query);
+    return driver_->getTransList(market, code, query);
   }
 
-  bool isColumnFirst() const { return m_driver->isColumnFirst(); }
+  bool isColumnFirst() const { return driver_->isColumnFirst(); }
 
   std::unordered_map<std::string, KRecordList> getAllKRecordList(
       const KQuery::KType& ktype, const Datetime& start_date,
       const std::atomic_bool& cancel_flag) {
-    return m_driver->getAllKRecordList(ktype, start_date, cancel_flag);
+    return driver_->getAllKRecordList(ktype, start_date, cancel_flag);
   }
 
  private:
-  KDataDriverPtr m_driver;
+  KDataDriverPtr driver_;
 };
 
 }  // namespace hayaku

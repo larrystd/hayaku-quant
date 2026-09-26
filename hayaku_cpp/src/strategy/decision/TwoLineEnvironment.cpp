@@ -22,7 +22,7 @@ TwoLineEnvironment::TwoLineEnvironment() : EnvironmentBase("EV_TwoLine") {
 
 TwoLineEnvironment::TwoLineEnvironment(const Indicator& fast,
                                        const Indicator& slow)
-    : EnvironmentBase("EV_TwoLine"), m_fast(fast), m_slow(slow) {
+    : EnvironmentBase("EV_TwoLine"), fast_(fast), slow_(slow) {
   setParam<string>("market", "SH");
 }
 
@@ -39,8 +39,8 @@ void TwoLineEnvironment::_checkParam(const string& name) const {
 
 EnvironmentPtr TwoLineEnvironment::_clone() {
   auto ptr = make_shared<TwoLineEnvironment>();
-  ptr->m_fast = m_fast.clone();
-  ptr->m_slow = m_slow.clone();
+  ptr->fast_ = fast_.clone();
+  ptr->slow_ = slow_.clone();
   return ptr;
 }
 
@@ -51,10 +51,10 @@ void TwoLineEnvironment::_calculate() {
   HAYAKU_IF_RETURN(market_info == Null<MarketInfo>(), void());
 
   Stock stock = sm.getStock(market + market_info.code());
-  KData kdata = stock.getKData(m_query);
+  KData kdata = stock.getKData(query_);
   Indicator close = CLOSE(kdata);
-  Indicator fast = m_fast(close);
-  Indicator slow = m_slow(close);
+  Indicator fast = fast_(close);
+  Indicator slow = slow_(close);
 
   size_t total = close.size();
   size_t start =

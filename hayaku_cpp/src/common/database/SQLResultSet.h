@@ -44,31 +44,31 @@ class SQLResultSet {
    * @param sql
    */
   SQLResultSet(const DBConnectPtr& connect, const std::string& sql)
-      : m_connect(connect),
-        m_where(sql),
-        m_sql_template(
+      : connect_(connect),
+        where_(sql),
+        sql_template_(
             "id IN (SELECT id FROM {} WHERE {} {} LIMIT {} OFFSET {}) {}") {
-    trim(m_where);
-    if (m_where.empty()) {
-      m_where = "1=1";
-      m_orderby_inner = "ORDER BY id";
+    trim(where_);
+    if (where_.empty()) {
+      where_ = "1=1";
+      orderby_inner_ = "ORDER BY id";
       // m_orderby_outer = "";
       return;
     }
 
-    std::string tmp = utf8_to_upper(m_where);
+    std::string tmp = utf8_to_upper(where_);
     size_t pos = tmp.rfind("ORDER");
     if (pos != std::string::npos) {
-      m_orderby_inner = fmt::format("{}, id ASC", m_where.substr(pos));
-      m_orderby_outer = m_orderby_inner;
-      m_where = m_where.erase(pos, std::string::npos);
+      orderby_inner_ = fmt::format("{}, id ASC", where_.substr(pos));
+      orderby_outer_ = orderby_inner_;
+      where_ = where_.erase(pos, std::string::npos);
     } else {
-      m_orderby_inner = "ORDER BY id";
+      orderby_inner_ = "ORDER BY id";
     }
   }
 
   /** Get its database connection */
-  const DBConnectPtr& getConnect() const { return m_connect; }
+  const DBConnectPtr& getConnect() const { return connect_; }
 
   using const_iterator = SQLResultSetIterator<TableT, page_size>;
   using iterator = SQLResultSetIterator<TableT, page_size>;
@@ -88,10 +88,10 @@ class SQLResultSet {
    * @return size_t
    */
   size_t size() const {
-    HAYAKU_IF_RETURN(!m_connect, 0);
+    HAYAKU_IF_RETURN(!connect_, 0);
     std::string sql = fmt::format("select count(1) from {} where {}",
-                                  TableT::getTableName(), m_where);
-    return m_connect->queryNumber<size_t>(sql, 0);
+                                  TableT::getTableName(), where_);
+    return connect_->queryNumber<size_t>(sql, 0);
   }
 
   /**
@@ -120,10 +120,10 @@ class SQLResultSet {
    */
   std::vector<TableT> getPage(size_t page) {
     std::vector<TableT> result;
-    m_connect->batchLoad(
-        result, fmt::format(m_sql_template, TableT::getTableName(), m_where,
-                            m_orderby_inner, page_size, page * page_size,
-                            m_orderby_outer));
+    connect_->batchLoad(
+        result, fmt::format(sql_template_, TableT::getTableName(), where_,
+                            orderby_inner_, page_size, page * page_size,
+                            orderby_outer_));
     return result;
   }
 
@@ -141,33 +141,33 @@ class SQLResultSet {
     HAYAKU_IF_RETURN(index == Null<size_t>(), result);
 
     size_t page = index / page_size;
-    if (m_connect && page != m_current_page) {
-      m_buffer.clear();
-      m_connect->batchLoad(
-          m_buffer,
-          fmt::format(fmt::runtime(m_sql_template), TableT::getTableName(),
-                      m_where, m_orderby_inner, page_size, page * page_size,
-                      m_orderby_outer));
-      m_current_page = page;
+    if (connect_ && page != current_page_) {
+      buffer_.clear();
+      connect_->batchLoad(
+          buffer_,
+          fmt::format(fmt::runtime(sql_template_), TableT::getTableName(),
+                      where_, orderby_inner_, page_size, page * page_size,
+                      orderby_outer_));
+      current_page_ = page;
     }
 
-    HAYAKU_IF_RETURN(m_buffer.empty(), result);
+    HAYAKU_IF_RETURN(buffer_.empty(), result);
 
     size_t pos = index - page * page_size;
-    HAYAKU_IF_RETURN(pos >= m_buffer.size(), result);
+    HAYAKU_IF_RETURN(pos >= buffer_.size(), result);
 
-    result = m_buffer[index - page * page_size];
+    result = buffer_[index - page * page_size];
     return result;
   }
 
  private:
-  DBConnectPtr m_connect;
-  std::vector<TableT> m_buffer;
-  std::string m_where;
-  std::string m_sql_template;
-  std::string m_orderby_inner;
-  std::string m_orderby_outer;
-  size_t m_current_page = Null<size_t>();
+  DBConnectPtr connect_;
+  std::vector<TableT> buffer_;
+  std::string where_;
+  std::string sql_template_;
+  std::string orderby_inner_;
+  std::string orderby_outer_;
+  size_t current_page_ = Null<size_t>();
 };
 
 template <class TableT, size_t page_size>
@@ -179,53 +179,53 @@ class SQLResultSetIterator {
   ~SQLResultSetIterator() = default;
 
   explicit SQLResultSetIterator(ResultSet* result_set, size_t index)
-      : m_set(result_set), m_index(index) {
-    if (m_index != Null<size_t>()) {
-      m_value = std::move(m_set->get(index));
-      if (!m_value.valid()) {
-        m_index = Null<size_t>();
+      : set_(result_set), index_(index) {
+    if (index_ != Null<size_t>()) {
+      value_ = std::move(set_->get(index));
+      if (!value_.valid()) {
+        index_ = Null<size_t>();
       }
     }
   }
 
   SQLResultSetIterator(const SQLResultSetIterator& other)
-      : m_set(other.m_set), m_index(other.m_index) {}
+      : set_(other.set_), index_(other.index_) {}
 
   SQLResultSetIterator& operator=(const SQLResultSetIterator& other) {
     if (this == &other) return *this;
-    m_index = other.m_index;
-    m_set = other.m_set;
+    index_ = other.index_;
+    set_ = other.set_;
     return *this;
   }
 
-  const TableT& operator*() const { return m_value; }
+  const TableT& operator*() const { return value_; }
 
-  TableT& operator*() { return m_value; }
+  TableT& operator*() { return value_; }
 
-  const TableT* const operator->() const { return &m_value; }
+  const TableT* const operator->() const { return &value_; }
 
-  TableT* operator->() { return &m_value; }
+  TableT* operator->() { return &value_; }
 
   // Prefix increment operator
   SQLResultSetIterator& operator++() {
-    HAYAKU_CHECK_THROW(m_index != Null<size_t>(), std::logic_error,
+    HAYAKU_CHECK_THROW(index_ != Null<size_t>(), std::logic_error,
                        "Cannot increment an end iterator.");
-    m_index++;
-    m_value = std::move(m_set->get(m_index));
-    if (!m_value.valid()) {
-      m_index = Null<size_t>();
+    index_++;
+    value_ = std::move(set_->get(index_));
+    if (!value_.valid()) {
+      index_ = Null<size_t>();
     }
     return *this;
   }
 
   bool operator!=(const SQLResultSetIterator& iter) const {
-    return m_index != iter.m_index;
+    return index_ != iter.index_;
   }
 
  private:
-  ResultSet* m_set = nullptr;
-  size_t m_index = Null<size_t>();
-  TableT m_value;
+  ResultSet* set_ = nullptr;
+  size_t index_ = Null<size_t>();
+  TableT value_;
 };
 
 }  // namespace hayaku

@@ -35,17 +35,17 @@ class HAYAKU_API WithoutAFPortfolio : public Portfolio {
 
  private:
   internal::StrategyRuntimeList
-      m_force_sell_sys_list;  // System list of the forced sells
+      force_sell_sys_list_;  // System list of the forced sells
   list<internal::StrategyRuntimePtr>
-      m_running_sys_list;  // List of the currently running systems, they need
+      running_sys_list_;  // List of the currently running systems, they need
                            // to be executed in turn
   internal::StrategyRuntimeList
-      m_selected_list;  // System list selected in the current cycle
+      selected_list_;  // System list selected in the current cycle
 
   // Records the mapping from the systems assigned to SE to the internal actual
   // systems
   unordered_map<internal::StrategyRuntimePtr, internal::StrategyRuntimePtr>
-      m_se_sys_to_pf_sys_dict;
+      se_sys_to_pf_sys_dict_;
 
 //============================================
 // Serialization support

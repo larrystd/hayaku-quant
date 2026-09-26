@@ -111,7 +111,7 @@ class HAYAKU_API AllocateFundsBase
                            double can_allocate_weight, bool auto_adjust,
                            bool ignore_zero);
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  private:
   void initParam();
@@ -128,15 +128,15 @@ class HAYAKU_API AllocateFundsBase
       const std::unordered_set<internal::StrategyRuntimePtr>& running_list);
 
  protected:
-  bool m_is_python_object{false};
+  bool is_python_object_{false};
 
  private:
-  string m_name;   // Component name
-  KQuery m_query;  // Query condition
+  string name_;   // Component name
+  KQuery query_;  // Query condition
   internal::PortfolioAccountPortPtr
-      m_account;  // Set by PF at runtime, the actual account of PF
+      account_;  // Set by PF at runtime, the actual account of PF
   internal::PortfolioAccountPortPtr
-      m_cashAccount;  // Set by PF at runtime, the shadow account of tm, used to
+      cash_account_;  // Set by PF at runtime, the shadow account of tm, used to
                       // coordinate the fund allocation
 
 //============================================
@@ -147,18 +147,18 @@ class HAYAKU_API AllocateFundsBase
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_query);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_query", query_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_query);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_query", query_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -207,34 +207,34 @@ typedef shared_ptr<AllocateFundsBase> AFPtr;
 HAYAKU_API std::ostream& operator<<(std::ostream&, const AllocateFundsBase&);
 HAYAKU_API std::ostream& operator<<(std::ostream&, const AFPtr&);
 
-inline const string& AllocateFundsBase::name() const { return m_name; }
+inline const string& AllocateFundsBase::name() const { return name_; }
 
-inline void AllocateFundsBase::name(const string& name) { m_name = name; }
+inline void AllocateFundsBase::name(const string& name) { name_ = name; }
 
 inline const internal::PortfolioAccountPortPtr& AllocateFundsBase::getAccount()
     const {
-  return m_account;
+  return account_;
 }
 
 inline void AllocateFundsBase::setAccount(
     const internal::PortfolioAccountPortPtr& account) {
-  m_account = account;
+  account_ = account;
 }
 
 inline void AllocateFundsBase::setCashAccount(
     const internal::PortfolioAccountPortPtr& account) {
-  m_cashAccount = account;
+  cash_account_ = account;
 }
 
 inline const internal::PortfolioAccountPortPtr&
 AllocateFundsBase::getCashAccount() const {
-  return m_cashAccount;
+  return cash_account_;
 }
 
-inline const KQuery& AllocateFundsBase::getQuery() const { return m_query; }
+inline const KQuery& AllocateFundsBase::getQuery() const { return query_; }
 
 inline void AllocateFundsBase::setQuery(const KQuery& query) {
-  m_query = query;
+  query_ = query;
 }
 
 } /* namespace hayaku */

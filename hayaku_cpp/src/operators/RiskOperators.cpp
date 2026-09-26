@@ -51,29 +51,29 @@ void IMdd::_checkParam(const string& name) const {
 }
 
 void IMdd::_calculate(const Indicator& ind) {
-  m_discard = ind.discard();
+  discard_ = ind.discard();
   size_t total = ind.size();
-  HAYAKU_IF_RETURN(m_discard >= total, void());
+  HAYAKU_IF_RETURN(discard_ >= total, void());
 
   auto const* src = ind.data();
   auto* dst = this->data();
 
   size_t n = static_cast<size_t>(getParam<int>("n"));
-  if (n == 0 || n > total - m_discard) {
-    n = total - m_discard;
+  if (n == 0 || n > total - discard_) {
+    n = total - discard_;
   }
 
   if (n == 1) {
-    for (size_t i = m_discard; i < total; ++i) {
+    for (size_t i = discard_; i < total; ++i) {
       dst[i] = 0.0;
     }
     return;
   }
 
-  if (n == total - m_discard) {
-    value_t pre_max = src[m_discard];
+  if (n == total - discard_) {
+    value_t pre_max = src[discard_];
     value_t min_dd = 0.0;
-    for (size_t i = m_discard; i < total; i++) {
+    for (size_t i = discard_; i < total; i++) {
       if (src[i] > pre_max) {
         pre_max = src[i];
       }
@@ -88,9 +88,9 @@ void IMdd::_calculate(const Indicator& ind) {
     return;
   }
 
-  value_t pre_max = src[m_discard];
+  value_t pre_max = src[discard_];
   value_t min_dd = 0.0;
-  for (size_t i = m_discard; i < m_discard + n; ++i) {
+  for (size_t i = discard_; i < discard_ + n; ++i) {
     if (src[i] > pre_max) {
       pre_max = src[i];
     }
@@ -103,8 +103,8 @@ void IMdd::_calculate(const Indicator& ind) {
     dst[i] = std::abs(min_dd * 100.0);
   }
 
-  if (m_discard + n < total) {
-    _increment_calculate(ind, m_discard + n);
+  if (discard_ + n < total) {
+    _increment_calculate(ind, discard_ + n);
   }
 }
 
@@ -212,11 +212,11 @@ IMddCurrent::IMddCurrent() : IndicatorImp("MDD_CURRENT", 1) {}
 IMddCurrent::~IMddCurrent() {}
 
 void IMddCurrent::_calculate(const Indicator& data) {
-  m_discard = data.discard();
+  discard_ = data.discard();
   size_t total = data.size();
-  HAYAKU_IF_RETURN(m_discard >= total, void());
+  HAYAKU_IF_RETURN(discard_ >= total, void());
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IMddCurrent::_increment_calculate(const Indicator& ind, size_t start_pos) {
@@ -225,7 +225,7 @@ void IMddCurrent::_increment_calculate(const Indicator& ind, size_t start_pos) {
   auto* dst = this->data();
 
   value_t run_max = std::numeric_limits<value_t>::lowest();
-  for (size_t i = m_discard; i < start_pos; ++i) {
+  for (size_t i = discard_; i < start_pos; ++i) {
     if (src[i] > run_max) {
       run_max = src[i];
     }
@@ -287,7 +287,7 @@ BOOST_CLASS_EXPORT(hayaku::IRSRSBeta)
 namespace hayaku {
 
 IRSRSBeta::IRSRSBeta() : IndicatorImp("RSRS_BETA", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<int>("n", 20);
 }
 
@@ -308,12 +308,12 @@ void IRSRSBeta::_calculate(const Indicator&) {
 
   int n = getParam<int>("n");
   if (total < static_cast<size_t>(n)) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
   auto* dst = this->data();
-  m_discard = n - 1;
+  discard_ = n - 1;
 
   value_t sum_x = 0.0, sum_y = 0.0, sum_xy = 0.0, sum_x2 = 0.0;
   for (size_t i = 0; i < static_cast<size_t>(n); i++) {
@@ -397,7 +397,7 @@ BOOST_CLASS_EXPORT(hayaku::IRSRSBull)
 namespace hayaku {
 
 IRSRSBull::IRSRSBull() : IndicatorImp("RSRS_BULL", 4) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<int>("n", 20);  // Regression window
   setParam<int>("m", 60);  // Z-score window
 }
@@ -426,7 +426,7 @@ void IRSRSBull::_calculate(const Indicator&) {
   size_t z_start = start_idx + m - 1;
 
   if (total <= z_start) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -542,7 +542,7 @@ void IRSRSBull::_calculate(const Indicator&) {
 
   // Set the discard and set the positions before beta and r2 to Null (refer to
   // the ADX way)
-  m_discard = z_start;
+  discard_ = z_start;
   for (size_t i = 0; i < z_start; i++) {
     beta[i] = Null<value_t>();
     r2[i] = Null<value_t>();
@@ -649,13 +649,13 @@ void ISaftyLoss::_calculate(const Indicator& data) {
   int n1 = getParam<int>("n1");
   int n2 = getParam<int>("n2");
 
-  m_discard = data.discard() + n1 + n2 - 2;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + n1 + n2 - 2;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void ISaftyLoss::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -708,14 +708,14 @@ void ISaftyLoss::_dyn_one_circle(const Indicator& ind, size_t curPos, int n1,
 }
 
 void ISaftyLoss::_dyn_calculate(const Indicator& ind) {
-  auto iter = m_ind_params.find("n1");
-  Indicator n1 = iter != m_ind_params.end() ? Indicator(iter->second)
+  auto iter = ind_params_.find("n1");
+  Indicator n1 = iter != ind_params_.end() ? Indicator(iter->second)
                                             : CVAL(ind, getParam<int>("n1"));
-  iter = m_ind_params.find("n2");
-  Indicator n2 = iter != m_ind_params.end() ? Indicator(iter->second)
+  iter = ind_params_.find("n2");
+  Indicator n2 = iter != ind_params_.end() ? Indicator(iter->second)
                                             : CVAL(ind, getParam<int>("n2"));
-  iter = m_ind_params.find("p");
-  Indicator p = iter != m_ind_params.end() ? Indicator(iter->second)
+  iter = ind_params_.find("p");
+  Indicator p = iter != ind_params_.end() ? Indicator(iter->second)
                                            : CVAL(ind, getParam<int>("p"));
 
   HAYAKU_CHECK(n1.size() == ind.size(),
@@ -727,11 +727,11 @@ void ISaftyLoss::_dyn_calculate(const Indicator& ind) {
   HAYAKU_CHECK(p.size() == ind.size(), "ind_param(p).size()={}, ind.size()={}!",
                p.size(), ind.size());
 
-  m_discard = std::max(ind.discard(), n1.discard());
-  m_discard = std::max(m_discard, n2.discard());
-  m_discard = std::max(m_discard, p.discard());
+  discard_ = std::max(ind.discard(), n1.discard());
+  discard_ = std::max(discard_, n2.discard());
+  discard_ = std::max(discard_, p.discard());
   size_t total = ind.size();
-  HAYAKU_IF_RETURN(0 == total || m_discard >= total, void());
+  HAYAKU_IF_RETURN(0 == total || discard_ >= total, void());
 
   global_parallel_for_index_void(
       ind.discard(), total,

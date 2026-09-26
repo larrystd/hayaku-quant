@@ -31,7 +31,7 @@ double FixedCapitalFundsMM ::_getBuyNumber(const Datetime& datetime,
                                            const Stock& stock, price_t price,
                                            price_t risk, OrderOrigin origin) {
   double capital = getParam<double>("capital");
-  FundsRecord funds = m_account->getFunds(datetime, m_query.kType());
+  FundsRecord funds = account_->getFunds(datetime, query_.kType());
   return funds.total_assets() / capital;
 }
 

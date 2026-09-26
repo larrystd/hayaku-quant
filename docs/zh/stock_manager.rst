@@ -192,7 +192,7 @@ DataEngine 句柄失效；最后一个 Session 关闭时会停止数据加载并
     .. py:method:: close()
 
         关闭并使当前会话句柄失效，重复调用是安全的。最后一个显式 Session 会释放内部
-        数据运行时。
+        数据运行时，对应的数据运行时。
 
 .. py:class:: DataEngine
 

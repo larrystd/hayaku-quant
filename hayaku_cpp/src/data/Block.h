@@ -37,40 +37,40 @@ class HAYAKU_API Block {
   typedef StockMapIterator const_iterator;
   const_iterator begin() const {
     const_iterator iter;
-    if (m_data) iter = StockMapIterator(m_data->m_stockDict.begin());
+    if (data_) iter = StockMapIterator(data_->stock_dict_.begin());
     return iter;
   }
 
   const_iterator end() const {
     const_iterator iter;
-    if (m_data) iter = StockMapIterator(m_data->m_stockDict.end());
+    if (data_) iter = StockMapIterator(data_->stock_dict_.end());
     return iter;
   }
 
-  bool isNull() const noexcept { return !m_data; }
+  bool isNull() const noexcept { return !data_; }
 
-  uint64_t id() const noexcept { return m_data ? (uint64_t)m_data.get() : 0; }
+  uint64_t id() const noexcept { return data_ ? (uint64_t)data_.get() : 0; }
 
   bool operator==(const Block& blk) const noexcept;
 
   bool operator!=(const Block& blk) const noexcept { return !(*this == blk); }
 
   /** Get the sector category */
-  string category() const noexcept { return m_data ? m_data->m_category : ""; }
+  string category() const noexcept { return data_ ? data_->category_ : ""; }
 
   /** Get the sector name */
-  string name() const noexcept { return m_data ? m_data->m_name : ""; }
+  string name() const noexcept { return data_ ? data_->name_ : ""; }
 
   /** Set the sector category */
   void category(const string& category) {
-    if (!m_data) m_data = make_shared<Data>();
-    m_data->m_category = category;
+    if (!data_) data_ = make_shared<Data>();
+    data_->category_ = category;
   }
 
   /** Set the name */
   void name(const string& name) {
-    if (!m_data) m_data = make_shared<Data>();
-    m_data->m_name = name;
+    if (!data_) data_ = make_shared<Data>();
+    data_->name_ = name;
   }
 
   /** Whether the given security is contained */
@@ -119,7 +119,7 @@ class HAYAKU_API Block {
 
   /** Number of contained securities */
   size_t size() const noexcept {
-    return m_data ? m_data->m_stockDict.size() : 0;
+    return data_ ? data_->stock_dict_.size() : 0;
   }
 
   /** Whether it is empty */
@@ -127,12 +127,12 @@ class HAYAKU_API Block {
 
   /** Remove all contained securities */
   void clear() {
-    if (m_data) m_data->m_stockDict.clear();
+    if (data_) data_->stock_dict_.clear();
   }
 
   /** Get the corresponding index; it may be a null Stock */
   Stock getIndexStock() const noexcept {
-    return m_data ? m_data->m_indexStock : Stock();
+    return data_ ? data_->index_stock_ : Stock();
   }
 
   /** Set the corresponding index */
@@ -142,12 +142,12 @@ class HAYAKU_API Block {
 
  private:
   struct HAYAKU_API Data {
-    string m_category;
-    string m_name;
-    Stock m_indexStock;  // The corresponding index, which may not exist
-    StockMapIterator::stock_map_t m_stockDict;
+    string category_;
+    string name_;
+    Stock index_stock_;  // The corresponding index, which may not exist
+    StockMapIterator::stock_map_t stock_dict_;
   };
-  shared_ptr<Data> m_data;
+  shared_ptr<Data> data_;
 };
 
 /** @ingroup StockManage */

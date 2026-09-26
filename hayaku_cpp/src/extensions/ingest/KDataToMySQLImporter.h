@@ -51,7 +51,7 @@ class HAYAKU_INGEST_API KDataToMySQLImporter {
                     double max_trade = 1000000);
 
  private:
-  ImportKDataToMySQLPluginInterface* m_plugin{nullptr};
+  ImportKDataToMySQLPluginInterface* plugin_{nullptr};
 };
 
 }  // namespace hayaku

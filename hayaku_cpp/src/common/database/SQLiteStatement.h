@@ -58,12 +58,12 @@ class HAYAKU_UTILS_API SQLiteStatement : public SQLStatementBase {
   void _reset();
 
  private:
-  bool m_needs_reset;  // true if sqlite3_step() has been called more recently
+  bool needs_reset_;  // true if sqlite3_step() has been called more recently
                        // than sqlite3_reset()
-  int m_step_status;
-  bool m_at_first_step;
-  sqlite3 *m_db;
-  sqlite3_stmt *m_stmt;
+  int step_status_;
+  bool at_first_step_;
+  sqlite3 *db_;
+  sqlite3_stmt *stmt_;
 };
 
 }  // namespace hayaku

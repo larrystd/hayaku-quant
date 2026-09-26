@@ -20,7 +20,7 @@ OptimalEvaluateSelector::OptimalEvaluateSelector(
     std::function<double(const internal::StrategyRuntimePtr&,
                          const Datetime&)>&& evaluate)
     : OptimalSelectorBase("SE_EvaluateOptimal"),
-      m_evaluate(std::move(evaluate)) {}
+      evaluate_(std::move(evaluate)) {}
 
 OptimalEvaluateSelector::~OptimalEvaluateSelector() {}
 
@@ -28,7 +28,7 @@ double OptimalEvaluateSelector::evaluate(
     const internal::StrategyRuntimePtr& sys, const Datetime& endDate) noexcept {
   double ret = Null<double>();
   try {
-    ret = m_evaluate(sys, endDate);
+    ret = evaluate_(sys, endDate);
   } catch (const std::exception& e) {
     HAYAKU_ERROR("Failed evaluate! {}! {}", e.what(), name());
   } catch (...) {

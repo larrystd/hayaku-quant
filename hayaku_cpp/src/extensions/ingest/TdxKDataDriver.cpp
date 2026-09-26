@@ -78,7 +78,7 @@ TdxKDataDriver::~TdxKDataDriver() {}
 
 bool TdxKDataDriver::_init() {
   try {
-    m_dirname = getParam<string>("dir");
+    dirname_ = getParam<string>("dir");
 
   } catch (...) {
     return false;
@@ -400,16 +400,16 @@ string TdxKDataDriver::_getFileName(const string& market, const string& code,
   string filename;
   if (ktype == KQuery::MIN) {
     filename =
-        m_dirname + "\\" + market + "\\minline\\" + market + code + ".lc1";
+        dirname_ + "\\" + market + "\\minline\\" + market + code + ".lc1";
   } else if (ktype == KQuery::MIN5 || ktype == KQuery::MIN15 ||
              ktype == KQuery::MIN30 || ktype == KQuery::MIN60 ||
              ktype == KQuery::HOUR2) {
     filename =
-        m_dirname + "\\" + market + "\\fzline\\" + market + code + ".lc5";
+        dirname_ + "\\" + market + "\\fzline\\" + market + code + ".lc5";
   } else if (ktype == KQuery::DAY || ktype == KQuery::WEEK ||
              ktype == KQuery::MONTH || ktype == KQuery::QUARTER ||
              ktype == KQuery::HALFYEAR || ktype == KQuery::YEAR) {
-    filename = m_dirname + "\\" + market + "\\lday\\" + market + code + ".day";
+    filename = dirname_ + "\\" + market + "\\lday\\" + market + code + ".day";
   } else {
     HAYAKU_WARN("Don't support this ktype: {}", ktype);
   }

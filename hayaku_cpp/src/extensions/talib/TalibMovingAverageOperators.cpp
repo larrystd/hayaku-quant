@@ -60,13 +60,13 @@ void TaMa::_calculate(const Indicator& data) {
   size_t total = data.size();
   int lookback = TA_MA_Lookback(n, matype);
   if (lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = data.discard() + lookback;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + lookback;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -75,9 +75,9 @@ void TaMa::_calculate(const Indicator& data) {
 
   int outBegIdx;
   int outNbElement;
-  ::TA_MA(m_discard, total - 1, src, n, matype, &outBegIdx, &outNbElement,
-          dst + m_discard);
-  HAYAKU_ASSERT(outBegIdx == m_discard && (outBegIdx + outNbElement) <= total);
+  ::TA_MA(discard_, total - 1, src, n, matype, &outBegIdx, &outNbElement,
+          dst + discard_);
+  HAYAKU_ASSERT(outBegIdx == discard_ && (outBegIdx + outNbElement) <= total);
 }
 
 Indicator HAYAKU_API TA_MA(int n, int matype) {
@@ -148,13 +148,13 @@ void TaT3::_calculate(const Indicator& data) {
   size_t total = data.size();
   int lookback = TA_T3_Lookback(n, vfactor);
   if (lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = data.discard() + lookback;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + lookback;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -162,9 +162,9 @@ void TaT3::_calculate(const Indicator& data) {
   auto* dst = this->data();
   int outBegIdx;
   int outNbElement;
-  ::TA_T3(m_discard, total - 1, src, n, vfactor, &outBegIdx, &outNbElement,
-          dst + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_T3(discard_, total - 1, src, n, vfactor, &outBegIdx, &outNbElement,
+          dst + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 
@@ -234,13 +234,13 @@ void TaMama::_calculate(const Indicator& data) {
   size_t total = data.size();
   int lookback = TA_MAMA_Lookback(fast_limit, slow_limit);
   if (lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = data.discard() + lookback;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + lookback;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -250,9 +250,9 @@ void TaMama::_calculate(const Indicator& data) {
 
   int outBegIdx;
   int outNbElement;
-  ::TA_MAMA(m_discard, total - 1, src, fast_limit, slow_limit, &outBegIdx,
-            &outNbElement, dst0 + m_discard, dst1 + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_MAMA(discard_, total - 1, src, fast_limit, slow_limit, &outBegIdx,
+            &outNbElement, dst0 + discard_, dst1 + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 
@@ -344,13 +344,13 @@ void TaMavp::_calculate(const Indicator& ind) {
   TA_MAType matype = (TA_MAType)getParam<int>("matype");
   int lookback = TA_MAVP_Lookback(min_n, max_n, matype);
   if (lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = lookback + std::max(ind.discard(), ref.discard());
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = lookback + std::max(ind.discard(), ref.discard());
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -359,9 +359,9 @@ void TaMavp::_calculate(const Indicator& ind) {
   auto* dst = this->data();
   int outBegIdx;
   int outNbElement;
-  ::TA_MAVP(m_discard, total - 1, src0, src1, min_n, max_n, matype, &outBegIdx,
-            &outNbElement, dst + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_MAVP(discard_, total - 1, src0, src1, min_n, max_n, matype, &outBegIdx,
+            &outNbElement, dst + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 

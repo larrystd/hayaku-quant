@@ -16,90 +16,90 @@ namespace hayaku {
 class KRecordTable {
  public:
   KRecordTable()
-      : m_date(0),
-        m_open(0.0),
-        m_high(0.0),
-        m_low(0.0),
-        m_close(0.0),
-        m_amount(0.0),
-        m_count(0.0) {}
+      : date_(0),
+        open_(0.0),
+        high_(0.0),
+        low_(0.0),
+        close_(0.0),
+        amount_(0.0),
+        count_(0.0) {}
 
   KRecordTable(const string& market, const string& code,
                const KQuery::KType& ktype)
-      : m_db_name(fmt::format("{}_{}", market, KQuery::getKTypeName(ktype))),
-        m_code(code),
-        m_date(0),
-        m_open(0.0),
-        m_high(0.0),
-        m_low(0.0),
-        m_close(0.0),
-        m_amount(0.0),
-        m_count(0.0) {
+      : db_name_(fmt::format("{}_{}", market, KQuery::getKTypeName(ktype))),
+        code_(code),
+        date_(0),
+        open_(0.0),
+        high_(0.0),
+        low_(0.0),
+        close_(0.0),
+        amount_(0.0),
+        count_(0.0) {
     // m_db_name = fmt::format("{}_{}", market, KQuery::getKTypeName(ktype));
-    to_lower(m_db_name);
+    to_lower(db_name_);
   };
 
   KRecordTable(const string& market, const string& code,
                const KQuery::KType& ktype, const KRecord& record)
       : KRecordTable(market, code, ktype) {
-    m_date = record.datetime.ymdhm();
-    m_open = record.openPrice;
-    m_high = record.highPrice;
-    m_low = record.lowPrice;
-    m_close = record.closePrice;
-    m_count = record.transCount;
-    m_amount = record.transAmount;
+    date_ = record.datetime.ymdhm();
+    open_ = record.openPrice;
+    high_ = record.highPrice;
+    low_ = record.lowPrice;
+    close_ = record.closePrice;
+    count_ = record.transCount;
+    amount_ = record.transAmount;
   }
 
   KRecordTable(const KRecordTable&) = default;
   KRecordTable& operator=(const KRecordTable&) = default;
   KRecordTable(KRecordTable&& rhs)
-      : m_db_name(std::move(rhs.m_db_name)),
-        m_code(std::move(rhs.m_code)),
-        m_date(rhs.m_date),
-        m_open(rhs.m_open),
-        m_high(rhs.m_high),
-        m_low(rhs.m_low),
-        m_close(rhs.m_close),
-        m_amount(rhs.m_amount),
-        m_count(rhs.m_count) {}
+      : db_name_(std::move(rhs.db_name_)),
+        code_(std::move(rhs.code_)),
+        date_(rhs.date_),
+        open_(rhs.open_),
+        high_(rhs.high_),
+        low_(rhs.low_),
+        close_(rhs.close_),
+        amount_(rhs.amount_),
+        count_(rhs.count_) {}
 
   KRecordTable& operator=(KRecordTable&& rhs) {
     if (&rhs != this) {
-      m_db_name = std::move(rhs.m_db_name);
-      m_code = std::move(rhs.m_code);
-      m_date = rhs.m_date;
-      m_open = rhs.m_open;
-      m_high = rhs.m_high;
-      m_low = rhs.m_low;
-      m_close = rhs.m_close;
-      m_amount = rhs.m_amount;
-      m_count = rhs.m_count;
+      db_name_ = std::move(rhs.db_name_);
+      code_ = std::move(rhs.code_);
+      date_ = rhs.date_;
+      open_ = rhs.open_;
+      high_ = rhs.high_;
+      low_ = rhs.low_;
+      close_ = rhs.close_;
+      amount_ = rhs.amount_;
+      count_ = rhs.count_;
     }
     return *this;
   }
 
   Datetime date() const {
-    return m_date == 0 ? Null<Datetime>() : Datetime((uint64_t)m_date);
+    return date_ == 0 ? Null<Datetime>() : Datetime((uint64_t)date_);
   }
 
-  price_t open() const { return m_open; }
+  price_t open() const { return open_; }
 
-  price_t high() const { return m_high; }
+  price_t high() const { return high_; }
 
-  price_t low() const { return m_low; }
+  price_t low() const { return low_; }
 
-  price_t close() const { return m_close; }
+  price_t close() const { return close_; }
 
-  price_t amount() const { return m_amount; }
+  price_t amount() const { return amount_; }
 
-  price_t count() const { return m_count; }
+  price_t count() const { return count_; }
 
   string str() const {
     return fmt::format(
         "KRecordTable({}(date), {}(open), {}(high), {}(low), {}(close), "
         "{}(amount), {}(count))",
-        m_date, m_open, m_high, m_low, m_close, m_amount, m_count);
+        date_, open_, high_, low_, close_, amount_, count_);
   }
 
  public:
@@ -108,53 +108,53 @@ class KRecordTable {
         "insert into `{}`.`{}` "
         "(`date`, `open`, `high`, `low`, `close`, `amount`, `count`) "
         "values (?,?,?,?,?,?,?)",
-        m_db_name, m_code);
+        db_name_, code_);
   }
 
   string getUpdateSQL() {
     return fmt::format(
         "update `{}`.`{}` set `open`=?, `high`=?, `low`=?, "
         "`close`=?, `amount`=? `count`=? where `date`=?",
-        m_db_name, m_code);
+        db_name_, code_);
   }
 
   string getSelectSQL() {
     return fmt::format(
         "select `date`,`open`,`high`, `low`, `close`, `amount`, `count` from "
         "`{}`.`{}`",
-        m_db_name, m_code);
+        db_name_, code_);
   }
 
   string getSelectSQLNoDB() {
     return fmt::format(
         "select `date`,`open`,`high`, `low`, `close`, `amount`, `count` from "
         "`{}`",
-        m_code);
+        code_);
   }
 
   void save(const SQLStatementPtr& st) const {
-    st->bind(0, m_date, m_open, m_high, m_low, m_close, m_amount, m_count);
+    st->bind(0, date_, open_, high_, low_, close_, amount_, count_);
   }
 
   void update(const SQLStatementPtr& st) const {
-    st->bind(0, m_open, m_high, m_low, m_close, m_amount, m_count);
+    st->bind(0, open_, high_, low_, close_, amount_, count_);
   }
 
   void load(const SQLStatementPtr& st) {
-    st->getColumn(0, m_date, m_open, m_high, m_low, m_close, m_amount, m_count);
+    st->getColumn(0, date_, open_, high_, low_, close_, amount_, count_);
   }
 
  private:
-  string m_db_name;
-  string m_code;
+  string db_name_;
+  string code_;
 
-  int64_t m_date;
-  price_t m_open;
-  price_t m_high;
-  price_t m_low;
-  price_t m_close;
-  price_t m_amount;
-  price_t m_count;
+  int64_t date_;
+  price_t open_;
+  price_t high_;
+  price_t low_;
+  price_t close_;
+  price_t amount_;
+  price_t count_;
 };
 
 }  // namespace hayaku

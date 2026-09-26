@@ -34,11 +34,11 @@ void NormalizeBase::baseCheckParam(const string& name) const {}
 NormalizePtr NormalizeBase::clone() {
   NormalizePtr p;
   p = _clone();
-  HAYAKU_ERROR_IF(!p, "Failed clone! {}", m_name);
+  HAYAKU_ERROR_IF(!p, "Failed clone! {}", name_);
 
-  p->m_name = m_name;
-  p->m_params = m_params;
-  p->m_is_python_object = m_is_python_object;
+  p->name_ = name_;
+  p->params_ = params_;
+  p->is_python_object_ = is_python_object_;
   return p;
 }
 

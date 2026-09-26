@@ -54,7 +54,7 @@ class HAYAKU_INGEST_API KDataToHdf5Importer {
                     double max_trade = 1000000);
 
  private:
-  ImportKDataToHdf5PluginInterface* m_plugin{nullptr};
+  ImportKDataToHdf5PluginInterface* plugin_{nullptr};
 };
 
 }  // namespace hayaku

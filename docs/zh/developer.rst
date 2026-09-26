@@ -1,12 +1,6 @@
-开发者指南
-==========
-
-.. _developer:
-
-Hayaku 使用 Xmake 构建 C++ 库和 Python 扩展。core、ingest 和 realtime 是独立
-目标；后两者在运行时是可选的。构建需要支持 C++20 的编译器、Xmake 3.0.8，以及
-带开发头文件的 Python。直接使用 Xmake 时，可通过 ``HAYAKU_PYTHON`` 指定扩展
-模块对应的 Python 可执行文件。
+C++ 源码在 macOS 和 Linux 上使用 Bazel 构建。在仓库根目录运行
+``./op.sh build`` 和 ``./op.sh test``。C++ 格式化与静态检查命令见
+``tools/cpp-style.md``。
 
 Python 包结构
 -------------
@@ -37,50 +31,79 @@ Step 6C 又删除了旧路径 ``hayaku.indicator``、``hayaku.analysis``、
 ``hayaku.apps``、``hayaku.session``、``hayaku.ingest``、
 ``hayaku.realtime``、``hayaku.visualization`` 和 ``hayaku.spi``。
 
-macOS 本地流程
---------------
+.. _developer:
 
-``op.sh`` 默认选择 Homebrew Python 3.10。在仓库根目录执行：
 
-.. code-block:: shell
+编译前准备
+----------------
 
-   ./op.sh configure
-   ./op.sh build
-   ./op.sh build-optional
-   ./op.sh test
-
-``build`` 构建 core 扩展；``build-optional`` 构建 ingest 和 realtime 扩展。
-``test`` 在运行 C++ 与 Python 测试前构建 C++ 测试目标和两个可选扩展。可使用
-``./op.sh doctor`` 查看工具链和产物路径。
-
-Linux 本地流程
---------------
-
-先安装 C++20 编译器、Python 开发头文件，以及当前 Xmake 选项所需的系统依赖，
-再执行：
+安装 Bazelisk、CMake、支持 C++20 的编译器及 Python 3.10。Bazelisk 从
+``.bazelversion`` 读取固定的 Bazel 版本。克隆源码：
 
 .. code-block:: shell
 
-   export HAYAKU_PYTHON="$(command -v python3)"
-   xmake f -m release -k shared --feedback=n -y
-   xmake -b core
-   xmake -b ingest
-   xmake -b realtime
-   xmake r small-test
-   xmake r unit-test
-   python3 tests/python/test.py
+    git clone https://github.com/larrystd/hayaku-quant.git
+    cd hayaku-quant
 
-代码质量
---------
+Bazel 配置支持 macOS 和 Linux。原生依赖固定在 ``MODULE.bazel`` 及锁文件中；
+构建目标详见 ``BAZEL.md``。
 
-全仓 C++ Google 格式检查和静态分析使用 LLVM 20。源码清单与编译数据库生成方法见
-``tools/cpp-style.md``。
+编译与安装
+------------
 
 .. code-block:: shell
 
-   ./op.sh fmt-check
-   ./op.sh asan-test
+    python3.10 -m pip install -r requirements.txt
+    ./op.sh build
+    ./op.sh import-test
+    ./op.sh test
+    ./op.sh python-test
 
-ASan 命令在 ``build/asan`` 中构建项目目标，退出时恢复原 Xmake 配置。之后应
-重新构建普通 Python 扩展，再运行未启用 sanitizer 的 Python。macOS 的 ASan
-运行不包含 LeakSanitizer；Linux 在运行时支持时还检查泄漏。
+``./op.sh build`` 会把 Python 3.10 原生模块放入源码包目录。执行
+``./op.sh wheel``、``./op.sh wheel-ingest`` 和
+``./op.sh wheel-realtime`` 可分别制作核心与可选扩展的 wheel。
+
+设置 PYTHONPATH 环境变量
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Linux 下如修改 ~/.bashrc 文件，在末尾添加如下内容 （指向源码目录） ：
+
+.. code-block:: shell
+
+    export PYTHONPATH=/path/to/hayaku:$PYTHONPATH
+
+
+IDE 无法正常提示
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. 安装 pybind11-stubgen，使用命令 pip install pybind11-stubgen
+2. 运行 pybind11-stubgen hayaku -o . 命令，即可正常提示帮助信息。
+
+
+使用插件
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+如自行编译的希望使用 hayaku 插件的，请安装独立的插件包 pip install hayaku-plugin
+
+但请注意插件版本需要配套，最好使用 release 分支（或标签）进行编译，避免版本不匹配无法使用。
+
+
+Docker 构建
+------------
+
+源码 docker 目录下，提供了基于 Ubuntu/Debain/Fedora 的 Dockerfile_dev 文件，可以用来快速构建 Hayaku 的编译环境。
+
+.. code-block:: shell
+
+    cd docker
+    docker build -t hayaku_dev -f Dockerfile_dev .
+
+    docker run -it hayaku_dev /bin/bash
+
+进入 hayaku 目录下，其他与源码编译步骤一致。
+
+也可以使用基于 pip 安装 Hayaku 的 dockerfile, 见 /docker/Dockerfile_miniconda 。
+
+Hayaku 使用前需要导入数据，Docker 镜像不包含界面，可以执行 ``python -m hayaku.application.gui.importdata`` 命令导入数据。
+
+hayaku 配置文件在 /root/.hayaku 目录下, 数据文件存储(HDF5)在 /root/stocks 目录下，可自行在创建docker容器时指定挂载目录。

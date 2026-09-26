@@ -18,7 +18,7 @@ namespace {
 class TestOrderBroker final : public OrderBrokerBase {
  public:
   explicit TestOrderBroker(string assetInfo)
-      : m_assetInfo(std::move(assetInfo)) {}
+      : asset_info_(std::move(assetInfo)) {}
 
   void _buy(Datetime, const string&, const string&, price_t, double, price_t,
             price_t, OrderOrigin, const string&) override {}
@@ -26,10 +26,10 @@ class TestOrderBroker final : public OrderBrokerBase {
   void _sell(Datetime, const string&, const string&, price_t, double, price_t,
              price_t, OrderOrigin, const string&) override {}
 
-  string _getAssetInfo() override { return m_assetInfo; }
+  string _getAssetInfo() override { return asset_info_; }
 
  private:
-  string m_assetInfo;
+  string asset_info_;
 };
 
 }  // namespace

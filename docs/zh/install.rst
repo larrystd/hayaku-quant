@@ -25,11 +25,10 @@
 .. code-block:: shell
 
     python3.10 -m pip install -r requirements.txt
-    ./op.sh configure
     ./op.sh build
     ./op.sh import-test
     ./op.sh test
 
 运行 ``./op.sh doctor`` 可查看脚本选用的工具路径。工具安装在其他位置时，
-可设置 ``PYTHON_PREFIX``、``PYTHON_BIN`` 或 ``XMAKE_BIN``。开发构建说明见
+可设置 ``BAZEL_BIN`` 或 ``PYTHON_BIN``。开发构建说明见
 :ref:`developer`。

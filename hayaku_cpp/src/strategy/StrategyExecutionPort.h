@@ -23,7 +23,7 @@ class StrategyExecutionPort {
                                   const KQuery::KType& ktype) const;
 
  private:
-  ExecutionAccountPortPtr m_account;
+  ExecutionAccountPortPtr account_;
 };
 
 }  // namespace hayaku::internal

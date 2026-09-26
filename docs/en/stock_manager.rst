@@ -200,7 +200,7 @@ concurrently with a query on the same session.
     .. py:method:: close()
 
         Close and invalidate this session handle. Repeated calls are safe. The final explicit
-        session releases the internal data runtime.
+        session releases the internal data runtime; its data runtime.
 
 .. py:class:: DataEngine
 

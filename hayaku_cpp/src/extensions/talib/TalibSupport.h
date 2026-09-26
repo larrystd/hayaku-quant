@@ -251,12 +251,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int lookback = func_lookback();                              \
     size_t total = data.size();                                  \
     if (lookback < 0) {                                          \
-      m_discard = total;                                         \
+      discard_ = total;                                         \
       return;                                                    \
     }                                                            \
-    m_discard = data.discard() + lookback;                       \
-    if (m_discard >= total) {                                    \
-      m_discard = total;                                         \
+    discard_ = data.discard() + lookback;                       \
+    if (discard_ >= total) {                                    \
+      discard_ = total;                                         \
       return;                                                    \
     }                                                            \
                                                                  \
@@ -264,9 +264,9 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     auto *dst = this->data();                                    \
     int outBegIdx;                                               \
     int outNbElement;                                            \
-    ::func(m_discard, total - 1, src, &outBegIdx, &outNbElement, \
-           dst + m_discard);                                     \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                    \
+    ::func(discard_, total - 1, src, &outBegIdx, &outNbElement, \
+           dst + discard_);                                     \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                    \
                   (outBegIdx + outNbElement) <= total);          \
   }                                                              \
                                                                  \
@@ -280,13 +280,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int lookback = func_lookback();                                          \
     size_t total = data.size();                                              \
     if (lookback < 0) {                                                      \
-      m_discard = total;                                                     \
+      discard_ = total;                                                     \
       return;                                                                \
     }                                                                        \
                                                                              \
-    m_discard = data.discard() + lookback;                                   \
-    if (m_discard >= total) {                                                \
-      m_discard = total;                                                     \
+    discard_ = data.discard() + lookback;                                   \
+    if (discard_ >= total) {                                                \
+      discard_ = total;                                                     \
       return;                                                                \
     }                                                                        \
                                                                              \
@@ -294,10 +294,10 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     std::unique_ptr<int[]> buf = std::make_unique<int[]>(total);             \
     int outBegIdx;                                                           \
     int outNbElement;                                                        \
-    ::func(m_discard, total - 1, src, &outBegIdx, &outNbElement, buf.get()); \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                \
+    ::func(discard_, total - 1, src, &outBegIdx, &outNbElement, buf.get()); \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                \
                   (outBegIdx + outNbElement) <= total);                      \
-    m_discard = outBegIdx;                                                   \
+    discard_ = outBegIdx;                                                   \
     auto *dst = this->data();                                                \
     dst = dst + outBegIdx;                                                   \
     for (int i = 0; i < outNbElement; ++i) {                                 \
@@ -325,13 +325,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int lookback = func_lookback(n);                                           \
     size_t total = data.size();                                                \
     if (lookback < 0) {                                                        \
-      m_discard = total;                                                       \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
-    m_discard = data.discard() + lookback;                                     \
-    if (m_discard >= total) {                                                  \
-      m_discard = total;                                                       \
+    discard_ = data.discard() + lookback;                                     \
+    if (discard_ >= total) {                                                  \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -340,9 +340,9 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
                                                                                \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(m_discard, total - 1, src, n, &outBegIdx, &outNbElement,            \
-           dst + m_discard);                                                   \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement,            \
+           dst + discard_);                                                   \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -393,13 +393,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int lookback = func_lookback(n);                                      \
     size_t total = data.size();                                           \
     if (lookback < 0) {                                                   \
-      m_discard = total;                                                  \
+      discard_ = total;                                                  \
       return;                                                             \
     }                                                                     \
                                                                           \
-    m_discard = data.discard() + lookback;                                \
-    if (m_discard >= total) {                                             \
-      m_discard = total;                                                  \
+    discard_ = data.discard() + lookback;                                \
+    if (discard_ >= total) {                                             \
+      discard_ = total;                                                  \
       return;                                                             \
     }                                                                     \
                                                                           \
@@ -407,11 +407,11 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     std::unique_ptr<int[]> buf = std::make_unique<int[]>(total);          \
     int outBegIdx;                                                        \
     int outNbElement;                                                     \
-    ::func(m_discard, total - 1, src, n, &outBegIdx, &outNbElement,       \
+    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement,       \
            buf.get());                                                    \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                             \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                             \
                   (outBegIdx + outNbElement) <= total);                   \
-    m_discard = outBegIdx;                                                \
+    discard_ = outBegIdx;                                                \
     auto *dst = this->data();                                             \
     dst = dst + outBegIdx;                                                \
     for (int i = 0; i < outNbElement; ++i) {                              \
@@ -454,12 +454,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     size_t total = data.size();                                  \
     int lookback = func_lookback();                              \
     if (lookback < 0) {                                          \
-      m_discard = total;                                         \
+      discard_ = total;                                         \
       return;                                                    \
     }                                                            \
-    m_discard = data.discard() + lookback;                       \
-    if (m_discard >= total) {                                    \
-      m_discard = total;                                         \
+    discard_ = data.discard() + lookback;                       \
+    if (discard_ >= total) {                                    \
+      discard_ = total;                                         \
       return;                                                    \
     }                                                            \
                                                                  \
@@ -469,9 +469,9 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
                                                                  \
     int outBegIdx;                                               \
     int outNbElement;                                            \
-    ::func(m_discard, total - 1, src, &outBegIdx, &outNbElement, \
-           dst0 + m_discard, dst1 + m_discard);                  \
-    HAYAKU_ASSERT(outBegIdx == m_discard &&                      \
+    ::func(discard_, total - 1, src, &outBegIdx, &outNbElement, \
+           dst0 + discard_, dst1 + discard_);                  \
+    HAYAKU_ASSERT(outBegIdx == discard_ &&                      \
                   (outBegIdx + outNbElement) <= total);          \
   }                                                              \
                                                                  \
@@ -496,13 +496,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int lookback = func_lookback(n);                                          \
     size_t total = data.size();                                               \
     if (lookback < 0) {                                                       \
-      m_discard = total;                                                      \
+      discard_ = total;                                                      \
       return;                                                                 \
     }                                                                         \
                                                                               \
-    m_discard = data.discard() + lookback;                                    \
-    if (m_discard >= total) {                                                 \
-      m_discard = total;                                                      \
+    discard_ = data.discard() + lookback;                                    \
+    if (discard_ >= total) {                                                 \
+      discard_ = total;                                                      \
       return;                                                                 \
     }                                                                         \
                                                                               \
@@ -512,11 +512,11 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int *buf1 = buf0 + total;                                                 \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    ::func(m_discard, total - 1, src, n, &outBegIdx, &outNbElement, buf0,     \
+    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement, buf0,     \
            buf1);                                                             \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                 \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
                   (outBegIdx + outNbElement) <= total);                       \
-    m_discard = outBegIdx;                                                    \
+    discard_ = outBegIdx;                                                    \
     auto *dst0 = this->data(0) + outBegIdx;                                   \
     auto *dst1 = this->data(1) + outBegIdx;                                   \
     for (int i = 0; i < outNbElement; ++i) {                                  \
@@ -574,12 +574,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     size_t total = data.size();                                                \
     int lookback = func_lookback(n);                                           \
     if (lookback < 0) {                                                        \
-      m_discard = total;                                                       \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
-    m_discard = data.discard() + lookback;                                     \
-    if (m_discard >= total) {                                                  \
-      m_discard = total;                                                       \
+    discard_ = data.discard() + lookback;                                     \
+    if (discard_ >= total) {                                                  \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -589,9 +589,9 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
                                                                                \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(m_discard, total - 1, src, n, &outBegIdx, &outNbElement,            \
-           dst0 + m_discard, dst1 + m_discard);                                \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement,            \
+           dst0 + discard_, dst1 + discard_);                                \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -644,12 +644,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     size_t total = data.size();                                                \
     int lookback = func_lookback(n);                                           \
     if (lookback < 0) {                                                        \
-      m_discard = total;                                                       \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
-    m_discard = data.discard() + lookback;                                     \
-    if (m_discard >= total) {                                                  \
-      m_discard = total;                                                       \
+    discard_ = data.discard() + lookback;                                     \
+    if (discard_ >= total) {                                                  \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -660,9 +660,9 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
                                                                                \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(m_discard, total - 1, src, n, &outBegIdx, &outNbElement,            \
-           dst0 + m_discard, dst1 + m_discard, dst2 + m_discard);              \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    ::func(discard_, total - 1, src, n, &outBegIdx, &outNbElement,            \
+           dst0 + discard_, dst1 + discard_, dst2 + discard_);              \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -712,14 +712,14 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     Indicator ref = prepare(ind);                                         \
     int lookback = func_lookback();                                       \
     if (lookback < 0) {                                                   \
-      m_discard = total;                                                  \
+      discard_ = total;                                                  \
       return;                                                             \
     }                                                                     \
                                                                           \
     size_t in_discard = std::max(ind.discard(), ref.discard());           \
-    m_discard = lookback + in_discard;                                    \
-    if (m_discard >= total) {                                             \
-      m_discard = total;                                                  \
+    discard_ = lookback + in_discard;                                    \
+    if (discard_ >= total) {                                             \
+      discard_ = total;                                                  \
       return;                                                             \
     }                                                                     \
                                                                           \
@@ -728,9 +728,9 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     auto *dst = this->data();                                             \
     int outBegIdx;                                                        \
     int outNbElement;                                                     \
-    ::func(m_discard, total - 1, src0, src1, &outBegIdx, &outNbElement,   \
-           dst + m_discard);                                              \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                             \
+    ::func(discard_, total - 1, src0, src1, &outBegIdx, &outNbElement,   \
+           dst + discard_);                                              \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                             \
                   (outBegIdx + outNbElement) <= total);                   \
   }                                                                       \
                                                                           \
@@ -780,14 +780,14 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int n = getParam<int>("n");                                                \
     int lookback = func_lookback(n);                                           \
     if (lookback < 0) {                                                        \
-      m_discard = total;                                                       \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
     size_t in_discard = std::max(ind.discard(), ref.discard());                \
-    m_discard = lookback + in_discard;                                         \
-    if (m_discard >= total) {                                                  \
-      m_discard = total;                                                       \
+    discard_ = lookback + in_discard;                                         \
+    if (discard_ >= total) {                                                  \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -796,9 +796,9 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     auto *dst = this->data();                                                  \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(m_discard, total - 1, src0, src1, n, &outBegIdx, &outNbElement,     \
-           dst + m_discard);                                                   \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    ::func(discard_, total - 1, src0, src1, n, &outBegIdx, &outNbElement,     \
+           dst + discard_);                                                   \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -814,12 +814,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   }
 
 #define TA_OHLC_OUT1_IMP(func, func_lookback)                                  \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { m_need_context = true; } \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
                                                                                \
   void Cls_##func::_calculate(const Indicator &data) {                         \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
                    "The input is ignored because {} depends on the context!",  \
-                   m_name);                                                    \
+                   name_);                                                    \
                                                                                \
     KData k = getContext();                                                    \
     size_t total = k.size();                                                   \
@@ -828,7 +828,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     _readyBuffer(total, 1);                                                    \
     int lookback = func_lookback();                                            \
     if (lookback < 0 || lookback >= total) {                                   \
-      m_discard = total;                                                       \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -845,13 +845,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
       close[i] = kptr[i].closePrice;                                           \
     }                                                                          \
                                                                                \
-    m_discard = lookback;                                                      \
+    discard_ = lookback;                                                      \
     auto *dst = this->data();                                                  \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(m_discard, total - 1, open, high, low, close, &outBegIdx,           \
-           &outNbElement, dst + m_discard);                                    \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    ::func(discard_, total - 1, open, high, low, close, &outBegIdx,           \
+           &outNbElement, dst + discard_);                                    \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -866,12 +866,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   }
 
 #define TA_OHLC_OUT1_INT_IMP(func, func_lookback)                              \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { m_need_context = true; } \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
                                                                                \
   void Cls_##func::_calculate(const Indicator &data) {                         \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
                    "The input is ignored because {} depends on the context!",  \
-                   m_name);                                                    \
+                   name_);                                                    \
                                                                                \
     KData k = getContext();                                                    \
     size_t total = k.size();                                                   \
@@ -881,7 +881,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
                                                                                \
     int lookback = func_lookback();                                            \
     if (lookback < 0 || lookback >= total) {                                   \
-      m_discard = total;                                                       \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -901,10 +901,10 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     std::unique_ptr<int[]> outbuf = std::make_unique<int[]>(total);            \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    m_discard = lookback;                                                      \
-    ::func(m_discard, total - 1, open, high, low, close, &outBegIdx,           \
+    discard_ = lookback;                                                      \
+    ::func(discard_, total - 1, open, high, low, close, &outBegIdx,           \
            &outNbElement, outbuf.get());                                       \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
     auto *dst = this->data() + outBegIdx;                                      \
     for (size_t i = 0; i < outNbElement; ++i) {                                \
@@ -925,7 +925,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
 #define TA_OHLC_OUT1_INT_P1_D_IMP(func, func_lookback, param1, param1_value,  \
                                   param1_min, param1_max)                     \
   Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                         \
-    m_need_context = true;                                                    \
+    need_context_ = true;                                                    \
     setParam<double>(#param1, param1_value);                                  \
   }                                                                           \
                                                                               \
@@ -939,7 +939,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   void Cls_##func::_calculate(const Indicator &data) {                        \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
                    "The input is ignored because {} depends on the context!", \
-                   m_name);                                                   \
+                   name_);                                                   \
                                                                               \
     KData k = getContext();                                                   \
     size_t total = k.size();                                                  \
@@ -949,7 +949,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
                                                                               \
     int lookback = func_lookback(param1_value);                               \
     if (lookback < 0 || lookback >= total) {                                  \
-      m_discard = total;                                                      \
+      discard_ = total;                                                      \
       return;                                                                 \
     }                                                                         \
                                                                               \
@@ -969,11 +969,11 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     std::unique_ptr<int[]> outbuf = std::make_unique<int[]>(total);           \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    m_discard = lookback;                                                     \
-    ::func(m_discard, total - 1, open, high, low, close,                      \
+    discard_ = lookback;                                                     \
+    ::func(discard_, total - 1, open, high, low, close,                      \
            getParam<double>(#param1), &outBegIdx, &outNbElement,              \
            outbuf.get());                                                     \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                 \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
                   (outBegIdx + outNbElement) <= total);                       \
     auto *dst = this->data() + outBegIdx;                                     \
     for (size_t i = 0; i < outNbElement; ++i) {                               \
@@ -996,12 +996,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   }
 
 #define TA_HLCV_OUT1_IMP(func, func_lookback)                                  \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { m_need_context = true; } \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
                                                                                \
   void Cls_##func::_calculate(const Indicator &data) {                         \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
                    "The input is ignored because {} depends on the context!",  \
-                   m_name);                                                    \
+                   name_);                                                    \
                                                                                \
     KData k = getContext();                                                    \
     size_t total = k.size();                                                   \
@@ -1010,7 +1010,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     _readyBuffer(total, 1);                                                    \
     int lookback = func_lookback();                                            \
     if (lookback < 0 || lookback >= total) {                                   \
-      m_discard = total;                                                       \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -1030,10 +1030,10 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     auto *dst = this->data();                                                  \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    m_discard = lookback;                                                      \
-    ::func(m_discard, total - 1, high, low, close, vol, &outBegIdx,            \
-           &outNbElement, dst + m_discard);                                    \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    discard_ = lookback;                                                      \
+    ::func(discard_, total - 1, high, low, close, vol, &outBegIdx,            \
+           &outNbElement, dst + discard_);                                    \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -1048,12 +1048,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   }
 
 #define TA_HL_OUT1_IMP(func, func_lookback)                                    \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { m_need_context = true; } \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
                                                                                \
   void Cls_##func::_calculate(const Indicator &data) {                         \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
                    "The input is ignored because {} depends on the context!",  \
-                   m_name);                                                    \
+                   name_);                                                    \
                                                                                \
     KData k = getContext();                                                    \
     size_t total = k.size();                                                   \
@@ -1062,7 +1062,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     _readyBuffer(total, 1);                                                    \
     int lookback = func_lookback();                                            \
     if (lookback < 0 || lookback >= total) {                                   \
-      m_discard = total;                                                       \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -1078,10 +1078,10 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     auto *dst = this->data();                                                  \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    m_discard = lookback;                                                      \
-    ::func(m_discard, total - 1, high, low, &outBegIdx, &outNbElement,         \
-           dst + m_discard);                                                   \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    discard_ = lookback;                                                      \
+    ::func(discard_, total - 1, high, low, &outBegIdx, &outNbElement,         \
+           dst + discard_);                                                   \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -1096,12 +1096,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   }
 
 #define TA_CV_OUT1_IMP(func, func_lookback)                                    \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { m_need_context = true; } \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
                                                                                \
   void Cls_##func::_calculate(const Indicator &data) {                         \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
                    "The input is ignored because {} depends on the context!",  \
-                   m_name);                                                    \
+                   name_);                                                    \
                                                                                \
     KData k = getContext();                                                    \
     size_t total = k.size();                                                   \
@@ -1110,7 +1110,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     _readyBuffer(total, 1);                                                    \
     int lookback = func_lookback();                                            \
     if (lookback < 0 || lookback >= total) {                                   \
-      m_discard = 0;                                                           \
+      discard_ = 0;                                                           \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -1126,10 +1126,10 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     auto *dst = this->data();                                                  \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    m_discard = lookback;                                                      \
-    ::func(m_discard, total - 1, close, vol, &outBegIdx, &outNbElement,        \
-           dst + m_discard);                                                   \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    discard_ = lookback;                                                      \
+    ::func(discard_, total - 1, close, vol, &outBegIdx, &outNbElement,        \
+           dst + discard_);                                                   \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -1144,12 +1144,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   }
 
 #define TA_HLC_OUT1_IMP(func, func_lookback)                                   \
-  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { m_need_context = true; } \
+  Cls_##func::Cls_##func() : IndicatorImp(#func, 1) { need_context_ = true; } \
                                                                                \
   void Cls_##func::_calculate(const Indicator &data) {                         \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
                    "The input is ignored because {} depends on the context!",  \
-                   m_name);                                                    \
+                   name_);                                                    \
                                                                                \
     KData k = getContext();                                                    \
     size_t total = k.size();                                                   \
@@ -1158,7 +1158,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     _readyBuffer(total, 1);                                                    \
     int lookback = func_lookback();                                            \
     if (lookback < 0 || lookback >= total) {                                   \
-      m_discard = total;                                                       \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -1173,13 +1173,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
       close[i] = kptr[i].closePrice;                                           \
     }                                                                          \
                                                                                \
-    m_discard = lookback;                                                      \
+    discard_ = lookback;                                                      \
     auto *dst = this->data();                                                  \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(m_discard, total - 1, high, low, close, &outBegIdx, &outNbElement,  \
-           dst + m_discard);                                                   \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    ::func(discard_, total - 1, high, low, close, &outBegIdx, &outNbElement,  \
+           dst + discard_);                                                   \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -1195,7 +1195,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
 
 #define TA_HLC_OUT1_N_IMP(func, func_lookback, period, period_min, period_max) \
   Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                          \
-    m_need_context = true;                                                     \
+    need_context_ = true;                                                     \
     setParam<int>("n", period);                                                \
   }                                                                            \
                                                                                \
@@ -1209,7 +1209,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   void Cls_##func::_calculate(const Indicator &data) {                         \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
                    "The input is ignored because {} depends on the context!",  \
-                   m_name);                                                    \
+                   name_);                                                    \
                                                                                \
     KData k = getContext();                                                    \
     size_t total = k.size();                                                   \
@@ -1219,7 +1219,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int n = getParam<int>("n");                                                \
     int back = func_lookback(n);                                               \
     if (back < 0 || back >= total) {                                           \
-      m_discard = total;                                                       \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -1234,13 +1234,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
       close[i] = kptr[i].closePrice;                                           \
     }                                                                          \
                                                                                \
-    m_discard = back;                                                          \
+    discard_ = back;                                                          \
     auto *dst = this->data();                                                  \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(m_discard, total - 1, high, low, close, n, &outBegIdx,              \
-           &outNbElement, dst + m_discard);                                    \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    ::func(discard_, total - 1, high, low, close, n, &outBegIdx,              \
+           &outNbElement, dst + discard_);                                    \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -1261,7 +1261,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
 #define TA_HLCV_OUT1_N_IMP(func, func_lookback, period, period_min,           \
                            period_max)                                        \
   Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                         \
-    m_need_context = true;                                                    \
+    need_context_ = true;                                                    \
     setParam<int>("n", period);                                               \
   }                                                                           \
                                                                               \
@@ -1275,7 +1275,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   void Cls_##func::_calculate(const Indicator &data) {                        \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
                    "The input is ignored because {} depends on the context!", \
-                   m_name);                                                   \
+                   name_);                                                   \
                                                                               \
     KData k = getContext();                                                   \
     size_t total = k.size();                                                  \
@@ -1286,7 +1286,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int n = getParam<int>("n");                                               \
     int back = func_lookback(n);                                              \
     if (back < 0 || back >= total) {                                          \
-      m_discard = total;                                                      \
+      discard_ = total;                                                      \
       return;                                                                 \
     }                                                                         \
                                                                               \
@@ -1303,13 +1303,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
       vol[i] = kptr[i].transCount;                                            \
     }                                                                         \
                                                                               \
-    m_discard = back;                                                         \
+    discard_ = back;                                                         \
     auto *dst = this->data();                                                 \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    ::func(m_discard, total - 1, high, low, close, vol, n, &outBegIdx,        \
-           &outNbElement, dst + m_discard);                                   \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                 \
+    ::func(discard_, total - 1, high, low, close, vol, n, &outBegIdx,        \
+           &outNbElement, dst + discard_);                                   \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
                   (outBegIdx + outNbElement) <= total);                       \
   }                                                                           \
                                                                               \
@@ -1329,7 +1329,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
 
 #define TA_HL_OUT1_N_IMP(func, func_lookback, period, period_min, period_max) \
   Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                         \
-    m_need_context = true;                                                    \
+    need_context_ = true;                                                    \
     setParam<int>("n", period);                                               \
   }                                                                           \
                                                                               \
@@ -1343,7 +1343,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   void Cls_##func::_calculate(const Indicator &data) {                        \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
                    "The input is ignored because {} depends on the context!", \
-                   m_name);                                                   \
+                   name_);                                                   \
                                                                               \
     KData k = getContext();                                                   \
     size_t total = k.size();                                                  \
@@ -1353,7 +1353,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int n = getParam<int>("n");                                               \
     int back = func_lookback(n);                                              \
     if (back < 0 || back >= total) {                                          \
-      m_discard = total;                                                      \
+      discard_ = total;                                                      \
       return;                                                                 \
     }                                                                         \
                                                                               \
@@ -1366,13 +1366,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
       low[i] = kptr[i].lowPrice;                                              \
     }                                                                         \
                                                                               \
-    m_discard = back;                                                         \
+    discard_ = back;                                                         \
     auto *dst = this->data();                                                 \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    ::func(m_discard, total - 1, high, low, n, &outBegIdx, &outNbElement,     \
-           dst + m_discard);                                                  \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                 \
+    ::func(discard_, total - 1, high, low, n, &outBegIdx, &outNbElement,     \
+           dst + discard_);                                                  \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
                   (outBegIdx + outNbElement) <= total);                       \
   }                                                                           \
                                                                               \
@@ -1392,7 +1392,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
 
 #define TA_HL_OUT2_N_IMP(func, func_lookback, period, period_min, period_max) \
   Cls_##func::Cls_##func() : IndicatorImp(#func, 2) {                         \
-    m_need_context = true;                                                    \
+    need_context_ = true;                                                    \
     setParam<int>("n", period);                                               \
   }                                                                           \
                                                                               \
@@ -1406,7 +1406,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   void Cls_##func::_calculate(const Indicator &data) {                        \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
                    "The input is ignored because {} depends on the context!", \
-                   m_name);                                                   \
+                   name_);                                                   \
                                                                               \
     KData k = getContext();                                                   \
     size_t total = k.size();                                                  \
@@ -1416,7 +1416,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int n = getParam<int>("n");                                               \
     int back = func_lookback(n);                                              \
     if (back < 0 || back >= total) {                                          \
-      m_discard = total;                                                      \
+      discard_ = total;                                                      \
       return;                                                                 \
     }                                                                         \
                                                                               \
@@ -1429,14 +1429,14 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
       low[i] = kptr[i].lowPrice;                                              \
     }                                                                         \
                                                                               \
-    m_discard = back;                                                         \
+    discard_ = back;                                                         \
     auto *dst0 = this->data(0);                                               \
     auto *dst1 = this->data(1);                                               \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    ::func(m_discard, total - 1, high, low, n, &outBegIdx, &outNbElement,     \
-           dst0 + m_discard, dst1 + m_discard);                               \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                 \
+    ::func(discard_, total - 1, high, low, n, &outBegIdx, &outNbElement,     \
+           dst0 + discard_, dst1 + discard_);                               \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
                   (outBegIdx + outNbElement) <= total);                       \
   }                                                                           \
                                                                               \
@@ -1456,7 +1456,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
 
 #define TA_HLC_OUT3_N_IMP(func, func_lookback, period, period_min, period_max) \
   Cls_##func::Cls_##func() : IndicatorImp(#func, 3) {                          \
-    m_need_context = true;                                                     \
+    need_context_ = true;                                                     \
     setParam<int>("n", period);                                                \
   }                                                                            \
                                                                                \
@@ -1470,7 +1470,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   void Cls_##func::_calculate(const Indicator &data) {                         \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                 \
                    "The input is ignored because {} depends on the context!",  \
-                   m_name);                                                    \
+                   name_);                                                    \
                                                                                \
     KData k = getContext();                                                    \
     size_t total = k.size();                                                   \
@@ -1480,7 +1480,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int n = getParam<int>("n");                                                \
     int back = func_lookback(n);                                               \
     if (back < 0 || back >= total) {                                           \
-      m_discard = total;                                                       \
+      discard_ = total;                                                       \
       return;                                                                  \
     }                                                                          \
                                                                                \
@@ -1498,13 +1498,13 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     auto *dst0 = this->data(0);                                                \
     auto *dst1 = this->data(1);                                                \
     auto *dst2 = this->data(2);                                                \
-    m_discard = back;                                                          \
+    discard_ = back;                                                          \
     int outBegIdx;                                                             \
     int outNbElement;                                                          \
-    ::func(m_discard, total - 1, high, low, close, n, &outBegIdx,              \
-           &outNbElement, dst0 + m_discard, dst1 + m_discard,                  \
-           dst2 + m_discard);                                                  \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                  \
+    ::func(discard_, total - 1, high, low, close, n, &outBegIdx,              \
+           &outNbElement, dst0 + discard_, dst1 + discard_,                  \
+           dst2 + discard_);                                                  \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                  \
                   (outBegIdx + outNbElement) <= total);                        \
   }                                                                            \
                                                                                \
@@ -1524,7 +1524,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
 
 #define TA_OC_OUT1_N_IMP(func, func_lookback, period, period_min, period_max) \
   Cls_##func::Cls_##func() : IndicatorImp(#func, 1) {                         \
-    m_need_context = true;                                                    \
+    need_context_ = true;                                                    \
     setParam<int>("n", period);                                               \
   }                                                                           \
                                                                               \
@@ -1538,7 +1538,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
   void Cls_##func::_calculate(const Indicator &data) {                        \
     HAYAKU_WARN_IF(!isLeaf() && !data.empty(),                                \
                    "The input is ignored because {} depends on the context!", \
-                   m_name);                                                   \
+                   name_);                                                   \
                                                                               \
     KData k = getContext();                                                   \
     size_t total = k.size();                                                  \
@@ -1548,7 +1548,7 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     int n = getParam<int>("n");                                               \
     int back = func_lookback(n);                                              \
     if (back < 0 || back >= total) {                                          \
-      m_discard = total;                                                      \
+      discard_ = total;                                                      \
       return;                                                                 \
     }                                                                         \
                                                                               \
@@ -1562,12 +1562,12 @@ TA_IN1_OUT_DYN_DEF(TA_WMA)
     }                                                                         \
                                                                               \
     auto *dst = this->data();                                                 \
-    m_discard = back;                                                         \
+    discard_ = back;                                                         \
     int outBegIdx;                                                            \
     int outNbElement;                                                         \
-    ::func(m_discard, total - 1, open, close, n, &outBegIdx, &outNbElement,   \
-           dst + m_discard);                                                  \
-    HAYAKU_ASSERT((outBegIdx == m_discard) &&                                 \
+    ::func(discard_, total - 1, open, close, n, &outBegIdx, &outNbElement,   \
+           dst + discard_);                                                  \
+    HAYAKU_ASSERT((outBegIdx == discard_) &&                                 \
                   (outBegIdx + outNbElement) <= total);                       \
   }                                                                           \
                                                                               \

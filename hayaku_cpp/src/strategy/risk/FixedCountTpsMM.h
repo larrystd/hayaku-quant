@@ -27,8 +27,8 @@ class FixedCountTpsMM : public MoneyManagerBase {
                                 OrderOrigin origin) override;
 
  private:
-  vector<double> m_buy_counts;
-  vector<double> m_sell_counts;
+  vector<double> buy_counts_;
+  vector<double> sell_counts_;
 
 #if HAYAKU_SUPPORT_SERIALIZATION
  private:

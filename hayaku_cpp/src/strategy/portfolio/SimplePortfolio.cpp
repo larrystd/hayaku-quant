@@ -27,47 +27,47 @@ SimplePortfolio::SimplePortfolio(
 SimplePortfolio::~SimplePortfolio() {}
 
 void SimplePortfolio::_reset() {
-  m_dlist_sys_list.clear();
-  m_delay_adjust_sys_list.clear();
-  m_tmp_selected_list.clear();
-  m_tmp_will_remove_sys.clear();
+  dlist_sys_list_.clear();
+  delay_adjust_sys_list_.clear();
+  tmp_selected_list_.clear();
+  tmp_will_remove_sys_.clear();
 }
 
 void SimplePortfolio::_readyForRun() {
-  HAYAKU_CHECK(m_af, "m_af is null!");
+  HAYAKU_CHECK(af_, "m_af is null!");
 
   // The se algorithm and the af algorithm do not match
-  HAYAKU_CHECK(m_se->isMatchAF(m_af), "The current SE and AF do not match!");
+  HAYAKU_CHECK(se_->isMatchAF(af_), "The current SE and AF do not match!");
 
   // Check whether the account has the initial assets
-  FundsRecord funds = m_account->getFunds(Null<Datetime>());
+  FundsRecord funds = account_->getFunds(Null<Datetime>());
   HAYAKU_CHECK(funds.total_assets() > 0.0, "The current tm is zero assets!");
 
   // Get the prototype system list from se
-  const auto& pro_sys_list = m_se->getProtoSystemList();
+  const auto& pro_sys_list = se_->getProtoSystemList();
   HAYAKU_WARN_IF_RETURN(pro_sys_list.empty(), void(),
                         "Can't fetch proto_sys_lsit from Selector!");
 
   // Create the cash account
-  m_cashAccount = m_account->cloneAccount();
+  cash_account_ = account_->cloneAccount();
 
   // Configure the asset allocator
-  m_af->setAccount(m_account);
-  m_af->setCashAccount(m_cashAccount);
-  m_af->setQuery(m_query);
+  af_->setAccount(account_);
+  af_->setCashAccount(cash_account_);
+  af_->setQuery(query_);
 
   // Get all the candidate subsystems, assign sub accounts to those without an
   // associated account and prepare every subsystem for the startup
   internal::PortfolioAccountPortPtr prototypeAccount =
-      m_account->createChildAccount("TM_SUB");
+      account_->createChildAccount("TM_SUB");
   size_t total = pro_sys_list.size();
-  m_real_sys_list.reserve(total);
+  real_sys_list_.reserve(total);
   for (size_t i = 0; i < total; i++) {
     const internal::StrategyRuntimePtr& pro_sys = pro_sys_list[i];
     if (pro_sys) {
       internal::StrategyRuntimePtr sys = pro_sys->clone();
-      m_se->bindRealToProto(sys, pro_sys);
-      m_real_sys_list.emplace_back(sys);
+      se_->bindRealToProto(sys, pro_sys);
+      real_sys_list_.emplace_back(sys);
 
       // Create sub accounts with an initial capital of 0 for the systems
       // actually executed internally
@@ -77,14 +77,14 @@ void SimplePortfolio::_readyForRun() {
                       sys->getStock().name());
       sys->name(fmt::format("PF_{}", sys_name));
 
-      KData k = sys->getStock().getKData(m_query);
+      KData k = sys->getStock().getKData(query_);
       sys->prepare();
       sys->bind(k);
     }
   }
 
   // Tell se the list of the systems actually running
-  m_se->calculate(m_real_sys_list, m_query);
+  se_->calculate(real_sys_list_, query_);
 }
 
 void SimplePortfolio::_runMomentOnOpen(const Datetime& date,
@@ -92,17 +92,17 @@ void SimplePortfolio::_runMomentOnOpen(const Datetime& date,
   //---------------------------------------------------
   // Check whether there is a delisted security among the running systems
   //---------------------------------------------------
-  for (auto iter = m_running_sys_set.begin(); iter != m_running_sys_set.end();
+  for (auto iter = running_sys_set_.begin(); iter != running_sys_set_.end();
        /*++iter*/) {
     auto& sys = *iter;
-    if (sys->getStock().getMarketValue(date, m_query.kType()) == 0.0) {
+    if (sys->getStock().getMarketValue(date, query_.kType()) == 0.0) {
       auto subAccount = sys->getAccount();
       auto sub_cash = subAccount->currentCash();
       if (sub_cash > 0.0 && subAccount->checkout(date, sub_cash)) {
-        m_cashAccount->checkin(date, sub_cash);
+        cash_account_->checkin(date, sub_cash);
       }
-      m_dlist_sys_list.emplace_back(sys);
-      m_running_sys_set.erase(iter++);
+      dlist_sys_list_.emplace_back(sys);
+      running_sys_set_.erase(iter++);
     } else {
       ++iter;
     }
@@ -112,11 +112,11 @@ void SimplePortfolio::_runMomentOnOpen(const Datetime& date,
   // Handle the possible deviation among the sub accounts, the cash account and
   // the total account before the open
   //---------------------------------------------------
-  int precision = m_account->precision();
+  int precision = account_->precision();
 
   // Update the ex-rights/ex-dividend data of all the running systems
   price_t sum_cash = 0.0;
-  for (auto& running_sys : m_running_sys_set) {
+  for (auto& running_sys : running_sys_set_) {
     internal::PortfolioAccountPortPtr subAccount = running_sys->getAccount();
     subAccount->updateWithWeight(date);
     sum_cash += subAccount->currentCash();
@@ -127,31 +127,31 @@ void SimplePortfolio::_runMomentOnOpen(const Datetime& date,
   bool trace = getParam<bool>("trace");
   HAYAKU_INFO_IF(trace, "[PF] {}: {}, {}: {}, {}: {}",
                  htr("The sum cash of subAccount"), sum_cash, htr("cash tm"),
-                 m_cashAccount->currentCash(), htr("tm cash"),
-                 m_account->currentCash());
-  sum_cash += m_cashAccount->currentCash();
+                 cash_account_->currentCash(), htr("tm cash"),
+                 account_->currentCash());
+  sum_cash += cash_account_->currentCash();
 
   price_t diff =
-      roundEx(std::abs(m_account->currentCash() - sum_cash), precision);
+      roundEx(std::abs(account_->currentCash() - sum_cash), precision);
   if (diff > 0.) {
-    if (m_account->currentCash() > sum_cash) {
-      m_cashAccount->checkin(date, diff);
-    } else if (m_account->currentCash() < sum_cash) {
-      if (m_cashAccount->currentCash() > diff) {
-        m_cashAccount->checkout(date, m_cashAccount->currentCash() - diff);
+    if (account_->currentCash() > sum_cash) {
+      cash_account_->checkin(date, diff);
+    } else if (account_->currentCash() < sum_cash) {
+      if (cash_account_->currentCash() > diff) {
+        cash_account_->checkout(date, cash_account_->currentCash() - diff);
       }
     }
     HAYAKU_INFO_IF(trace, "[PF] {}: {}, {}: {}, {}: {}",
                    htr("After compensate: the sum cash of subAccount"),
-                   sum_cash, htr("cash tm"), m_cashAccount->currentCash(),
-                   htr("tm cash"), m_account->currentCash());
+                   sum_cash, htr("cash tm"), cash_account_->currentCash(),
+                   htr("tm cash"), account_->currentCash());
   }
 
   //----------------------------------------------------------------------
   // Print the assets before the position adjustment for the trace
   //----------------------------------------------------------------------
   if (trace) {
-    auto funds = m_account->getFunds(date, m_query.kType());
+    auto funds = account_->getFunds(date, query_.kType());
     HAYAKU_INFO("[PF] [{}] - {}: {},  {}: {}, {}: {}", htr("before rebalance"),
                 htr("total funds"), funds.cash + funds.market_value,
                 htr("cash"), funds.cash, htr("market_value"),
@@ -163,21 +163,21 @@ void SimplePortfolio::_runMomentOnOpen(const Datetime& date,
   // on the previous trading day
   //----------------------------------------------------------------------
   HAYAKU_INFO_IF(trace, "[PF] {}: {}", htr("process delay adjust sys, size"),
-                 m_delay_adjust_sys_list.size());
+                 delay_adjust_sys_list_.size());
   StrategyWeightList tmp_continue_adjust_sys_list;
-  for (auto& sys : m_delay_adjust_sys_list) {
+  for (auto& sys : delay_adjust_sys_list_) {
     auto tr =
         sys.strategy->sellForceOnOpen(date, sys.weight, OrderOrigin::PORTFOLIO);
     if (!tr.isNull()) {
       HAYAKU_INFO_IF(trace, htr("[PF] Delay adjust sell: {}", tr));
-      m_account->addTradeRecord(tr);
+      account_->addTradeRecord(tr);
 
       // After the sell, try to withdraw the funds and transfer them to the
       // shadow total account
       internal::PortfolioAccountPortPtr subAccount = sys.strategy->getAccount();
       auto sub_cash = subAccount->currentCash();
       if (sub_cash > 0.0 && subAccount->checkout(date, sub_cash)) {
-        m_cashAccount->checkin(date, sub_cash);
+        cash_account_->checkin(date, sub_cash);
       }
 
     } else {
@@ -193,22 +193,22 @@ void SimplePortfolio::_runMomentOnOpen(const Datetime& date,
     }
   }
 
-  m_delay_adjust_sys_list.swap(tmp_continue_adjust_sys_list);
+  delay_adjust_sys_list_.swap(tmp_continue_adjust_sys_list);
 
   //---------------------------------------------------
   // Check whether any running system has a delayed buy / sell signal (i.e. a
   // system that trades at the open)
   //---------------------------------------------------
-  for (auto& sys : m_running_sys_set) {
+  for (auto& sys : running_sys_set_) {
     auto tr = sys->processPendingSell(date);
     if (!tr.isNull()) {
       HAYAKU_INFO_IF(trace, htr("[PF] sell delay on open {}", tr));
-      m_account->addTradeRecord(tr);
+      account_->addTradeRecord(tr);
     }
     tr = sys->processPendingBuy(date);
     if (!tr.isNull()) {
       HAYAKU_INFO_IF(trace, htr("[PF] buy delay on open {}", tr));
-      m_account->addTradeRecord(tr);
+      account_->addTradeRecord(tr);
     }
   }
 
@@ -225,8 +225,8 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
   if (adjust) {
     // Remove the systems without a position and without a delayed buy / sell
     // signal from the running system list immediately and recall the funds
-    m_tmp_will_remove_sys.clear();
-    for (auto& sys : m_running_sys_set) {
+    tmp_will_remove_sys_.clear();
+    for (auto& sys : running_sys_set_) {
       auto subAccount = sys->getAccount();
       const auto& pending = sys->pendingOrders();
       // There is no position
@@ -236,36 +236,36 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
         // There is no delayed buy / sell signal
         HAYAKU_INFO_IF(trace,
                        htr("[PF] remove no signal delay sys: {}", sys->name()));
-        m_tmp_will_remove_sys.emplace_back(sys, 0.0);
+        tmp_will_remove_sys_.emplace_back(sys, 0.0);
 
         auto sub_cash = subAccount->currentCash();
         if (sub_cash > 0.0 && subAccount->checkout(date, sub_cash)) {
-          m_cashAccount->checkin(date, sub_cash);
+          cash_account_->checkin(date, sub_cash);
         }
       }
     }
 
-    size_t running_sys_count = m_running_sys_set.size();
-    size_t out_sys_count = m_tmp_will_remove_sys.size();
+    size_t running_sys_count = running_sys_set_.size();
+    size_t out_sys_count = tmp_will_remove_sys_.size();
     size_t in_sys_count = 0;
 
-    for (auto& sw : m_tmp_will_remove_sys) {
-      m_running_sys_set.erase(sw.strategy);
+    for (auto& sw : tmp_will_remove_sys_) {
+      running_sys_set_.erase(sw.strategy);
     }
 
     // Get the selected system list from the selection strategy
-    m_tmp_selected_list = m_se->getSelected(date);
+    tmp_selected_list_ = se_->getSelected(date);
 
     // When AF adjusts the weights of the held systems, process the delayed
     // requests of the unselected running systems otherwise the running systems
     // are considered to control the selling themselves, unaffected by the
     // current selection
-    if (m_af->getParam<bool>("adjust_running_sys")) {
+    if (af_->getParam<bool>("adjust_running_sys")) {
       // When a selected system is not in the existing list, clear its delayed
       // buy operation first, preventing a future signal on the adjustment day
-      for (auto& sw : m_tmp_selected_list) {
+      for (auto& sw : tmp_selected_list_) {
         if (sw.strategy) {
-          if (m_running_sys_set.find(sw.strategy) == m_running_sys_set.end()) {
+          if (running_sys_set_.find(sw.strategy) == running_sys_set_.end()) {
             HAYAKU_INFO_IF(trace,
                            htr("[PF] clear delay buy request(future): {}",
                                sw.strategy->name()));
@@ -275,8 +275,8 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
       }
     }
 
-    if (trace && !m_tmp_selected_list.empty()) {
-      for (auto& sys : m_tmp_selected_list) {
+    if (trace && !tmp_selected_list_.empty()) {
+      for (auto& sys : tmp_selected_list_) {
         HAYAKU_INFO_IF(sys.strategy, htr("[PF] select: {}, score: {:<.4f}",
                                          sys.strategy->name(), sys.weight));
       }
@@ -287,23 +287,23 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
     // the systems whose close adjustment failed (they need to be processed at
     // the next open)
     auto tmp_continue_adjust_sys_list =
-        m_af->adjustFunds(date, m_tmp_selected_list, m_running_sys_set);
+        af_->adjustFunds(date, tmp_selected_list_, running_sys_set_);
 
-    if (m_delay_adjust_sys_list.empty()) {
-      m_delay_adjust_sys_list.swap(tmp_continue_adjust_sys_list);
+    if (delay_adjust_sys_list_.empty()) {
+      delay_adjust_sys_list_.swap(tmp_continue_adjust_sys_list);
     } else {
       for (auto& sw : tmp_continue_adjust_sys_list) {
-        m_delay_adjust_sys_list.emplace_back(sw);
+        delay_adjust_sys_list_.emplace_back(sw);
       }
     }
 
     // When a selected system is not in the existing list and funds have been
     // allocated to its account, add it to the running system list
-    for (auto& sys : m_tmp_selected_list) {
+    for (auto& sys : tmp_selected_list_) {
       if (sys.strategy) {
-        if (m_running_sys_set.find(sys.strategy) == m_running_sys_set.end()) {
-          if (sys.strategy->getAccount()->cash(date, m_query.kType()) > 0.0) {
-            m_running_sys_set.insert(sys.strategy);
+        if (running_sys_set_.find(sys.strategy) == running_sys_set_.end()) {
+          if (sys.strategy->getAccount()->cash(date, query_.kType()) > 0.0) {
+            running_sys_set_.insert(sys.strategy);
             in_sys_count++;
           }
         }
@@ -313,26 +313,26 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
     // Remove immediately from the running system list the systems without a
     // position and without funds, and the systems without a position and
     // without a delayed buy / sell signal
-    m_tmp_will_remove_sys.clear();
-    for (auto& sys : m_running_sys_set) {
+    tmp_will_remove_sys_.clear();
+    for (auto& sys : running_sys_set_) {
       auto subAccount = sys->getAccount();
       // There is no position
       if (subAccount->currentCash() < 1.0 &&
           0 == subAccount->getHoldNumber(date, sys->getStock())) {
         // There is no cash
         HAYAKU_INFO_IF(trace, htr("[PF] remove sys: {}", sys->name()));
-        m_tmp_will_remove_sys.emplace_back(sys, 0.0);
+        tmp_will_remove_sys_.emplace_back(sys, 0.0);
       }
     }
 
-    out_sys_count += m_tmp_will_remove_sys.size();
-    for (auto& sw : m_tmp_will_remove_sys) {
-      m_running_sys_set.erase(sw.strategy);
+    out_sys_count += tmp_will_remove_sys_.size();
+    for (auto& sw : tmp_will_remove_sys_) {
+      running_sys_set_.erase(sw.strategy);
     }
 
     // Calculate the position adjustment turnover
     if (running_sys_count > 0) {
-      m_adjust_turnover.emplace_back(
+      adjust_turnover_.emplace_back(
           date, static_cast<double>(in_sys_count + out_sys_count) /
                     running_sys_count);
     }
@@ -342,7 +342,7 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
   // Print the assets after the position adjustment for the trace
   //----------------------------------------------------------------------
   if (trace) {
-    auto funds = m_account->getFunds(date, m_query.kType());
+    auto funds = account_->getFunds(date, query_.kType());
     HAYAKU_INFO("[PF] [{}] - {}: {}, {}: {}, {}: {}", htr("after adjust"),
                 htr("total assets"), funds.total_assets(), htr("cash"),
                 funds.cash, htr("market_value"), funds.market_value);
@@ -353,11 +353,11 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
   // must be run once a day
   //----------------------------------------------------------------------------
   std::unordered_set<internal::StrategyRuntime*> delay_adjust_sys_set;
-  for (auto& sw : m_delay_adjust_sys_list) {
+  for (auto& sw : delay_adjust_sys_list_) {
     delay_adjust_sys_set.insert(sw.strategy.get());
   }
 
-  for (auto& sub_sys : m_running_sys_set) {
+  for (auto& sub_sys : running_sys_set_) {
     // HAYAKU_INFO_IF(trace, "[PF] run: {}", sub_sys->name());
     if (adjust) {
       auto sg = sub_sys->getSG();
@@ -384,7 +384,7 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
     auto tr = sub_sys->runMoment(date);
     if (!tr.isNull()) {
       HAYAKU_INFO_IF(trace, "[PF] {}", tr);
-      m_account->addTradeRecord(tr);
+      account_->addTradeRecord(tr);
     }
   }
 
@@ -392,7 +392,7 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
   // Print the assets of every subsystem after the execution for the trace
   //----------------------------------------------------------------------
   if (trace) {
-    auto funds = m_account->getFunds(date, m_query.kType());
+    auto funds = account_->getFunds(date, query_.kType());
     HAYAKU_INFO("[PF] [{}] - {}: {}, {}: {}, {}: {}", htr("after run at close"),
                 htr("total assets"), funds.total_assets(), htr("cash"),
                 funds.cash, htr("market_value"), funds.market_value);
@@ -401,11 +401,11 @@ void SimplePortfolio::_runMomentOnClose(const Datetime& date,
 
 json SimplePortfolio::lastSuggestion() const {
   json sys_json_list = json::array();
-  for (const auto& sys : m_running_sys_set) {
+  for (const auto& sys : running_sys_set_) {
     sys_json_list.emplace_back(sys->lastSuggestion());
   }
 
-  for (const auto& sw : m_delay_adjust_sys_list) {
+  for (const auto& sw : delay_adjust_sys_list_) {
     sys_json_list.emplace_back(sw.strategy->lastSuggestion());
   }
 

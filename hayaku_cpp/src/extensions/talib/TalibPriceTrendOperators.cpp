@@ -40,7 +40,7 @@ BOOST_CLASS_EXPORT(hayaku::TaSar)
 namespace hayaku {
 
 TaSar::TaSar() : IndicatorImp("TA_SAR", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<double>("acceleration", 0.02);
   setParam<double>("maximum", 0.2);
 }
@@ -55,7 +55,7 @@ void TaSar::_checkParam(const string& name) const {
 void TaSar::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -67,7 +67,7 @@ void TaSar::_calculate(const Indicator& data) {
   double maximum = getParam<double>("maximum");
   int back = TA_SAR_Lookback(acceleration, maximum);
   if (back < 0 || back >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -81,12 +81,12 @@ void TaSar::_calculate(const Indicator& data) {
   }
 
   auto* dst = this->data();
-  m_discard = back;
+  discard_ = back;
   int outBegIdx;
   int outNbElement;
-  ::TA_SAR(m_discard, total - 1, high, low, acceleration, maximum, &outBegIdx,
-           &outNbElement, dst + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_SAR(discard_, total - 1, high, low, acceleration, maximum, &outBegIdx,
+           &outNbElement, dst + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 
@@ -152,7 +152,7 @@ BOOST_CLASS_EXPORT(hayaku::TaSarext)
 namespace hayaku {
 
 TaSarext::TaSarext() : IndicatorImp("TA_SAREXT", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<double>("startvalue", 0.0);
   setParam<double>("offsetonreverse", 0.0);
   setParam<double>("accelerationinitlong", 0.02);
@@ -168,7 +168,7 @@ TaSarext::TaSarext(double startvalue, double offsetonreverse,
                    double accelerationmaxlong, double accelerationinitshort,
                    double accelerationshort, double accelerationmaxshort)
     : IndicatorImp("TA_SAREXT", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<double>("startvalue", startvalue);
   setParam<double>("offsetonreverse", offsetonreverse);
   setParam<double>("accelerationinitlong", accelerationinitlong);
@@ -194,7 +194,7 @@ void TaSarext::_checkParam(const string& name) const {
 void TaSarext::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -215,7 +215,7 @@ void TaSarext::_calculate(const Indicator& data) {
                                 accelerationmaxlong, accelerationinitshort,
                                 accelerationshort, accelerationmaxshort);
   if (back < 0 || back >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -229,14 +229,14 @@ void TaSarext::_calculate(const Indicator& data) {
   }
 
   auto* dst = this->data();
-  m_discard = back;
+  discard_ = back;
   int outBegIdx;
   int outNbElement;
-  ::TA_SAREXT(m_discard, total - 1, high, low, startvalue, offsetonreverse,
+  ::TA_SAREXT(discard_, total - 1, high, low, startvalue, offsetonreverse,
               accelerationinitlong, accelerationlong, accelerationmaxlong,
               accelerationinitshort, accelerationshort, accelerationmaxshort,
-              &outBegIdx, &outNbElement, dst + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+              &outBegIdx, &outNbElement, dst + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 

@@ -27,7 +27,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const TradeCostPtr& tc) {
   return os;
 }
 
-TradeCostBase::TradeCostBase(const string& name) : m_name(name) {}
+TradeCostBase::TradeCostBase(const string& name) : name_(name) {}
 
 TradeCostBase::~TradeCostBase() {}
 
@@ -37,9 +37,9 @@ void TradeCostBase::paramChanged() {}
 TradeCostPtr TradeCostBase::clone() {
   TradeCostPtr result = _clone();
   TradeCostBase* p = result.get();
-  p->m_params = m_params;
-  p->m_name = m_name;
-  p->m_is_python_object = m_is_python_object;
+  p->params_ = params_;
+  p->name_ = name_;
+  p->is_python_object_ = is_python_object_;
   return result;
 }
 

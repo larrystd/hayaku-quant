@@ -18,14 +18,14 @@ namespace hayaku {
 RunSystemInStrategy::RunSystemInStrategy(
     const internal::StrategyRuntimePtr& strategy, const OrderBrokerPtr& broker,
     const KQuery& query, const TradeCostPtr& costfunc)
-    : m_strategy(strategy), m_broker(broker) {
+    : strategy_(strategy), broker_(broker) {
   HAYAKU_ASSERT(strategy && broker);
 
   if (query.queryType() == KQuery::INDEX) {
-    m_query = KQueryByIndex(query.start(), Null<int64_t>(), query.kType(),
+    query_ = KQueryByIndex(query.start(), Null<int64_t>(), query.kType(),
                             query.recoverType());
   } else if (query.queryType() == KQuery::DATE) {
-    m_query = KQueryByDate(query.startDatetime(), Null<Datetime>(),
+    query_ = KQueryByDate(query.startDatetime(), Null<Datetime>(),
                            query.kType(), query.recoverType());
   } else {
     HAYAKU_THROW("Invalid query: {}", query);
@@ -34,62 +34,62 @@ RunSystemInStrategy::RunSystemInStrategy(
   auto account = internal::makeExecutionAccount(
       AccountConfig(Datetime::now(), 0.0, costfunc, strategy->name(), 2, false,
                     false, {}, {broker}));
-  m_broker_port =
+  broker_port_ =
       std::dynamic_pointer_cast<internal::ExecutionBrokerPort>(account);
   auto portfolio_account =
       std::dynamic_pointer_cast<internal::PortfolioAccountPort>(account);
-  HAYAKU_CHECK(m_broker_port && portfolio_account,
+  HAYAKU_CHECK(broker_port_ && portfolio_account,
                "Execution account does not support live strategy capabilities");
-  m_strategy->setAccount(std::move(portfolio_account));
-  m_strategy->setSP(SlippagePtr());
-  m_strategy->prepare();
+  strategy_->setAccount(std::move(portfolio_account));
+  strategy_->setSP(SlippagePtr());
+  strategy_->prepare();
 }
 
 void RunSystemInStrategy::run(const Stock& stock) {
-  if (m_strategy->getParam<bool>("buy_delay") && m_buyRequest.valid) {
-    KData k = stock.getKData(KQueryByIndex(-1, Null<int64_t>(), m_query.kType(),
-                                           m_query.recoverType()));
-    const auto& stock = m_strategy->getStock();
-    m_broker->buy(m_buyRequest.datetime, stock.market(), stock.code(), 10.0,
-                  m_buyRequest.number, m_buyRequest.stoploss, m_buyRequest.goal,
-                  m_buyRequest.origin, m_buyRequest.remark);
+  if (strategy_->getParam<bool>("buy_delay") && buy_request_.valid) {
+    KData k = stock.getKData(KQueryByIndex(-1, Null<int64_t>(), query_.kType(),
+                                           query_.recoverType()));
+    const auto& stock = strategy_->getStock();
+    broker_->buy(buy_request_.datetime, stock.market(), stock.code(), 10.0,
+                  buy_request_.number, buy_request_.stoploss, buy_request_.goal,
+                  buy_request_.origin, buy_request_.remark);
   }
 
-  if (m_strategy->getParam<bool>("sell_delay") && m_sellRequest.valid) {
-    KData k = stock.getKData(KQueryByIndex(-1, Null<int64_t>(), m_query.kType(),
-                                           m_query.recoverType()));
-    const auto& stock = m_strategy->getStock();
-    m_broker->sell(m_sellRequest.datetime, stock.market(), stock.code(), 10.0,
-                   m_sellRequest.number, m_sellRequest.stoploss,
-                   m_sellRequest.goal, m_sellRequest.origin,
-                   m_sellRequest.remark);
+  if (strategy_->getParam<bool>("sell_delay") && sell_request_.valid) {
+    KData k = stock.getKData(KQueryByIndex(-1, Null<int64_t>(), query_.kType(),
+                                           query_.recoverType()));
+    const auto& stock = strategy_->getStock();
+    broker_->sell(sell_request_.datetime, stock.market(), stock.code(), 10.0,
+                   sell_request_.number, sell_request_.stoploss,
+                   sell_request_.goal, sell_request_.origin,
+                   sell_request_.remark);
   }
 
-  m_broker_port->fetchAssetInfoFromBroker(m_broker);
-  m_strategy->run(BacktestRequest(stock.getKData(m_query)));
-  const auto& pending = m_strategy->pendingOrders();
+  broker_port_->fetchAssetInfoFromBroker(broker_);
+  strategy_->run(BacktestRequest(stock.getKData(query_)));
+  const auto& pending = strategy_->pendingOrders();
 
-  if (m_strategy->getParam<bool>("buy_delay")) {
-    m_buyRequest = pending.buy();
+  if (strategy_->getParam<bool>("buy_delay")) {
+    buy_request_ = pending.buy();
   }
 
-  if (m_strategy->getParam<bool>("sell_delay")) {
-    m_sellRequest = pending.sell();
+  if (strategy_->getParam<bool>("sell_delay")) {
+    sell_request_ = pending.sell();
   }
 }
 
 void RunSystemInStrategy::runMomentOnOpen(const Stock& stock) {
-  auto k = stock.getKData(m_query);
-  m_strategy->bind(k);
-  m_broker_port->fetchAssetInfoFromBroker(m_broker);
-  static_cast<void>(m_strategy->runMomentOnOpen(k.back().datetime));
+  auto k = stock.getKData(query_);
+  strategy_->bind(k);
+  broker_port_->fetchAssetInfoFromBroker(broker_);
+  static_cast<void>(strategy_->runMomentOnOpen(k.back().datetime));
 }
 
 void RunSystemInStrategy::runMomentOnClose(const Stock& stock) {
-  auto k = stock.getKData(m_query);
-  m_strategy->bind(k);
-  m_broker_port->fetchAssetInfoFromBroker(m_broker);
-  static_cast<void>(m_strategy->runMomentOnClose(k.back().datetime));
+  auto k = stock.getKData(query_);
+  strategy_->bind(k);
+  broker_port_->fetchAssetInfoFromBroker(broker_);
+  static_cast<void>(strategy_->runMomentOnClose(k.back().datetime));
 }
 
 StrategyPtr HAYAKU_API crtSysStrategy(
@@ -148,14 +148,14 @@ RunPortfolioInStrategy::RunPortfolioInStrategy(const PFPtr& pf,
                                                const KQuery& query,
                                                const OrderBrokerPtr& broker,
                                                const TradeCostPtr& costfunc)
-    : m_pf(pf), m_broker(broker) {
+    : pf_(pf), broker_(broker) {
   HAYAKU_ASSERT(pf && broker);
 
   if (query.queryType() == KQuery::INDEX) {
-    m_query = KQueryByIndex(query.start(), Null<int64_t>(), query.kType(),
+    query_ = KQueryByIndex(query.start(), Null<int64_t>(), query.kType(),
                             query.recoverType());
   } else if (query.queryType() == KQuery::DATE) {
-    m_query = KQueryByDate(query.startDatetime(), Null<Datetime>(),
+    query_ = KQueryByDate(query.startDatetime(), Null<Datetime>(),
                            query.kType(), query.recoverType());
   } else {
     HAYAKU_THROW("Invalid query: {}", query);
@@ -171,31 +171,31 @@ RunPortfolioInStrategy::RunPortfolioInStrategy(const PFPtr& pf,
     HAYAKU_CHECK(
         !sys->getParam<bool>("buy_delay") && !sys->getParam<bool>("sell_delay"),
         "Thie method only support buy|sell on close!");
-    m_stocks.insert(sys->getStock());
+    stocks_.insert(sys->getStock());
   }
 
   auto account = internal::makeExecutionAccount(
       AccountConfig(Datetime::now(), 0.0, costfunc, pf->name(), 2, false, false,
                     {}, {broker}));
-  m_broker_port =
+  broker_port_ =
       std::dynamic_pointer_cast<internal::ExecutionBrokerPort>(account);
   auto portfolio_account =
       std::dynamic_pointer_cast<internal::PortfolioAccountPort>(account);
   HAYAKU_CHECK(
-      m_broker_port && portfolio_account,
+      broker_port_ && portfolio_account,
       "Execution account does not support live portfolio capabilities");
-  m_pf->setAccount(std::move(portfolio_account));
+  pf_->setAccount(std::move(portfolio_account));
 }
 
 void RunPortfolioInStrategy::run() {
   // Synchronizing forward is not allowed when there are already trade records
-  if (!m_pf->getAccount()->firstDatetime().isNull()) {
-    m_broker_port->fetchAssetInfoFromBroker(m_broker);
-    m_pf->run(m_query, true);
+  if (!pf_->getAccount()->firstDatetime().isNull()) {
+    broker_port_->fetchAssetInfoFromBroker(broker_);
+    pf_->run(query_, true);
     return;
   }
 
-  auto brk_asset = m_broker->getAssetInfo();
+  auto brk_asset = broker_->getAssetInfo();
   if (brk_asset.empty()) {
     HAYAKU_WARN("Failed fetch asset info from broker!");
     return;
@@ -216,7 +216,7 @@ void RunPortfolioInStrategy::run() {
           continue;
         }
 
-        if (m_stocks.find(stock) != m_stocks.end()) {
+        if (stocks_.find(stock) != stocks_.end()) {
           need_update_to_adjust_date = false;
           break;
         }
@@ -230,27 +230,27 @@ void RunPortfolioInStrategy::run() {
   }
 
   if (!need_update_to_adjust_date) {
-    m_broker_port->fetchAssetInfoFromBroker(m_broker);
-    m_pf->run(m_query, true);
+    broker_port_->fetchAssetInfoFromBroker(broker_);
+    pf_->run(query_, true);
     return;
   }
 
   // Get the latest position adjustment day
-  auto k = getKData("sh000001", m_query);
-  auto cycle = CYCLE(k, m_pf->getParam<int>("adjust_cycle"),
-                     m_pf->getParam<string>("adjust_mode"),
-                     m_pf->getParam<bool>("delay_to_trading_day"));
+  auto k = getKData("sh000001", query_);
+  auto cycle = CYCLE(k, pf_->getParam<int>("adjust_cycle"),
+                     pf_->getParam<string>("adjust_mode"),
+                     pf_->getParam<bool>("delay_to_trading_day"));
   HAYAKU_IF_RETURN(cycle.empty(), void());
   size_t n = cycle.size() - 1 - static_cast<size_t>(cycle[cycle.size() - 1]);
   if (n == 0) {
-    m_broker_port->fetchAssetInfoFromBroker(m_broker);
-    m_pf->run(m_query, true);
+    broker_port_->fetchAssetInfoFromBroker(broker_);
+    pf_->run(query_, true);
     return;
   }
 
   Datetime adjust_date = k[n].datetime;
-  m_broker_port->fetchAssetInfoFromBroker(m_broker, adjust_date);
-  m_pf->run(m_query, true);
+  broker_port_->fetchAssetInfoFromBroker(broker_, adjust_date);
+  pf_->run(query_, true);
 }
 
 StrategyPtr HAYAKU_API crtPFStrategy(

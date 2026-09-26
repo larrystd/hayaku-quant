@@ -23,7 +23,7 @@ class BoolEnvironment : public EnvironmentBase {
   virtual EnvironmentPtr _clone() override;
 
  private:
-  Indicator m_ind;
+  Indicator ind_;
 
 //============================================
 // Serialization support
@@ -33,7 +33,7 @@ class BoolEnvironment : public EnvironmentBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(EnvironmentBase);
-    ar& BOOST_SERIALIZATION_NVP(m_ind);
+    ar& boost::serialization::make_nvp("m_ind", ind_);
   }
 #endif
 };

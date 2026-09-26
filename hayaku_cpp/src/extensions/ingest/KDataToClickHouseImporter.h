@@ -51,7 +51,7 @@ class HAYAKU_INGEST_API KDataToClickHouseImporter {
                     double max_trade = 1000000);
 
  private:
-  ImportKDataToClickHousePluginInterface* m_plugin{nullptr};
+  ImportKDataToClickHousePluginInterface* plugin_{nullptr};
 };
 
 }  // namespace hayaku

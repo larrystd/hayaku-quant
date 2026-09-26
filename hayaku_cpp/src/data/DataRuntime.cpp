@@ -92,7 +92,7 @@ void setDataRuntimeLanguagePath(const std::string& path) noexcept {
   }
 }
 
-DataRuntime::DataRuntime() { m_stockDict_mutex = new std::shared_mutex; }
+DataRuntime::DataRuntime() { stock_dict_mutex_ = new std::shared_mutex; }
 
 DataRuntime::~DataRuntime() {
   // Wait for the background preload thread to exit first: otherwise it would
@@ -109,7 +109,7 @@ DataRuntime::~DataRuntime() {
   // invalid connection during the exit. The server shutdown has been moved to
   // the plugin (the stopShmServer facade)
   ipc::registerShmClient(ipc::ShmClientForwarders());
-  delete m_stockDict_mutex;
+  delete stock_dict_mutex_;
   fmt::print("Quit Hayaku system!\n\n");
 }
 
@@ -118,48 +118,48 @@ void DataRuntime::init(const Parameter& baseInfoParam,
                        const Parameter& preloadParam,
                        const Parameter& hayakuParam,
                        const StrategyContext& context) {
-  std::lock_guard<std::mutex> lock(m_init_mutex);
+  std::lock_guard<std::mutex> lock(init_mutex_);
   HAYAKU_WARN_IF_RETURN(
-      m_initializing, void(),
+      initializing_, void(),
       "The last initialization has not finished. Please try again later!");
 
   // Prevent a duplicated init
-  if (m_thread_id != std::thread::id()) {
+  if (thread_id_ != std::thread::id()) {
     return;
   }
-  m_initializing = true;
-  m_thread_id = std::this_thread::get_id();
+  initializing_ = true;
+  thread_id_ = std::this_thread::get_id();
   HAYAKU_CHECK(!context.empty(),
                "No stock code list is included in the context!");
 
-  if (m_i18n_path.empty()) {
+  if (i18n_path_.empty()) {
     loadLocalLanguage(fmt::format("{}/i18n", getDllSelfDir()));
   } else {
-    loadLocalLanguage(m_i18n_path);
+    loadLocalLanguage(i18n_path_);
   }
 
-  m_baseInfoDriverParam = baseInfoParam;
-  m_blockDriverParam = blockParam;
-  m_kdataDriverParam = kdataParam;
-  m_preloadParam = preloadParam;
-  m_hayakuParam = hayakuParam;
-  m_context = context;
+  base_info_driver_param_ = baseInfoParam;
+  block_driver_param_ = blockParam;
+  kdata_driver_param_ = kdataParam;
+  preload_param_ = preloadParam;
+  hayaku_param_ = hayakuParam;
+  context_ = context;
 
   // Get the path information
-  m_tmpdir = hayakuParam.tryGet<string>("tmpdir", ".");
-  m_datadir = hayakuParam.tryGet<string>("datadir", ".");
+  tmpdir_ = hayakuParam.tryGet<string>("tmpdir", ".");
+  datadir_ = hayakuParam.tryGet<string>("datadir", ".");
 
   // Load the basic security information
-  m_baseInfoDriver = DataDriverFactory::getBaseInfoDriver(baseInfoParam);
-  HAYAKU_CHECK(m_baseInfoDriver, "Failed get base info driver!");
+  base_info_driver_ = DataDriverFactory::getBaseInfoDriver(baseInfoParam);
+  HAYAKU_CHECK(base_info_driver_, "Failed get base info driver!");
 
   // Get the block driver
-  m_blockDriver = DataDriverFactory::getBlockDriver(blockParam);
+  block_driver_ = DataDriverFactory::getBlockDriver(blockParam);
 
-  auto driver = DataDriverFactory::getKDataDriverPool(m_kdataDriverParam);
+  auto driver = DataDriverFactory::getKDataDriverPool(kdata_driver_param_);
   HAYAKU_CHECK(driver, "driver is null!");
-  if (m_kdataDriverParam != driver->getPrototype()->getParameter()) {
-    m_kdataDriverParam = driver->getPrototype()->getParameter();
+  if (kdata_driver_param_ != driver->getPrototype()->getParameter()) {
+    kdata_driver_param_ = driver->getPrototype()->getParameter();
   }
 
   // The pure client negotiates the shm data service (on a successful connection
@@ -174,13 +174,13 @@ void DataRuntime::init(const Parameter& baseInfoParam,
   // subscribing to LoadEvent (see design §5.2), the core library no longer
   // notifies the readiness actively.
 
-  m_initializing = false;
+  initializing_ = false;
 }
 
 void DataRuntime::loadData() {
   std::chrono::system_clock::time_point start_time =
       std::chrono::system_clock::now();
-  m_data_ready.store(false, std::memory_order_release);
+  data_ready_.store(false, std::memory_order_release);
 
   loadAllHolidays();
   loadAllMarketInfos();
@@ -201,7 +201,7 @@ void DataRuntime::loadData() {
   loadHistoryFinanceField();
 
   HAYAKU_INFO(htr("Loading block..."));
-  m_blockDriver->load();
+  block_driver_->load();
   // The blocks are loaded, dispatch the BLOCKS_LOADED event: the plugin
   // refreshes the block cache of the IPC service accordingly (the former
   // refreshBlocks)
@@ -220,10 +220,10 @@ void DataRuntime::loadData() {
 }
 
 KDataDriverConnectPoolPtr DataRuntime::_getKDataDriverPool() {
-  if (m_ipc_kdata_pool) {
-    return m_ipc_kdata_pool;
+  if (ipc_kdata_pool_) {
+    return ipc_kdata_pool_;
   }
-  return DataDriverFactory::getKDataDriverPool(m_kdataDriverParam);
+  return DataDriverFactory::getKDataDriverPool(kdata_driver_param_);
 }
 
 void DataRuntime::_negotiateShmServer() {
@@ -232,7 +232,7 @@ void DataRuntime::_negotiateShmServer() {
   // disabled. It is off by default (the process runs in the standalone mode by
   // default); connecting to an existing service as a client requires enabling
   // it explicitly in the config
-  HAYAKU_IF_RETURN(!m_hayakuParam.tryGet<bool>("use_shm_server", false),
+  HAYAKU_IF_RETURN(!hayaku_param_.tryGet<bool>("use_shm_server", false),
                    void());
   // The app-side resolver returns no source when this process is a service
   // host. The data runtime only asks for an explicitly assembled client source;
@@ -245,9 +245,9 @@ void DataRuntime::_negotiateShmServer() {
   // retries, the interruption check and the forwarding registration are done
   // inside the plugin; the client never starts the service itself)
   auto wait_timeout =
-      m_hayakuParam.tryGet<int64_t>("shm_server_wait_timeout", 600);
+      hayaku_param_.tryGet<int64_t>("shm_server_wait_timeout", 600);
   HAYAKU_WARN_IF_RETURN(
-      !source->connect(m_datadir,
+      !source->connect(datadir_,
                        wait_timeout < 0 ? 0 : (uint64_t)wait_timeout),
       void(),
       "Failed connect to hayaku shm server, fallback to standalone mode!");
@@ -255,21 +255,21 @@ void DataRuntime::_negotiateShmServer() {
   // Switch to the client mode: install the proxy driver provided by the plugin
   // and turn off the local preload (an in-memory override only, the config file
   // is not modified)
-  m_ipc_client_mode = true;
-  m_baseInfoDriver = source->createBaseInfoDriver(m_baseInfoDriver);
-  m_blockDriver = source->createBlockDriver(m_blockDriver);
+  ipc_client_mode_ = true;
+  base_info_driver_ = source->createBaseInfoDriver(base_info_driver_);
+  block_driver_ = source->createBlockDriver(block_driver_);
   // The whole local driver connection pool is passed in (instead of its
   // prototype): the types not preloaded by the service process and the
   // time-sharing / tick data are served by the local driver of the client
   // directly, and a connection must be taken from the pool to avoid multiple
   // clones reusing the same connection / file handle concurrently
-  auto local_pool = DataDriverFactory::getKDataDriverPool(m_kdataDriverParam);
-  m_ipc_kdata_pool = std::make_shared<KDataDriverConnectPool>(
+  auto local_pool = DataDriverFactory::getKDataDriverPool(kdata_driver_param_);
+  ipc_kdata_pool_ = std::make_shared<KDataDriverConnectPool>(
       source->createKDataDriver(local_pool));
   for (const auto& ktype : KQuery::getBaseKTypeList()) {
     auto low_ktype = ktype;
     to_lower(low_ktype);
-    m_preloadParam.set<bool>(low_ktype, false);
+    preload_param_.set<bool>(low_ktype, false);
   }
   // The client has no preload buffer; the update is applied to the buffer by
   // the service process and mirrored to the shared memory, visible to all the
@@ -278,7 +278,7 @@ void DataRuntime::_negotiateShmServer() {
               source->serverAddr());
 }
 
-bool DataRuntime::isIpcClientMode() const { return m_ipc_client_mode; }
+bool DataRuntime::isIpcClientMode() const { return ipc_client_mode_; }
 
 // ── LoadEvent event bus (the core library only dispatches and the plugin
 // subscribes; see design §5.2)
@@ -325,8 +325,8 @@ void DataRuntime::_fireLoadEvent(LoadEvent event) {
 }
 
 void DataRuntime::joinPreloadThread() {
-  if (m_preload_thread.joinable()) {
-    m_preload_thread.join();
+  if (preload_thread_.joinable()) {
+    preload_thread_.join();
   }
 }
 
@@ -337,7 +337,7 @@ void DataRuntime::loadAllKData() {
 
   // If the context gives a ktype list, load in the order of the ktypes given by
   // the context, otherwise load in the default order
-  const auto& context_ktypes = m_context.getKTypeList();
+  const auto& context_ktypes = context_.getKTypeList();
   if (context_ktypes.empty()) {
     ktypes = KQuery::getBaseKTypeList();
 
@@ -348,11 +348,11 @@ void DataRuntime::loadAllKData() {
     for (const auto& ktype : ktypes) {
       auto low_ktype = ktype;
       to_lower(low_ktype);
-      m_preloadParam.set<bool>(low_ktype, true);
+      preload_param_.set<bool>(low_ktype, true);
     }
   }
 
-  const auto& context_preload_num = m_context.getPreloadNum();
+  const auto& context_preload_num = context_.getPreloadNum();
   low_ktypes.reserve(ktypes.size());
   for (const auto& ktype : ktypes) {
     auto& back = low_ktypes.emplace_back(ktype);
@@ -363,24 +363,24 @@ void DataRuntime::loadAllKData() {
     string preload_key = fmt::format("{}_max", back);
     auto context_iter = context_preload_num.find(preload_key);
     if (context_iter != context_preload_num.end()) {
-      m_preloadParam.set<int64_t>(preload_key, context_iter->second);
+      preload_param_.set<int64_t>(preload_key, context_iter->second);
     }
 
-    int64_t preload_max_num = m_preloadParam.tryGet<int64_t>(preload_key, 0);
+    int64_t preload_max_num = preload_param_.tryGet<int64_t>(preload_key, 0);
     if (preload_max_num <= 0) {
       preload_max_num = std::numeric_limits<int64_t>::max();
-      m_preloadParam.set<int64_t>(preload_key, preload_max_num);
+      preload_param_.set<int64_t>(preload_key, preload_max_num);
       HAYAKU_INFO_IF(
-          m_preloadParam.tryGet<bool>(back, false),
+          preload_param_.tryGet<bool>(back, false),
           htr("Preloading {} kdata to buffer (max: no limit)!", back));
     } else {
-      HAYAKU_INFO_IF(m_preloadParam.tryGet<bool>(back, false),
+      HAYAKU_INFO_IF(preload_param_.tryGet<bool>(back, false),
                      htr("Preloading {} kdata to buffer (max: {})!", back,
                          preload_max_num));
     }
   }
 
-  bool lazy_preload = m_hayakuParam.tryGet<bool>("lazy_preload", false);
+  bool lazy_preload = hayaku_param_.tryGet<bool>("lazy_preload", false);
   HAYAKU_INFO_IF(lazy_preload && canLazyLoad(KQuery::MIN),
                  htr("Use lazy preload!"));
 
@@ -394,7 +394,7 @@ void DataRuntime::loadAllKData() {
   if (isIpcClientMode()) {
     // In the client mode the data is provided by the server, there is no local
     // preload task and it is ready directly
-    m_data_ready.store(true, std::memory_order_release);
+    data_ready_.store(true, std::memory_order_release);
     return;
   }
 
@@ -406,12 +406,12 @@ void DataRuntime::loadAllKData() {
   // assigning a joinable thread.
   joinPreloadThread();
   if (!driver->getPrototype()->canParallelLoad()) {
-    m_preload_thread = std::thread([this, ktypes, low_ktypes]() mutable {
+    preload_thread_ = std::thread([this, ktypes, low_ktypes]() mutable {
       _loadAllKDataSerial(std::move(ktypes), std::move(low_ktypes));
     });
   } else {
     // Asynchronous parallel loading
-    m_preload_thread = std::thread([this, ktypes, low_ktypes]() mutable {
+    preload_thread_ = std::thread([this, ktypes, low_ktypes]() mutable {
       _loadAllKDataParallel(std::move(ktypes), std::move(low_ktypes));
     });
   }
@@ -423,19 +423,19 @@ void DataRuntime::_loadAllKDataSerial(vector<KQuery::KType> ktypes,
   // its own polling, see design §5.2); loaded/total is no longer counted here
 
   for (size_t i = 0, len = ktypes.size(); i < len; i++) {
-    if (m_cancel_load) {
+    if (cancel_load_) {
       break;
     }
     if (canLazyLoad(ktypes[i])) {
       continue;
     }
-    std::shared_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-    for (auto iter = m_stockDict.begin(); iter != m_stockDict.end(); ++iter) {
-      if (m_cancel_load) {
+    std::shared_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+    for (auto iter = stock_dict_.begin(); iter != stock_dict_.end(); ++iter) {
+      if (cancel_load_) {
         break;
       }
       const auto& low_ktype = low_ktypes[i];
-      if (m_preloadParam.tryGet<bool>(low_ktype, false)) {
+      if (preload_param_.tryGet<bool>(low_ktype, false)) {
         iter->second.loadKDataToBuffer(ktypes[i]);
       }
     }
@@ -445,20 +445,20 @@ void DataRuntime::_loadAllKDataSerial(vector<KQuery::KType> ktypes,
   // that the clients get the hot K-line data as early as possible; it is not
   // dispatched when the preload is cancelled (the process exit), avoiding a
   // full serialization that is destroyed immediately
-  if (!m_cancel_load) {
+  if (!cancel_load_) {
     _fireLoadEvent(LoadEvent::KDATA_PRELOAD_FINISHED);
   }
 
-  if (!m_cancel_load &&
-      m_hayakuParam.tryGet<bool>("load_history_finance", true)) {
+  if (!cancel_load_ &&
+      hayaku_param_.tryGet<bool>("load_history_finance", true)) {
     ThreadPool tg;
-    std::shared_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-    for (auto iter = m_stockDict.begin(); iter != m_stockDict.end(); ++iter) {
-      if (m_cancel_load) {
+    std::shared_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+    for (auto iter = stock_dict_.begin(); iter != stock_dict_.end(); ++iter) {
+      if (cancel_load_) {
         break;
       }
       tg.submit([stk = iter->second, this]() {
-        HAYAKU_IF_RETURN(m_cancel_load, void());
+        HAYAKU_IF_RETURN(cancel_load_, void());
         stk.getHistoryFinance();
       });
     }
@@ -475,11 +475,11 @@ void DataRuntime::_loadAllKDataSerial(vector<KQuery::KType> ktypes,
   // to the sessions negotiated afterwards; it is not dispatched when the
   // preload is cancelled (the process exit): this avoids both a useless full
   // publish and a pointless serialization in the exit sequence
-  if (!m_cancel_load) {
+  if (!cancel_load_) {
     _fireLoadEvent(LoadEvent::HISTORY_FINANCE_LOADED);
   }
 
-  m_data_ready.store(true, std::memory_order_release);
+  data_ready_.store(true, std::memory_order_release);
 }
 
 void DataRuntime::_loadAllKDataParallel(vector<KQuery::KType> ktypes,
@@ -490,32 +490,32 @@ void DataRuntime::_loadAllKDataParallel(vector<KQuery::KType> ktypes,
 
   // Load the K-lines of the other securities (they may use different K-line
   // drivers)
-  this->m_load_tg = std::make_unique<ThreadPool>();
+  this->load_tg_ = std::make_unique<ThreadPool>();
   for (size_t i = 0, len = ktypes.size(); i < len; i++) {
-    if (m_cancel_load) {
+    if (cancel_load_) {
       break;
     }
     if (canLazyLoad(ktypes[i])) {
       continue;
     }
-    std::shared_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-    for (auto iter = m_stockDict.begin(); iter != m_stockDict.end(); ++iter) {
-      if (m_cancel_load) {
+    std::shared_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+    for (auto iter = stock_dict_.begin(); iter != stock_dict_.end(); ++iter) {
+      if (cancel_load_) {
         break;
       }
       if (loaded_codes.find(iter->first) != loaded_codes.end()) {
         continue;
       }
-      if (m_preloadParam.tryGet<bool>(low_ktypes[i], false)) {
+      if (preload_param_.tryGet<bool>(low_ktypes[i], false)) {
         // ktypes[i] is reused by the inner stock loop within the outer ktype
         // loop; a std::move here would make the first stock submit an empty
         // moved-from ktypes[i], and the following stocks would call
         // loadKDataToBuffer("") and all fail (only the first stock fills the
         // preload buffer). Therefore a copy is used; ktype is a short string
         // and the cost is negligible.
-        m_load_tg->submit(
+        load_tg_->submit(
             [this, stk = iter->second, ktype = ktypes[i]]() mutable {
-              HAYAKU_IF_RETURN(m_cancel_load, void());
+              HAYAKU_IF_RETURN(cancel_load_, void());
               stk.loadKDataToBuffer(ktype);
             });
       }
@@ -528,32 +528,32 @@ void DataRuntime::_loadAllKDataParallel(vector<KQuery::KType> ktypes,
   // buffer may not be filled yet; it is not dispatched when the preload is
   // cancelled (the process exit), avoiding a full serialization that is
   // destroyed immediately
-  m_load_tg->join();
-  m_load_tg.reset();
+  load_tg_->join();
+  load_tg_.reset();
 
-  if (!m_cancel_load) {
+  if (!cancel_load_) {
     _fireLoadEvent(LoadEvent::KDATA_PRELOAD_FINISHED);
   }
 
-  if (!m_cancel_load &&
-      m_hayakuParam.tryGet<bool>("load_history_finance", true)) {
-    m_load_tg = std::make_unique<ThreadPool>();
-    std::shared_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-    for (auto iter = m_stockDict.begin(); iter != m_stockDict.end(); ++iter) {
-      if (m_cancel_load) {
+  if (!cancel_load_ &&
+      hayaku_param_.tryGet<bool>("load_history_finance", true)) {
+    load_tg_ = std::make_unique<ThreadPool>();
+    std::shared_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+    for (auto iter = stock_dict_.begin(); iter != stock_dict_.end(); ++iter) {
+      if (cancel_load_) {
         break;
       }
       if (loaded_codes.find(iter->first) != loaded_codes.end()) {
         continue;
       }
-      m_load_tg->submit([this, stk = iter->second]() {
-        HAYAKU_IF_RETURN(m_cancel_load, void());
+      load_tg_->submit([this, stk = iter->second]() {
+        HAYAKU_IF_RETURN(cancel_load_, void());
         stk.getHistoryFinance();
       });
     }
     lock.unlock();
-    m_load_tg->join();
-    m_load_tg.reset();
+    load_tg_->join();
+    load_tg_.reset();
   }
 
   // The historical finance is ready, dispatch HISTORY_FINANCE_LOADED: the
@@ -564,17 +564,17 @@ void DataRuntime::_loadAllKDataParallel(vector<KQuery::KType> ktypes,
   // new session maps the latest epoch at the negotiation); it is not dispatched
   // when the preload is cancelled (the process exit), for the same reason as
   // the serial branch
-  if (!m_cancel_load) {
+  if (!cancel_load_) {
     _fireLoadEvent(LoadEvent::HISTORY_FINANCE_LOADED);
   }
 
-  m_data_ready.store(true, std::memory_order_release);
+  data_ready_.store(true, std::memory_order_release);
 }
 
 std::unordered_set<string> DataRuntime::tryLoadAllKDataFromColumnFirst(
     const vector<KQuery::KType>& ktypes) {
   std::unordered_set<string> loaded_codes;
-  HAYAKU_IF_RETURN(!m_context.isAll(), loaded_codes);
+  HAYAKU_IF_RETURN(!context_.isAll(), loaded_codes);
   auto driver = _getKDataDriverPool();
   HAYAKU_IF_RETURN(!driver || !driver->getPrototype()->isColumnFirst(),
                    loaded_codes);
@@ -582,9 +582,9 @@ std::unordered_set<string> DataRuntime::tryLoadAllKDataFromColumnFirst(
   // Try to load the SH000001 K-lines with priority
   Stock sh000001;
   {
-    std::shared_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-    auto sh000001_iter = m_stockDict.find("SH000001");
-    if (sh000001_iter != m_stockDict.end()) {
+    std::shared_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+    auto sh000001_iter = stock_dict_.find("SH000001");
+    if (sh000001_iter != stock_dict_.end()) {
       sh000001 = sh000001_iter->second;
     }
   }
@@ -592,21 +592,21 @@ std::unordered_set<string> DataRuntime::tryLoadAllKDataFromColumnFirst(
   HAYAKU_IF_RETURN(sh000001.isNull(), loaded_codes);
 
   for (size_t i = 0, len = ktypes.size(); i < len; i++) {
-    if (m_cancel_load) {
+    if (cancel_load_) {
       break;
     }
     auto low_ktype = ktypes[i];
     to_lower(low_ktype);
-    if (m_preloadParam.tryGet<bool>(low_ktype, false)) {
+    if (preload_param_.tryGet<bool>(low_ktype, false)) {
       sh000001.loadKDataToBuffer(ktypes[i]);
     }
   }
 
-  HAYAKU_IF_RETURN(m_cancel_load, loaded_codes);
+  HAYAKU_IF_RETURN(cancel_load_, loaded_codes);
 
   // It is mainly bandwidth limited, no multi-threading is needed
   for (size_t i = 0, len = ktypes.size(); i < len; i++) {
-    if (m_cancel_load) {
+    if (cancel_load_) {
       break;
     }
 
@@ -616,19 +616,19 @@ std::unordered_set<string> DataRuntime::tryLoadAllKDataFromColumnFirst(
 
     auto low_ktype = ktypes[i];
     to_lower(low_ktype);
-    if (!m_preloadParam.tryGet<bool>(low_ktype, false)) {
+    if (!preload_param_.tryGet<bool>(low_ktype, false)) {
       continue;
     }
 
     auto k = sh000001.getKRecord(0, ktypes[i]);
     if (k.isValid()) {
       auto datas = driver->getConnect()->getAllKRecordList(
-          ktypes[i], k.datetime, m_cancel_load);
-      if (!datas.empty() && !m_cancel_load) {
-        std::shared_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-        for (auto iter = m_stockDict.begin(); iter != m_stockDict.end();
+          ktypes[i], k.datetime, cancel_load_);
+      if (!datas.empty() && !cancel_load_) {
+        std::shared_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+        for (auto iter = stock_dict_.begin(); iter != stock_dict_.end();
              ++iter) {
-          if (m_cancel_load) {
+          if (cancel_load_) {
             break;
           }
           auto date_iter = datas.find(iter->second.market_code());
@@ -642,13 +642,13 @@ std::unordered_set<string> DataRuntime::tryLoadAllKDataFromColumnFirst(
     }
   }
 
-  if (!m_cancel_load &&
-      m_hayakuParam.tryGet<bool>("load_history_finance", true)) {
-    auto finances = m_baseInfoDriver->getAllHistoryFinance(m_cancel_load);
-    if (!finances.empty() && !m_cancel_load) {
-      std::shared_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-      for (auto iter = m_stockDict.begin(); iter != m_stockDict.end(); ++iter) {
-        if (m_cancel_load) {
+  if (!cancel_load_ &&
+      hayaku_param_.tryGet<bool>("load_history_finance", true)) {
+    auto finances = base_info_driver_->getAllHistoryFinance(cancel_load_);
+    if (!finances.empty() && !cancel_load_) {
+      std::shared_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+      for (auto iter = stock_dict_.begin(); iter != stock_dict_.end(); ++iter) {
+        if (cancel_load_) {
           break;
         }
         auto finance_iter = finances.find(iter->second.market_code());
@@ -663,32 +663,32 @@ std::unordered_set<string> DataRuntime::tryLoadAllKDataFromColumnFirst(
 }
 
 void DataRuntime::reload() {
-  HAYAKU_IF_RETURN(m_initializing, void());
-  m_initializing = true;
+  HAYAKU_IF_RETURN(initializing_, void());
+  initializing_ = true;
 
   HAYAKU_INFO("start reload ...");
   loadData();
-  m_initializing = false;
+  initializing_ = false;
 }
 
 void DataRuntime::reloadWith(const StrategyContext& context) {
-  HAYAKU_IF_RETURN(m_initializing, void());
-  m_initializing = true;
+  HAYAKU_IF_RETURN(initializing_, void());
+  initializing_ = true;
 
   if (!context.empty()) {
-    m_context = context;
+    context_ = context;
   } else {
     HAYAKU_INFO(htr("The new context is empty, use the original context"));
   }
 
   HAYAKU_INFO("start reload ...");
   loadData();
-  m_initializing = false;
+  initializing_ = false;
 }
 
-const string& DataRuntime::tmpdir() const { return m_tmpdir; }
+const string& DataRuntime::tmpdir() const { return tmpdir_; }
 
-const string& DataRuntime::datadir() const { return m_datadir; }
+const string& DataRuntime::datadir() const { return datadir_; }
 
 Stock DataRuntime::getStock(const string& querystr) const {
   Stock result;
@@ -701,25 +701,25 @@ Stock DataRuntime::getStock(const string& querystr) const {
     std::string prefix = query_str.substr(0, pos);
     query_str = suffix + prefix;
   }
-  std::shared_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-  auto iter = m_stockDict.find(query_str);
-  return (iter != m_stockDict.end()) ? iter->second : result;
+  std::shared_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+  auto iter = stock_dict_.find(query_str);
+  return (iter != stock_dict_.end()) ? iter->second : result;
 }
 
 StockList DataRuntime::getStockList(
     std::function<bool(const Stock&)>&& filter) const {
   StockList ret;
-  std::shared_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-  ret.reserve(m_stockDict.size());
-  auto iter = m_stockDict.begin();
+  std::shared_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+  ret.reserve(stock_dict_.size());
+  auto iter = stock_dict_.begin();
   if (filter) {
-    for (; iter != m_stockDict.end(); ++iter) {
+    for (; iter != stock_dict_.end(); ++iter) {
       if (filter(iter->second)) {
         ret.emplace_back(iter->second);
       }
     }
   } else {
-    for (; iter != m_stockDict.end(); ++iter) {
+    for (; iter != stock_dict_.end(); ++iter) {
       ret.emplace_back(iter->second);
     }
   }
@@ -731,13 +731,13 @@ MarketInfo DataRuntime::getMarketInfo(const string& market) const noexcept {
   string market_tmp = market;
   to_upper(market_tmp);
 
-  auto iter = m_marketInfoDict.find(market_tmp);
-  if (iter != m_marketInfoDict.end()) {
+  auto iter = market_info_dict_.find(market_tmp);
+  if (iter != market_info_dict_.end()) {
     result = iter->second;
   } else {
-    result = m_baseInfoDriver->getMarketInfo(market_tmp);
+    result = base_info_driver_->getMarketInfo(market_tmp);
     if (result != Null<MarketInfo>()) {
-      m_marketInfoDict[market_tmp] = result;
+      market_info_dict_[market_tmp] = result;
     }
   }
   return result;
@@ -751,13 +751,13 @@ Stock DataRuntime::getMarketStock(const string& market) const {
 
 StockTypeInfo DataRuntime::getStockTypeInfo(uint32_t type) const {
   StockTypeInfo result;
-  auto iter = m_stockTypeInfo.find(type);
-  if (iter != m_stockTypeInfo.end()) {
+  auto iter = stock_type_info_.find(type);
+  if (iter != stock_type_info_.end()) {
     result = iter->second;
   } else {
-    result = m_baseInfoDriver->getStockTypeInfo(type);
+    result = base_info_driver_->getStockTypeInfo(type);
     if (result != Null<StockTypeInfo>()) {
-      m_stockTypeInfo[type] = result;
+      stock_type_info_[type] = result;
     }
   }
   return result;
@@ -765,8 +765,8 @@ StockTypeInfo DataRuntime::getStockTypeInfo(uint32_t type) const {
 
 vector<StockTypeInfo> DataRuntime::getStockTypeInfoList() const {
   vector<StockTypeInfo> result;
-  result.reserve(m_stockTypeInfo.size());
-  for (const auto& item : m_stockTypeInfo) {
+  result.reserve(stock_type_info_.size());
+  for (const auto& item : stock_type_info_) {
     result.push_back(item.second);
   }
   return result;
@@ -774,53 +774,53 @@ vector<StockTypeInfo> DataRuntime::getStockTypeInfoList() const {
 
 StringList DataRuntime::getAllMarket() const {
   StringList result;
-  auto iter = m_marketInfoDict.begin();
-  for (; iter != m_marketInfoDict.end(); ++iter) {
+  auto iter = market_info_dict_.begin();
+  for (; iter != market_info_dict_.end(); ++iter) {
     result.push_back(iter->first);
   }
   return result;
 }
 
 StringList DataRuntime::getAllCategory() {
-  return m_blockDriver ? m_blockDriver->getAllCategory() : StringList();
+  return block_driver_ ? block_driver_->getAllCategory() : StringList();
 }
 
 Block DataRuntime::getBlock(const string& category, const string& name) {
   Block result;
-  HAYAKU_IF_RETURN(!m_blockDriver || category.empty() || name.empty(), result);
-  auto iter = m_innerBlocks.find(fmt::format("{}_{}", category, name));
-  if (iter != m_innerBlocks.end()) {
+  HAYAKU_IF_RETURN(!block_driver_ || category.empty() || name.empty(), result);
+  auto iter = inner_blocks_.find(fmt::format("{}_{}", category, name));
+  if (iter != inner_blocks_.end()) {
     return iter->second;
   }
-  result = m_blockDriver->getBlock(category, name);
+  result = block_driver_->getBlock(category, name);
   return result;
 }
 
 void DataRuntime::saveBlock(const Block& blk) {
-  if (m_blockDriver) {
+  if (block_driver_) {
     HAYAKU_CHECK(!blk.category().empty(), "block's category can not be empty!");
     HAYAKU_CHECK(!blk.name().empty(), "block's name can not be empty!");
-    m_blockDriver->save(blk);
+    block_driver_->save(blk);
   }
 }
 void DataRuntime::removeBlock(const string& category, const string& name) {
-  if (m_blockDriver) {
-    m_blockDriver->remove(category, name);
+  if (block_driver_) {
+    block_driver_->remove(category, name);
   }
 }
 
 BlockList DataRuntime::getBlockList(const string& category) {
   BlockList result;
-  HAYAKU_IF_RETURN(!m_blockDriver, BlockList());
-  result = category.empty() ? m_blockDriver->getBlockList()
-                            : m_blockDriver->getBlockList(category);
-  auto iter = m_innerBlocks.begin();
+  HAYAKU_IF_RETURN(!block_driver_, BlockList());
+  result = category.empty() ? block_driver_->getBlockList()
+                            : block_driver_->getBlockList(category);
+  auto iter = inner_blocks_.begin();
   if (category.empty()) {
-    for (; iter != m_innerBlocks.end(); ++iter) {
+    for (; iter != inner_blocks_.end(); ++iter) {
       result.push_back(iter->second);
     }
   } else {
-    for (; iter != m_innerBlocks.end(); ++iter) {
+    for (; iter != inner_blocks_.end(); ++iter) {
       if (iter->first == category) {
         result.push_back(iter->second);
       }
@@ -885,11 +885,11 @@ DatetimeList DataRuntime::getTradingCalendar(const StockList& stk_list,
   return result;
 }
 
-const ZhBond10List& DataRuntime::getZhBond10() const { return m_zh_bond10; }
+const ZhBond10List& DataRuntime::getZhBond10() const { return zh_bond10_; }
 
 bool DataRuntime::isHoliday(const Datetime& d) const {
   HAYAKU_IF_RETURN(d.dayOfWeek() == 0 || d.dayOfWeek() == 6, true);
-  return m_holidays.count(d.startOfDay());
+  return holidays_.count(d.startOfDay());
 }
 
 bool DataRuntime::isTradingHours(const Datetime& d,
@@ -938,30 +938,30 @@ void DataRuntime::removeTempCsvStock(const string& code) {
 bool DataRuntime::addStock(const Stock& stock) {
   string market_code(stock.market_code());
   to_upper(market_code);
-  std::unique_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-  HAYAKU_ERROR_IF_RETURN(m_stockDict.find(market_code) != m_stockDict.end(),
+  std::unique_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+  HAYAKU_ERROR_IF_RETURN(stock_dict_.find(market_code) != stock_dict_.end(),
                          false, "The stock had exist! {}", market_code);
-  m_stockDict[market_code] = stock;
+  stock_dict_[market_code] = stock;
   return true;
 }
 
 void DataRuntime::removeStock(const string& market_code) {
   string n_market_code(market_code);
   to_upper(n_market_code);
-  std::unique_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-  auto iter = m_stockDict.find(n_market_code);
-  if (iter != m_stockDict.end()) {
-    m_stockDict.erase(iter);
+  std::unique_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+  auto iter = stock_dict_.find(n_market_code);
+  if (iter != stock_dict_.end()) {
+    stock_dict_.erase(iter);
   }
 }
 
 void DataRuntime::loadAllStocks() {
   HAYAKU_INFO(htr("Loading stock information..."));
   vector<StockInfo> stockInfos;
-  if (m_context.isAll()) {
-    stockInfos = m_baseInfoDriver->getAllStockInfo();
+  if (context_.isAll()) {
+    stockInfos = base_info_driver_->getAllStockInfo();
   } else {
-    auto load_stock_code_list = m_context.getAllNeedLoadStockCodeList();
+    auto load_stock_code_list = context_.getAllNeedLoadStockCodeList();
     auto all_market = getAllMarket();
     for (auto stkcode : load_stock_code_list) {
       to_upper(stkcode);
@@ -972,7 +972,7 @@ void DataRuntime::loadAllStocks() {
           string stk_market = stkcode.substr(pos, market.size());
           string stk_code = stkcode.substr(market.size(), stkcode.size());
           stockInfos.push_back(
-              m_baseInfoDriver->getStockInfo(stk_market, stk_code));
+              base_info_driver_->getStockInfo(stk_market, stk_code));
           find = true;
           break;
         }
@@ -986,14 +986,14 @@ void DataRuntime::loadAllStocks() {
   for (const auto& ktype : base_ktypes) {
     auto nktype = ktype;
     to_lower(nktype);
-    if (m_preloadParam.tryGet<bool>(nktype, false)) {
+    if (preload_param_.tryGet<bool>(nktype, false)) {
       preload_ktypes.push_back(ktype);
     }
   }
 
   auto kdriver = _getKDataDriverPool();
 
-  std::unique_lock<std::shared_mutex> lock(*m_stockDict_mutex);
+  std::unique_lock<std::shared_mutex> lock(*stock_dict_mutex_);
   for (auto& info : stockInfos) {
     Datetime startDate, endDate;
     try {
@@ -1010,44 +1010,44 @@ void DataRuntime::loadAllStocks() {
     string market_code = fmt::format("{}{}", info.market, info.code);
     to_upper(market_code);
 
-    auto iter = m_stockDict.find(market_code);
-    if (iter == m_stockDict.end()) {
+    auto iter = stock_dict_.find(market_code);
+    if (iter == stock_dict_.end()) {
       Stock _stock(info.market, info.code, info.name, info.type, info.valid,
                    startDate, endDate, info.tick, info.tickValue,
                    info.precision, info.minTradeNumber, info.maxTradeNumber);
       _stock.setKDataDriver(kdriver);
       _stock.setPreload(preload_ktypes);
-      m_stockDict[market_code] = std::move(_stock);
+      stock_dict_[market_code] = std::move(_stock);
     } else {
       Stock& stock = iter->second;
-      if (!stock.m_data) {
-        stock.m_data = shared_ptr<Stock::Data>(new Stock::Data(
+      if (!stock.data_) {
+        stock.data_ = shared_ptr<Stock::Data>(new Stock::Data(
             info.market, info.code, info.name, info.type, info.valid, startDate,
             endDate, info.tick, info.tickValue, info.precision,
             info.minTradeNumber, info.maxTradeNumber));
       } else {
-        stock.m_data->m_market = info.market;
-        stock.m_data->m_code = info.code;
-        stock.m_data->m_name = info.name;
-        stock.m_data->m_type = info.type;
-        stock.m_data->m_valid = info.valid;
-        stock.m_data->m_startDate = startDate;
-        stock.m_data->m_lastDate = endDate;
-        stock.m_data->m_tick = info.tick;
-        stock.m_data->m_tickValue = info.tickValue;
-        stock.m_data->m_precision = info.precision;
-        stock.m_data->m_minTradeNumber = info.minTradeNumber;
-        stock.m_data->m_maxTradeNumber = info.maxTradeNumber;
-        stock.m_data->m_history_finance_ready = false;
+        stock.data_->market_ = info.market;
+        stock.data_->code_ = info.code;
+        stock.data_->name_ = info.name;
+        stock.data_->type_ = info.type;
+        stock.data_->valid_ = info.valid;
+        stock.data_->start_date_ = startDate;
+        stock.data_->last_date_ = endDate;
+        stock.data_->tick_ = info.tick;
+        stock.data_->tick_value_ = info.tickValue;
+        stock.data_->precision_ = info.precision;
+        stock.data_->min_trade_number_ = info.minTradeNumber;
+        stock.data_->max_trade_number_ = info.maxTradeNumber;
+        stock.data_->history_finance_ready_ = false;
         // Force releasing all the cached K-line data
-        stock.m_data->m_lastUpdate.clear();
+        stock.data_->last_update_.clear();
         for (const auto& ktype : base_ktypes) {
           stock.releaseKDataBuffer(ktype);
-          stock.m_data->m_lastUpdate[ktype] = Datetime::min();
+          stock.data_->last_update_[ktype] = Datetime::min();
         }
         auto ktype_list = KQuery::getExtraKTypeList();
         for (const auto& ktype : ktype_list) {
-          stock.m_data->m_lastUpdate[ktype] = Datetime::min();
+          stock.data_->last_update_[ktype] = Datetime::min();
         }
       }
       stock.setPreload(preload_ktypes);
@@ -1060,35 +1060,35 @@ void DataRuntime::loadAllStocks() {
 
 void DataRuntime::loadAllMarketInfos() {
   HAYAKU_INFO(htr("Loading market information..."));
-  auto marketInfos = m_baseInfoDriver->getAllMarketInfo();
-  m_marketInfoDict.clear();
-  m_marketInfoDict.reserve(marketInfos.size());
+  auto marketInfos = base_info_driver_->getAllMarketInfo();
+  market_info_dict_.clear();
+  market_info_dict_.reserve(marketInfos.size());
   for (auto& marketInfo : marketInfos) {
     string market = marketInfo.market();
     to_upper(market);
-    m_marketInfoDict[market] = marketInfo;
+    market_info_dict_[market] = marketInfo;
   }
 
   // add special Market, for temp csv file
-  m_marketInfoDict["TMP"] = MarketInfo(
+  market_info_dict_["TMP"] = MarketInfo(
       "TMP", "Temp Csv file", "temp load from csv file", "000001",
       Null<Datetime>(), TimeDelta(0), TimeDelta(0), TimeDelta(0), TimeDelta(0));
 }
 
 void DataRuntime::loadAllStockTypeInfo() {
   HAYAKU_INFO(htr("Loading stock type information..."));
-  auto stkTypeInfos = m_baseInfoDriver->getAllStockTypeInfo();
-  m_stockTypeInfo.clear();
-  m_stockTypeInfo.reserve(stkTypeInfos.size());
+  auto stkTypeInfos = base_info_driver_->getAllStockTypeInfo();
+  stock_type_info_.clear();
+  stock_type_info_.reserve(stkTypeInfos.size());
   for (auto& stkTypeInfo : stkTypeInfos) {
-    m_stockTypeInfo[stkTypeInfo.type()] = stkTypeInfo;
+    stock_type_info_[stkTypeInfo.type()] = stkTypeInfo;
   }
 }
 
 void DataRuntime::loadAllHolidays() {
-  auto holidays = m_baseInfoDriver->getAllHolidays();
+  auto holidays = base_info_driver_->getAllHolidays();
   std::unordered_set<Datetime> tmp_holidays(holidays.begin(), holidays.end());
-  m_holidays = std::move(tmp_holidays);
+  holidays_ = std::move(tmp_holidays);
 }
 
 void DataRuntime::loadInnerBlocks() {
@@ -1102,9 +1102,9 @@ void DataRuntime::loadInnerBlocks() {
   Block blockstart = Block("START", "科创板");
   Block blocketf = Block("ETF", "ALL");
 
-  std::shared_lock<std::shared_mutex> lock(*m_stockDict_mutex);
-  auto iter = m_stockDict.begin();
-  for (; iter != m_stockDict.end(); ++iter) {
+  std::shared_lock<std::shared_mutex> lock(*stock_dict_mutex_);
+  auto iter = stock_dict_.begin();
+  for (; iter != stock_dict_.end(); ++iter) {
     const Stock& stock = iter->second;
     if (stock.type() == STOCKTYPE_A) {
       blocka.add(stock);
@@ -1129,47 +1129,47 @@ void DataRuntime::loadInnerBlocks() {
     }
   }
 
-  iter = m_stockDict.find("SH000001");
-  if (iter != m_stockDict.end()) {
+  iter = stock_dict_.find("SH000001");
+  if (iter != stock_dict_.end()) {
     blocka.setIndexStock(iter->second);
     blocka_shsz.setIndexStock(iter->second);
     blocksh.setIndexStock(iter->second);
   }
-  iter = m_stockDict.find("SZ399001");
-  if (iter != m_stockDict.end()) {
+  iter = stock_dict_.find("SZ399001");
+  if (iter != stock_dict_.end()) {
     blocksz.setIndexStock(iter->second);
   }
-  iter = m_stockDict.find("BJ899050");
-  if (iter != m_stockDict.end()) {
+  iter = stock_dict_.find("BJ899050");
+  if (iter != stock_dict_.end()) {
     blockbj.setIndexStock(iter->second);
   }
-  iter = m_stockDict.find("SZ399005");
-  if (iter != m_stockDict.end()) {
+  iter = stock_dict_.find("SZ399005");
+  if (iter != stock_dict_.end()) {
     blockzxb.setIndexStock(iter->second);
   }
-  iter = m_stockDict.find("SZ399006");
-  if (iter != m_stockDict.end()) {
+  iter = stock_dict_.find("SZ399006");
+  if (iter != stock_dict_.end()) {
     blockg.setIndexStock(iter->second);
   }
-  iter = m_stockDict.find("SH000688");
-  if (iter != m_stockDict.end()) {
+  iter = stock_dict_.find("SH000688");
+  if (iter != stock_dict_.end()) {
     blockstart.setIndexStock(iter->second);
   }
 
-  m_innerBlocks.clear();
-  m_innerBlocks["A_ALL"] = std::move(blocka);
-  m_innerBlocks["A_沪深"] = std::move(blocka_shsz);
-  m_innerBlocks["A_SH"] = std::move(blocksh);
-  m_innerBlocks["A_SZ"] = std::move(blocksz);
-  m_innerBlocks["A_BJ"] = std::move(blockbj);
-  m_innerBlocks["A_中小板"] = std::move(blockzxb);
-  m_innerBlocks["G_创业板"] = std::move(blockg);
-  m_innerBlocks["START_科创板"] = std::move(blockstart);
-  m_innerBlocks["ETF_ALL"] = std::move(blocketf);
+  inner_blocks_.clear();
+  inner_blocks_["A_ALL"] = std::move(blocka);
+  inner_blocks_["A_沪深"] = std::move(blocka_shsz);
+  inner_blocks_["A_SH"] = std::move(blocksh);
+  inner_blocks_["A_SZ"] = std::move(blocksz);
+  inner_blocks_["A_BJ"] = std::move(blockbj);
+  inner_blocks_["A_中小板"] = std::move(blockzxb);
+  inner_blocks_["G_创业板"] = std::move(blockg);
+  inner_blocks_["START_科创板"] = std::move(blockstart);
+  inner_blocks_["ETF_ALL"] = std::move(blocketf);
 }
 
 void DataRuntime::loadAllStockWeights() {
-  HAYAKU_IF_RETURN(!m_hayakuParam.tryGet<bool>("load_stock_weight", true),
+  HAYAKU_IF_RETURN(!hayaku_param_.tryGet<bool>("load_stock_weight", true),
                    void());
   // The client mode also materializes all the ex-rights/ex-dividend data at the
   // startup according to the config above: the shared memory snapshot has been
@@ -1183,40 +1183,40 @@ void DataRuntime::loadAllStockWeights() {
   // off, added by addStock or newly constructed) are still handled by the
   // on-demand lazy loading fallback of Stock::getWeight.
   HAYAKU_INFO(htr("Loading stock weight..."));
-  if (m_context.isAll()) {
-    auto all_stkweight_dict = m_baseInfoDriver->getAllStockWeightList();
+  if (context_.isAll()) {
+    auto all_stkweight_dict = base_info_driver_->getAllStockWeightList();
     for (auto& item : all_stkweight_dict) {
       item.second.shrink_to_fit();
     }
-    std::shared_lock<std::shared_mutex> lock1(*m_stockDict_mutex);
-    for (auto iter = m_stockDict.begin(); iter != m_stockDict.end(); ++iter) {
+    std::shared_lock<std::shared_mutex> lock1(*stock_dict_mutex_);
+    for (auto iter = stock_dict_.begin(); iter != stock_dict_.end(); ++iter) {
       auto weight_iter = all_stkweight_dict.find(iter->first);
       Stock& stock = iter->second;
       {
-        std::unique_lock<std::shared_mutex> lock2(stock.m_data->m_weight_mutex);
+        std::unique_lock<std::shared_mutex> lock2(stock.data_->weight_mutex_);
         if (weight_iter != all_stkweight_dict.end()) {
-          stock.m_data->m_weightList.swap(weight_iter->second);
+          stock.data_->weight_list_.swap(weight_iter->second);
         }
         // It is marked materialized whether the security has the
         // ex-rights/ex-dividend data or not: not being collected means this
         // security has none (such as most ETFs), avoiding the client mode
         // getWeight repeatedly triggering an empty lazy loading query for the
         // securities without the ex-rights/ex-dividend data
-        stock.m_data->m_weight_ready.store(true, std::memory_order_release);
+        stock.data_->weight_ready_.store(true, std::memory_order_release);
       }
     }
   } else {
-    std::shared_lock<std::shared_mutex> lock1(*m_stockDict_mutex);
-    for (auto iter = m_stockDict.begin(); iter != m_stockDict.end(); ++iter) {
+    std::shared_lock<std::shared_mutex> lock1(*stock_dict_mutex_);
+    for (auto iter = stock_dict_.begin(); iter != stock_dict_.end(); ++iter) {
       Stock& stock = iter->second;
-      auto sw_list = m_baseInfoDriver->getStockWeightList(
-          stock.market(), stock.code(), m_context.startDatetime(),
+      auto sw_list = base_info_driver_->getStockWeightList(
+          stock.market(), stock.code(), context_.startDatetime(),
           Null<Datetime>());
       sw_list.shrink_to_fit();
       {
-        std::unique_lock<std::shared_mutex> lock2(stock.m_data->m_weight_mutex);
-        stock.m_data->m_weightList = std::move(sw_list);
-        stock.m_data->m_weight_ready.store(true, std::memory_order_release);
+        std::unique_lock<std::shared_mutex> lock2(stock.data_->weight_mutex_);
+        stock.data_->weight_list_ = std::move(sw_list);
+        stock.data_->weight_ready_.store(true, std::memory_order_release);
       }
     }
   }
@@ -1230,44 +1230,44 @@ void DataRuntime::releaseShmServerBaseInfoCache() {
                    void());
   HAYAKU_DEBUG(
       htr("Release stock weight/finance cache after shm base info published"));
-  std::shared_lock<std::shared_mutex> lock1(*m_stockDict_mutex);
-  for (auto iter = m_stockDict.begin(); iter != m_stockDict.end(); ++iter) {
+  std::shared_lock<std::shared_mutex> lock1(*stock_dict_mutex_);
+  for (auto iter = stock_dict_.begin(); iter != stock_dict_.end(); ++iter) {
     Stock& stock = iter->second;
     {
-      std::unique_lock<std::shared_mutex> lock2(stock.m_data->m_weight_mutex);
-      StockWeightList().swap(stock.m_data->m_weightList);
+      std::unique_lock<std::shared_mutex> lock2(stock.data_->weight_mutex_);
+      StockWeightList().swap(stock.data_->weight_list_);
       // Set it to false: the next Stock::getWeight re-reads it through the
       // driver lazy loading (the server role has the lazy loading fallback)
-      stock.m_data->m_weight_ready.store(false, std::memory_order_release);
+      stock.data_->weight_ready_.store(false, std::memory_order_release);
     }
     {
       std::unique_lock<std::shared_mutex> lock2(
-          stock.m_data->m_history_finance_mutex);
-      vector<HistoryFinanceInfo>().swap(stock.m_data->m_history_finance);
+          stock.data_->history_finance_mutex_);
+      vector<HistoryFinanceInfo>().swap(stock.data_->history_finance_);
       // Set it to false: the next Stock::getHistoryFinance re-reads it through
       // the driver lazy loading (every mode has the fallback)
-      stock.m_data->m_history_finance_ready = false;
+      stock.data_->history_finance_ready_ = false;
     }
   }
 }
 
 void DataRuntime::loadAllZhBond10() {
-  m_zh_bond10 = m_baseInfoDriver->getAllZhBond10();
-  m_zh_bond10.shrink_to_fit();
+  zh_bond10_ = base_info_driver_->getAllZhBond10();
+  zh_bond10_.shrink_to_fit();
 }
 
 void DataRuntime::loadHistoryFinanceField() {
-  auto fields = m_baseInfoDriver->getHistoryFinanceField();
+  auto fields = base_info_driver_->getHistoryFinanceField();
   for (const auto& field : fields) {
-    m_field_ix_to_name[field.first - 1] = field.second;
-    m_field_name_to_ix[field.second] = field.first - 1;
+    field_ix_to_name_[field.first - 1] = field.second;
+    field_name_to_ix_[field.second] = field.first - 1;
   }
 }
 
 vector<std::pair<size_t, string>> DataRuntime::getHistoryFinanceAllFields()
     const {
   vector<std::pair<size_t, string>> ret;
-  for (auto iter = m_field_ix_to_name.begin(); iter != m_field_ix_to_name.end();
+  for (auto iter = field_ix_to_name_.begin(); iter != field_ix_to_name_.end();
        ++iter) {
     ret.emplace_back(iter->first, iter->second);
   }

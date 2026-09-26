@@ -46,7 +46,7 @@ class SQLiteBaseInfoDriver : public BaseInfoDriver {
 
  private:
   // The database instance of the stock basic information
-  ResourcePool<SQLiteConnect>* m_pool;
+  ResourcePool<SQLiteConnect>* pool_;
 };
 
 } /* namespace hayaku */

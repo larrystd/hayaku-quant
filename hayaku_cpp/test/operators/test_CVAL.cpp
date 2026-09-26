@@ -9,6 +9,7 @@
 #include <operators/SeriesOperators.h>
 
 #include <fstream>
+#include <iterator>
 
 #include "doctest/doctest.h"
 
@@ -177,6 +178,16 @@ TEST_CASE("test_CVAL_export") {
     std::ofstream ofs(filename);
     boost::archive::xml_oarchive oa(ofs);
     oa << BOOST_SERIALIZATION_NVP(ma1);
+  }
+
+  // The C++ member was renamed; existing XML archives still use m_imp.
+  {
+    std::ifstream ifs(filename);
+    const std::string xml((std::istreambuf_iterator<char>(ifs)),
+                          std::istreambuf_iterator<char>());
+    CHECK(xml.find("<m_imp") != std::string::npos);
+    CHECK(xml.find("<m_name") != std::string::npos);
+    CHECK(xml.find("<m_params") != std::string::npos);
   }
 
   Indicator ma2;

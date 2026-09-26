@@ -19,9 +19,9 @@ namespace hayaku {
 
 class PluginManager final {
  public:
-  PluginManager() : m_plugin_path(".") {};
+  PluginManager() : plugin_path_(".") {};
   explicit PluginManager(const std::string& plugin_path)
-      : m_plugin_path(plugin_path) {}
+      : plugin_path_(plugin_path) {}
 
   ~PluginManager() = default;
   PluginManager(const PluginManager&) = delete;
@@ -29,13 +29,13 @@ class PluginManager final {
   PluginManager& operator=(const PluginManager&) = delete;
   PluginManager& operator=(PluginManager&&) = delete;
 
-  const std::string& pluginPath() const noexcept { return m_plugin_path; }
+  const std::string& pluginPath() const noexcept { return plugin_path_; }
 
   void pluginPath(const std::string& plugin_path) noexcept {
     HAYAKU_TRACE_IF_RETURN(
-        !m_plugins.empty(), void(),
+        !plugins_.empty(), void(),
         "Existing loaded plugins, Ignore set plugin path: {}, ", plugin_path);
-    m_plugin_path = plugin_path;
+    plugin_path_ = plugin_path;
   }
 
   // Invalidates every raw interface pointer returned by getPlugin(). Callers
@@ -43,8 +43,8 @@ class PluginManager final {
   // plugin-created object; the lock below protects the map only, not a caller
   // using a pointer after getPlugin() returns.
   void clear() noexcept {
-    std::unique_lock<std::shared_mutex> write_lock(m_mutex);
-    m_plugins.clear();
+    std::unique_lock<std::shared_mutex> write_lock(mutex_);
+    plugins_.clear();
   }
 
   // The returned pointer is borrowed. It is valid only while this manager, the
@@ -56,9 +56,9 @@ class PluginManager final {
     PluginInterfaceT* ret{nullptr};
     try {
       {
-        std::shared_lock<std::shared_mutex> read_lock(m_mutex);
-        auto it = m_plugins.find(pluginname);
-        if (it != m_plugins.end()) {
+        std::shared_lock<std::shared_mutex> read_lock(mutex_);
+        auto it = plugins_.find(pluginname);
+        if (it != plugins_.end()) {
           if (!it->second->supportsInterfaceVersion(
                   pluginInterfaceVersion<PluginInterfaceT>())) {
             HAYAKU_WARN_IF(
@@ -73,7 +73,7 @@ class PluginManager final {
       }
 
       std::unique_ptr<PluginLoader> loader =
-          std::make_unique<PluginLoader>(m_plugin_path);
+          std::make_unique<PluginLoader>(plugin_path_);
       if (!loader->load(pluginname, print,
                         pluginInterfaceVersion<PluginInterfaceT>())) {
         HAYAKU_DEBUG("Load plugin {} failed: {}", pluginname,
@@ -89,9 +89,9 @@ class PluginManager final {
       }
 
       {
-        std::unique_lock<std::shared_mutex> write_lock(m_mutex);
-        auto it = m_plugins.find(pluginname);
-        if (it != m_plugins.end()) {
+        std::unique_lock<std::shared_mutex> write_lock(mutex_);
+        auto it = plugins_.find(pluginname);
+        if (it != plugins_.end()) {
           // Reuse the plugin instance already inserted
           ret = it->second->supportsInterfaceVersion(
                     pluginInterfaceVersion<PluginInterfaceT>())
@@ -100,7 +100,7 @@ class PluginManager final {
         } else {
           // Insert the newly loaded plugin
           auto [it, success] =
-              m_plugins.insert(std::make_pair(pluginname, std::move(loader)));
+              plugins_.insert(std::make_pair(pluginname, std::move(loader)));
           if (success) {
             ret = it->second->instance<PluginInterfaceT>();
           }
@@ -119,9 +119,9 @@ class PluginManager final {
   }
 
  private:
-  std::string m_plugin_path;
-  std::unordered_map<std::string, std::unique_ptr<PluginLoader>> m_plugins;
-  std::shared_mutex m_mutex;
+  std::string plugin_path_;
+  std::unordered_map<std::string, std::unique_ptr<PluginLoader>> plugins_;
+  std::shared_mutex mutex_;
 };
 
 }  // namespace hayaku

@@ -71,12 +71,12 @@ assert not any(name.startswith('hayaku_ingest_native.ingest') for name in sys.mo
         module_name = f"hayaku_ingest_native.ingest{sys.version_info.major}{sys.version_info.minor}"
         missing = ModuleNotFoundError(f"No module named {module_name}", name=module_name)
         with mock.patch.object(ingest.importlib, "import_module", side_effect=missing):
-            with self.assertRaisesRegex(ImportError, "xmake ingest"):
+            with self.assertRaisesRegex(ImportError, "./op.sh build"):
                 ingest._load_native()
         missing_package = ModuleNotFoundError("No module named hayaku_ingest_native",
                                               name="hayaku_ingest_native")
         with mock.patch.object(ingest.importlib, "import_module", side_effect=missing_package):
-            with self.assertRaisesRegex(ImportError, "xmake ingest"):
+            with self.assertRaisesRegex(ImportError, "./op.sh build"):
                 ingest._load_native()
 
     def test_legacy_imports_are_removed(self):

@@ -24,9 +24,9 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const ProfitGoalPtr& pg) {
   return os;
 }
 
-ProfitGoalBase::ProfitGoalBase() : m_name("ProfitGoalBase") {}
+ProfitGoalBase::ProfitGoalBase() : name_("ProfitGoalBase") {}
 
-ProfitGoalBase::ProfitGoalBase(const string& name) : m_name(name) {}
+ProfitGoalBase::ProfitGoalBase(const string& name) : name_(name) {}
 
 ProfitGoalBase::~ProfitGoalBase() {}
 
@@ -34,8 +34,8 @@ void ProfitGoalBase::baseCheckParam(const string& name) const {}
 void ProfitGoalBase::paramChanged() {}
 
 void ProfitGoalBase::reset() {
-  m_kdata = Null<KData>();
-  m_account.reset();
+  kdata_ = Null<KData>();
+  account_.reset();
   _reset();
 }
 
@@ -53,17 +53,17 @@ ProfitGoalPtr ProfitGoalBase::clone() {
     return shared_from_this();
   }
 
-  p->m_params = m_params;
-  p->m_name = m_name;
-  p->m_is_python_object = m_is_python_object;
-  p->m_account = m_account;
-  p->m_kdata = m_kdata;
+  p->params_ = params_;
+  p->name_ = name_;
+  p->is_python_object_ = is_python_object_;
+  p->account_ = account_;
+  p->kdata_ = kdata_;
   return p;
 }
 
 void ProfitGoalBase::setTO(const KData& kdata) {
-  HAYAKU_IF_RETURN(m_kdata == kdata, void());
-  m_kdata = kdata;
+  HAYAKU_IF_RETURN(kdata_ == kdata, void());
+  kdata_ = kdata;
   if (!kdata.empty()) {
     _calculate();
   }

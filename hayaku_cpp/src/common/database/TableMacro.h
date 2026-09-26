@@ -20,52 +20,52 @@ namespace hayaku {
   TableT() = default;                                              \
   TableT(const TableT&) = default;                                 \
   TableT& operator=(const TableT&) = default;                      \
-  TableT(TableT&& rv) : m_id(rv.m_id) { rv.m_id = 0; }             \
+  TableT(TableT&& rv) : id_(rv.id_) { rv.id_ = 0; }             \
   TableT& operator=(TableT&& rv) {                                 \
     if (this == &rv) return *this;                                 \
-    m_id = rv.m_id;                                                \
-    rv.m_id = 0;                                                   \
+    id_ = rv.id_;                                                \
+    rv.id_ = 0;                                                   \
     return *this;                                                  \
   }                                                                \
                                                                    \
  private:                                                          \
-  uint64_t m_id = 0;                                               \
+  uint64_t id_ = 0;                                               \
                                                                    \
  public:                                                           \
-  bool valid() const { return m_id != 0; }                         \
-  uint64_t id() const { return m_id; }                             \
-  void id(uint64_t id) { m_id = id; }                              \
-  uint64_t rowid() const { return m_id; }                          \
-  void rowid(uint64_t id) { m_id = id; }                           \
+  bool valid() const { return id_ != 0; }                         \
+  uint64_t id() const { return id_; }                             \
+  void id(uint64_t id) { id_ = id; }                              \
+  uint64_t rowid() const { return id_; }                          \
+  void rowid(uint64_t id) { id_ = id; }                           \
   static std::string getTableName() { return #table; }             \
   static const char* getSelectSQL() {                              \
     return "select `id` from `" #table "`";                        \
   }                                                                \
-  void load(const SQLStatementPtr& st) { st->getColumn(0, m_id); } \
-  void load(const AsyncSQLStatementPtr& st) { st->getColumn(0, m_id); }
+  void load(const SQLStatementPtr& st) { st->getColumn(0, id_); } \
+  void load(const AsyncSQLStatementPtr& st) { st->getColumn(0, id_); }
 #define TABLE_BIND1(TableT, table, f1)                                         \
  public:                                                                       \
   TableT() = default;                                                          \
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
-  TableT(TableT&& rv) : m_id(rv.m_id), f1(std::move(rv.f1)) { rv.m_id = 0; }   \
+  TableT(TableT&& rv) : id_(rv.id_), f1(std::move(rv.f1)) { rv.id_ = 0; }   \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`) values (?)";                  \
@@ -77,11 +77,11 @@ namespace hayaku {
     return "select `id`,`" #f1 "` from `" #table "`";                          \
   }                                                                            \
   void save(const SQLStatementPtr& st) const { st->bind(0, f1); }              \
-  void update(const SQLStatementPtr& st) const { st->bind(0, f1, m_id); }      \
-  void load(const SQLStatementPtr& st) { st->getColumn(0, m_id, f1); }         \
+  void update(const SQLStatementPtr& st) const { st->bind(0, f1, id_); }      \
+  void load(const SQLStatementPtr& st) { st->getColumn(0, id_, f1); }         \
   void save(const AsyncSQLStatementPtr& st) const { st->bind(0, f1); }         \
-  void update(const AsyncSQLStatementPtr& st) const { st->bind(0, f1, m_id); } \
-  void load(const AsyncSQLStatementPtr& st) { st->getColumn(0, m_id, f1); }
+  void update(const AsyncSQLStatementPtr& st) const { st->bind(0, f1, id_); } \
+  void load(const AsyncSQLStatementPtr& st) { st->getColumn(0, id_, f1); }
 
 #define TABLE_BIND2(TableT, table, f1, f2)                                    \
  public:                                                                      \
@@ -89,27 +89,27 @@ namespace hayaku {
   TableT(const TableT&) = default;                                            \
   TableT& operator=(const TableT&) = default;                                 \
   TableT(TableT&& rv)                                                         \
-      : m_id(rv.m_id), f1(std::move(rv.f1)), f2(std::move(rv.f2)) {           \
-    rv.m_id = 0;                                                              \
+      : id_(rv.id_), f1(std::move(rv.f1)), f2(std::move(rv.f2)) {           \
+    rv.id_ = 0;                                                              \
   }                                                                           \
   TableT& operator=(TableT&& rv) {                                            \
     if (this == &rv) return *this;                                            \
-    m_id = rv.m_id;                                                           \
+    id_ = rv.id_;                                                           \
     f1 = std::move(rv.f1);                                                    \
     f2 = std::move(rv.f2);                                                    \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
     return *this;                                                             \
   }                                                                           \
                                                                               \
  private:                                                                     \
-  uint64_t m_id = 0;                                                          \
+  uint64_t id_ = 0;                                                          \
                                                                               \
  public:                                                                      \
-  bool valid() const { return m_id != 0; }                                    \
-  uint64_t id() const { return m_id; }                                        \
-  void id(uint64_t id) { m_id = id; }                                         \
-  uint64_t rowid() const { return m_id; }                                     \
-  void rowid(uint64_t id) { m_id = id; }                                      \
+  bool valid() const { return id_ != 0; }                                    \
+  uint64_t id() const { return id_; }                                        \
+  void id(uint64_t id) { id_ = id; }                                         \
+  uint64_t rowid() const { return id_; }                                     \
+  void rowid(uint64_t id) { id_ = id; }                                      \
   static std::string getTableName() { return #table; }                        \
   static const char* getInsertSQL() {                                         \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`) values (?,?)";     \
@@ -122,43 +122,43 @@ namespace hayaku {
   }                                                                           \
   void save(const SQLStatementPtr& st) const { st->bind(0, f1, f2); }         \
   void save(const AsyncSQLStatementPtr& st) const { st->bind(0, f1, f2); }    \
-  void update(const SQLStatementPtr& st) const { st->bind(0, f1, f2, m_id); } \
+  void update(const SQLStatementPtr& st) const { st->bind(0, f1, f2, id_); } \
   void update(const AsyncSQLStatementPtr& st) const {                         \
-    st->bind(0, f1, f2, m_id);                                                \
+    st->bind(0, f1, f2, id_);                                                \
   }                                                                           \
-  void load(const SQLStatementPtr& st) { st->getColumn(0, m_id, f1, f2); }    \
-  void load(const AsyncSQLStatementPtr& st) { st->getColumn(0, m_id, f1, f2); }
+  void load(const SQLStatementPtr& st) { st->getColumn(0, id_, f1, f2); }    \
+  void load(const AsyncSQLStatementPtr& st) { st->getColumn(0, id_, f1, f2); }
 #define TABLE_BIND3(TableT, table, f1, f2, f3)                                 \
  public:                                                                       \
   TableT() = default;                                                          \
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)) {                                                 \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3               \
@@ -174,14 +174,14 @@ namespace hayaku {
   void save(const SQLStatementPtr& st) const { st->bind(0, f1, f2, f3); }      \
   void save(const AsyncSQLStatementPtr& st) const { st->bind(0, f1, f2, f3); } \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, m_id);                                             \
+    st->bind(0, f1, f2, f3, id_);                                             \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, m_id);                                             \
+    st->bind(0, f1, f2, f3, id_);                                             \
   }                                                                            \
-  void load(const SQLStatementPtr& st) { st->getColumn(0, m_id, f1, f2, f3); } \
+  void load(const SQLStatementPtr& st) { st->getColumn(0, id_, f1, f2, f3); } \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3);                                        \
+    st->getColumn(0, id_, f1, f2, f3);                                        \
   }
 
 #define TABLE_BIND4(TableT, table, f1, f2, f3, f4)                             \
@@ -190,33 +190,33 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
         f4(std::move(rv.f4)) {                                                 \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
     f4 = std::move(rv.f4);                                                     \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -235,16 +235,16 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4);                                               \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, m_id);                                         \
+    st->bind(0, f1, f2, f3, f4, id_);                                         \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, m_id);                                         \
+    st->bind(0, f1, f2, f3, f4, id_);                                         \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4);                                    \
+    st->getColumn(0, id_, f1, f2, f3, f4);                                    \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4);                                    \
+    st->getColumn(0, id_, f1, f2, f3, f4);                                    \
   }
 
 #define TABLE_BIND5(TableT, table, f1, f2, f3, f4, f5)                         \
@@ -253,35 +253,35 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
         f4(std::move(rv.f4)),                                                  \
         f5(std::move(rv.f5)) {                                                 \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
     f4 = std::move(rv.f4);                                                     \
     f5 = std::move(rv.f5);                                                     \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -302,16 +302,16 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5);                                           \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, m_id);                                     \
+    st->bind(0, f1, f2, f3, f4, f5, id_);                                     \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, m_id);                                     \
+    st->bind(0, f1, f2, f3, f4, f5, id_);                                     \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5);                                \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5);                                \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5);                                \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5);                                \
   }
 #define TABLE_BIND6(TableT, table, f1, f2, f3, f4, f5, f6)                     \
  public:                                                                       \
@@ -319,37 +319,37 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
         f4(std::move(rv.f4)),                                                  \
         f5(std::move(rv.f5)),                                                  \
         f6(std::move(rv.f6)) {                                                 \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
     f4 = std::move(rv.f4);                                                     \
     f5 = std::move(rv.f5);                                                     \
     f6 = std::move(rv.f6);                                                     \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -370,16 +370,16 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6);                                       \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, m_id);                                 \
+    st->bind(0, f1, f2, f3, f4, f5, f6, id_);                                 \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, m_id);                                 \
+    st->bind(0, f1, f2, f3, f4, f5, f6, id_);                                 \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6);                            \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6);                            \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6);                            \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6);                            \
   }
 #define TABLE_BIND7(TableT, table, f1, f2, f3, f4, f5, f6, f7)                 \
  public:                                                                       \
@@ -387,7 +387,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -395,11 +395,11 @@ namespace hayaku {
         f5(std::move(rv.f5)),                                                  \
         f6(std::move(rv.f6)),                                                  \
         f7(std::move(rv.f7)) {                                                 \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -407,19 +407,19 @@ namespace hayaku {
     f5 = std::move(rv.f5);                                                     \
     f6 = std::move(rv.f6);                                                     \
     f7 = std::move(rv.f7);                                                     \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -437,19 +437,19 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7);                                   \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, m_id);                             \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, id_);                             \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7);                        \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7);                        \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7);                                   \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, m_id);                             \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, id_);                             \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7);                        \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7);                        \
   }
 
 #define TABLE_BIND8(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8)             \
@@ -458,7 +458,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -467,11 +467,11 @@ namespace hayaku {
         f6(std::move(rv.f6)),                                                  \
         f7(std::move(rv.f7)),                                                  \
         f8(std::move(rv.f8)) {                                                 \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -480,19 +480,19 @@ namespace hayaku {
     f6 = std::move(rv.f6);                                                     \
     f7 = std::move(rv.f7);                                                     \
     f8 = std::move(rv.f8);                                                     \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -511,19 +511,19 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8);                               \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, m_id);                         \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, id_);                         \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8);                    \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8);                    \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8);                               \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, m_id);                         \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, id_);                         \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8);                    \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8);                    \
   }
 
 #define TABLE_BIND9(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8, f9)         \
@@ -532,7 +532,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -542,11 +542,11 @@ namespace hayaku {
         f7(std::move(rv.f7)),                                                  \
         f8(std::move(rv.f8)),                                                  \
         f9(std::move(rv.f9)) {                                                 \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -556,19 +556,19 @@ namespace hayaku {
     f7 = std::move(rv.f7);                                                     \
     f8 = std::move(rv.f8);                                                     \
     f9 = std::move(rv.f9);                                                     \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -588,19 +588,19 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9);                           \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, m_id);                     \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, id_);                     \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9);                \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9);                \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9);                           \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, m_id);                     \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, id_);                     \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9);                \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9);                \
   }
 
 #define TABLE_BIND10(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10)   \
@@ -609,7 +609,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -620,11 +620,11 @@ namespace hayaku {
         f8(std::move(rv.f8)),                                                  \
         f9(std::move(rv.f9)),                                                  \
         f10(std::move(rv.f10)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -635,19 +635,19 @@ namespace hayaku {
     f8 = std::move(rv.f8);                                                     \
     f9 = std::move(rv.f9);                                                     \
     f10 = std::move(rv.f10);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -668,19 +668,19 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);                      \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, m_id);                \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, id_);                \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);           \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);           \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);                      \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, m_id);                \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, id_);                \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);           \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);           \
   }
 
 #define TABLE_BIND11(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10,   \
@@ -690,7 +690,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -702,11 +702,11 @@ namespace hayaku {
         f9(std::move(rv.f9)),                                                  \
         f10(std::move(rv.f10)),                                                \
         f11(std::move(rv.f11)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -718,19 +718,19 @@ namespace hayaku {
     f9 = std::move(rv.f9);                                                     \
     f10 = std::move(rv.f10);                                                   \
     f11 = std::move(rv.f11);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -751,19 +751,19 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);                 \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, m_id);           \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, id_);           \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);      \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);      \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);                 \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, m_id);           \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, id_);           \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);      \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);      \
   }
 
 #define TABLE_BIND12(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10,   \
@@ -773,7 +773,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -786,11 +786,11 @@ namespace hayaku {
         f10(std::move(rv.f10)),                                                \
         f11(std::move(rv.f11)),                                                \
         f12(std::move(rv.f12)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -803,19 +803,19 @@ namespace hayaku {
     f10 = std::move(rv.f10);                                                   \
     f11 = std::move(rv.f11);                                                   \
     f12 = std::move(rv.f12);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -836,19 +836,19 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12);            \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, m_id);      \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, id_);      \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12); \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12); \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12);            \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, m_id);      \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, id_);      \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12); \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12); \
   }
 
 #define TABLE_BIND13(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10,   \
@@ -858,7 +858,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -872,11 +872,11 @@ namespace hayaku {
         f11(std::move(rv.f11)),                                                \
         f12(std::move(rv.f12)),                                                \
         f13(std::move(rv.f13)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -890,19 +890,19 @@ namespace hayaku {
     f11 = std::move(rv.f11);                                                   \
     f12 = std::move(rv.f12);                                                   \
     f13 = std::move(rv.f13);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -925,20 +925,20 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13);       \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, m_id); \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, id_); \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13);                                                        \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13);       \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, m_id); \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, id_); \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13);                                                        \
   }
 
@@ -949,7 +949,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -964,11 +964,11 @@ namespace hayaku {
         f12(std::move(rv.f12)),                                                \
         f13(std::move(rv.f13)),                                                \
         f14(std::move(rv.f14)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -983,19 +983,19 @@ namespace hayaku {
     f12 = std::move(rv.f12);                                                   \
     f13 = std::move(rv.f13);                                                   \
     f14 = std::move(rv.f14);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1019,10 +1019,10 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             m_id);                                                            \
+             id_);                                                            \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14);                                                   \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
@@ -1030,10 +1030,10 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             m_id);                                                            \
+             id_);                                                            \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14);                                                   \
   }
 
@@ -1044,7 +1044,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -1060,11 +1060,11 @@ namespace hayaku {
         f13(std::move(rv.f13)),                                                \
         f14(std::move(rv.f14)),                                                \
         f15(std::move(rv.f15)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -1080,19 +1080,19 @@ namespace hayaku {
     f13 = std::move(rv.f13);                                                   \
     f14 = std::move(rv.f14);                                                   \
     f15 = std::move(rv.f15);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1117,10 +1117,10 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, m_id);                                                       \
+             f15, id_);                                                       \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15);                                              \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
@@ -1129,10 +1129,10 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, m_id);                                                       \
+             f15, id_);                                                       \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15);                                              \
   }
 
@@ -1143,7 +1143,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -1160,11 +1160,11 @@ namespace hayaku {
         f14(std::move(rv.f14)),                                                \
         f15(std::move(rv.f15)),                                                \
         f16(std::move(rv.f16)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -1181,19 +1181,19 @@ namespace hayaku {
     f14 = std::move(rv.f14);                                                   \
     f15 = std::move(rv.f15);                                                   \
     f16 = std::move(rv.f16);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1219,10 +1219,10 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, m_id);                                                  \
+             f15, f16, id_);                                                  \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15, f16);                                         \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
@@ -1231,10 +1231,10 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, m_id);                                                  \
+             f15, f16, id_);                                                  \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15, f16);                                         \
   }
 
@@ -1245,7 +1245,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -1263,11 +1263,11 @@ namespace hayaku {
         f15(std::move(rv.f15)),                                                \
         f16(std::move(rv.f16)),                                                \
         f17(std::move(rv.f17)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -1285,19 +1285,19 @@ namespace hayaku {
     f15 = std::move(rv.f15);                                                   \
     f16 = std::move(rv.f16);                                                   \
     f17 = std::move(rv.f17);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1323,10 +1323,10 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, m_id);                                             \
+             f15, f16, f17, id_);                                             \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15, f16, f17);                                    \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
@@ -1335,10 +1335,10 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, m_id);                                             \
+             f15, f16, f17, id_);                                             \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15, f16, f17);                                    \
   }
 
@@ -1349,7 +1349,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -1368,11 +1368,11 @@ namespace hayaku {
         f16(std::move(rv.f16)),                                                \
         f17(std::move(rv.f17)),                                                \
         f18(std::move(rv.f18)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -1391,19 +1391,19 @@ namespace hayaku {
     f16 = std::move(rv.f16);                                                   \
     f17 = std::move(rv.f17);                                                   \
     f18 = std::move(rv.f18);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1431,10 +1431,10 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, m_id);                                        \
+             f15, f16, f17, f18, id_);                                        \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15, f16, f17, f18);                               \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
@@ -1443,10 +1443,10 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, m_id);                                        \
+             f15, f16, f17, f18, id_);                                        \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15, f16, f17, f18);                               \
   }
 
@@ -1457,7 +1457,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -1477,11 +1477,11 @@ namespace hayaku {
         f17(std::move(rv.f17)),                                                \
         f18(std::move(rv.f18)),                                                \
         f19(std::move(rv.f19)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -1501,19 +1501,19 @@ namespace hayaku {
     f17 = std::move(rv.f17);                                                   \
     f18 = std::move(rv.f18);                                                   \
     f19 = std::move(rv.f19);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1541,10 +1541,10 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, f19, m_id);                                   \
+             f15, f16, f17, f18, f19, id_);                                   \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15, f16, f17, f18, f19);                          \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
@@ -1553,10 +1553,10 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, f19, m_id);                                   \
+             f15, f16, f17, f18, f19, id_);                                   \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15, f16, f17, f18, f19);                          \
   }
 
@@ -1567,7 +1567,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -1588,11 +1588,11 @@ namespace hayaku {
         f18(std::move(rv.f18)),                                                \
         f19(std::move(rv.f19)),                                                \
         f20(std::move(rv.f20)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -1613,19 +1613,19 @@ namespace hayaku {
     f18 = std::move(rv.f18);                                                   \
     f19 = std::move(rv.f19);                                                   \
     f20 = std::move(rv.f20);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1653,10 +1653,10 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, f19, f20, m_id);                              \
+             f15, f16, f17, f18, f19, f20, id_);                              \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15, f16, f17, f18, f19, f20);                     \
   }                                                                            \
   void save(const AsyncSQLStatementPtr& st) const {                            \
@@ -1665,10 +1665,10 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, f19, f20, m_id);                              \
+             f15, f16, f17, f18, f19, f20, id_);                              \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15, f16, f17, f18, f19, f20);                     \
   }
 
@@ -1684,12 +1684,12 @@ namespace hayaku {
 
 #define TABLE_NO_AUTOID_BIND1(ROWID, table, f1)                              \
  private:                                                                    \
-  uint64_t m_rowid = 0;                                                      \
+  uint64_t rowid_ = 0;                                                      \
                                                                              \
  public:                                                                     \
-  bool valid() const { return m_rowid != 0; }                                \
-  uint64_t rowid() const { return m_rowid; }                                 \
-  void rowid(uint64_t id) { m_rowid = id; }                                  \
+  bool valid() const { return rowid_ != 0; }                                \
+  uint64_t rowid() const { return rowid_; }                                 \
+  void rowid(uint64_t id) { rowid_ = id; }                                  \
   static std::string getTableName() { return #table; }                       \
   static const char* getInsertSQL() {                                        \
     return "insert into `" #table "` (`" #f1 "`) values (?)";                \
@@ -1701,22 +1701,22 @@ namespace hayaku {
     return "select `" #f1 "` from `" #table "`";                             \
   }                                                                          \
   void save(const SQLStatementPtr& st) const { st->bind(0, f1); }            \
-  void update(const SQLStatementPtr& st) const { st->bind(0, f1, m_rowid); } \
+  void update(const SQLStatementPtr& st) const { st->bind(0, f1, rowid_); } \
   void load(const SQLStatementPtr& st) { st->getColumn(0, f1); }             \
   void save(const AsyncSQLStatementPtr& st) const { st->bind(0, f1); }       \
   void update(const AsyncSQLStatementPtr& st) const {                        \
-    st->bind(0, f1, m_rowid);                                                \
+    st->bind(0, f1, rowid_);                                                \
   }                                                                          \
   void load(const AsyncSQLStatementPtr& st) { st->getColumn(0, f1); }
 
 #define TABLE_NO_AUTOID_BIND2(ROWID, table, f1, f2)                         \
  private:                                                                   \
-  uint64_t m_rowid = 0;                                                     \
+  uint64_t rowid_ = 0;                                                     \
                                                                             \
  public:                                                                    \
-  bool valid() const { return m_rowid != 0; }                               \
-  uint64_t rowid() const { return m_rowid; }                                \
-  void rowid(uint64_t id) { m_rowid = id; }                                 \
+  bool valid() const { return rowid_ != 0; }                               \
+  uint64_t rowid() const { return rowid_; }                                \
+  void rowid(uint64_t id) { rowid_ = id; }                                 \
   static std::string getTableName() { return #table; }                      \
   static const char* getInsertSQL() {                                       \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`) values (?,?)";   \
@@ -1730,23 +1730,23 @@ namespace hayaku {
   }                                                                         \
   void save(const SQLStatementPtr& st) const { st->bind(0, f1, f2); }       \
   void update(const SQLStatementPtr& st) const {                            \
-    st->bind(0, f1, f2, m_rowid);                                           \
+    st->bind(0, f1, f2, rowid_);                                           \
   }                                                                         \
   void load(const SQLStatementPtr& st) { st->getColumn(0, f1, f2); }        \
   void save(const AsyncSQLStatementPtr& st) const { st->bind(0, f1, f2); }  \
   void update(const AsyncSQLStatementPtr& st) const {                       \
-    st->bind(0, f1, f2, m_rowid);                                           \
+    st->bind(0, f1, f2, rowid_);                                           \
   }                                                                         \
   void load(const AsyncSQLStatementPtr& st) { st->getColumn(0, f1, f2); }
 
 #define TABLE_NO_AUTOID_BIND3(ROWID, table, f1, f2, f3)                        \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3               \
@@ -1761,23 +1761,23 @@ namespace hayaku {
   }                                                                            \
   void save(const SQLStatementPtr& st) const { st->bind(0, f1, f2, f3); }      \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, m_rowid);                                          \
+    st->bind(0, f1, f2, f3, rowid_);                                          \
   }                                                                            \
   void load(const SQLStatementPtr& st) { st->getColumn(0, f1, f2, f3); }       \
   void save(const AsyncSQLStatementPtr& st) const { st->bind(0, f1, f2, f3); } \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, m_rowid);                                          \
+    st->bind(0, f1, f2, f3, rowid_);                                          \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) { st->getColumn(0, f1, f2, f3); }
 
 #define TABLE_NO_AUTOID_BIND4(ROWID, table, f1, f2, f3, f4)                    \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1792,25 +1792,25 @@ namespace hayaku {
   }                                                                            \
   void save(const SQLStatementPtr& st) const { st->bind(0, f1, f2, f3, f4); }  \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, m_rowid);                                          \
+    st->bind(0, f1, f2, f3, rowid_);                                          \
   }                                                                            \
   void load(const SQLStatementPtr& st) { st->getColumn(0, f1, f2, f3); }       \
   void save(const AsyncSQLStatementPtr& st) const {                            \
     st->bind(0, f1, f2, f3, f4);                                               \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, m_rowid);                                          \
+    st->bind(0, f1, f2, f3, rowid_);                                          \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) { st->getColumn(0, f1, f2, f3); }
 
 #define TABLE_NO_AUTOID_BIND5(ROWID, table, f1, f2, f3, f4, f5)                \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1828,7 +1828,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5);                                           \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, m_rowid);                                  \
+    st->bind(0, f1, f2, f3, f4, f5, rowid_);                                  \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5);                                      \
@@ -1837,7 +1837,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5);                                           \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, m_rowid);                                  \
+    st->bind(0, f1, f2, f3, f4, f5, rowid_);                                  \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5);                                      \
@@ -1845,12 +1845,12 @@ namespace hayaku {
 
 #define TABLE_NO_AUTOID_BIND6(ROWID, table, f1, f2, f3, f4, f5, f6)            \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1868,7 +1868,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6);                                       \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, m_rowid);                              \
+    st->bind(0, f1, f2, f3, f4, f5, f6, rowid_);                              \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6);                                  \
@@ -1877,7 +1877,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6);                                       \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, m_rowid);                              \
+    st->bind(0, f1, f2, f3, f4, f5, f6, rowid_);                              \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6);                                  \
@@ -1885,12 +1885,12 @@ namespace hayaku {
 
 #define TABLE_NO_AUTOID_BIND7(ROWID, table, f1, f2, f3, f4, f5, f6, f7)        \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1908,7 +1908,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7);                                   \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, m_rowid);                          \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, rowid_);                          \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7);                              \
@@ -1917,7 +1917,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7);                                   \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, m_rowid);                          \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, rowid_);                          \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7);                              \
@@ -1925,12 +1925,12 @@ namespace hayaku {
 
 #define TABLE_NO_AUTOID_BIND8(ROWID, table, f1, f2, f3, f4, f5, f6, f7, f8)    \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1950,7 +1950,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8);                               \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, m_rowid);                      \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, rowid_);                      \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8);                          \
@@ -1959,7 +1959,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8);                               \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, m_rowid);                      \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, rowid_);                      \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8);                          \
@@ -1968,12 +1968,12 @@ namespace hayaku {
 #define TABLE_NO_AUTOID_BIND9(ROWID, table, f1, f2, f3, f4, f5, f6, f7, f8,    \
                               f9)                                              \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -1993,7 +1993,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9);                           \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, m_rowid);                  \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, rowid_);                  \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9);                      \
@@ -2002,7 +2002,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9);                           \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, m_rowid);                  \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, rowid_);                  \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9);                      \
@@ -2011,12 +2011,12 @@ namespace hayaku {
 #define TABLE_NO_AUTOID_BIND10(ROWID, table, f1, f2, f3, f4, f5, f6, f7, f8,   \
                                f9, f10)                                        \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -2036,7 +2036,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);                      \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, m_rowid);             \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, rowid_);             \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);                 \
@@ -2045,7 +2045,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);                      \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, m_rowid);             \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, rowid_);             \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);                 \
@@ -2054,12 +2054,12 @@ namespace hayaku {
 #define TABLE_NO_AUTOID_BIND11(ROWID, table, f1, f2, f3, f4, f5, f6, f7, f8,   \
                                f9, f10, f11)                                   \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -2080,7 +2080,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);                 \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, m_rowid);        \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, rowid_);        \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);            \
@@ -2089,7 +2089,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);                 \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, m_rowid);        \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, rowid_);        \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);            \
@@ -2098,12 +2098,12 @@ namespace hayaku {
 #define TABLE_NO_AUTOID_BIND12(ROWID, table, f1, f2, f3, f4, f5, f6, f7, f8,   \
                                f9, f10, f11, f12)                              \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -2124,7 +2124,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12);            \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, m_rowid);   \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, rowid_);   \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12);       \
@@ -2133,7 +2133,7 @@ namespace hayaku {
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12);            \
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, m_rowid);   \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, rowid_);   \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12);       \
@@ -2142,12 +2142,12 @@ namespace hayaku {
 #define TABLE_NO_AUTOID_BIND13(ROWID, table, f1, f2, f3, f4, f5, f6, f7, f8,   \
                                f9, f10, f11, f12, f13)                         \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -2171,7 +2171,7 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,        \
-             m_rowid);                                                         \
+             rowid_);                                                         \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13);  \
@@ -2181,7 +2181,7 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,        \
-             m_rowid);                                                         \
+             rowid_);                                                         \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13);  \
@@ -2190,12 +2190,12 @@ namespace hayaku {
 #define TABLE_NO_AUTOID_BIND14(ROWID, table, f1, f2, f3, f4, f5, f6, f7, f8,   \
                                f9, f10, f11, f12, f13, f14)                    \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -2219,7 +2219,7 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             m_rowid);                                                         \
+             rowid_);                                                         \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2230,7 +2230,7 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             m_rowid);                                                         \
+             rowid_);                                                         \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2240,12 +2240,12 @@ namespace hayaku {
 #define TABLE_NO_AUTOID_BIND15(ROWID, table, f1, f2, f3, f4, f5, f6, f7, f8,   \
                                f9, f10, f11, f12, f13, f14, f15)               \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -2270,7 +2270,7 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, m_rowid);                                                    \
+             f15, rowid_);                                                    \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2282,7 +2282,7 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, m_rowid);                                                    \
+             f15, rowid_);                                                    \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2292,12 +2292,12 @@ namespace hayaku {
 #define TABLE_NO_AUTOID_BIND16(ROWID, table, f1, f2, f3, f4, f5, f6, f7, f8,   \
                                f9, f10, f11, f12, f13, f14, f15, f16)          \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -2322,7 +2322,7 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, m_rowid);                                               \
+             f15, f16, rowid_);                                               \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2334,7 +2334,7 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, m_rowid);                                               \
+             f15, f16, rowid_);                                               \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2344,12 +2344,12 @@ namespace hayaku {
 #define TABLE_NO_AUTOID_BIND17(ROWID, table, f1, f2, f3, f4, f5, f6, f7, f8,   \
                                f9, f10, f11, f12, f13, f14, f15, f16, f17)     \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -2375,7 +2375,7 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, m_rowid);                                          \
+             f15, f16, f17, rowid_);                                          \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2387,7 +2387,7 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, m_rowid);                                          \
+             f15, f16, f17, rowid_);                                          \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2398,12 +2398,12 @@ namespace hayaku {
                                f9, f10, f11, f12, f13, f14, f15, f16, f17,     \
                                f18)                                            \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -2431,7 +2431,7 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, m_rowid);                                     \
+             f15, f16, f17, f18, rowid_);                                     \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2443,7 +2443,7 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, m_rowid);                                     \
+             f15, f16, f17, f18, rowid_);                                     \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2454,12 +2454,12 @@ namespace hayaku {
                                f9, f10, f11, f12, f13, f14, f15, f16, f17,     \
                                f18, f19)                                       \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -2487,7 +2487,7 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, f19, m_rowid);                                \
+             f15, f16, f17, f18, f19, rowid_);                                \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2499,7 +2499,7 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, f19, m_rowid);                                \
+             f15, f16, f17, f18, f19, rowid_);                                \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2510,12 +2510,12 @@ namespace hayaku {
                                f9, f10, f11, f12, f13, f14, f15, f16, f17,     \
                                f18, f19, f20)                                  \
  private:                                                                      \
-  uint64_t m_rowid = 0;                                                        \
+  uint64_t rowid_ = 0;                                                        \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_rowid != 0; }                                  \
-  uint64_t rowid() const { return m_rowid; }                                   \
-  void rowid(uint64_t id) { m_rowid = id; }                                    \
+  bool valid() const { return rowid_ != 0; }                                  \
+  uint64_t rowid() const { return rowid_; }                                   \
+  void rowid(uint64_t id) { rowid_ = id; }                                    \
   static std::string getTableName() { return #table; }                         \
   static const char* getInsertSQL() {                                          \
     return "insert into `" #table "` (`" #f1 "`,`" #f2 "`,`" #f3 "`,`" #f4     \
@@ -2543,7 +2543,7 @@ namespace hayaku {
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, f19, f20, m_rowid);                           \
+             f15, f16, f17, f18, f19, f20, rowid_);                           \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2555,7 +2555,7 @@ namespace hayaku {
   }                                                                            \
   void update(const AsyncSQLStatementPtr& st) const {                          \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, f19, f20, m_rowid);                           \
+             f15, f16, f17, f18, f19, f20, rowid_);                           \
   }                                                                            \
   void load(const AsyncSQLStatementPtr& st) {                                  \
     st->getColumn(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,   \
@@ -2573,52 +2573,52 @@ namespace hayaku {
   TableT() = default;                                  \
   TableT(const TableT&) = default;                     \
   TableT& operator=(const TableT&) = default;          \
-  TableT(TableT&& rv) : m_id(rv.m_id) { rv.m_id = 0; } \
+  TableT(TableT&& rv) : id_(rv.id_) { rv.id_ = 0; } \
   TableT& operator=(TableT&& rv) {                     \
     if (this == &rv) return *this;                     \
-    m_id = rv.m_id;                                    \
-    rv.m_id = 0;                                       \
+    id_ = rv.id_;                                    \
+    rv.id_ = 0;                                       \
     return *this;                                      \
   }                                                    \
                                                        \
  private:                                              \
-  uint64_t m_id = 0;                                   \
+  uint64_t id_ = 0;                                   \
                                                        \
  public:                                               \
-  bool valid() const { return m_id != 0; }             \
-  uint64_t id() const { return m_id; }                 \
-  void id(uint64_t id) { m_id = id; }                  \
-  uint64_t rowid() const { return m_id; }              \
-  void rowid(uint64_t id) { m_id = id; }               \
+  bool valid() const { return id_ != 0; }             \
+  uint64_t id() const { return id_; }                 \
+  void id(uint64_t id) { id_ = id; }                  \
+  uint64_t rowid() const { return id_; }              \
+  void rowid(uint64_t id) { id_ = id; }               \
   static std::string getTableName() { return #table; } \
   static const char* getSelectSQL() {                  \
     return "select \"id\" from \"" #table "\"";        \
   }                                                    \
-  void load(const SQLStatementPtr& st) { st->getColumn(0, m_id); }
+  void load(const SQLStatementPtr& st) { st->getColumn(0, id_); }
 
 #define COL_TABLE_BIND1(TableT, table, f1)                                   \
  public:                                                                     \
   TableT() = default;                                                        \
   TableT(const TableT&) = default;                                           \
   TableT& operator=(const TableT&) = default;                                \
-  TableT(TableT&& rv) : m_id(rv.m_id), f1(std::move(rv.f1)) { rv.m_id = 0; } \
+  TableT(TableT&& rv) : id_(rv.id_), f1(std::move(rv.f1)) { rv.id_ = 0; } \
   TableT& operator=(TableT&& rv) {                                           \
     if (this == &rv) return *this;                                           \
-    m_id = rv.m_id;                                                          \
+    id_ = rv.id_;                                                          \
     f1 = std::move(rv.f1);                                                   \
-    rv.m_id = 0;                                                             \
+    rv.id_ = 0;                                                             \
     return *this;                                                            \
   }                                                                          \
                                                                              \
  private:                                                                    \
-  uint64_t m_id = 0;                                                         \
+  uint64_t id_ = 0;                                                         \
                                                                              \
  public:                                                                     \
-  bool valid() const { return m_id != 0; }                                   \
-  uint64_t id() const { return m_id; }                                       \
-  void id(uint64_t id) { m_id = id; }                                        \
-  uint64_t rowid() const { return m_id; }                                    \
-  void rowid(uint64_t id) { m_id = id; }                                     \
+  bool valid() const { return id_ != 0; }                                   \
+  uint64_t id() const { return id_; }                                       \
+  void id(uint64_t id) { id_ = id; }                                        \
+  uint64_t rowid() const { return id_; }                                    \
+  void rowid(uint64_t id) { id_ = id; }                                     \
   static std::string getTableName() { return #table; }                       \
   static const char* getInsertSQL() {                                        \
     return "insert into \"" #table "\" (id, \"" #f1 "\") values (?, ?)";     \
@@ -2630,15 +2630,15 @@ namespace hayaku {
     return "select \"id\",\"" #f1 "\" from \"" #table "\"";                  \
   }                                                                          \
   void save(const SQLStatementPtr& st) const {                               \
-    st->bind(0, m_id);                                                       \
+    st->bind(0, id_);                                                       \
     st->bind(1, f1);                                                         \
   }                                                                          \
   void update(const SQLStatementPtr& st) const {                             \
     st->bind(0, f1);                                                         \
-    st->bind(1, m_id);                                                       \
+    st->bind(1, id_);                                                       \
   }                                                                          \
   void load(const SQLStatementPtr& st) {                                     \
-    st->getColumn(0, m_id);                                                  \
+    st->getColumn(0, id_);                                                  \
     st->getColumn(1, f1);                                                    \
   }
 
@@ -2648,27 +2648,27 @@ namespace hayaku {
   TableT(const TableT&) = default;                                            \
   TableT& operator=(const TableT&) = default;                                 \
   TableT(TableT&& rv)                                                         \
-      : m_id(rv.m_id), f1(std::move(rv.f1)), f2(std::move(rv.f2)) {           \
-    rv.m_id = 0;                                                              \
+      : id_(rv.id_), f1(std::move(rv.f1)), f2(std::move(rv.f2)) {           \
+    rv.id_ = 0;                                                              \
   }                                                                           \
   TableT& operator=(TableT&& rv) {                                            \
     if (this == &rv) return *this;                                            \
-    m_id = rv.m_id;                                                           \
-    rv.m_id = 0;                                                              \
+    id_ = rv.id_;                                                           \
+    rv.id_ = 0;                                                              \
     f1 = std::move(rv.f1);                                                    \
     f2 = std::move(rv.f2);                                                    \
     return *this;                                                             \
   }                                                                           \
                                                                               \
  private:                                                                     \
-  uint64_t m_id = 0;                                                          \
+  uint64_t id_ = 0;                                                          \
                                                                               \
  public:                                                                      \
-  bool valid() const { return m_id != 0; }                                    \
-  uint64_t id() const { return m_id; }                                        \
-  void id(uint64_t id) { m_id = id; }                                         \
-  uint64_t rowid() const { return m_id; }                                     \
-  void rowid(uint64_t id) { m_id = id; }                                      \
+  bool valid() const { return id_ != 0; }                                    \
+  uint64_t id() const { return id_; }                                        \
+  void id(uint64_t id) { id_ = id; }                                         \
+  uint64_t rowid() const { return id_; }                                     \
+  void rowid(uint64_t id) { id_ = id; }                                      \
   static std::string getTableName() { return #table; }                        \
   static const char* getInsertSQL() {                                         \
     return "insert into \"" #table "\" (id, \"" #f1 "\",\"" #f2               \
@@ -2681,9 +2681,9 @@ namespace hayaku {
   static const char* getSelectSQL() {                                         \
     return "select \"id\",\"" #f1 "\",\"" #f2 "\" from \"" #table "\"";       \
   }                                                                           \
-  void save(const SQLStatementPtr& st) const { st->bind(0, m_id, f1, f2); }   \
-  void update(const SQLStatementPtr& st) const { st->bind(0, f1, f2, m_id); } \
-  void load(const SQLStatementPtr& st) { st->getColumn(0, m_id, f1, f2); }
+  void save(const SQLStatementPtr& st) const { st->bind(0, id_, f1, f2); }   \
+  void update(const SQLStatementPtr& st) const { st->bind(0, f1, f2, id_); } \
+  void load(const SQLStatementPtr& st) { st->getColumn(0, id_, f1, f2); }
 
 #define COL_TABLE_BIND3(TableT, table, f1, f2, f3)                            \
  public:                                                                      \
@@ -2691,31 +2691,31 @@ namespace hayaku {
   TableT(const TableT&) = default;                                            \
   TableT& operator=(const TableT&) = default;                                 \
   TableT(TableT&& rv)                                                         \
-      : m_id(rv.m_id),                                                        \
+      : id_(rv.id_),                                                        \
         f1(std::move(rv.f1)),                                                 \
         f2(std::move(rv.f2)),                                                 \
         f3(std::move(rv.f3)) {                                                \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
   }                                                                           \
   TableT& operator=(TableT&& rv) {                                            \
     if (this == &rv) return *this;                                            \
-    m_id = rv.m_id;                                                           \
+    id_ = rv.id_;                                                           \
     f1 = std::move(rv.f1);                                                    \
     f2 = std::move(rv.f2);                                                    \
     f3 = std::move(rv.f3);                                                    \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
     return *this;                                                             \
   }                                                                           \
                                                                               \
  private:                                                                     \
-  uint64_t m_id = 0;                                                          \
+  uint64_t id_ = 0;                                                          \
                                                                               \
  public:                                                                      \
-  bool valid() const { return m_id != 0; }                                    \
-  uint64_t id() const { return m_id; }                                        \
-  void id(uint64_t id) { m_id = id; }                                         \
-  uint64_t rowid() const { return m_id; }                                     \
-  void rowid(uint64_t id) { m_id = id; }                                      \
+  bool valid() const { return id_ != 0; }                                    \
+  uint64_t id() const { return id_; }                                        \
+  void id(uint64_t id) { id_ = id; }                                         \
+  uint64_t rowid() const { return id_; }                                     \
+  void rowid(uint64_t id) { id_ = id; }                                      \
   static std::string getTableName() { return #table; }                        \
   static const char* getInsertSQL() {                                         \
     return "insert into \"" #table "\" (id, \"" #f1 "\",\"" #f2 "\",\"" #f3   \
@@ -2730,12 +2730,12 @@ namespace hayaku {
            "\"";                                                              \
   }                                                                           \
   void save(const SQLStatementPtr& st) const {                                \
-    st->bind(0, m_id, f1, f2, f3);                                            \
+    st->bind(0, id_, f1, f2, f3);                                            \
   }                                                                           \
   void update(const SQLStatementPtr& st) const {                              \
-    st->bind(0, f1, f2, f3, m_id);                                            \
+    st->bind(0, f1, f2, f3, id_);                                            \
   }                                                                           \
-  void load(const SQLStatementPtr& st) { st->getColumn(0, m_id, f1, f2, f3); }
+  void load(const SQLStatementPtr& st) { st->getColumn(0, id_, f1, f2, f3); }
 
 #define COL_TABLE_BIND4(TableT, table, f1, f2, f3, f4)                      \
  public:                                                                    \
@@ -2743,33 +2743,33 @@ namespace hayaku {
   TableT(const TableT&) = default;                                          \
   TableT& operator=(const TableT&) = default;                               \
   TableT(TableT&& rv)                                                       \
-      : m_id(rv.m_id),                                                      \
+      : id_(rv.id_),                                                      \
         f1(std::move(rv.f1)),                                               \
         f2(std::move(rv.f2)),                                               \
         f3(std::move(rv.f3)),                                               \
         f4(std::move(rv.f4)) {                                              \
-    rv.m_id = 0;                                                            \
+    rv.id_ = 0;                                                            \
   }                                                                         \
   TableT& operator=(TableT&& rv) {                                          \
     if (this == &rv) return *this;                                          \
-    m_id = rv.m_id;                                                         \
+    id_ = rv.id_;                                                         \
     f1 = std::move(rv.f1);                                                  \
     f2 = std::move(rv.f2);                                                  \
     f3 = std::move(rv.f3);                                                  \
     f4 = std::move(rv.f4);                                                  \
-    rv.m_id = 0;                                                            \
+    rv.id_ = 0;                                                            \
     return *this;                                                           \
   }                                                                         \
                                                                             \
  private:                                                                   \
-  uint64_t m_id = 0;                                                        \
+  uint64_t id_ = 0;                                                        \
                                                                             \
  public:                                                                    \
-  bool valid() const { return m_id != 0; }                                  \
-  uint64_t id() const { return m_id; }                                      \
-  void id(uint64_t id) { m_id = id; }                                       \
-  uint64_t rowid() const { return m_id; }                                   \
-  void rowid(uint64_t id) { m_id = id; }                                    \
+  bool valid() const { return id_ != 0; }                                  \
+  uint64_t id() const { return id_; }                                      \
+  void id(uint64_t id) { id_ = id; }                                       \
+  uint64_t rowid() const { return id_; }                                   \
+  void rowid(uint64_t id) { id_ = id; }                                    \
   static std::string getTableName() { return #table; }                      \
   static const char* getIndexFieldName() { return "id"; }                   \
   static const char* getInsertSQL() {                                       \
@@ -2785,13 +2785,13 @@ namespace hayaku {
            "\" from \"" #table "\"";                                        \
   }                                                                         \
   void save(const SQLStatementPtr& st) const {                              \
-    st->bind(0, m_id, f1, f2, f3, f4);                                      \
+    st->bind(0, id_, f1, f2, f3, f4);                                      \
   }                                                                         \
   void update(const SQLStatementPtr& st) const {                            \
-    st->bind(0, f1, f2, f3, f4, m_id);                                      \
+    st->bind(0, f1, f2, f3, f4, id_);                                      \
   }                                                                         \
   void load(const SQLStatementPtr& st) {                                    \
-    st->getColumn(0, m_id, f1, f2, f3, f4);                                 \
+    st->getColumn(0, id_, f1, f2, f3, f4);                                 \
   }
 
 #define COL_TABLE_BIND5(TableT, table, f1, f2, f3, f4, f5)                  \
@@ -2800,35 +2800,35 @@ namespace hayaku {
   TableT(const TableT&) = default;                                          \
   TableT& operator=(const TableT&) = default;                               \
   TableT(TableT&& rv)                                                       \
-      : m_id(rv.m_id),                                                      \
+      : id_(rv.id_),                                                      \
         f1(std::move(rv.f1)),                                               \
         f2(std::move(rv.f2)),                                               \
         f3(std::move(rv.f3)),                                               \
         f4(std::move(rv.f4)),                                               \
         f5(std::move(rv.f5)) {                                              \
-    rv.m_id = 0;                                                            \
+    rv.id_ = 0;                                                            \
   }                                                                         \
   TableT& operator=(TableT&& rv) {                                          \
     if (this == &rv) return *this;                                          \
-    m_id = rv.m_id;                                                         \
+    id_ = rv.id_;                                                         \
     f1 = std::move(rv.f1);                                                  \
     f2 = std::move(rv.f2);                                                  \
     f3 = std::move(rv.f3);                                                  \
     f4 = std::move(rv.f4);                                                  \
     f5 = std::move(rv.f5);                                                  \
-    rv.m_id = 0;                                                            \
+    rv.id_ = 0;                                                            \
     return *this;                                                           \
   }                                                                         \
                                                                             \
  private:                                                                   \
-  uint64_t m_id = 0;                                                        \
+  uint64_t id_ = 0;                                                        \
                                                                             \
  public:                                                                    \
-  bool valid() const { return m_id != 0; }                                  \
-  uint64_t id() const { return m_id; }                                      \
-  void id(uint64_t id) { m_id = id; }                                       \
-  uint64_t rowid() const { return m_id; }                                   \
-  void rowid(uint64_t id) { m_id = id; }                                    \
+  bool valid() const { return id_ != 0; }                                  \
+  uint64_t id() const { return id_; }                                      \
+  void id(uint64_t id) { id_ = id; }                                       \
+  uint64_t rowid() const { return id_; }                                   \
+  void rowid(uint64_t id) { id_ = id; }                                    \
   static std::string getTableName() { return #table; }                      \
   static const char* getIndexFieldName() { return "id"; }                   \
   static const char* getInsertSQL() {                                       \
@@ -2844,13 +2844,13 @@ namespace hayaku {
            "\",\"" #f5 "\" from \"" #table "\"";                            \
   }                                                                         \
   void save(const SQLStatementPtr& st) const {                              \
-    st->bind(0, m_id, f1, f2, f3, f4, f5);                                  \
+    st->bind(0, id_, f1, f2, f3, f4, f5);                                  \
   }                                                                         \
   void update(const SQLStatementPtr& st) const {                            \
-    st->bind(0, f1, f2, f3, f4, f5, m_id);                                  \
+    st->bind(0, f1, f2, f3, f4, f5, id_);                                  \
   }                                                                         \
   void load(const SQLStatementPtr& st) {                                    \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5);                             \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5);                             \
   }
 
 #define COL_TABLE_BIND6(TableT, table, f1, f2, f3, f4, f5, f6)              \
@@ -2859,37 +2859,37 @@ namespace hayaku {
   TableT(const TableT&) = default;                                          \
   TableT& operator=(const TableT&) = default;                               \
   TableT(TableT&& rv)                                                       \
-      : m_id(rv.m_id),                                                      \
+      : id_(rv.id_),                                                      \
         f1(std::move(rv.f1)),                                               \
         f2(std::move(rv.f2)),                                               \
         f3(std::move(rv.f3)),                                               \
         f4(std::move(rv.f4)),                                               \
         f5(std::move(rv.f5)),                                               \
         f6(std::move(rv.f6)) {                                              \
-    rv.m_id = 0;                                                            \
+    rv.id_ = 0;                                                            \
   }                                                                         \
   TableT& operator=(TableT&& rv) {                                          \
     if (this == &rv) return *this;                                          \
-    m_id = rv.m_id;                                                         \
+    id_ = rv.id_;                                                         \
     f1 = std::move(rv.f1);                                                  \
     f2 = std::move(rv.f2);                                                  \
     f3 = std::move(rv.f3);                                                  \
     f4 = std::move(rv.f4);                                                  \
     f5 = std::move(rv.f5);                                                  \
     f6 = std::move(rv.f6);                                                  \
-    rv.m_id = 0;                                                            \
+    rv.id_ = 0;                                                            \
     return *this;                                                           \
   }                                                                         \
                                                                             \
  private:                                                                   \
-  uint64_t m_id = 0;                                                        \
+  uint64_t id_ = 0;                                                        \
                                                                             \
  public:                                                                    \
-  bool valid() const { return m_id != 0; }                                  \
-  uint64_t id() const { return m_id; }                                      \
-  void id(uint64_t id) { m_id = id; }                                       \
-  uint64_t rowid() const { return m_id; }                                   \
-  void rowid(uint64_t id) { m_id = id; }                                    \
+  bool valid() const { return id_ != 0; }                                  \
+  uint64_t id() const { return id_; }                                      \
+  void id(uint64_t id) { id_ = id; }                                       \
+  uint64_t rowid() const { return id_; }                                   \
+  void rowid(uint64_t id) { id_ = id; }                                    \
   static std::string getTableName() { return #table; }                      \
   static const char* getIndexFieldName() { return "id"; }                   \
   static const char* getInsertSQL() {                                       \
@@ -2905,13 +2905,13 @@ namespace hayaku {
            "\",\"" #f5 "\",\"" #f6 "\" from \"" #table "\"";                \
   }                                                                         \
   void save(const SQLStatementPtr& st) const {                              \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6);                              \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6);                              \
   }                                                                         \
   void update(const SQLStatementPtr& st) const {                            \
-    st->bind(0, f1, f2, f3, f4, f5, f6, m_id);                              \
+    st->bind(0, f1, f2, f3, f4, f5, f6, id_);                              \
   }                                                                         \
   void load(const SQLStatementPtr& st) {                                    \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6);                         \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6);                         \
   }
 
 #define COL_TABLE_BIND7(TableT, table, f1, f2, f3, f4, f5, f6, f7)          \
@@ -2920,7 +2920,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                          \
   TableT& operator=(const TableT&) = default;                               \
   TableT(TableT&& rv)                                                       \
-      : m_id(rv.m_id),                                                      \
+      : id_(rv.id_),                                                      \
         f1(std::move(rv.f1)),                                               \
         f2(std::move(rv.f2)),                                               \
         f3(std::move(rv.f3)),                                               \
@@ -2928,11 +2928,11 @@ namespace hayaku {
         f5(std::move(rv.f5)),                                               \
         f6(std::move(rv.f6)),                                               \
         f7(std::move(rv.f7)) {                                              \
-    rv.m_id = 0;                                                            \
+    rv.id_ = 0;                                                            \
   }                                                                         \
   TableT& operator=(TableT&& rv) {                                          \
     if (this == &rv) return *this;                                          \
-    m_id = rv.m_id;                                                         \
+    id_ = rv.id_;                                                         \
     f1 = std::move(rv.f1);                                                  \
     f2 = std::move(rv.f2);                                                  \
     f3 = std::move(rv.f3);                                                  \
@@ -2940,19 +2940,19 @@ namespace hayaku {
     f5 = std::move(rv.f5);                                                  \
     f6 = std::move(rv.f6);                                                  \
     f7 = std::move(rv.f7);                                                  \
-    rv.m_id = 0;                                                            \
+    rv.id_ = 0;                                                            \
     return *this;                                                           \
   }                                                                         \
                                                                             \
  private:                                                                   \
-  uint64_t m_id = 0;                                                        \
+  uint64_t id_ = 0;                                                        \
                                                                             \
  public:                                                                    \
-  bool valid() const { return m_id != 0; }                                  \
-  uint64_t id() const { return m_id; }                                      \
-  void id(uint64_t id) { m_id = id; }                                       \
-  uint64_t rowid() const { return m_id; }                                   \
-  void rowid(uint64_t id) { m_id = id; }                                    \
+  bool valid() const { return id_ != 0; }                                  \
+  uint64_t id() const { return id_; }                                      \
+  void id(uint64_t id) { id_ = id; }                                       \
+  uint64_t rowid() const { return id_; }                                   \
+  void rowid(uint64_t id) { id_ = id; }                                    \
   static std::string getTableName() { return #table; }                      \
   static const char* getIndexFieldName() { return "id"; }                   \
   static const char* getInsertSQL() {                                       \
@@ -2970,13 +2970,13 @@ namespace hayaku {
            "\",\"" #f5 "\",\"" #f6 "\",\"" #f7 "\" from \"" #table "\"";    \
   }                                                                         \
   void save(const SQLStatementPtr& st) const {                              \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7);                          \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7);                          \
   }                                                                         \
   void update(const SQLStatementPtr& st) const {                            \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, m_id);                          \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, id_);                          \
   }                                                                         \
   void load(const SQLStatementPtr& st) {                                    \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7);                     \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7);                     \
   }
 
 #define COL_TABLE_BIND8(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8)         \
@@ -2985,7 +2985,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -2994,11 +2994,11 @@ namespace hayaku {
         f6(std::move(rv.f6)),                                                  \
         f7(std::move(rv.f7)),                                                  \
         f8(std::move(rv.f8)) {                                                 \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
     f1 = std::move(rv.f1);                                                     \
     f2 = std::move(rv.f2);                                                     \
     f3 = std::move(rv.f3);                                                     \
@@ -3007,19 +3007,19 @@ namespace hayaku {
     f6 = std::move(rv.f6);                                                     \
     f7 = std::move(rv.f7);                                                     \
     f8 = std::move(rv.f8);                                                     \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getIndexFieldName() { return "id"; }                      \
   static const char* getInsertSQL() {                                          \
@@ -3038,13 +3038,13 @@ namespace hayaku {
            "\"";                                                               \
   }                                                                            \
   void save(const SQLStatementPtr& st) const {                                 \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8);                         \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8);                         \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, m_id);                         \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, id_);                         \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8);                    \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8);                    \
   }
 
 #define COL_TABLE_BIND9(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8, f9)  \
@@ -3053,7 +3053,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                          \
   TableT& operator=(const TableT&) = default;                               \
   TableT(TableT&& rv)                                                       \
-      : m_id(rv.m_id),                                                      \
+      : id_(rv.id_),                                                      \
         f1(std::move(rv.f1)),                                               \
         f2(std::move(rv.f2)),                                               \
         f3(std::move(rv.f3)),                                               \
@@ -3063,11 +3063,11 @@ namespace hayaku {
         f7(std::move(rv.f7)),                                               \
         f8(std::move(rv.f8)),                                               \
         f9(std::move(rv.f9)) {                                              \
-    rv.m_id = 0;                                                            \
+    rv.id_ = 0;                                                            \
   }                                                                         \
   TableT& operator=(TableT&& rv) {                                          \
     if (this == &rv) return *this;                                          \
-    m_id = rv.m_id;                                                         \
+    id_ = rv.id_;                                                         \
     f1 = std::move(rv.f1);                                                  \
     f2 = std::move(rv.f2);                                                  \
     f3 = std::move(rv.f3);                                                  \
@@ -3077,19 +3077,19 @@ namespace hayaku {
     f7 = std::move(rv.f7);                                                  \
     f8 = std::move(rv.f8);                                                  \
     f9 = std::move(rv.f9);                                                  \
-    rv.m_id = 0;                                                            \
+    rv.id_ = 0;                                                            \
     return *this;                                                           \
   }                                                                         \
                                                                             \
  private:                                                                   \
-  uint64_t m_id = 0;                                                        \
+  uint64_t id_ = 0;                                                        \
                                                                             \
  public:                                                                    \
-  bool valid() const { return m_id != 0; }                                  \
-  uint64_t id() const { return m_id; }                                      \
-  void id(uint64_t id) { m_id = id; }                                       \
-  uint64_t rowid() const { return m_id; }                                   \
-  void rowid(uint64_t id) { m_id = id; }                                    \
+  bool valid() const { return id_ != 0; }                                  \
+  uint64_t id() const { return id_; }                                      \
+  void id(uint64_t id) { id_ = id; }                                       \
+  uint64_t rowid() const { return id_; }                                   \
+  void rowid(uint64_t id) { id_ = id; }                                    \
   static std::string getTableName() { return #table; }                      \
   static const char* getIndexFieldName() { return "id"; }                   \
   static const char* getInsertSQL() {                                       \
@@ -3108,13 +3108,13 @@ namespace hayaku {
            "\" from \"" #table "\"";                                        \
   }                                                                         \
   void save(const SQLStatementPtr& st) const {                              \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9);                  \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9);                  \
   }                                                                         \
   void update(const SQLStatementPtr& st) const {                            \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, m_id);                  \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, id_);                  \
   }                                                                         \
   void load(const SQLStatementPtr& st) {                                    \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9);             \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9);             \
   }
 
 #define COL_TABLE_BIND10(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8, f9,  \
@@ -3124,7 +3124,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                           \
   TableT& operator=(const TableT&) = default;                                \
   TableT(TableT&& rv)                                                        \
-      : m_id(rv.m_id),                                                       \
+      : id_(rv.id_),                                                       \
         f1(std::move(rv.f1)),                                                \
         f2(std::move(rv.f2)),                                                \
         f3(std::move(rv.f3)),                                                \
@@ -3135,11 +3135,11 @@ namespace hayaku {
         f8(std::move(rv.f8)),                                                \
         f9(std::move(rv.f9)),                                                \
         f10(std::move(rv.f10)) {                                             \
-    rv.m_id = 0;                                                             \
+    rv.id_ = 0;                                                             \
   }                                                                          \
   TableT& operator=(TableT&& rv) {                                           \
     if (this == &rv) return *this;                                           \
-    m_id = rv.m_id;                                                          \
+    id_ = rv.id_;                                                          \
     f1 = std::move(rv.f1);                                                   \
     f2 = std::move(rv.f2);                                                   \
     f3 = std::move(rv.f3);                                                   \
@@ -3150,19 +3150,19 @@ namespace hayaku {
     f8 = std::move(rv.f8);                                                   \
     f9 = std::move(rv.f9);                                                   \
     f10 = std::move(rv.f10);                                                 \
-    rv.m_id = 0;                                                             \
+    rv.id_ = 0;                                                             \
     return *this;                                                            \
   }                                                                          \
                                                                              \
  private:                                                                    \
-  uint64_t m_id = 0;                                                         \
+  uint64_t id_ = 0;                                                         \
                                                                              \
  public:                                                                     \
-  bool valid() const { return m_id != 0; }                                   \
-  uint64_t id() const { return m_id; }                                       \
-  void id(uint64_t id) { m_id = id; }                                        \
-  uint64_t rowid() const { return m_id; }                                    \
-  void rowid(uint64_t id) { m_id = id; }                                     \
+  bool valid() const { return id_ != 0; }                                   \
+  uint64_t id() const { return id_; }                                       \
+  void id(uint64_t id) { id_ = id; }                                        \
+  uint64_t rowid() const { return id_; }                                    \
+  void rowid(uint64_t id) { id_ = id; }                                     \
   static std::string getTableName() { return #table; }                       \
   static const char* getIndexFieldName() { return "id"; }                    \
   static const char* getInsertSQL() {                                        \
@@ -3181,13 +3181,13 @@ namespace hayaku {
            "\",\"" #f10 "\" from \"" #table "\"";                            \
   }                                                                          \
   void save(const SQLStatementPtr& st) const {                               \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);              \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);              \
   }                                                                          \
   void update(const SQLStatementPtr& st) const {                             \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, m_id);              \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, id_);              \
   }                                                                          \
   void load(const SQLStatementPtr& st) {                                     \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);         \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10);         \
   }
 
 #define COL_TABLE_BIND11(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8, f9,  \
@@ -3197,7 +3197,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                           \
   TableT& operator=(const TableT&) = default;                                \
   TableT(TableT&& rv)                                                        \
-      : m_id(rv.m_id),                                                       \
+      : id_(rv.id_),                                                       \
         f1(std::move(rv.f1)),                                                \
         f2(std::move(rv.f2)),                                                \
         f3(std::move(rv.f3)),                                                \
@@ -3209,11 +3209,11 @@ namespace hayaku {
         f9(std::move(rv.f9)),                                                \
         f10(std::move(rv.f10)),                                              \
         f11(std::move(rv.f11)) {                                             \
-    rv.m_id = 0;                                                             \
+    rv.id_ = 0;                                                             \
   }                                                                          \
   TableT& operator=(TableT&& rv) {                                           \
     if (this == &rv) return *this;                                           \
-    m_id = rv.m_id;                                                          \
+    id_ = rv.id_;                                                          \
     f1 = std::move(rv.f1);                                                   \
     f2 = std::move(rv.f2);                                                   \
     f3 = std::move(rv.f3);                                                   \
@@ -3225,19 +3225,19 @@ namespace hayaku {
     f9 = std::move(rv.f9);                                                   \
     f10 = std::move(rv.f10);                                                 \
     f11 = std::move(rv.f11);                                                 \
-    rv.m_id = 0;                                                             \
+    rv.id_ = 0;                                                             \
     return *this;                                                            \
   }                                                                          \
                                                                              \
  private:                                                                    \
-  uint64_t m_id = 0;                                                         \
+  uint64_t id_ = 0;                                                         \
                                                                              \
  public:                                                                     \
-  bool valid() const { return m_id != 0; }                                   \
-  uint64_t id() const { return m_id; }                                       \
-  void id(uint64_t id) { m_id = id; }                                        \
-  uint64_t rowid() const { return m_id; }                                    \
-  void rowid(uint64_t id) { m_id = id; }                                     \
+  bool valid() const { return id_ != 0; }                                   \
+  uint64_t id() const { return id_; }                                       \
+  void id(uint64_t id) { id_ = id; }                                        \
+  uint64_t rowid() const { return id_; }                                    \
+  void rowid(uint64_t id) { id_ = id; }                                     \
   static std::string getTableName() { return #table; }                       \
   static const char* getIndexFieldName() { return "id"; }                    \
   static const char* getInsertSQL() {                                        \
@@ -3257,13 +3257,13 @@ namespace hayaku {
            "\",\"" #f10 "\",\"" #f11 "\" from \"" #table "\"";               \
   }                                                                          \
   void save(const SQLStatementPtr& st) const {                               \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);         \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);         \
   }                                                                          \
   void update(const SQLStatementPtr& st) const {                             \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, m_id);         \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, id_);         \
   }                                                                          \
   void load(const SQLStatementPtr& st) {                                     \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);    \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11);    \
   }
 
 #define COL_TABLE_BIND12(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8, f9,    \
@@ -3273,7 +3273,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -3286,11 +3286,11 @@ namespace hayaku {
         f10(std::move(rv.f10)),                                                \
         f11(std::move(rv.f11)),                                                \
         f12(std::move(rv.f12)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
         f1 = std::move(rv.f1));                                                \
         f2 = std::move(rv.f2));                                                \
         f3 = std::move(rv.f3));                                                \
@@ -3303,19 +3303,19 @@ namespace hayaku {
         f10 = std::move(rv.f10));                                              \
         f11 = std::move(rv.f11));                                              \
     f12 = std::move(rv.f12);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getIndexFieldName() { return "id"; }                      \
   static const char* getInsertSQL() {                                          \
@@ -3336,13 +3336,13 @@ namespace hayaku {
            "\",\"" #f10 "\",\"" #f11 "\",\"" #f12 "\" from \"" #table "\"";    \
   }                                                                            \
   void save(const SQLStatementPtr& st) const {                                 \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12);      \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12);      \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, m_id);      \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, id_);      \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12); \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12); \
   }
 
 #define COL_TABLE_BIND13(TableT, table, f1, f2, f3, f4, f5, f6, f7, f8, f9,    \
@@ -3352,7 +3352,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -3366,11 +3366,11 @@ namespace hayaku {
         f11(std::move(rv.f11)),                                                \
         f12(std::move(rv.f12)),                                                \
         f13(std::move(rv.f13)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
         f1 = std::move(rv.f1));                                                \
         f2 = std::move(rv.f2));                                                \
         f3 = std::move(rv.f3));                                                \
@@ -3384,19 +3384,19 @@ namespace hayaku {
         f11 = std::move(rv.f11));                                              \
     f12 = std::move(rv.f12);                                                   \
     f13 = std::move(rv.f13);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getIndexFieldName() { return "id"; }                      \
   static const char* getInsertSQL() {                                          \
@@ -3418,13 +3418,13 @@ namespace hayaku {
            "\" from \"" #table "\"";                                           \
   }                                                                            \
   void save(const SQLStatementPtr& st) const {                                 \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13); \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13); \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
-    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, m_id); \
+    st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, id_); \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13);                                                        \
   }
 
@@ -3435,7 +3435,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -3450,11 +3450,11 @@ namespace hayaku {
         f12(std::move(rv.f12)),                                                \
         f13(std::move(rv.f13)),                                                \
         f14(std::move(rv.f14)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
         f1 = std::move(rv.f1));                                                \
         f2 = std::move(rv.f2));                                                \
         f3 = std::move(rv.f3));                                                \
@@ -3469,19 +3469,19 @@ namespace hayaku {
     f12 = std::move(rv.f12);                                                   \
     f13 = std::move(rv.f13);                                                   \
     f14 = std::move(rv.f14);                                                   \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getIndexFieldName() { return "id"; }                      \
   static const char* getInsertSQL() {                                          \
@@ -3503,15 +3503,15 @@ namespace hayaku {
            "\" from \"" #table "\"";                                           \
   }                                                                            \
   void save(const SQLStatementPtr& st) const {                                 \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,  \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,  \
              f14);                                                             \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             m_id);                                                            \
+             id_);                                                            \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14);                                                   \
   }
 
@@ -3522,7 +3522,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                            \
   TableT& operator=(const TableT&) = default;                                 \
   TableT(TableT&& rv)                                                         \
-      : m_id(rv.m_id),                                                        \
+      : id_(rv.id_),                                                        \
         f1(std::move(rv.f1)),                                                 \
         f2(std::move(rv.f2)),                                                 \
         f3(std::move(rv.f3)),                                                 \
@@ -3538,11 +3538,11 @@ namespace hayaku {
         f13(std::move(rv.f13)),                                               \
         f14(std::move(rv.f14)),                                               \
         f15(std::move(rv.f15)) {                                              \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
   }                                                                           \
   TableT& operator=(TableT&& rv) {                                            \
     if (this == &rv) return *this;                                            \
-    m_id = rv.m_id;                                                           \
+    id_ = rv.id_;                                                           \
         f1 = std::move(rv.f1));                                               \
         f2 = std::move(rv.f2));                                               \
         f3 = std::move(rv.f3));                                               \
@@ -3558,19 +3558,19 @@ namespace hayaku {
     f13 = std::move(rv.f13);                                                  \
     f14 = std::move(rv.f14);                                                  \
     f15 = std::move(rv.f15);                                                  \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
     return *this;                                                             \
   }                                                                           \
                                                                               \
  private:                                                                     \
-  uint64_t m_id = 0;                                                          \
+  uint64_t id_ = 0;                                                          \
                                                                               \
  public:                                                                      \
-  bool valid() const { return m_id != 0; }                                    \
-  uint64_t id() const { return m_id; }                                        \
-  void id(uint64_t id) { m_id = id; }                                         \
-  uint64_t rowid() const { return m_id; }                                     \
-  void rowid(uint64_t id) { m_id = id; }                                      \
+  bool valid() const { return id_ != 0; }                                    \
+  uint64_t id() const { return id_; }                                        \
+  void id(uint64_t id) { id_ = id; }                                         \
+  uint64_t rowid() const { return id_; }                                     \
+  void rowid(uint64_t id) { id_ = id; }                                      \
   static std::string getTableName() { return #table; }                        \
   static const char* getIndexFieldName() { return "id"; }                     \
   static const char* getInsertSQL() {                                         \
@@ -3593,15 +3593,15 @@ namespace hayaku {
            "\",\"" #f15 "\" from \"" #table "\"";                             \
   }                                                                           \
   void save(const SQLStatementPtr& st) const {                                \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, \
              f14, f15);                                                       \
   }                                                                           \
   void update(const SQLStatementPtr& st) const {                              \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,  \
-             f15, m_id);                                                      \
+             f15, id_);                                                      \
   }                                                                           \
   void load(const SQLStatementPtr& st) {                                      \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, \
                   f13, f14, f15);                                             \
   }
 
@@ -3612,7 +3612,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                            \
   TableT& operator=(const TableT&) = default;                                 \
   TableT(TableT&& rv)                                                         \
-      : m_id(rv.m_id),                                                        \
+      : id_(rv.id_),                                                        \
         f1(std::move(rv.f1)),                                                 \
         f2(std::move(rv.f2)),                                                 \
         f3(std::move(rv.f3)),                                                 \
@@ -3629,11 +3629,11 @@ namespace hayaku {
         f14(std::move(rv.f14)),                                               \
         f15(std::move(rv.f15)),                                               \
         f16(std::move(rv.f16)) {                                              \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
   }                                                                           \
   TableT& operator=(TableT&& rv) {                                            \
     if (this == &rv) return *this;                                            \
-    m_id = rv.m_id;                                                           \
+    id_ = rv.id_;                                                           \
         f1 = std::move(rv.f1));                                               \
         f2 = std::move(rv.f2));                                               \
         f3 = std::move(rv.f3));                                               \
@@ -3650,19 +3650,19 @@ namespace hayaku {
         f14 = std::move(rv.f14));                                             \
         f15 = std::move(rv.f15));                                             \
         f16 = std::move(rv.f16));                                             \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
     return *this;                                                             \
   }                                                                           \
                                                                               \
  private:                                                                     \
-  uint64_t m_id = 0;                                                          \
+  uint64_t id_ = 0;                                                          \
                                                                               \
  public:                                                                      \
-  bool valid() const { return m_id != 0; }                                    \
-  uint64_t id() const { return m_id; }                                        \
-  void id(uint64_t id) { m_id = id; }                                         \
-  uint64_t rowid() const { return m_id; }                                     \
-  void rowid(uint64_t id) { m_id = id; }                                      \
+  bool valid() const { return id_ != 0; }                                    \
+  uint64_t id() const { return id_; }                                        \
+  void id(uint64_t id) { id_ = id; }                                         \
+  uint64_t rowid() const { return id_; }                                     \
+  void rowid(uint64_t id) { id_ = id; }                                      \
   static std::string getTableName() { return #table; }                        \
   static const char* getIndexFieldName() { return "id"; }                     \
   static const char* getInsertSQL() {                                         \
@@ -3685,15 +3685,15 @@ namespace hayaku {
            "\",\"" #f15 "\",\"" #f16 "\" from \"" #table "\"";                \
   }                                                                           \
   void save(const SQLStatementPtr& st) const {                                \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, \
              f14, f15, f16);                                                  \
   }                                                                           \
   void update(const SQLStatementPtr& st) const {                              \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,  \
-             f15, f16, m_id);                                                 \
+             f15, f16, id_);                                                 \
   }                                                                           \
   void load(const SQLStatementPtr& st) {                                      \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, \
                   f13, f14, f15, f16);                                        \
   }
 
@@ -3704,7 +3704,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                            \
   TableT& operator=(const TableT&) = default;                                 \
   TableT(TableT&& rv)                                                         \
-      : m_id(rv.m_id),                                                        \
+      : id_(rv.id_),                                                        \
         f1(std::move(rv.f1)),                                                 \
         f2(std::move(rv.f2)),                                                 \
         f3(std::move(rv.f3)),                                                 \
@@ -3722,11 +3722,11 @@ namespace hayaku {
         f15(std::move(rv.f15)),                                               \
         f16(std::move(rv.f16)),                                               \
         f17(std::move(rv.f17)) {                                              \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
   }                                                                           \
   TableT& operator=(TableT&& rv) {                                            \
     if (this == &rv) return *this;                                            \
-    m_id = rv.m_id;                                                           \
+    id_ = rv.id_;                                                           \
         f1 = std::move(rv.f1));                                               \
         f2 = std::move(rv.f2));                                               \
         f3 = std::move(rv.f3));                                               \
@@ -3744,19 +3744,19 @@ namespace hayaku {
         f15 = std::move(rv.f15));                                             \
         f16 = std::move(rv.f16));                                             \
         f17 = std::move(rv.f17));                                             \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
     return *this;                                                             \
   }                                                                           \
                                                                               \
  private:                                                                     \
-  uint64_t m_id = 0;                                                          \
+  uint64_t id_ = 0;                                                          \
                                                                               \
  public:                                                                      \
-  bool valid() const { return m_id != 0; }                                    \
-  uint64_t id() const { return m_id; }                                        \
-  void id(uint64_t id) { m_id = id; }                                         \
-  uint64_t rowid() const { return m_id; }                                     \
-  void rowid(uint64_t id) { m_id = id; }                                      \
+  bool valid() const { return id_ != 0; }                                    \
+  uint64_t id() const { return id_; }                                        \
+  void id(uint64_t id) { id_ = id; }                                         \
+  uint64_t rowid() const { return id_; }                                     \
+  void rowid(uint64_t id) { id_ = id; }                                      \
   static std::string getTableName() { return #table; }                        \
   static const char* getIndexFieldName() { return "id"; }                     \
   static const char* getInsertSQL() {                                         \
@@ -3780,15 +3780,15 @@ namespace hayaku {
            "\",\"" #f15 "\",\"" #f16 "\",\"" #f17 "\" from \"" #table "\"";   \
   }                                                                           \
   void save(const SQLStatementPtr& st) const {                                \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, \
              f14, f15, f16, f17);                                             \
   }                                                                           \
   void update(const SQLStatementPtr& st) const {                              \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,  \
-             f15, f16, f17, m_id);                                            \
+             f15, f16, f17, id_);                                            \
   }                                                                           \
   void load(const SQLStatementPtr& st) {                                      \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, \
                   f13, f14, f15, f16, f17);                                   \
   }
 
@@ -3799,7 +3799,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                             \
   TableT& operator=(const TableT&) = default;                                  \
   TableT(TableT&& rv)                                                          \
-      : m_id(rv.m_id),                                                         \
+      : id_(rv.id_),                                                         \
         f1(std::move(rv.f1)),                                                  \
         f2(std::move(rv.f2)),                                                  \
         f3(std::move(rv.f3)),                                                  \
@@ -3818,11 +3818,11 @@ namespace hayaku {
         f16(std::move(rv.f16)),                                                \
         f17(std::move(rv.f17)),                                                \
         f18(std::move(rv.f18)) {                                               \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
   }                                                                            \
   TableT& operator=(TableT&& rv) {                                             \
     if (this == &rv) return *this;                                             \
-    m_id = rv.m_id;                                                            \
+    id_ = rv.id_;                                                            \
         f1 = std::move(rv.f1));                                                \
         f2 = std::move(rv.f2));                                                \
         f3 = std::move(rv.f3));                                                \
@@ -3841,19 +3841,19 @@ namespace hayaku {
         f16 = std::move(rv.f16));                                              \
         f17 = std::move(rv.f17));                                              \
         f18 = std::move(rv.f18));                                              \
-    rv.m_id = 0;                                                               \
+    rv.id_ = 0;                                                               \
     return *this;                                                              \
   }                                                                            \
                                                                                \
  private:                                                                      \
-  uint64_t m_id = 0;                                                           \
+  uint64_t id_ = 0;                                                           \
                                                                                \
  public:                                                                       \
-  bool valid() const { return m_id != 0; }                                     \
-  uint64_t id() const { return m_id; }                                         \
-  void id(uint64_t id) { m_id = id; }                                          \
-  uint64_t rowid() const { return m_id; }                                      \
-  void rowid(uint64_t id) { m_id = id; }                                       \
+  bool valid() const { return id_ != 0; }                                     \
+  uint64_t id() const { return id_; }                                         \
+  void id(uint64_t id) { id_ = id; }                                          \
+  uint64_t rowid() const { return id_; }                                      \
+  void rowid(uint64_t id) { id_ = id; }                                       \
   static std::string getTableName() { return #table; }                         \
   static const char* getIndexFieldName() { return "id"; }                      \
   static const char* getInsertSQL() {                                          \
@@ -3878,15 +3878,15 @@ namespace hayaku {
            "\" from \"" #table "\"";                                           \
   }                                                                            \
   void save(const SQLStatementPtr& st) const {                                 \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,  \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13,  \
              f14, f15, f16, f17, f18);                                         \
   }                                                                            \
   void update(const SQLStatementPtr& st) const {                               \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,   \
-             f15, f16, f17, f18, m_id);                                        \
+             f15, f16, f17, f18, id_);                                        \
   }                                                                            \
   void load(const SQLStatementPtr& st) {                                       \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12,  \
                   f13, f14, f15, f16, f17, f18);                               \
   }
 
@@ -3897,7 +3897,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                            \
   TableT& operator=(const TableT&) = default;                                 \
   TableT(TableT&& rv)                                                         \
-      : m_id(rv.m_id),                                                        \
+      : id_(rv.id_),                                                        \
         f1(std::move(rv.f1)),                                                 \
         f2(std::move(rv.f2)),                                                 \
         f3(std::move(rv.f3)),                                                 \
@@ -3917,11 +3917,11 @@ namespace hayaku {
         f17(std::move(rv.f17)),                                               \
         f18(std::move(rv.f18)),                                               \
         f19(std::move(rv.f19)) {                                              \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
   }                                                                           \
   TableT& operator=(TableT&& rv) {                                            \
     if (this == &rv) return *this;                                            \
-    m_id = rv.m_id;                                                           \
+    id_ = rv.id_;                                                           \
         f1 = std::move(rv.f1));                                               \
         f2 = std::move(rv.f2));                                               \
         f3 = std::move(rv.f3));                                               \
@@ -3941,19 +3941,19 @@ namespace hayaku {
         f17 = std::move(rv.f17));                                             \
         f18 = std::move(rv.f18));                                             \
         f19 = std::move(rv.f19));                                             \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
     return *this;                                                             \
   }                                                                           \
                                                                               \
  private:                                                                     \
-  uint64_t m_id = 0;                                                          \
+  uint64_t id_ = 0;                                                          \
                                                                               \
  public:                                                                      \
-  bool valid() const { return m_id != 0; }                                    \
-  uint64_t id() const { return m_id; }                                        \
-  void id(uint64_t id) { m_id = id; }                                         \
-  uint64_t rowid() const { return m_id; }                                     \
-  void rowid(uint64_t id) { m_id = id; }                                      \
+  bool valid() const { return id_ != 0; }                                    \
+  uint64_t id() const { return id_; }                                        \
+  void id(uint64_t id) { id_ = id; }                                         \
+  uint64_t rowid() const { return id_; }                                     \
+  void rowid(uint64_t id) { id_ = id; }                                      \
   static std::string getTableName() { return #table; }                        \
   static const char* getIndexFieldName() { return "id"; }                     \
   static const char* getInsertSQL() {                                         \
@@ -3979,15 +3979,15 @@ namespace hayaku {
            "\" from \"" #table "\"";                                          \
   }                                                                           \
   void save(const SQLStatementPtr& st) const {                                \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, \
              f14, f15, f16, f17, f18, f19);                                   \
   }                                                                           \
   void update(const SQLStatementPtr& st) const {                              \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,  \
-             f15, f16, f17, f18, f19, m_id);                                  \
+             f15, f16, f17, f18, f19, id_);                                  \
   }                                                                           \
   void load(const SQLStatementPtr& st) {                                      \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, \
                   f13, f14, f15, f16, f17, f18, f19);                         \
   }
 
@@ -3999,7 +3999,7 @@ namespace hayaku {
   TableT(const TableT&) = default;                                            \
   TableT& operator=(const TableT&) = default;                                 \
   TableT(TableT&& rv)                                                         \
-      : m_id(rv.m_id),                                                        \
+      : id_(rv.id_),                                                        \
         f1(std::move(rv.f1)),                                                 \
         f2(std::move(rv.f2)),                                                 \
         f3(std::move(rv.f3)),                                                 \
@@ -4020,11 +4020,11 @@ namespace hayaku {
         f18(std::move(rv.f18)),                                               \
         f19(std::move(rv.f19)),                                               \
         f20(std::move(rv.f20)) {                                              \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
   }                                                                           \
   TableT& operator=(TableT&& rv) {                                            \
     if (this == &rv) return *this;                                            \
-    m_id = rv.m_id;                                                           \
+    id_ = rv.id_;                                                           \
         f1 = std::move(rv.f1));                                               \
         f2 = std::move(rv.f2));                                               \
         f3 = std::move(rv.f3));                                               \
@@ -4045,19 +4045,19 @@ namespace hayaku {
         f18 = std::move(rv.f18));                                             \
         f19 = std::move(rv.f19));                                             \
         f20 = std::move(rv.f20));                                             \
-    rv.m_id = 0;                                                              \
+    rv.id_ = 0;                                                              \
     return *this;                                                             \
   }                                                                           \
                                                                               \
  private:                                                                     \
-  uint64_t m_id = 0;                                                          \
+  uint64_t id_ = 0;                                                          \
                                                                               \
  public:                                                                      \
-  bool valid() const { return m_id != 0; }                                    \
-  uint64_t id() const { return m_id; }                                        \
-  void id(uint64_t id) { m_id = id; }                                         \
-  uint64_t rowid() const { return m_id; }                                     \
-  void rowid(uint64_t id) { m_id = id; }                                      \
+  bool valid() const { return id_ != 0; }                                    \
+  uint64_t id() const { return id_; }                                        \
+  void id(uint64_t id) { id_ = id; }                                         \
+  uint64_t rowid() const { return id_; }                                     \
+  void rowid(uint64_t id) { id_ = id; }                                      \
   static std::string getTableName() { return #table; }                        \
   static const char* getIndexFieldName() { return "id"; }                     \
   static const char* getInsertSQL() {                                         \
@@ -4083,15 +4083,15 @@ namespace hayaku {
            "\",\"" #f20 "\" from \"" #table "\"";                             \
   }                                                                           \
   void save(const SQLStatementPtr& st) const {                                \
-    st->bind(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, \
+    st->bind(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, \
              f14, f15, f16, f17, f18, f19, f20);                              \
   }                                                                           \
   void update(const SQLStatementPtr& st) const {                              \
     st->bind(0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14,  \
-             f15, f16, f17, f18, f19, f20, m_id);                             \
+             f15, f16, f17, f18, f19, f20, id_);                             \
   }                                                                           \
   void load(const SQLStatementPtr& st) {                                      \
-    st->getColumn(0, m_id, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, \
+    st->getColumn(0, id_, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, \
                   f13, f14, f15, f16, f17, f18, f19, f20);                    \
   }
 

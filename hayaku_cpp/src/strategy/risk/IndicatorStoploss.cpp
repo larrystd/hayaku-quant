@@ -18,30 +18,30 @@ namespace hayaku {
 IndicatorStoploss::IndicatorStoploss() : StoplossBase("ST_Indicator") {}
 
 IndicatorStoploss::IndicatorStoploss(const Indicator& op)
-    : StoplossBase("ST_Indicator"), m_ind(op) {}
+    : StoplossBase("ST_Indicator"), ind_(op) {}
 
 IndicatorStoploss::~IndicatorStoploss() {}
 
 price_t IndicatorStoploss::getPrice(const Datetime& datetime, price_t price) {
-  return m_result.count(datetime) ? m_result[datetime] : 0.0;
+  return result_.count(datetime) ? result_[datetime] : 0.0;
 }
 
-void IndicatorStoploss::_reset() { m_result.clear(); }
+void IndicatorStoploss::_reset() { result_.clear(); }
 
 StoplossPtr IndicatorStoploss::_clone() {
   auto p = make_shared<IndicatorStoploss>();
-  p->m_ind = m_ind;
-  p->m_result = m_result;
+  p->ind_ = ind_;
+  p->result_ = result_;
   return p;
 }
 
 void IndicatorStoploss::_calculate() {
-  Indicator ind = m_ind(m_kdata);
+  Indicator ind = ind_(kdata_);
   size_t total = ind.size();
   auto const* ind_data = ind.data();
-  auto const* ks = m_kdata.data();
+  auto const* ks = kdata_.data();
   for (size_t i = ind.discard(); i < total; ++i) {
-    m_result[ks[i].datetime] = ind_data[i];
+    result_[ks[i].datetime] = ind_data[i];
   }
 }
 

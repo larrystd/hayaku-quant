@@ -80,8 +80,8 @@ class HAYAKU_API DataEngine {
   [[nodiscard]] DataRuntime& _backend() const;
 
  private:
-  std::shared_ptr<std::atomic_bool> m_active;
-  DataRuntime* m_backend{nullptr};
+  std::shared_ptr<std::atomic_bool> active_;
+  DataRuntime* backend_{nullptr};
 };
 
 }  // namespace hayaku

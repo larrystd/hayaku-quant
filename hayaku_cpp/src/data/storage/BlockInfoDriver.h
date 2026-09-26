@@ -89,14 +89,14 @@ class HAYAKU_API BlockInfoDriver {
   virtual void remove(const string& category, const string& name) = 0;
 
  protected:
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  private:
   bool checkType();
 
  protected:
-  string m_name;
-  bool m_is_python_object{false};
+  string name_;
+  bool is_python_object_{false};
 };
 
 typedef shared_ptr<BlockInfoDriver> BlockInfoDriverPtr;
@@ -104,6 +104,6 @@ typedef shared_ptr<BlockInfoDriver> BlockInfoDriverPtr;
 HAYAKU_API std::ostream& operator<<(std::ostream&, const BlockInfoDriver&);
 HAYAKU_API std::ostream& operator<<(std::ostream&, const BlockInfoDriverPtr&);
 
-inline const string& BlockInfoDriver::name() const { return m_name; }
+inline const string& BlockInfoDriver::name() const { return name_; }
 
 } /* namespace hayaku */

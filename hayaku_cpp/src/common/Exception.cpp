@@ -9,6 +9,6 @@
 
 namespace hayaku {
 
-const char *exception::what() const noexcept { return m_msg.c_str(); }
+const char *exception::what() const noexcept { return msg_.c_str(); }
 
 }  // namespace hayaku

@@ -20,19 +20,19 @@ class HAYAKU_API BacktestRequest {
   [[nodiscard]] bool resetAll() const noexcept;
 
  private:
-  KData m_kdata;
-  bool m_reset;
-  bool m_resetAll;
+  KData kdata_;
+  bool reset_;
+  bool reset_all_;
 };
 
 inline BacktestRequest::BacktestRequest(const KData& kdata, bool reset,
                                         bool resetAll)
-    : m_kdata(kdata), m_reset(reset), m_resetAll(resetAll) {}
+    : kdata_(kdata), reset_(reset), reset_all_(resetAll) {}
 
-inline const KData& BacktestRequest::kdata() const noexcept { return m_kdata; }
+inline const KData& BacktestRequest::kdata() const noexcept { return kdata_; }
 
-inline bool BacktestRequest::reset() const noexcept { return m_reset; }
+inline bool BacktestRequest::reset() const noexcept { return reset_; }
 
-inline bool BacktestRequest::resetAll() const noexcept { return m_resetAll; }
+inline bool BacktestRequest::resetAll() const noexcept { return reset_all_; }
 
 }  // namespace hayaku

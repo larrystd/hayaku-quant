@@ -129,7 +129,7 @@ class HAYAKU_API Portfolio : public enable_shared_from_this<Portfolio> {
    */
   virtual json lastSuggestion() const;
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  private:
   void initParam();
@@ -146,30 +146,30 @@ class HAYAKU_API Portfolio : public enable_shared_from_this<Portfolio> {
   void traceMomentTMAfterRunAtClose(const Datetime& date);
 
  protected:
-  string m_name;
-  internal::PortfolioAccountPortPtr m_account;
+  string name_;
+  internal::PortfolioAccountPortPtr account_;
   internal::PortfolioAccountPortPtr
-      m_cashAccount;  // It is responsible for the internal fund management only
+      cash_account_;  // It is responsible for the internal fund management only
                       // (i.e. it only needs to checkout to the sub-accounts and
                       // check in cash from the accounts)
-  SEPtr m_se;
-  AFPtr m_af;
+  SEPtr se_;
+  AFPtr af_;
 
-  KQuery m_query;         // The associated query condition
-  bool m_need_calculate;  // Flag of whether the calculation is needed
-  bool m_is_python_object{false};
+  KQuery query_;         // The associated query condition
+  bool need_calculate_;  // Flag of whether the calculation is needed
+  bool is_python_object_{false};
 
   internal::StrategyRuntimeList
-      m_real_sys_list;  // List of all the actually running sub-systems
+      real_sys_list_;  // List of all the actually running sub-systems
 
   // Temporary data used for the intermediate calculation
-  std::unordered_set<internal::StrategyRuntimePtr> m_running_sys_set;
-  DatetimeList m_dates;            // Running date list
-  vector<uint8_t> m_adjust_flags;  // Rebalancing day flags
-  DatetimeList m_cycle_end_dates;  // Rebalancing cycle end dates
+  std::unordered_set<internal::StrategyRuntimePtr> running_sys_set_;
+  DatetimeList dates_;            // Running date list
+  vector<uint8_t> adjust_flags_;  // Rebalancing day flags
+  DatetimeList cycle_end_dates_;  // Rebalancing cycle end dates
 
   std::vector<std::pair<Datetime, double>>
-      m_adjust_turnover;  // Rebalancing cycle turnover rate (the subclass needs
+      adjust_turnover_;  // Rebalancing cycle turnover rate (the subclass needs
                           // to implement it itself, it is absent if not
                           // implemented)
 
@@ -181,22 +181,22 @@ class HAYAKU_API Portfolio : public enable_shared_from_this<Portfolio> {
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_se);
-    ar& BOOST_SERIALIZATION_NVP(m_af);
-    ar& BOOST_SERIALIZATION_NVP(m_query);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_se", se_);
+    ar& boost::serialization::make_nvp("m_af", af_);
+    ar& boost::serialization::make_nvp("m_query", query_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_se);
-    ar& BOOST_SERIALIZATION_NVP(m_af);
-    ar& BOOST_SERIALIZATION_NVP(m_query);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_se", se_);
+    ar& boost::serialization::make_nvp("m_af", af_);
+    ar& boost::serialization::make_nvp("m_query", query_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -225,60 +225,60 @@ typedef shared_ptr<Portfolio> PFPtr;
 HAYAKU_API std::ostream& operator<<(std::ostream&, const Portfolio&);
 HAYAKU_API std::ostream& operator<<(std::ostream&, const PortfolioPtr&);
 
-inline const string& Portfolio::name() const { return m_name; }
+inline const string& Portfolio::name() const { return name_; }
 
-inline void Portfolio::name(const string& name) { m_name = name; }
+inline void Portfolio::name(const string& name) { name_ = name; }
 
 inline void Portfolio::setQuery(const KQuery& query) {
-  if (m_query != query) {
-    m_query = query;
-    m_need_calculate = true;
+  if (query_ != query) {
+    query_ = query;
+    need_calculate_ = true;
   }
 }
 
-inline const KQuery& Portfolio::getQuery() const { return m_query; }
+inline const KQuery& Portfolio::getQuery() const { return query_; }
 
 inline internal::PortfolioAccountPortPtr Portfolio::getAccount() const {
-  return m_account;
+  return account_;
 }
 
 inline void Portfolio::setAccount(const internal::PortfolioAccountPortPtr& tm) {
-  if (m_account != tm) {
-    m_account = tm;
-    m_need_calculate = true;
+  if (account_ != tm) {
+    account_ = tm;
+    need_calculate_ = true;
   }
 }
 
-inline SEPtr Portfolio::getSE() const { return m_se; }
+inline SEPtr Portfolio::getSE() const { return se_; }
 
 inline void Portfolio::setSE(const SEPtr& se) {
-  if (m_se != se) {
-    m_se = se;
-    m_need_calculate = true;
+  if (se_ != se) {
+    se_ = se;
+    need_calculate_ = true;
   }
 }
 
-inline AFPtr Portfolio::getAF() const { return m_af; }
+inline AFPtr Portfolio::getAF() const { return af_; }
 
 inline void Portfolio::setAF(const AFPtr& af) {
-  if (m_af != af) {
-    m_af = af;
-    m_need_calculate = true;
+  if (af_ != af) {
+    af_ = af;
+    need_calculate_ = true;
   }
 }
 
 inline const internal::StrategyRuntimeList& Portfolio::getRealSystemList()
     const {
-  return m_real_sys_list;
+  return real_sys_list_;
 }
 
 inline const DatetimeList& Portfolio::getRunningDates() const noexcept {
-  return m_dates;
+  return dates_;
 }
 
 inline const std::vector<std::pair<Datetime, double>>&
 Portfolio::getAdjustTurnover() const noexcept {
-  return m_adjust_turnover;
+  return adjust_turnover_;
 }
 
 } /* namespace hayaku */

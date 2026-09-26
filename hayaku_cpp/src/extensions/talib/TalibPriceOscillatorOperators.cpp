@@ -40,7 +40,7 @@ BOOST_CLASS_EXPORT(hayaku::TaAdosc)
 namespace hayaku {
 
 TaAdosc::TaAdosc() : IndicatorImp("TA_ADOSC", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<int>("fast_n", 3);
   setParam<int>("slow_n", 10);
 }
@@ -58,7 +58,7 @@ void TaAdosc::_checkParam(const string& name) const {
 void TaAdosc::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -72,7 +72,7 @@ void TaAdosc::_calculate(const Indicator& data) {
   int slow_n = getParam<int>("slow_n");
   int back = TA_ADOSC_Lookback(fast_n, slow_n);
   if (back < 0 || back >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -89,13 +89,13 @@ void TaAdosc::_calculate(const Indicator& data) {
     vol[i] = kptr[i].transCount;
   }
 
-  m_discard = back;
+  discard_ = back;
   auto* dst = this->data();
   int outBegIdx;
   int outNbElement;
-  ::TA_ADOSC(m_discard, total - 1, high, low, close, vol, fast_n, slow_n,
-             &outBegIdx, &outNbElement, dst + m_discard);
-  HAYAKU_ASSERT(m_discard == outBegIdx);
+  ::TA_ADOSC(discard_, total - 1, high, low, close, vol, fast_n, slow_n,
+             &outBegIdx, &outNbElement, dst + discard_);
+  HAYAKU_ASSERT(discard_ == outBegIdx);
 }
 
 Indicator HAYAKU_API TA_ADOSC(int fast_n, int slow_n) {
@@ -177,13 +177,13 @@ void TaApo::_calculate(const Indicator& data) {
   size_t total = data.size();
   int lookback = TA_APO_Lookback(fast_n, slow_n, matype);
   if (lookback >= total || lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = data.discard() + lookback;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + lookback;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -191,9 +191,9 @@ void TaApo::_calculate(const Indicator& data) {
   double* dst = this->data();
   int outBegIdx;
   int outNbElement;
-  ::TA_APO(m_discard, total - 1, src, fast_n, slow_n, matype, &outBegIdx,
-           &outNbElement, dst + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_APO(discard_, total - 1, src, fast_n, slow_n, matype, &outBegIdx,
+           &outNbElement, dst + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 
@@ -268,13 +268,13 @@ void TaMacd::_calculate(const Indicator& data) {
   size_t total = data.size();
   int lookback = TA_MACD_Lookback(fast_n, slow_n, signal_n);
   if (lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = data.discard() + lookback;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + lookback;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -285,10 +285,10 @@ void TaMacd::_calculate(const Indicator& data) {
 
   int outBegIdx;
   int outNbElement;
-  ::TA_MACD(m_discard, total - 1, src, fast_n, slow_n, signal_n, &outBegIdx,
-            &outNbElement, dst0 + m_discard, dst1 + m_discard,
-            dst2 + m_discard);
-  HAYAKU_ASSERT(outBegIdx == m_discard && (outBegIdx + outNbElement) <= total);
+  ::TA_MACD(discard_, total - 1, src, fast_n, slow_n, signal_n, &outBegIdx,
+            &outNbElement, dst0 + discard_, dst1 + discard_,
+            dst2 + discard_);
+  HAYAKU_ASSERT(outBegIdx == discard_ && (outBegIdx + outNbElement) <= total);
 }
 
 Indicator HAYAKU_API TA_MACD(int fast_n, int slow_n, int signal_n) {
@@ -373,13 +373,13 @@ void TaMacdext::_calculate(const Indicator& data) {
   int lookback = TA_MACDEXT_Lookback(fast_n, fast_matype, slow_n, slow_matype,
                                      signal_n, signal_matype);
   if (lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = data.discard() + lookback;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + lookback;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -390,10 +390,10 @@ void TaMacdext::_calculate(const Indicator& data) {
 
   int outBegIdx;
   int outNbElement;
-  ::TA_MACDEXT(m_discard, total - 1, src, fast_n, fast_matype, slow_n,
+  ::TA_MACDEXT(discard_, total - 1, src, fast_n, fast_matype, slow_n,
                slow_matype, signal_n, signal_matype, &outBegIdx, &outNbElement,
-               dst0 + m_discard, dst1 + m_discard, dst2 + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+               dst0 + discard_, dst1 + discard_, dst2 + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 
@@ -473,13 +473,13 @@ void TaPpo::_calculate(const Indicator& data) {
   size_t total = data.size();
   int lookback = TA_PPO_Lookback(fast_n, slow_n, matype);
   if (lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = data.discard() + lookback;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + lookback;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -488,9 +488,9 @@ void TaPpo::_calculate(const Indicator& data) {
 
   int outBegIdx;
   int outNbElement;
-  ::TA_PPO(m_discard, total - 1, src, fast_n, slow_n, matype, &outBegIdx,
-           &outNbElement, dst + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_PPO(discard_, total - 1, src, fast_n, slow_n, matype, &outBegIdx,
+           &outNbElement, dst + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 
@@ -543,7 +543,7 @@ BOOST_CLASS_EXPORT(hayaku::TaStoch)
 namespace hayaku {
 
 TaStoch::TaStoch() : IndicatorImp("TA_STOCH", 2) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<int>("fastk_n", 5);
   setParam<int>("slowk_n", 3);
   setParam<int>("slowk_matype", 0);
@@ -564,7 +564,7 @@ void TaStoch::_checkParam(const string& name) const {
 void TaStoch::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -580,7 +580,7 @@ void TaStoch::_calculate(const Indicator& data) {
   int back =
       TA_STOCH_Lookback(fastk_n, slowk_n, slowk_matype, slowd_n, slowd_matype);
   if (back < 0 || back >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -597,13 +597,13 @@ void TaStoch::_calculate(const Indicator& data) {
 
   auto* dst0 = this->data(0);
   auto* dst1 = this->data(1);
-  m_discard = back;
+  discard_ = back;
   int outBegIdx;
   int outNbElement;
-  ::TA_STOCH(m_discard, total - 1, high, low, close, fastk_n, slowk_n,
+  ::TA_STOCH(discard_, total - 1, high, low, close, fastk_n, slowk_n,
              slowk_matype, slowd_n, slowd_matype, &outBegIdx, &outNbElement,
-             dst0 + m_discard, dst1 + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+             dst0 + discard_, dst1 + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 
@@ -672,7 +672,7 @@ BOOST_CLASS_EXPORT(hayaku::TaStochf)
 namespace hayaku {
 
 TaStochf::TaStochf() : IndicatorImp("TA_STOCHF", 2) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<int>("fastk_n", 5);
   setParam<int>("fastd_n", 3);
   setParam<int>("fastd_matype", 0);
@@ -691,7 +691,7 @@ void TaStochf::_checkParam(const string& name) const {
 void TaStochf::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -704,7 +704,7 @@ void TaStochf::_calculate(const Indicator& data) {
   TA_MAType fastd_matype = (TA_MAType)getParam<int>("fastd_matype");
   int back = TA_STOCHF_Lookback(fastk_n, fastd_n, fastd_matype);
   if (back < 0 || back >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -721,13 +721,13 @@ void TaStochf::_calculate(const Indicator& data) {
 
   auto* dst0 = this->data(0);
   auto* dst1 = this->data(1);
-  m_discard = back;
+  discard_ = back;
   int outBegIdx;
   int outNbElement;
-  ::TA_STOCHF(m_discard, total - 1, high, low, close, fastk_n, fastd_n,
-              fastd_matype, &outBegIdx, &outNbElement, dst0 + m_discard,
-              dst1 + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_STOCHF(discard_, total - 1, high, low, close, fastk_n, fastd_n,
+              fastd_matype, &outBegIdx, &outNbElement, dst0 + discard_,
+              dst1 + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 
@@ -818,13 +818,13 @@ void TaStochrsi::_calculate(const Indicator& data) {
   size_t total = data.size();
   int lookback = TA_STOCHRSI_Lookback(n, fastk_n, fastd_n, matype);
   if (lookback < 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
-  m_discard = data.discard() + lookback;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + lookback;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -834,9 +834,9 @@ void TaStochrsi::_calculate(const Indicator& data) {
 
   int outBegIdx;
   int outNbElement;
-  ::TA_STOCHRSI(m_discard, total - 1, src, n, fastk_n, fastd_n, matype,
-                &outBegIdx, &outNbElement, dst0 + m_discard, dst1 + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_STOCHRSI(discard_, total - 1, src, n, fastk_n, fastd_n, matype,
+                &outBegIdx, &outNbElement, dst0 + discard_, dst1 + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 
@@ -890,7 +890,7 @@ BOOST_CLASS_EXPORT(hayaku::TaUltosc)
 namespace hayaku {
 
 TaUltosc::TaUltosc() : IndicatorImp("TA_ULTOSC", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<int>("n1", 7);
   setParam<int>("n2", 14);
   setParam<int>("n3", 28);
@@ -906,7 +906,7 @@ void TaUltosc::_checkParam(const string& name) const {
 void TaUltosc::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -919,7 +919,7 @@ void TaUltosc::_calculate(const Indicator& data) {
   int n3 = getParam<int>("n3");
   int back = TA_ULTOSC_Lookback(n1, n2, n3);
   if (back < 0 || back >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -935,12 +935,12 @@ void TaUltosc::_calculate(const Indicator& data) {
   }
 
   auto* dst = this->data();
-  m_discard = back;
+  discard_ = back;
   int outBegIdx;
   int outNbElement;
-  ::TA_ULTOSC(m_discard, total - 1, high, low, close, n1, n2, n3, &outBegIdx,
-              &outNbElement, dst + m_discard);
-  HAYAKU_ASSERT((outBegIdx == m_discard) &&
+  ::TA_ULTOSC(discard_, total - 1, high, low, close, n1, n2, n3, &outBegIdx,
+              &outNbElement, dst + discard_);
+  HAYAKU_ASSERT((outBegIdx == discard_) &&
                 (outBegIdx + outNbElement) <= total);
 }
 

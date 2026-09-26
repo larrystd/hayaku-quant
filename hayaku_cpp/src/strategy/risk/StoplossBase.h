@@ -94,13 +94,13 @@ class HAYAKU_API StoplossBase : public enable_shared_from_this<StoplossBase> {
    * setTO */
   virtual void _calculate() {};
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  protected:
-  bool m_is_python_object{false};
-  string m_name;
-  internal::ExecutionAccountPortPtr m_account;
-  KData m_kdata;
+  bool is_python_object_{false};
+  string name_;
+  internal::ExecutionAccountPortPtr account_;
+  KData kdata_;
 
 //============================================
 // Serialization support
@@ -110,20 +110,20 @@ class HAYAKU_API StoplossBase : public enable_shared_from_this<StoplossBase> {
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
     // m_kdata is set temporarily when the system runs, it does not need to be
-    // serialized ar & BOOST_SERIALIZATION_NVP(m_kdata);
+    // serialized ar & boost::serialization::make_nvp("m_kdata", kdata_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
     // m_kdata is set temporarily when the system runs, it does not need to be
-    // serialized ar & BOOST_SERIALIZATION_NVP(m_kdata);
+    // serialized ar & boost::serialization::make_nvp("m_kdata", kdata_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -181,20 +181,20 @@ typedef shared_ptr<StoplossBase> TPPtr;
 HAYAKU_API std::ostream& operator<<(std::ostream& os, const StoplossBase&);
 HAYAKU_API std::ostream& operator<<(std::ostream& os, const StoplossPtr&);
 
-inline const string& StoplossBase::name() const { return m_name; }
+inline const string& StoplossBase::name() const { return name_; }
 
-inline void StoplossBase::name(const string& name) { m_name = name; }
+inline void StoplossBase::name(const string& name) { name_ = name; }
 
 inline internal::ExecutionAccountPortPtr StoplossBase::getAccount() const {
-  return m_account;
+  return account_;
 }
 
 inline void StoplossBase::setAccount(
     const internal::ExecutionAccountPortPtr& account) {
-  m_account = account;
+  account_ = account;
 }
 
-inline KData StoplossBase::getTO() const { return m_kdata; }
+inline KData StoplossBase::getTO() const { return kdata_; }
 
 } /* namespace hayaku */
 

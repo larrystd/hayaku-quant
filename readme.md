@@ -1,255 +1,127 @@
 <p align="center">
-  <img src="docs/en/_static/00000-title.png" width="200" alt="title">
+  <img src="docs/en/_static/00000-title.png" width="200" alt="Hayaku">
 </p>
 
 <p align="center">
-  An open-source, high-performance quantitative trading framework in C++/Python<br>
-  focused on strategy analysis and backtesting<br>
-  <strong>Trading model R&amp;D · Ultra-fast engine · Efficient backtesting</strong>
+  Market data research and backtesting in C++ and Python<br>
+  <strong>Explicit sessions · Composable strategies · Bazel builds</strong>
 </p>
 
-<p align="center">
-  <img src="https://github.com/larrystd/hayaku-quant/actions/workflows/windows.yml/badge.svg?branch=poc" alt="Windows build">
-  <img src="https://github.com/larrystd/hayaku-quant/actions/workflows/ubuntu.yml/badge.svg?branch=poc" alt="Ubuntu build">
-  <img src="https://img.shields.io/github/license/larrystd/hayaku-quant.svg" alt="License">
-  <img src="https://static.pepy.tech/badge/hayaku" alt="Downloads">
-</p>
+# Hayaku Quant
 
-<p align="center">
-  <b>English</b> | <a href="readme.zh.md">简体中文</a>
-</p>
+[English] | [简体中文](readme.zh.md)
 
-Hayaku Quant Framework builds on mature systematic trading and portfolio management concepts, with a core
-focus on a fast research workflow for strategy (or asset) portfolios. It decomposes quantitative analysis
-into independently replaceable **strategy parts** — market environment, signals, stop-loss / take-profit,
-money management, profit goals, slippage, multi-factor models and fund allocation — which you can freely
-combine into your own strategy library and validate through backtesting.
+Hayaku is a C++ and Python framework for market data research, indicators, strategy composition, and backtesting. The C++ core performs data access and calculation; the Python API provides explicit sessions and domain-specific entry points.
 
-> Hayaku is derived from [Hikyuu](https://github.com/fasiondog/hikyuu). This repository is a
-> breaking architecture-refactor POC and is not a drop-in replacement for the upstream project.
+This repository is an architecture refactor derived from [Hikyuu](https://github.com/fasiondog/hikyuu). It is a breaking proof of concept, so existing Hikyuu programs need adaptation. The current Bazel build targets **macOS and Linux with Python 3.10**. Windows is not supported by this build.
 
-> ⚠️ **Disclaimer**: This project is an open-source financial technology research tool. It is intended
-> for personal study, academic research and data analysis only. It does not constitute any investment
-> advice or trading guidance, and it does not provide or embed any securities trading service. The
-> framework only offers generic interface extension capability; users are advised to connect only to
-> compliant trading terminals provided by licensed institutions. Any trading interface, extension or
-> actual operation added or developed by the user is entirely at the user's own risk and legal
-> responsibility. Connecting to illegal trading channels or using the framework for non-compliant
-> trading scenarios is strictly prohibited.
+## What is in the repository?
 
----
+- **Data and indicators:** query local market data and compose indicator calculations.
+- **Strategy research:** define signal and money management components, run a backtest, and inspect its result.
+- **Execution accounts:** submit simulated orders and inspect cash, positions, and trade records through a session-owned execution engine.
+- **Optional modules:** historical data ingestion and real-time data services have separate native packages.
 
-## 📊 Key Metrics
+Importing `hayaku` defines the public types without opening a data source. A runtime starts when you call `open_session()`, and the context manager closes it when the block exits.
 
-<p align="center">
-  <table>
-    <tr>
-      <td align="center" width="33%">
-        <strong><code>⚡ 166ms</code></strong><br>
-        <sub>Sum over 19.13 million K-line bars after warm-up (AMD 7950x)</sub>
-      </td>
-      <td align="center" width="33%">
-        <strong><code>🧩 10+</code></strong><br>
-        <sub>Core strategy parts · freely composable asset library</sub>
-      </td>
-      <td align="center" width="33%">
-        <strong><code>💾 4 types</code></strong><br>
-        <sub>Storage backends (HDF5 / MySQL / ClickHouse / SQLite)</sub>
-      </td>
-    </tr>
-  </table>
-</p>
+## Quick start from source
 
----
+Install Bazelisk, CMake, a C++20 compiler, and Python 3.10. Bazelisk uses the version in [`.bazelversion`](.bazelversion); C++ dependencies are pinned in [`MODULE.bazel`](MODULE.bazel) and its lockfile.
 
-## 🔗 Quick Links
+~~~bash
+git clone https://github.com/larrystd/hayaku-quant.git
+cd hayaku-quant
+python3.10 -m pip install -r requirements.txt
+./op.sh build
+./op.sh import-test
+~~~
 
-| Item                         | Link                                                                                                                                          |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🏠 **Project repository**    | [github.com/larrystd/hayaku-quant](https://github.com/larrystd/hayaku-quant)                                                                    |
-| 📚 **Documentation source**  | [`docs/`](docs/)                                                                                                                                |
-| 🚀 **Getting started**       | [Current quickstart](docs/en/quickstart.rst) · [Notebook tutorials](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True) |
-| 🧰 **Strategy part library** | [https://gitee.com/fasiondog/hikyuu_hub](https://gitee.com/fasiondog/hikyuu_hub)                                                              |
+`./op.sh build` compiles the core and both optional native modules, then stages the six libraries in the source-tree Python packages. Run the following example from the repository root. It does **not** need market data:
 
----
+~~~bash
+python3.10 - <<'PY'
+from hayaku.operators import MA, PRICELIST
 
-## ⚡ Quick Start
+prices = PRICELIST([1, 2, 3, 4, 5])
+print(list(MA(prices, 3))[2:])  # [2.0, 3.0, 4.0]
+PY
+~~~
 
-### Requirements
+### Work with local market data
 
-- **Python 3.10+** (3.9 and below are no longer supported for pip installation since 2.8.0)
-- Windows / Linux / macOS (Linux: Ubuntu 24.04+)
-- Main dependencies are installed automatically: `numpy`, `pandas`, `matplotlib`, `PySide6`,
-  `tables`, etc.
+Prepare a compatible local data source and a `hayaku.ini` configuration first. By default, `open_session()` reads `~/.hayaku/hayaku.ini`; you can also pass a path explicitly. Opening a session does not download data.
 
-### Step 1: Install
-
-```bash
-pip install hayaku
-```
-
-If the download is slow (for users in China), use a mirror:
-
-```bash
-pip install hayaku -i https://pypi.tuna.tsinghua.edu.cn/simple
-```
-
-### Step 2: Prepare local market data
-
-Use the optional ingest component to prepare a compatible local data source and
-`hayaku.ini`. The core package does not download data when a session opens.
-See the [installation](docs/en/install.rst) and
-[quickstart](docs/en/quickstart.rst) guides for the current package boundary.
-
-### Step 3: Open an explicit research session
-
-```python
+~~~python
 from hayaku import Query, open_session
 from hayaku.execution import AccountConfig
 
-account = AccountConfig(initial_cash=300000, name="research")
+account = AccountConfig(name="research", initial_cash=100_000)
 with open_session(filename="/path/to/hayaku.ini", account_config=account) as session:
     session.wait_ready()
-    bars = session.data.get_kdata("sz000001", Query(-150))
+    bars = session.data.get_kdata("sh600000", Query(-100))
     snapshot = session.execution.snapshot()
     print(len(bars), snapshot.funds)
-```
+~~~
 
-<p align="center">
-  <img src="docs/en/_static/10000-overview.png" alt="Backtest result" width="900">
-</p>
+The optional ingestion API is under `hayaku.extensions.ingest`. To run a strategy, compose a `StrategyDefinition` from components, pass the requested bars in a `BacktestRequest`, and execute it with a `StrategyEngine` bound to the session account. See the [strategy guide](docs/en/strategy.rst) and the [order example](examples/python/execution_engine.py).
 
-> 📖 See the [quickstart](docs/en/quickstart.rst) and [strategy guide](docs/en/strategy.rst) for a complete research flow. Runnable examples are in the [Notebook tutorials](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True).
-> for a complete research flow.
+## Architecture
 
-### ❓ FAQ
+~~~text
+Python script / notebook
+        |
+        v
+hayaku/                    Session, data, operators, strategy, execution APIs
+        |
+        v
+hayaku_pywrap/             pybind11 bindings
+        |
+        v
+hayaku_cpp/src/            C++ data, indicator, strategy, and execution engines
+        |
+        v
+local data drivers          HDF5, SQLite, TDX, and configured extensions
 
-| Symptom                                                     | Solution                                                                              |
-| :---------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| A session cannot find market data                            | Check the selected `hayaku.ini` and its local data paths.                            |
-| An optional ingest or realtime import fails                  | Build those extensions with `./op.sh build-optional` or install the matching optional package. |
-| A native HDF5 library is missing                              | Reinstall the matching wheel or rebuild the core extension.                          |
-| Build tool for **building from source**                     | This project uses **xmake**, not cmake                                                |
+Optional: hayaku.extensions.ingest   -> hayaku_ingest_native
+          hayaku.extensions.realtime -> hayaku_realtime_native
+~~~
 
-> 💡 For more questions see the [`docs/`](docs/) source or
-> [open an issue on GitHub](https://github.com/larrystd/hayaku-quant/issues).
+| Python entry point | Responsibility |
+| --- | --- |
+| `hayaku.data` | Securities, K-line (candlestick) data, and queries |
+| `hayaku.operators` | Indicators and series transformations |
+| `hayaku.strategy` | Component definitions and backtest engine |
+| `hayaku.execution` | Orders, accounts, positions, and trade records |
+| `hayaku.metrics` | Result conversion and analysis helpers |
+| `hayaku.application` | Session, configuration, CLI, and interactive tools |
+| `hayaku.extensions` | Explicit opt-ins for ingest, real-time services, visualization, and SPI |
 
----
+The core wheel contains `hayaku` and its native library. Ingest and real-time services are packaged as separate wheels. The default Bazel configuration includes HDF5, SQLite, TDX, and TA-Lib; MySQL and Windows are outside this configuration. See the [Bazel guide](BAZEL.md) for targets, generated files, dependency pins, and build options.
 
-## 🚀 Why Hayaku?
+## Build, test, and package
 
-> Powerful features for your quantitative trading research
+~~~bash
+./op.sh test          # C++ tests and native package smoke tests
+./op.sh python-test   # Python regression suite
+./op.sh all           # build, then both test suites
+~~~
 
-### 💹 Flexible composition: build a categorized strategy asset library
+To produce the three Python 3.10 wheels:
 
-Hayaku provides a lightweight abstraction over systematic trading methods, encapsulating the market
-environment, signal generators, stop-loss / take-profit, money management, profit goals, slippage and
-fund allocation as independently replaceable **strategy parts**. You can combine them freely, backtest
-efficiently, and focus on the effect and impact of a single part during research. See
-"Core parts of the systematic trading architecture" below for the complete list.
+~~~bash
+python3.10 -m pip install wheel
+./op.sh wheel
+./op.sh wheel-ingest
+./op.sh wheel-realtime
+python3.10 bazel/check_wheels.py
+~~~
 
-<p align="center">
-  <img src="docs/en/_static/10002-function-arc.png" alt="Functional architecture" width="800">
-</p>
+Wheels appear in `dist/`. For C++ tooling, run `./op.sh compdb` to generate `compile_commands.json` from Bazel targets. Use `./op.sh doctor` to inspect selected tools and paths.
 
-### 🚀 Extreme performance: build your own quant application with ease
+## Documentation and project status
 
-The project consists of three parts: a **high-performance C++ core library**, the **Python interface
-layer (hayaku)**, and the **interactive exploration tool**.
+- [Getting started](docs/en/quickstart.rst) and [developer guide](docs/en/developer.rst)
+- [Bazel build guide](BAZEL.md) and [Python examples](examples/python/)
+- [Third-party licenses](THIRD_PARTY_LICENSES.md) and [project license](LICENSE)
 
-- **Measured on an AMD 7950x**: loading the full A-share market (19.13 million daily K-line bars) and
-  computing and summing the 20-day moving average for the first time takes only **6 seconds**; once the
-  data is warm, the same operation takes only **166 milliseconds**
-  ([📊 Performance benchmark details](https://mp.weixin.qq.com/s?__biz=MzkwMzY1NzYxMA==&mid=2247483768&idx=1&sn=33e40aa9633857fa7b4c7ded51c95ae7),
-  article in Chinese).
-- **C++ core library**: ships with a complete strategy framework, native multi-threading and multi-core
-  acceleration, leaving room to scale for very high computing demands. The core library can also be used
-  standalone, helping developers build custom quantitative tools quickly.
-- **Python interface layer (hayaku)**: a lightweight wrapper around the C++ core with TA-Lib integrated;
-  converts seamlessly to and from numpy and pandas, so it plugs into the mainstream Python data analysis
-  ecosystem.
-- **hayaku.interactive**: the interactive exploration tool, with built-in visualization of candlesticks,
-  indicators and signals, suitable for rapid strategy validation and backtest analysis.
-
-### 🍳 Concise syntax: explore strategies faster and more freely
-
-Both **object-oriented** and **command-line** styles are supported. Especially during strategy exploration,
-the command-line style is minimal and expressive, letting you validate ideas and iterate faster.
-
-### 🎁 Modular and extensible data storage
-
-The core uses local **HDF5** and **SQLite** data sources. **MySQL** and **ClickHouse** are optional
-adapters. Prepare market data with the optional ingest capability before opening a research session.
-
-### 💻 Concise API design
-
-A complete strategy backtest system takes only a few lines of code — the intuitive API makes strategy
-development more efficient.
-
-### 🔓 Open source and transparent, with data under your control
-
-Released under the **Apache 2.0** license, with fully auditable source code. Core data and strategies stay
-entirely under your local control; the C++ core library can be used standalone, so you can build your own
-client tools without worrying about third-party platform restrictions.
-
----
-
-## 🏗️ Core parts of the systematic trading architecture
-
-> Rigorously architected around systematic trading concepts; every part can be replaced and combined freely
-
-| Domain                  | Main API                                      | Responsibility                              |
-| :---------------------- | :-------------------------------------------- | :------------------------------------------ |
-| **Data**                | `open_session / DataEngine`                   | Explicit data lifetime and market queries   |
-| **Execution**           | `AccountConfig / ExecutionEngine`            | Orders, cash, positions and trade history   |
-|                         | `AccountSnapshot / AccountView`               | Immutable account inspection                |
-| **Strategy**            | `StrategyDefinition / StrategyEngine`        | Component composition and orchestration     |
-|                         | `BacktestRequest / BacktestResult`            | Stable backtest input and output values     |
-| **Analysis**            | `hayaku.analysis`                             | Explicit result conversion and analysis     |
-| **Extensions**          | `hayaku.spi / hayaku.advanced`               | Custom protocols and low-level controls     |
-
----
-
-## 📂 Browse the source
-
-> A **Star ⭐** is welcome, as are contributions
-
-| Repository | Link | Role |
-| :--- | :--- | :--- |
-| **Hayaku** | [github.com/larrystd/hayaku-quant](https://github.com/larrystd/hayaku-quant) | Active refactor repository |
-| **Hikyuu** | [github.com/fasiondog/hikyuu](https://github.com/fasiondog/hikyuu) | Upstream source and history |
-
----
-
-## 🌟 How you can help
-
-Community contributions are welcome:
-
-- 🐛 Test and report bugs
-- 📝 Write documentation
-- 🔧 Develop new features
-- 🎨 Improve the website
-
-> 💡 **Please contribute by opening an issue on GitHub / Gitee / GitCode**
-
----
-
-## 📦 Dependencies
-
-The open-source projects directly depended on by the C++ core, together with their project URLs and
-licenses, are summarized in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) (indirect dependencies are
-not listed). Thanks to all the open-source authors for their contributions 👍
-
-Python-side dependencies are listed in [requirements.txt](requirements.txt).
-
----
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=larrystd%2Fhayaku-quant&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=larrystd/hayaku-quant&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=larrystd/hayaku-quant&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=larrystd/hayaku-quant&type=date&legend=top-left" />
- </picture>
-</a>
+Hayaku is a research tool. It does not provide investment advice or an embedded securities trading service. Users are responsible for any external trading connection they add.

@@ -168,14 +168,14 @@ class HAYAKU_API FactorSet {
     using reference = const Factor&;
 
     explicit const_iterator(const typename vector<Factor>::const_iterator& iter)
-        : m_iter(iter) {}
+        : iter_(iter) {}
 
-    reference operator*() const { return *m_iter; }
+    reference operator*() const { return *iter_; }
 
-    pointer operator->() const { return &(*m_iter); }
+    pointer operator->() const { return &(*iter_); }
 
     const_iterator& operator++() {
-      ++m_iter;
+      ++iter_;
       return *this;
     }
 
@@ -186,15 +186,15 @@ class HAYAKU_API FactorSet {
     // }
 
     bool operator==(const const_iterator& other) const {
-      return m_iter == other.m_iter;
+      return iter_ == other.iter_;
     }
 
     bool operator!=(const const_iterator& other) const {
-      return m_iter != other.m_iter;
+      return iter_ != other.iter_;
     }
 
    private:
-    typename vector<Factor>::const_iterator m_iter;
+    typename vector<Factor>::const_iterator iter_;
   };
 
   using iterator = const_iterator;
@@ -216,7 +216,7 @@ class HAYAKU_API FactorSet {
     unordered_map<string, size_t>
         nameIndexMap;  // Name to index mapping, used for fast lookup
   };
-  shared_ptr<Data> m_data;
+  shared_ptr<Data> data_;
 
 #if HAYAKU_SUPPORT_SERIALIZATION
  private:
@@ -243,10 +243,10 @@ class HAYAKU_API FactorSet {
     ar& BOOST_SERIALIZATION_NVP(tmp_block);
     FactorList tmp_factors;
     ar& BOOST_SERIALIZATION_NVP(tmp_factors);
-    m_data = make_shared<Data>();
-    m_data->name = tmp_name;
-    m_data->ktype = tmp_ktype;
-    m_data->block = tmp_block;
+    data_ = make_shared<Data>();
+    data_->name = tmp_name;
+    data_->ktype = tmp_ktype;
+    data_->block = tmp_block;
     for (auto& factor : tmp_factors) {
       add(std::move(factor));
     }
@@ -260,43 +260,43 @@ class HAYAKU_API FactorSet {
 // inline impl
 ///////////////////////////////////////////////////////////////////////////////
 
-inline const string& FactorSet::name() const noexcept { return m_data->name; }
+inline const string& FactorSet::name() const noexcept { return data_->name; }
 
 inline void FactorSet::name(const string& name) {
-  m_data->name = utf8_to_upper(name);
+  data_->name = utf8_to_upper(name);
 }
 
-inline const string& FactorSet::ktype() const noexcept { return m_data->ktype; }
+inline const string& FactorSet::ktype() const noexcept { return data_->ktype; }
 
 inline void FactorSet::ktype(const string& ktype) {
-  for (auto& factor : m_data->factors) {
+  for (auto& factor : data_->factors) {
     HAYAKU_CHECK(factor.ktype() == ktype, "ktype not match for factor '{}'",
                  factor.name());
   }
-  m_data->ktype = ktype;
+  data_->ktype = ktype;
 }
 
-inline const Block& FactorSet::block() const noexcept { return m_data->block; }
+inline const Block& FactorSet::block() const noexcept { return data_->block; }
 
-inline void FactorSet::block(const Block& blk) { m_data->block = blk; }
+inline void FactorSet::block(const Block& blk) { data_->block = blk; }
 
 inline size_t FactorSet::size() const noexcept {
-  return m_data->factors.size();
+  return data_->factors.size();
 }
 
 inline bool FactorSet::empty() const noexcept {
-  return m_data->factors.empty();
+  return data_->factors.empty();
 }
 
 inline void FactorSet::clear() noexcept {
-  m_data->factors.clear();
-  m_data->nameIndexMap.clear();
+  data_->factors.clear();
+  data_->nameIndexMap.clear();
 }
 
-inline bool FactorSet::isNull() const noexcept { return !m_data; }
+inline bool FactorSet::isNull() const noexcept { return !data_; }
 
 inline const Factor& FactorSet::get(size_t i) const {
-  return m_data->factors[i];
+  return data_->factors[i];
 }
 
 inline const Factor& FactorSet::operator[](const string& name) const {
@@ -304,27 +304,27 @@ inline const Factor& FactorSet::operator[](const string& name) const {
 }
 
 inline const Factor& FactorSet::operator[](size_t i) const {
-  return m_data->factors[i];
+  return data_->factors[i];
 }
 
 inline const FactorList& FactorSet::getAllFactors() const {
-  return m_data->factors;
+  return data_->factors;
 }
 
 inline FactorSet::const_iterator FactorSet::begin() const {
-  return const_iterator(m_data->factors.begin());
+  return const_iterator(data_->factors.begin());
 }
 
 inline FactorSet::const_iterator FactorSet::end() const {
-  return const_iterator(m_data->factors.end());
+  return const_iterator(data_->factors.end());
 }
 
 inline FactorSet::const_iterator FactorSet::cbegin() const {
-  return const_iterator(m_data->factors.cbegin());
+  return const_iterator(data_->factors.cbegin());
 }
 
 inline FactorSet::const_iterator FactorSet::cend() const {
-  return const_iterator(m_data->factors.cend());
+  return const_iterator(data_->factors.cend());
 }
 
 typedef vector<FactorSet> FactorSetList;

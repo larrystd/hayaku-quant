@@ -1,7 +1,5 @@
 #include "Bindings.h"
-
 #include <hayaku.h>
-
 #include <cstdint>
 
 /* Domain binding registrations. */
@@ -1959,9 +1957,9 @@ void export_BaseInfoDriver(py::module& m) {
  *      Author: fasiondog
  */
 
-#include <data/storage/BlockInfoDriver.h>
-
 #include "storage/BlockInfoDriverWrap.h"
+
+#include <data/storage/BlockInfoDriver.h>
 
 using namespace hayaku;
 namespace py = pybind11;
@@ -2290,5 +2288,4 @@ void bindData(py::module_& m) {
     :param int start: the start date
     :param int end: the end date
     :param Query.KType ktype: the K-line type, 'DAY'|'WEEK'|'MONTH'|'QUARTER'|'HALFYEAR'|'YEAR'|'MIN'|'MIN5'|'MIN15'|'MIN30'|'MIN60'
-    :param Query.RecoverType recover_type: the recovery type)");
-}
+    :param Query.RecoverType recover_type: the recovery type)");}

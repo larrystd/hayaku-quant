@@ -39,15 +39,15 @@ void ICIRMultiFactor::_checkParam(const string& name) const {
 
 IndicatorList ICIRMultiFactor::_calculate(
     const vector<IndicatorList>& all_stk_inds) {
-  size_t days_total = m_ref_dates.size();
-  size_t stk_count = m_stks.size();
-  size_t ind_count = m_factorset.size();
+  size_t days_total = ref_dates_.size();
+  size_t stk_count = stks_.size();
+  size_t ind_count = factorset_.size();
 
   int ic_n = getParam<int>("ic_n");
   int ir_n = getParam<int>("ic_rolling_n");
   bool spearman = getParam<bool>("use_spearman");
 
-  auto ref_k = m_ref_stk.getKData(m_query);
+  auto ref_k = ref_stk_.getKData(query_);
 
   IndicatorList all_returns = _getAllReturns(ic_n);
   IndicatorList icir = global_parallel_for_index(

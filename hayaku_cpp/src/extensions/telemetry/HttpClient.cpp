@@ -49,17 +49,17 @@ namespace ssl = boost::asio::ssl;
 #endif
 
 AsioHttpResponse::AsioHttpResponse(AsioHttpResponse&& rhs)
-    : m_status(rhs.m_status),
-      m_reason(std::move(rhs.m_reason)),
-      m_body(std::move(rhs.m_body)),
-      m_headers(std::move(rhs.m_headers)) {}
+    : status_(rhs.status_),
+      reason_(std::move(rhs.reason_)),
+      body_(std::move(rhs.body_)),
+      headers_(std::move(rhs.headers_)) {}
 
 AsioHttpResponse& AsioHttpResponse::operator=(AsioHttpResponse&& rhs) noexcept {
   if (this != &rhs) {
-    m_status = rhs.m_status;
-    m_reason = std::move(rhs.m_reason);
-    m_body = std::move(rhs.m_body);
-    m_headers = std::move(rhs.m_headers);
+    status_ = rhs.status_;
+    reason_ = std::move(rhs.reason_);
+    body_ = std::move(rhs.body_);
+    headers_ = std::move(rhs.headers_);
   }
   return *this;
 }
@@ -67,30 +67,30 @@ AsioHttpResponse& AsioHttpResponse::operator=(AsioHttpResponse&& rhs) noexcept {
 json AsioHttpResponse::json() const {
   auto content_type = getHeader("Content-Type");
   if (content_type.find("app/json") != std::string::npos) {
-    return json::parse(m_body);
+    return json::parse(body_);
   }
   if (content_type.find("app/msgpack") != std::string::npos) {
-    return json::from_msgpack(m_body);
+    return json::from_msgpack(body_);
   }
   if (content_type.find("app/cbor") != std::string::npos) {
-    return json::from_cbor(m_body);
+    return json::from_cbor(body_);
   }
-  return json::parse(m_body);
+  return json::parse(body_);
 }
 
 AsioHttpStreamResponse::AsioHttpStreamResponse(AsioHttpStreamResponse&& rhs)
-    : m_status(rhs.m_status),
-      m_reason(std::move(rhs.m_reason)),
-      m_headers(std::move(rhs.m_headers)),
-      m_total_bytes_read(rhs.m_total_bytes_read) {}
+    : status_(rhs.status_),
+      reason_(std::move(rhs.reason_)),
+      headers_(std::move(rhs.headers_)),
+      total_bytes_read_(rhs.total_bytes_read_) {}
 
 AsioHttpStreamResponse& AsioHttpStreamResponse::operator=(
     AsioHttpStreamResponse&& rhs) noexcept {
   if (this != &rhs) {
-    m_status = rhs.m_status;
-    m_reason = std::move(rhs.m_reason);
-    m_headers = std::move(rhs.m_headers);
-    m_total_bytes_read = rhs.m_total_bytes_read;
+    status_ = rhs.status_;
+    reason_ = std::move(rhs.reason_);
+    headers_ = std::move(rhs.headers_);
+    total_bytes_read_ = rhs.total_bytes_read_;
   }
   return *this;
 }
@@ -102,15 +102,15 @@ struct HttpConnection {
 
   std::vector<tcp::endpoint> endpoints;  // The DNS resolution result cache
   std::chrono::steady_clock::time_point last_used_time;  // Last used time
-  int m_version = 0;                                     // Version number
+  int version_ = 0;                                     // Version number
 
   // The socket is created when the connection is acquired
   std::optional<SocketType> socket;
 
   // The version management interface
-  int getVersion() const { return m_version; }
+  int getVersion() const { return version_; }
 
-  void setVersion(int version) { m_version = version; }
+  void setVersion(int version) { version_ = version; }
 
 #if HAYAKU_ENABLE_HTTP_CLIENT_SSL
   std::optional<ssl::stream<tcp::socket>> ssl_socket;
@@ -201,116 +201,116 @@ struct AsioHttpClient::SslContext {
 #endif
 
 AsioHttpClient::AsioHttpClient(int32_t thread_count, size_t max_concurrency)
-    : m_own_ctx(std::make_unique<net::io_context>()), m_ctx(m_own_ctx.get()) {
+    : own_ctx_(std::make_unique<net::io_context>()), ctx_(own_ctx_.get()) {
   // Create a work guard to prevent the io_context from exiting when there is no
   // task
-  m_work_guard = std::make_unique<
+  work_guard_ = std::make_unique<
       net::executor_work_guard<net::io_context::executor_type>>(
-      m_own_ctx->get_executor());
+      own_ctx_->get_executor());
 
 #if HAYAKU_ENABLE_HTTP_CLIENT_SSL
-  m_ssl_ctx = std::make_unique<SslContext>();
+  ssl_ctx_ = std::make_unique<SslContext>();
 #endif
 
   // Initialize the connection pool
-  m_connection_pool =
+  connection_pool_ =
       std::make_unique<ResourceAsioVersionPool<HttpConnection, std::mutex>>(
           Parameter(), max_concurrency);
 
   // Use the internal io_context and start the worker thread pool to run the
   // event loop
-  m_worker_threads.reserve(thread_count);
+  worker_threads_.reserve(thread_count);
   for (int32_t i = 0; i < thread_count; ++i) {
-    m_worker_threads.emplace_back([this] { m_ctx->run(); });
+    worker_threads_.emplace_back([this] { ctx_->run(); });
   }
 }
 
 AsioHttpClient::AsioHttpClient(const std::string& url, int32_t timeout,
                                int32_t thread_count, size_t max_concurrency)
-    : m_url(url),
-      m_timeout(
+    : url_(url),
+      timeout_(
           std::chrono::milliseconds(timeout <= 0 ? MAX_TIMEOUT_MS : timeout)),
-      m_own_ctx(std::make_unique<net::io_context>()),
-      m_ctx(m_own_ctx.get()) {
+      own_ctx_(std::make_unique<net::io_context>()),
+      ctx_(own_ctx_.get()) {
   _parseUrl();
 
-  if (m_is_valid_url && m_ctx) {
+  if (is_valid_url_ && ctx_) {
 #if HAYAKU_ENABLE_HTTP_CLIENT_SSL
-    m_ssl_ctx = std::make_unique<SslContext>();
+    ssl_ctx_ = std::make_unique<SslContext>();
 #endif
 
     // Create a work guard to prevent the io_context from exiting when there is
     // no task
-    m_work_guard = std::make_unique<
+    work_guard_ = std::make_unique<
         net::executor_work_guard<net::io_context::executor_type>>(
-        m_own_ctx->get_executor());
+        own_ctx_->get_executor());
 
     // Initialize the connection pool parameters (AsioHttpClient may use
     // multiple threads, so std::mutex is used uniformly for safety)
-    m_connection_pool =
+    connection_pool_ =
         std::make_unique<ResourceAsioVersionPool<HttpConnection, std::mutex>>(
             Parameter(), max_concurrency);
 
     // Start the background thread pool to run the io_context
-    m_worker_threads.reserve(thread_count);
+    worker_threads_.reserve(thread_count);
     for (int32_t i = 0; i < thread_count; ++i) {
-      m_worker_threads.emplace_back([this]() { m_ctx->run(); });
+      worker_threads_.emplace_back([this]() { ctx_->run(); });
     }
   }
 }
 
 AsioHttpClient::AsioHttpClient(net::io_context& ctx, const std::string& url,
                                int32_t timeout, size_t max_concurrency)
-    : m_url(url),
-      m_timeout(
+    : url_(url),
+      timeout_(
           std::chrono::milliseconds(timeout <= 0 ? MAX_TIMEOUT_MS : timeout)),
-      m_ctx(&ctx),  // Use the external io_context without taking the ownership
-      m_worker_threads() {
+      ctx_(&ctx),  // Use the external io_context without taking the ownership
+      worker_threads_() {
   _parseUrl();
 
-  if (m_is_valid_url && m_ctx) {
+  if (is_valid_url_ && ctx_) {
 #if HAYAKU_ENABLE_HTTP_CLIENT_SSL
-    m_ssl_ctx = std::make_unique<SslContext>();
+    ssl_ctx_ = std::make_unique<SslContext>();
 #endif
 
     // Initialize the connection pool parameters (an external io_context is used
     // and the caller guarantees the thread safety, so std::mutex is used
     // conservatively here)
-    m_connection_pool =
+    connection_pool_ =
         std::make_unique<ResourceAsioVersionPool<HttpConnection, std::mutex>>(
             Parameter(), max_concurrency);
   }
 }
 
 AsioHttpClient::~AsioHttpClient() {
-  if (m_own_ctx) {
-    m_work_guard.reset();
+  if (own_ctx_) {
+    work_guard_.reset();
 
-    if (!m_own_ctx->stopped()) {
-      m_own_ctx->stop();
+    if (!own_ctx_->stopped()) {
+      own_ctx_->stop();
     }
 
-    m_connection_pool.reset();
+    connection_pool_.reset();
 
     // Wait for all the worker threads to finish
-    for (auto& thread : m_worker_threads) {
+    for (auto& thread : worker_threads_) {
       if (thread.joinable()) {
         thread.join();
       }
     }
 
-    m_own_ctx.reset();
+    own_ctx_.reset();
   }
 
-  m_connection_pool.reset();
-  m_ctx = nullptr;
+  connection_pool_.reset();
+  ctx_ = nullptr;
 }
 
 void AsioHttpClient::setCaFile(const std::string& filename) {
-  m_ca_file = filename;
+  ca_file_ = filename;
 #if HAYAKU_ENABLE_HTTP_CLIENT_SSL
-  if (m_ssl_ctx) {
-    m_ssl_ctx->setCaFile(filename);
+  if (ssl_ctx_) {
+    ssl_ctx_->setCaFile(filename);
   }
 #endif
 }
@@ -320,53 +320,53 @@ void AsioHttpClient::setTimeout(int32_t ms) {
     ms = MAX_TIMEOUT_MS;
   }
   auto new_timeout = std::chrono::milliseconds(ms);
-  if (m_timeout != new_timeout) {
-    m_timeout = new_timeout;
+  if (timeout_ != new_timeout) {
+    timeout_ = new_timeout;
     // Update the connection pool parameters when the timeout changes, the
     // version is increased automatically
-    if (m_connection_pool) {
+    if (connection_pool_) {
       Parameter pool_param;
-      m_connection_pool->setParameter(std::move(pool_param));
+      connection_pool_->setParameter(std::move(pool_param));
     }
   }
 }
 
 void AsioHttpClient::setUrl(const std::string& url) {
-  m_url = url;
+  url_ = url;
 
   // Save the old host and port for the comparison
-  std::string old_host = m_host;
-  std::string old_port = m_port;
+  std::string old_host = host_;
+  std::string old_port = port_;
 
   // Parse the URL
   _parseUrl();
 
   // The connection pool is not updated when the parsing fails
-  if (!m_is_valid_url) {
+  if (!is_valid_url_) {
     return;
   }
 
   // Check whether the host or the port changed; if so update the connection
   // pool parameters (the version is increased automatically)
-  bool host_changed = (old_host != m_host || old_port != m_port);
+  bool host_changed = (old_host != host_ || old_port != port_);
 
-  if (host_changed && m_connection_pool) {
+  if (host_changed && connection_pool_) {
     Parameter pool_param;
     // Set the new parameters; the resource pool increases the version and
     // releases the idle old version connections automatically
-    m_connection_pool->setParameter(std::move(pool_param));
+    connection_pool_->setParameter(std::move(pool_param));
   }
 }
 
 void AsioHttpClient::_parseUrl() noexcept {
-  size_t pos = m_url.find("://");
+  size_t pos = url_.find("://");
   if (pos == std::string::npos) {
-    m_is_valid_url = false;
+    is_valid_url_ = false;
     return;
   }
 
-  m_is_valid_url = true;
-  std::string proto = m_url.substr(0, pos);
+  is_valid_url_ = true;
+  std::string proto = url_.substr(0, pos);
 
   uint16_t port;
   if (proto == "http") {
@@ -374,19 +374,19 @@ void AsioHttpClient::_parseUrl() noexcept {
   } else if (proto == "https") {
     port = 443;
 #if HAYAKU_ENABLE_HTTP_CLIENT_SSL
-    m_is_https = true;
+    is_https_ = true;
 #else
     HAYAKU_ERROR(
         "Not support https protocol, please enable http_client_ssl feature!");
 #endif
   } else {
-    m_is_valid_url = false;
+    is_valid_url_ = false;
     HAYAKU_ERROR("Invalid protocol: {}", proto);
     return;
   }
 
   std::string base_path;
-  std::string host = m_url.substr(pos + 3);
+  std::string host = url_.substr(pos + 3);
   pos = host.find('/');
   if (pos != std::string::npos) {
     base_path = host.substr(pos);
@@ -397,16 +397,16 @@ void AsioHttpClient::_parseUrl() noexcept {
     try {
       port = std::stoi(host.substr(pos + 1));
     } catch (...) {
-      m_is_valid_url = false;
+      is_valid_url_ = false;
       HAYAKU_ERROR("Invalid port: {}", host.substr(pos + 1));
       return;
     }
     host.resize(pos);
   }
 
-  m_base_path = std::move(base_path);
-  m_host = std::move(host);
-  m_port = std::to_string(port);
+  base_path_ = std::move(base_path);
+  host_ = std::move(host);
+  port_ = std::to_string(port);
 }
 
 // The URI construction helper method
@@ -415,17 +415,17 @@ std::string AsioHttpClient::_buildURI(const std::string& path,
   std::ostringstream uri_stream;
 
   // Handle base_path: it is not added when it is empty or just "/"
-  if (!m_base_path.empty() && m_base_path != "/") {
-    uri_stream << m_base_path;
+  if (!base_path_.empty() && base_path_ != "/") {
+    uri_stream << base_path_;
   }
 
   if (!path.empty()) {
     // Judge whether the separator / needs to be added
     bool need_separator = false;
-    if (!m_base_path.empty() && m_base_path != "/") {
+    if (!base_path_.empty() && base_path_ != "/") {
       // When base_path is not empty and is not a single slash, check whether
       // the separator needs to be added
-      need_separator = (m_base_path.back() != '/' && path.front() != '/');
+      need_separator = (base_path_.back() != '/' && path.front() != '/');
     } else {
       // When base_path is empty or a single slash, it is needed only when path
       // does not start with '/'
@@ -489,11 +489,11 @@ net::awaitable<std::vector<tcp::endpoint>> AsioHttpClient::_resolveDNS() {
   // First judge whether the host is an IP address; if so construct the endpoint
   // and return directly, avoiding an unnecessary DNS query
   net::error_code ec;
-  auto addr = net::ip::make_address(m_host, ec);
+  auto addr = net::ip::make_address(host_, ec);
   if (!ec) {
     // The host is a valid IP address, construct the endpoint directly
     std::vector<tcp::endpoint> endpoints;
-    uint16_t port_num = static_cast<uint16_t>(std::stoi(m_port));
+    uint16_t port_num = static_cast<uint16_t>(std::stoi(port_));
     if (addr.is_v4()) {
       endpoints.emplace_back(tcp::endpoint(addr.to_v4(), port_num));
     } else if (addr.is_v6()) {
@@ -512,8 +512,8 @@ net::awaitable<std::vector<tcp::endpoint>> AsioHttpClient::_resolveDNS() {
   hints.ai_flags =
       AI_ADDRCONFIG;  // Query the address types supported by this machine only
 
-  int ret = getaddrinfo(m_host.c_str(), m_port.c_str(), &hints, &res);
-  HAYAKU_CHECK(ret == 0, "DNS resolve failed! {}:{}", m_host, m_port);
+  int ret = getaddrinfo(host_.c_str(), port_.c_str(), &hints, &res);
+  HAYAKU_CHECK(ret == 0, "DNS resolve failed! {}:{}", host_, port_);
 
   std::vector<tcp::endpoint> dns_endpoints;
   for (struct addrinfo* ai = res; ai != nullptr; ai = ai->ai_next) {
@@ -533,15 +533,15 @@ net::awaitable<std::vector<tcp::endpoint>> AsioHttpClient::_resolveDNS() {
   }
 
   freeaddrinfo(res);
-  HAYAKU_CHECK(!dns_endpoints.empty(), "DNS resolve failed! {}:{}", m_host,
-               m_port);
+  HAYAKU_CHECK(!dns_endpoints.empty(), "DNS resolve failed! {}:{}", host_,
+               port_);
   co_return dns_endpoints;
 
 #else
   // The other platforms use the Boost.ASIO asynchronous DNS resolution
   // Note: the resolver must have the same lifetime as op, avoiding a dangling
   // reference and a hang
-  auto resolver = std::make_shared<tcp::resolver>(*m_ctx);
+  auto resolver = std::make_shared<tcp::resolver>(*ctx_);
 
   struct ResolveOp {
     std::shared_ptr<tcp::resolver>
@@ -565,11 +565,11 @@ net::awaitable<std::vector<tcp::endpoint>> AsioHttpClient::_resolveDNS() {
     }
   };
 
-  auto op = std::make_shared<ResolveOp>(resolver, m_host, m_port);
+  auto op = std::make_shared<ResolveOp>(resolver, host_, port_);
 
   // Start the timer and the DNS resolution
-  auto timer = net::steady_timer{*m_ctx};
-  timer.expires_after(m_timeout);
+  auto timer = net::steady_timer{*ctx_};
+  timer.expires_after(timeout_);
 
   timer.async_wait([resolver, op](const net::error_code& ec) {
     if (!ec && !op->done) {
@@ -611,11 +611,11 @@ net::awaitable<std::vector<tcp::endpoint>> AsioHttpClient::_resolveDNS() {
 // Get a connected connection from the connection pool (with the DNS cache)
 net::awaitable<std::pair<std::shared_ptr<HttpConnection>, bool>>
 AsioHttpClient::_getConnection() {
-  HAYAKU_ASSERT(m_connection_pool != nullptr);
+  HAYAKU_ASSERT(connection_pool_ != nullptr);
 
   // Get a connection from the pool (the resource pool checks the version
   // automatically and the old version connections are eliminated)
-  auto conn_result = co_await m_connection_pool->asyncGet();
+  auto conn_result = co_await connection_pool_->asyncGet();
   if (!conn_result) {
     HAYAKU_THROW_EXCEPTION(HttpTimeoutException,
                            "Failed to get connection from pool: {}",
@@ -652,17 +652,17 @@ AsioHttpClient::_getConnection() {
     // Close the old connection (if there is one)
     conn_ptr->close();
 
-    if (m_is_https) {
+    if (is_https_) {
 #if HAYAKU_ENABLE_HTTP_CLIENT_SSL
       // Connect to the server
       bool connected = false;
       for (const auto& endpoint : conn_ptr->endpoints) {
-        conn_ptr->ssl_socket.emplace(*m_ctx, m_ssl_ctx->ssl_ctx);
+        conn_ptr->ssl_socket.emplace(*ctx_, ssl_ctx_->ssl_ctx);
         SSL_set_tlsext_host_name(conn_ptr->ssl_socket->native_handle(),
-                                 m_host.c_str());
+                                 host_.c_str());
 
-        auto timer = net::steady_timer{*m_ctx};
-        timer.expires_after(m_timeout);
+        auto timer = net::steady_timer{*ctx_};
+        timer.expires_after(timeout_);
 
         bool connect_completed = false;
         net::error_code captured_ec;
@@ -717,7 +717,7 @@ AsioHttpClient::_getConnection() {
 
       if (!connected) {
         HAYAKU_THROW_EXCEPTION(HttpTimeoutException, "Connect timeout to {}:{}",
-                               m_host, m_port);
+                               host_, port_);
       }
 
       // Set the socket options
@@ -725,8 +725,8 @@ AsioHttpClient::_getConnection() {
 
       // The SSL handshake (with a timeout)
       {
-        auto timer = net::steady_timer{*m_ctx};
-        timer.expires_after(m_timeout);
+        auto timer = net::steady_timer{*ctx_};
+        timer.expires_after(timeout_);
 
         bool handshake_completed = false;
         net::error_code captured_ec;
@@ -775,10 +775,10 @@ AsioHttpClient::_getConnection() {
       for (const auto& endpoint : conn_ptr->endpoints) {
         // An ordinary HTTP connection (SSL is enabled but HTTP is used
         // currently)
-        conn_ptr->socket.emplace(*m_ctx);
+        conn_ptr->socket.emplace(*ctx_);
 
-        auto timer = net::steady_timer{*m_ctx};
-        timer.expires_after(m_timeout);
+        auto timer = net::steady_timer{*ctx_};
+        timer.expires_after(timeout_);
 
         bool connect_completed = false;
         net::error_code captured_ec;
@@ -838,7 +838,7 @@ AsioHttpClient::_getConnection() {
 
       if (!connected) {
         HAYAKU_THROW_EXCEPTION(HttpTimeoutException, "Connect timeout to {}:{}",
-                               m_host, m_port);
+                               host_, port_);
       }
 
       // Set the socket options
@@ -916,11 +916,11 @@ net::awaitable<void> AsioHttpClient::_connect(
 
     {
       // Create an ordinary socket first
-      socket_variant.plain.emplace(*m_ctx);
+      socket_variant.plain.emplace(*ctx_);
 
       // Use the event driven asynchronous connection with a timeout
-      auto timer = net::steady_timer{*m_ctx};
-      timer.expires_after(m_timeout);
+      auto timer = net::steady_timer{*ctx_};
+      timer.expires_after(timeout_);
 
       bool connect_completed = false;
       net::error_code captured_ec;
@@ -979,7 +979,7 @@ net::awaitable<void> AsioHttpClient::_connect(
 
   if (!connected) {
     HAYAKU_THROW_EXCEPTION(HttpTimeoutException, "Connect timeout to {}:{}",
-                           m_host, m_port);
+                           host_, port_);
   }
 
   // Set the socket options
@@ -987,19 +987,19 @@ net::awaitable<void> AsioHttpClient::_connect(
 
 #if HAYAKU_ENABLE_HTTP_CLIENT_SSL
   // For HTTPS perform the SSL handshake (with a timeout)
-  if (m_is_https) {
+  if (is_https_) {
     // Move to the SSL socket
     socket_variant.ssl.emplace(std::move(*socket_variant.plain),
-                               m_ssl_ctx->ssl_ctx);
+                               ssl_ctx_->ssl_ctx);
     socket_variant.plain.reset();
 
     // Set the SNI (Server Name Indication)
     SSL_set_tlsext_host_name(socket_variant.ssl->native_handle(),
-                             m_host.c_str());
+                             host_.c_str());
 
     // Use the event driven SSL handshake with a timeout
-    auto timer = net::steady_timer{*m_ctx};
-    timer.expires_after(m_timeout);
+    auto timer = net::steady_timer{*ctx_};
+    timer.expires_after(timeout_);
 
     bool handshake_completed = false;
     net::error_code captured_ec;
@@ -1051,17 +1051,17 @@ net::awaitable<AsioHttpResponse> AsioHttpClient::async_request(
     const std::string& method, const std::string& path,
     const HttpParams& params, const HttpHeaders& headers, const char* body,
     size_t body_len, const std::string& content_type) {
-  HAYAKU_CHECK(m_is_valid_url, "Invalid url: {}", m_url);
+  HAYAKU_CHECK(is_valid_url_, "Invalid url: {}", url_);
 
   // Make sure the io_context is set (the default constructor may not initialize
   // it)
-  if (m_ctx == nullptr) {
+  if (ctx_ == nullptr) {
     auto exec = co_await net::this_coro::executor;
-    m_ctx = &static_cast<net::io_context&>(exec.context());
+    ctx_ = &static_cast<net::io_context&>(exec.context());
   }
 
 #if !HAYAKU_ENABLE_HTTP_CLIENT_SSL
-  HAYAKU_CHECK(!m_is_https,
+  HAYAKU_CHECK(!is_https_,
                "HTTPS is not supported. Please enable SSL support with "
                "--http_client_ssl=y");
 #endif
@@ -1084,7 +1084,7 @@ net::awaitable<AsioHttpResponse> AsioHttpClient::async_request(
     req.version(11);  // HTTP/1.1
 
     // Add the default headers
-    for (const auto& [key, value] : m_default_headers) {
+    for (const auto& [key, value] : default_headers_) {
       req.set(key, value);
     }
 
@@ -1095,7 +1095,7 @@ net::awaitable<AsioHttpResponse> AsioHttpClient::async_request(
 
     // Add the User-Agent
     req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-    req.set(http::field::host, m_host);
+    req.set(http::field::host, host_);
     // Note: "close" is not used, allowing the connection reuse
 
     // Add the request body
@@ -1121,8 +1121,8 @@ net::awaitable<AsioHttpResponse> AsioHttpClient::async_request(
 
     // Send the request (with a timeout)
     {
-      auto timer = net::steady_timer{*m_ctx};
-      timer.expires_after(m_timeout);
+      auto timer = net::steady_timer{*ctx_};
+      timer.expires_after(timeout_);
 
       bool write_completed = false;
 
@@ -1210,8 +1210,8 @@ net::awaitable<AsioHttpResponse> AsioHttpClient::async_request(
     http::response<http::string_body> res;
 
     {
-      auto timer = net::steady_timer{*m_ctx};
-      timer.expires_after(m_timeout);
+      auto timer = net::steady_timer{*ctx_};
+      timer.expires_after(timeout_);
 
       bool read_completed = false;
       net::error_code captured_ec;
@@ -1304,23 +1304,23 @@ net::awaitable<AsioHttpResponse> AsioHttpClient::async_request(
     }
 
     // Fill the response object
-    response.m_status = res.result_int();
-    response.m_reason = std::string(res.reason());
+    response.status_ = res.result_int();
+    response.reason_ = std::string(res.reason());
 
 #if HAYAKU_ENABLE_HTTP_CLIENT_ZIP
     // Get the Content-Encoding header correctly
     auto encoding_it = res.find("Content-Encoding");
     if (encoding_it != res.end() && encoding_it->value() == "gzip") {
-      response.m_body = gzip::decompress(res.body().data(), res.body().size());
+      response.body_ = gzip::decompress(res.body().data(), res.body().size());
     } else {
-      response.m_body = std::move(res.body());
+      response.body_ = std::move(res.body());
     }
 #else
-    response.m_body = std::move(res.body());
+    response.body_ = std::move(res.body());
 #endif
 
     for (auto it = res.begin(); it != res.end(); ++it) {
-      response.m_headers.emplace(std::string(it->name_string()),
+      response.headers_.emplace(std::string(it->name_string()),
                                  std::string(it->value()));
     }
 
@@ -1342,18 +1342,18 @@ net::awaitable<AsioHttpStreamResponse> AsioHttpClient::async_requestStream(
     const HttpParams& params, const HttpHeaders& headers, const char* body,
     size_t body_len, const std::string& content_type,
     const HttpChunkCallback& chunk_callback) {
-  HAYAKU_CHECK(m_is_valid_url, "Invalid url: {}", m_url);
+  HAYAKU_CHECK(is_valid_url_, "Invalid url: {}", url_);
   HAYAKU_CHECK(chunk_callback != nullptr, "Chunk callback must not be null");
 
   // Make sure the io_context is set (the default constructor may not initialize
   // it)
-  if (m_ctx == nullptr) {
+  if (ctx_ == nullptr) {
     auto exec = co_await net::this_coro::executor;
-    m_ctx = &static_cast<net::io_context&>(exec.context());
+    ctx_ = &static_cast<net::io_context&>(exec.context());
   }
 
 #if !HAYAKU_ENABLE_HTTP_CLIENT_SSL
-  HAYAKU_CHECK(!m_is_https,
+  HAYAKU_CHECK(!is_https_,
                "HTTPS is not supported. Please enable SSL support with "
                "--http_client_ssl=y");
 #endif
@@ -1375,7 +1375,7 @@ net::awaitable<AsioHttpStreamResponse> AsioHttpClient::async_requestStream(
     req.target(uri);
     req.version(11);
 
-    for (const auto& [key, value] : m_default_headers) {
+    for (const auto& [key, value] : default_headers_) {
       req.set(key, value);
     }
 
@@ -1384,7 +1384,7 @@ net::awaitable<AsioHttpStreamResponse> AsioHttpClient::async_requestStream(
     }
 
     req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-    req.set(http::field::host, m_host);
+    req.set(http::field::host, host_);
     // Note: "close" is not used, allowing the connection reuse
 
     if (body != nullptr && body_len > 0) {
@@ -1409,8 +1409,8 @@ net::awaitable<AsioHttpStreamResponse> AsioHttpClient::async_requestStream(
 
     // Send the request - use the event driven way
     {
-      auto timer = net::steady_timer{*m_ctx};
-      timer.expires_after(m_timeout);
+      auto timer = net::steady_timer{*ctx_};
+      timer.expires_after(timeout_);
 
       bool write_completed = false;
 
@@ -1488,8 +1488,8 @@ net::awaitable<AsioHttpStreamResponse> AsioHttpClient::async_requestStream(
       // Read the response header - use the event driven way
       {
         // Set the timeout timer
-        auto timer = net::steady_timer{*m_ctx};
-        timer.expires_after(m_timeout);
+        auto timer = net::steady_timer{*ctx_};
+        timer.expires_after(timeout_);
 
         // Start the timer and cancel the underlying socket on a timeout
         timer.async_wait([&conn](const net::error_code& ec) {
@@ -1551,10 +1551,10 @@ net::awaitable<AsioHttpStreamResponse> AsioHttpClient::async_requestStream(
       }
 
       // Fill the response object
-      response.m_status = static_cast<int>(parser.get().result_int());
-      response.m_reason = std::string(parser.get().reason());
+      response.status_ = static_cast<int>(parser.get().result_int());
+      response.reason_ = std::string(parser.get().reason());
       for (auto it = parser.get().begin(); it != parser.get().end(); ++it) {
-        response.m_headers.emplace(std::string(it->name_string()),
+        response.headers_.emplace(std::string(it->name_string()),
                                    std::string(it->value()));
       }
 
@@ -1564,8 +1564,8 @@ net::awaitable<AsioHttpStreamResponse> AsioHttpClient::async_requestStream(
         net::error_code read_ec;
 
         // Set the timeout timer (reset on every chunk read)
-        auto timer = net::steady_timer{*m_ctx};
-        timer.expires_after(m_timeout);
+        auto timer = net::steady_timer{*ctx_};
+        timer.expires_after(timeout_);
 
         // Start the timer and cancel the underlying socket on a timeout
         timer.async_wait([&conn](const net::error_code& ec) {
@@ -1632,7 +1632,7 @@ net::awaitable<AsioHttpStreamResponse> AsioHttpClient::async_requestStream(
 
         // Call the callback to process the data chunk
         if (bytes_transferred > 0) {
-          response.m_total_bytes_read += bytes_transferred;
+          response.total_bytes_read_ += bytes_transferred;
           chunk_callback(chunk_buffer.data(), bytes_transferred);
         }
 
@@ -1669,16 +1669,16 @@ AsioHttpResponse AsioHttpClient::request(const std::string& method,
                                          const std::string& content_type) {
   // Validate the URL in advance, avoiding discovering the problem after
   // entering the asynchronous coroutine
-  HAYAKU_CHECK(m_is_valid_url, "Invalid url: {}", m_url);
-  HAYAKU_ASSERT(m_ctx);
+  HAYAKU_CHECK(is_valid_url_, "Invalid url: {}", url_);
+  HAYAKU_ASSERT(ctx_);
 
   // Make sure the io_context is running
-  if (m_ctx->stopped()) {
-    m_ctx->restart();
+  if (ctx_->stopped()) {
+    ctx_->restart();
   }
 
   // Convert the coroutine result into a std::future with use_future
-  auto future = co_spawn(*m_ctx,
+  auto future = co_spawn(*ctx_,
                          async_request(method, path, params, headers, body,
                                        body_len, content_type),
                          boost::asio::use_future);
@@ -1693,18 +1693,18 @@ AsioHttpStreamResponse AsioHttpClient::requestStream(
     size_t body_len, const std::string& content_type,
     const HttpChunkCallback& chunk_callback) {
   // Validate the URL and the callback function in advance
-  HAYAKU_CHECK(m_is_valid_url, "Invalid url: {}", m_url);
+  HAYAKU_CHECK(is_valid_url_, "Invalid url: {}", url_);
   HAYAKU_CHECK(chunk_callback != nullptr, "Chunk callback must not be null");
-  HAYAKU_ASSERT(m_ctx);
+  HAYAKU_ASSERT(ctx_);
 
   // Make sure the io_context is running
-  if (m_ctx->stopped()) {
-    m_ctx->restart();
+  if (ctx_->stopped()) {
+    ctx_->restart();
   }
 
   // Convert the coroutine result into a std::future with use_future
   auto future =
-      co_spawn(*m_ctx,
+      co_spawn(*ctx_,
                async_requestStream(method, path, params, headers, body,
                                    body_len, content_type, chunk_callback),
                boost::asio::use_future);

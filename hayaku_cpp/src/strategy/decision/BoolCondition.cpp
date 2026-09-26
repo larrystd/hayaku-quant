@@ -16,19 +16,19 @@ namespace hayaku {
 BoolCondition::BoolCondition() : ConditionBase("CN_Bool") {}
 
 BoolCondition::BoolCondition(const Indicator& ind)
-    : ConditionBase("CN_Bool"), m_ind(ind) {}
+    : ConditionBase("CN_Bool"), ind_(ind) {}
 
 BoolCondition::~BoolCondition() {}
 
 ConditionPtr BoolCondition::_clone() {
-  return make_shared<BoolCondition>(m_ind.clone());
+  return make_shared<BoolCondition>(ind_.clone());
 }
 
 void BoolCondition::_calculate() {
-  auto ds = m_kdata.getDatetimeList();
-  m_ind.setContext(m_kdata);
-  auto const* ind_data = m_ind.data();
-  for (size_t i = m_ind.discard(), len = m_ind.size(); i < len; i++) {
+  auto ds = kdata_.getDatetimeList();
+  ind_.setContext(kdata_);
+  auto const* ind_data = ind_.data();
+  for (size_t i = ind_.discard(), len = ind_.size(); i < len; i++) {
     if (!std::isnan(ind_data[i]) && ind_data[i] > 0.) {
       _addValid(ds[i]);
     }

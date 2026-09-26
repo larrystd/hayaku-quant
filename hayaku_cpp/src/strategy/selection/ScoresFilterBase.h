@@ -25,12 +25,12 @@ class HAYAKU_API ScoresFilterBase {
  public:
   ScoresFilterBase() = default;
   ScoresFilterBase(const ScoresFilterBase&) = default;
-  ScoresFilterBase(const string& name) : m_name(name) {}
+  ScoresFilterBase(const string& name) : name_(name) {}
   virtual ~ScoresFilterBase() = default;
 
-  const string& name() const { return m_name; }
+  const string& name() const { return name_; }
 
-  void name(const string& name) { m_name = name; }
+  void name(const string& name) { name_ = name; }
 
   ScoreRecordList filter(const ScoreRecordList& scores, const Datetime& date,
                          const KQuery& query);
@@ -48,12 +48,12 @@ class HAYAKU_API ScoresFilterBase {
   friend HAYAKU_API ScoresFilterPtr operator|(const ScoresFilterPtr& a,
                                               const ScoresFilterPtr& b);
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  protected:
-  string m_name;
-  ScoresFilterPtr m_child;
-  bool m_is_python_object{false};
+  string name_;
+  ScoresFilterPtr child_;
+  bool is_python_object_{false};
 
 //============================================
 // Serialization support
@@ -63,18 +63,18 @@ class HAYAKU_API ScoresFilterBase {
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_child);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_child", child_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_child);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_child", child_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()

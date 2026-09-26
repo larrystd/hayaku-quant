@@ -19,24 +19,24 @@ BandSignal2::BandSignal2() : SignalBase("SG_Band") {}
 BandSignal2::BandSignal2(const Indicator& ind, const Indicator& lower,
                          const Indicator& upper)
     : SignalBase("SG_Band"),
-      m_ind(ind.clone()),
-      m_lower(lower.clone()),
-      m_upper(upper.clone()) {}
+      ind_(ind.clone()),
+      lower_(lower.clone()),
+      upper_(upper.clone()) {}
 
 BandSignal2::~BandSignal2() {}
 
 SignalPtr BandSignal2::_clone() {
   auto p = make_shared<BandSignal2>();
-  p->m_upper = m_upper.clone();
-  p->m_lower = m_lower.clone();
-  p->m_ind = m_ind.clone();
+  p->upper_ = upper_.clone();
+  p->lower_ = lower_.clone();
+  p->ind_ = ind_.clone();
   return p;
 }
 
 void BandSignal2::_calculate(const KData& kdata) {
-  Indicator ind = m_ind(kdata);
-  Indicator upper = m_upper(kdata);
-  Indicator lower = m_lower(kdata);
+  Indicator ind = ind_(kdata);
+  Indicator upper = upper_(kdata);
+  Indicator lower = lower_(kdata);
   HAYAKU_ASSERT(ind.size() == upper.size() && ind.size() == lower.size());
 
   size_t discard = ind.discard();

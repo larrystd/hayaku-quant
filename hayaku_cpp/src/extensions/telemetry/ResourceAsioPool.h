@@ -72,19 +72,19 @@ class ResourceAsioPool {
    */
   explicit ResourceAsioPool(const Parameter &param, size_t max_count = 128,
                             size_t max_waiters = 1000)
-      : m_maxCount(max_count),
-        m_param(param),
-        m_resourceList(max_count == 0 ? 128 : max_count),
-        m_maxWaiters(max_waiters > 0 ? max_waiters : 1000),
-        m_waiterQueue(m_maxWaiters) {
+      : max_count_(max_count),
+        param_(param),
+        resource_list_(max_count == 0 ? 128 : max_count),
+        max_waiters_(max_waiters > 0 ? max_waiters : 1000),
+        waiter_queue_(max_waiters_) {
     if (max_waiters == 0) {
       HAYAKU_WARN("ResourceAsioPool: max_waiters is 0, using default 1000");
-    } else if (m_maxWaiters > 10000) {
-      double estimated_mb = m_maxWaiters * 150.0 / 1024 / 1024;
+    } else if (max_waiters_ > 10000) {
+      double estimated_mb = max_waiters_ * 150.0 / 1024 / 1024;
       HAYAKU_WARN(
           "ResourceAsioPool: large max_waiters={}, "
           "estimated memory usage at full capacity: ~{:.1f}MB",
-          m_maxWaiters, estimated_mb);
+          max_waiters_, estimated_mb);
     }
   }
 
@@ -94,11 +94,11 @@ class ResourceAsioPool {
   virtual ~ResourceAsioPool() {
     // Mark that it is being destructed, preventing new resource acquisitions
     // and returns
-    m_is_destroying.store(true, std::memory_order_release);
+    is_destroying_.store(true, std::memory_order_release);
 
     // Cancel and clean up all the waiters
     WaiterNode *waiter = nullptr;
-    while (m_waiterQueue.pop(waiter)) {
+    while (waiter_queue_.pop(waiter)) {
       if (waiter) {
         // Try to cancel the timer to judge whether the coroutine is still
         // waiting
@@ -112,7 +112,7 @@ class ResourceAsioPool {
         // used the resource
         if (cancelled_ops > 0 && waiter->reserved_resource) {
           delete waiter->reserved_resource;
-          m_count.fetch_sub(1);
+          count_.fetch_sub(1);
         }
 
         delete waiter;
@@ -122,15 +122,15 @@ class ResourceAsioPool {
     // Wait for all the active resources to be returned
     // When m_count == m_idleCount all the resources have been returned to the
     // idle queue
-    std::unique_lock<MutexType> lock(m_destroy_mutex);
-    m_destroy_cv.wait(lock, [this]() {
-      return m_count.load(std::memory_order_relaxed) ==
-             m_idleCount.load(std::memory_order_relaxed);
+    std::unique_lock<MutexType> lock(destroy_mutex_);
+    destroy_cv_.wait(lock, [this]() {
+      return count_.load(std::memory_order_relaxed) ==
+             idle_count_.load(std::memory_order_relaxed);
     });
 
     // At this time all the resources are in the idle queue, release them
     ResourceType *p = nullptr;
-    while (m_resourceList.pop(p)) {
+    while (resource_list_.pop(p)) {
       if (p) {
         delete p;
       }
@@ -174,8 +174,8 @@ class ResourceAsioPool {
   stdx::expected<ResourcePtr, std::string> get() {
     // 1. Try to acquire a resource from the idle queue
     ResourceType *p = nullptr;
-    if (m_resourceList.pop(p)) {
-      m_idleCount.fetch_sub(1);
+    if (resource_list_.pop(p)) {
+      idle_count_.fetch_sub(1);
       return stdx::expected<ResourcePtr, std::string>(
           ResourcePtr(p, ResourceCloser(this)));
     }
@@ -183,10 +183,10 @@ class ResourceAsioPool {
     // 2. There is no idle resource but the upper limit has not been reached ->
     // create a new
     //    resource
-    if (m_maxCount == 0 ||
-        m_count.load(std::memory_order_relaxed) < m_maxCount) {
+    if (max_count_ == 0 ||
+        count_.load(std::memory_order_relaxed) < max_count_) {
       try {
-        p = new ResourceType(m_param);
+        p = new ResourceType(param_);
       } catch (const std::exception &e) {
         return stdx::unexpected(std::string(
             fmt::format("Failed create a new Resource! {}", e.what())));
@@ -194,7 +194,7 @@ class ResourceAsioPool {
         return stdx::unexpected(
             std::string("Failed create a new Resource! Unknown error!"));
       }
-      m_count.fetch_add(1);
+      count_.fetch_add(1);
       return stdx::expected<ResourcePtr, std::string>(
           ResourcePtr(p, ResourceCloser(this)));
     }
@@ -204,7 +204,7 @@ class ResourceAsioPool {
     //    directly
     return stdx::unexpected(
         fmt::format("No available resource, max_count={}, current_count={}",
-                    m_maxCount, m_count.load(std::memory_order_relaxed)));
+                    max_count_, count_.load(std::memory_order_relaxed)));
   }
 
   /**
@@ -218,18 +218,18 @@ class ResourceAsioPool {
       std::chrono::steady_clock::duration timeout = std::chrono::seconds(5)) {
     // Try to acquire a resource from the idle queue
     ResourceType *p = nullptr;
-    if (m_resourceList.pop(p)) {
-      m_idleCount.fetch_sub(1);
+    if (resource_list_.pop(p)) {
+      idle_count_.fetch_sub(1);
       co_return stdx::expected<ResourcePtr, std::string>(
           ResourcePtr(p, ResourceCloser(this)));
     }
 
     // There is no idle resource but the upper limit has not been reached ->
     // create a new resource
-    if (m_maxCount == 0 ||
-        m_count.load(std::memory_order_relaxed) < m_maxCount) {
+    if (max_count_ == 0 ||
+        count_.load(std::memory_order_relaxed) < max_count_) {
       try {
-        p = new ResourceType(m_param);
+        p = new ResourceType(param_);
       } catch (const std::exception &e) {
         co_return stdx::unexpected(std::string(
             fmt::format("Failed create a new Resource! {}", e.what())));
@@ -237,7 +237,7 @@ class ResourceAsioPool {
         co_return stdx::unexpected(
             std::string("Failed create a new Resource! Unknown error!"));
       }
-      m_count.fetch_add(1);
+      count_.fetch_add(1);
       co_return stdx::expected<ResourcePtr, std::string>(
           ResourcePtr(p, ResourceCloser(this)));
     }
@@ -249,10 +249,10 @@ class ResourceAsioPool {
     waiter->timer->expires_after(timeout);
 
     // Join the waiting queue in a lock free way
-    if (!m_waiterQueue.push(waiter)) {
+    if (!waiter_queue_.push(waiter)) {
       delete waiter;
       co_return stdx::unexpected(
-          fmt::format("Waiter queue is full (max={})", m_maxWaiters));
+          fmt::format("Waiter queue is full (max={})", max_waiters_));
     }
 
     // Wait to be woken up or to time out
@@ -277,31 +277,31 @@ class ResourceAsioPool {
       // the returning thread or the destructor
       co_return stdx::unexpected(fmt::format(
           "ResourceAsioPool get timeout, max_count={}, current_count={}",
-          m_maxCount, m_count.load()));
+          max_count_, count_.load()));
     }
   }
 
   /** The number of the currently active resources, i.e. all the resources
    * (including the idle and the used ones) */
-  size_t count() const { return m_count.load(); }
+  size_t count() const { return count_.load(); }
 
   /**
    * The current number of the idle resources (the exact value)
    * It is tracked with an atomic counter to avoid operating the queue itself
    */
-  size_t idleCount() const { return m_idleCount.load(); }
+  size_t idleCount() const { return idle_count_.load(); }
 
   /** Release all the currently idle resources */
   void releaseIdleResource() {
     ResourceType *p = nullptr;
-    while (m_resourceList.pop(p)) {
+    while (resource_list_.pop(p)) {
       if (p) {
-        m_idleCount.fetch_sub(1);  // Decrease the idle count
+        idle_count_.fetch_sub(1);  // Decrease the idle count
         delete p;
-        m_count.fetch_sub(1);  // Decrease the count
+        count_.fetch_sub(1);  // Decrease the count
 
         // Notify the destructor: the resource count has changed
-        m_destroy_cv.notify_one();
+        destroy_cv_.notify_one();
       }
     }
   }
@@ -309,14 +309,14 @@ class ResourceAsioPool {
  private:
   class ResourceCloser {
    public:
-    explicit ResourceCloser(ResourceAsioPool *pool) : m_pool(pool) {}
+    explicit ResourceCloser(ResourceAsioPool *pool) : pool_(pool) {}
 
     void operator()(ResourceType *conn) {
       if (conn) {
         // If the pool is bound, the resource is returned; otherwise it is
         // deleted
-        if (m_pool) {
-          m_pool->returnResource(conn, this);
+        if (pool_) {
+          pool_->returnResource(conn, this);
         } else {
           delete conn;
         }
@@ -324,7 +324,7 @@ class ResourceAsioPool {
     }
 
    private:
-    ResourceAsioPool *m_pool;
+    ResourceAsioPool *pool_;
   };
 
   /** Return it to the resource pool */
@@ -335,10 +335,10 @@ class ResourceAsioPool {
     }
 
     // If it is being destructed, delete the resource directly
-    if (m_is_destroying.load(std::memory_order_acquire)) {
+    if (is_destroying_.load(std::memory_order_acquire)) {
       delete p;
-      m_count.fetch_sub(1);
-      m_destroy_cv.notify_one();
+      count_.fetch_sub(1);
+      destroy_cv_.notify_one();
       return;
     }
 
@@ -348,7 +348,7 @@ class ResourceAsioPool {
 
     // Pop in a loop until a waiter that has not timed out is found or the queue
     // is empty
-    while (m_waiterQueue.pop(waiter)) {
+    while (waiter_queue_.pop(waiter)) {
       // Reserve the resource first and then cancel the timer (key: ensure the
       // resource is ready before the wake-up)
       waiter->reserved_resource = p;
@@ -359,7 +359,7 @@ class ResourceAsioPool {
       if (cancelled_ops > 0) {
         // The cancel succeeded; the coroutine is woken up and uses the reserved
         // resource directly
-        m_destroy_cv.notify_one();
+        destroy_cv_.notify_one();
         return;
       } else {
         // cancel returns 0, meaning the timer has expired naturally (a timeout)
@@ -371,36 +371,36 @@ class ResourceAsioPool {
     }
 
     // There is no valid waiter, put it back into the idle queue
-    if (!m_resourceList.push(p)) {
+    if (!resource_list_.push(p)) {
       // The queue is full, delete it directly
       delete p;
-      m_count.fetch_sub(1);
-      m_destroy_cv.notify_one();
+      count_.fetch_sub(1);
+      destroy_cv_.notify_one();
       return;
     }
 
-    m_idleCount.fetch_add(1);
-    m_destroy_cv.notify_one();
+    idle_count_.fetch_add(1);
+    destroy_cv_.notify_one();
   }
 
-  std::atomic<size_t> m_count{
+  std::atomic<size_t> count_{
       0};  // The number of the currently active resources
-  std::atomic<size_t> m_idleCount{
+  std::atomic<size_t> idle_count_{
       0};             // The current number of the idle resources
-  size_t m_maxCount;  // The maximum resource upper limit
-  Parameter m_param;
-  boost::lockfree::queue<ResourceType *> m_resourceList;
+  size_t max_count_;  // The maximum resource upper limit
+  Parameter param_;
+  boost::lockfree::queue<ResourceType *> resource_list_;
 
-  size_t m_maxWaiters;  // The runtime logical upper limit: the
+  size_t max_waiters_;  // The runtime logical upper limit: the
                         // maximum number of the waiters
   boost::lockfree::queue<WaiterNode *>
-      m_waiterQueue;          // The lock free waiting queue
-  MutexType m_destroy_mutex;  // The mutex protecting the destructor waiting
+      waiter_queue_;          // The lock free waiting queue
+  MutexType destroy_mutex_;  // The mutex protecting the destructor waiting
                               // condition variable
   std::condition_variable_any
-      m_destroy_cv;  // Used to notify the destructor that a
+      destroy_cv_;  // Used to notify the destructor that a
                      // resource has been returned
-  std::atomic<bool> m_is_destroying{
+  std::atomic<bool> is_destroying_{
       false};  // Marks whether it is being destructed
 };
 
@@ -448,20 +448,20 @@ class ResourceAsioVersionPool {
    */
   explicit ResourceAsioVersionPool(const Parameter &param, size_t max_count = 0,
                                    size_t max_waiters = 1000)
-      : m_maxCount(max_count),
-        m_param(param),
-        m_resourceList(128),
-        m_maxWaiters(max_waiters > 0 ? max_waiters : 1000),
-        m_waiterQueue(m_maxWaiters) {
+      : max_count_(max_count),
+        param_(param),
+        resource_list_(128),
+        max_waiters_(max_waiters > 0 ? max_waiters : 1000),
+        waiter_queue_(max_waiters_) {
     if (max_waiters == 0) {
       HAYAKU_WARN(
           "ResourceAsioVersionPool: max_waiters is 0, using default 1000");
-    } else if (m_maxWaiters > 10000) {
-      double estimated_mb = m_maxWaiters * 150.0 / 1024 / 1024;
+    } else if (max_waiters_ > 10000) {
+      double estimated_mb = max_waiters_ * 150.0 / 1024 / 1024;
       HAYAKU_WARN(
           "ResourceAsioVersionPool: large max_waiters={}, "
           "estimated memory usage at full capacity: ~{:.1f}MB",
-          m_maxWaiters, estimated_mb);
+          max_waiters_, estimated_mb);
     }
   }
 
@@ -471,11 +471,11 @@ class ResourceAsioVersionPool {
   virtual ~ResourceAsioVersionPool() {
     // Mark that it is being destructed, preventing new resource acquisitions
     // and returns
-    m_is_destroying.store(true, std::memory_order_release);
+    is_destroying_.store(true, std::memory_order_release);
 
     // Cancel and clean up all the waiters
     WaiterNode *waiter = nullptr;
-    while (m_waiterQueue.pop(waiter)) {
+    while (waiter_queue_.pop(waiter)) {
       if (waiter) {
         // Try to cancel the timer to judge whether the coroutine is still
         // waiting
@@ -489,7 +489,7 @@ class ResourceAsioVersionPool {
         // used the resource
         if (cancelled_ops > 0 && waiter->reserved_resource) {
           delete waiter->reserved_resource;
-          m_count.fetch_sub(1);
+          count_.fetch_sub(1);
         }
 
         delete waiter;
@@ -497,14 +497,14 @@ class ResourceAsioVersionPool {
     }
 
     // Wait for all the active resources to be returned
-    std::unique_lock<MutexType> lock(m_destroy_mutex);
-    m_destroy_cv.wait(lock, [this]() {
-      return m_count.load(std::memory_order_relaxed) == m_idleCount.load();
+    std::unique_lock<MutexType> lock(destroy_mutex_);
+    destroy_cv_.wait(lock, [this]() {
+      return count_.load(std::memory_order_relaxed) == idle_count_.load();
     });
 
     // At this time all the resources are in the idle queue, release them
     ResourceType *p = nullptr;
-    while (m_resourceList.pop(p)) {
+    while (resource_list_.pop(p)) {
       if (p) {
         delete p;
       }
@@ -513,16 +513,16 @@ class ResourceAsioVersionPool {
 
   /** Whether the given parameter exists */
   bool haveParam(const std::string &name) {
-    std::lock_guard<MutexType> lock(m_mutex);
-    return m_param.have(name);
+    std::lock_guard<MutexType> lock(mutex_);
+    return param_.have(name);
   }
 
   /** Get the value of the given parameter; an exception is thrown when the
    * parameter does not exist or the type does not match */
   template <typename ValueType>
   ValueType getParam(const std::string &name) {
-    std::lock_guard<MutexType> lock(m_mutex);
-    return m_param.get<ValueType>(name);
+    std::lock_guard<MutexType> lock(mutex_);
+    return param_.get<ValueType>(name);
   }
 
   /**
@@ -537,13 +537,13 @@ class ResourceAsioVersionPool {
    */
   template <typename ValueType>
   void setParam(const std::string &name, const ValueType &value) {
-    std::lock_guard<MutexType> lock(m_mutex);
+    std::lock_guard<MutexType> lock(mutex_);
     // If the parameter has not actually changed, return directly
-    if (m_param.have(name) && value == m_param.get<ValueType>(name)) {
+    if (param_.have(name) && value == param_.get<ValueType>(name)) {
       return;
     }
-    m_param.set<ValueType>(name, value);
-    m_version.fetch_add(1);
+    param_.set<ValueType>(name, value);
+    version_.fetch_add(1);
     releaseIdleResource();  // Release the current idle resources so that the
                             // new parameter values take effect
   }
@@ -554,9 +554,9 @@ class ResourceAsioVersionPool {
    * @param param the parameter object
    */
   void setParameter(const Parameter &param) {
-    std::lock_guard<MutexType> lock(m_mutex);
-    m_param = param;
-    m_version.fetch_add(1);
+    std::lock_guard<MutexType> lock(mutex_);
+    param_ = param;
+    version_.fetch_add(1);
     releaseIdleResource();  // Release the current idle resources so that the
                             // new parameter values take effect
   }
@@ -567,19 +567,19 @@ class ResourceAsioVersionPool {
    * @param param the parameter object
    */
   void setParameter(Parameter &&param) {
-    std::lock_guard<MutexType> lock(m_mutex);
-    m_param = std::move(param);
-    m_version.fetch_add(1);
+    std::lock_guard<MutexType> lock(mutex_);
+    param_ = std::move(param);
+    version_.fetch_add(1);
     releaseIdleResource();  // Release the current idle resources so that the
                             // new parameter values take effect
   }
 
   /** Get the current version of the resource pool */
-  int getVersion() { return m_version.load(); }
+  int getVersion() { return version_.load(); }
 
   /** Increase the current version of the resource pool, equivalent to notifying
    * the resource pool that the resource version has changed */
-  void incVersion(int version) { m_version.fetch_add(1); }
+  void incVersion(int version) { version_.fetch_add(1); }
 
   /** Resource instance pointer type */
   typedef std::shared_ptr<ResourceType> ResourcePtr;
@@ -594,13 +594,13 @@ class ResourceAsioVersionPool {
   stdx::expected<ResourcePtr, std::string> get() {
     // 1. Try to acquire a resource from the idle queue
     ResourceType *p = nullptr;
-    if (m_resourceList.pop(p)) {
-      m_idleCount.fetch_sub(1);
+    if (resource_list_.pop(p)) {
+      idle_count_.fetch_sub(1);
 
       // Check the resource version and destroy it if it is too old
-      if (p->getVersion() != m_version.load()) {
+      if (p->getVersion() != version_.load()) {
         delete p;
-        m_count.fetch_sub(1);
+        count_.fetch_sub(1);
         p = nullptr;
       } else {
         return stdx::expected<ResourcePtr, std::string>(
@@ -609,17 +609,17 @@ class ResourceAsioVersionPool {
     }
 
     // 2. The upper limit has not been reached, create a new resource
-    if (m_maxCount == 0 ||
-        m_count.load(std::memory_order_relaxed) < m_maxCount) {
+    if (max_count_ == 0 ||
+        count_.load(std::memory_order_relaxed) < max_count_) {
       try {
         Parameter current_param;
         {
-          std::lock_guard<MutexType> lock(m_mutex);
-          current_param = m_param;
+          std::lock_guard<MutexType> lock(mutex_);
+          current_param = param_;
         }
 
         p = new ResourceType(current_param);
-        p->setVersion(m_version.load());
+        p->setVersion(version_.load());
       } catch (const std::exception &e) {
         return stdx::unexpected(std::string(
             fmt::format("Failed create a new Resource! {}", e.what())));
@@ -628,7 +628,7 @@ class ResourceAsioVersionPool {
             std::string("Failed create a new Resource! Unknown error!"));
       }
 
-      m_count.fetch_add(1);
+      count_.fetch_add(1);
       return stdx::expected<ResourcePtr, std::string>(
           ResourcePtr(p, ResourceCloser(this)));
     }
@@ -638,7 +638,7 @@ class ResourceAsioVersionPool {
     //    directly
     return stdx::unexpected(
         fmt::format("No available resource, max_count={}, current_count={}",
-                    m_maxCount, m_count.load(std::memory_order_relaxed)));
+                    max_count_, count_.load(std::memory_order_relaxed)));
   }
 
   /**
@@ -654,14 +654,14 @@ class ResourceAsioVersionPool {
 
     // Try to acquire a resource from the idle queue
     ResourceType *p = nullptr;
-    if (m_resourceList.pop(p)) {
-      m_idleCount.fetch_sub(1);
+    if (resource_list_.pop(p)) {
+      idle_count_.fetch_sub(1);
 
       // Check the resource version and destroy it if it is too old; a new
       // resource is created below
-      if (p->getVersion() != m_version.load()) {
+      if (p->getVersion() != version_.load()) {
         delete p;
-        m_count.fetch_sub(1);
+        count_.fetch_sub(1);
         p = nullptr;
       } else {
         co_return stdx::expected<ResourcePtr, std::string>(
@@ -670,15 +670,15 @@ class ResourceAsioVersionPool {
     }
 
     // The upper limit has not been reached, create a new resource
-    if (m_maxCount == 0 ||
-        m_count.load(std::memory_order_relaxed) < m_maxCount) {
+    if (max_count_ == 0 ||
+        count_.load(std::memory_order_relaxed) < max_count_) {
       try {
         Parameter current_param;
         int current_version;
         {
-          std::lock_guard<MutexType> lock(m_mutex);
-          current_param = m_param;
-          current_version = m_version.load();
+          std::lock_guard<MutexType> lock(mutex_);
+          current_param = param_;
+          current_version = version_.load();
         }
 
         p = new ResourceType(current_param);
@@ -691,7 +691,7 @@ class ResourceAsioVersionPool {
             std::string("Failed create a new Resource! Unknown error!"));
       }
 
-      m_count.fetch_add(1);
+      count_.fetch_add(1);
       co_return stdx::expected<ResourcePtr, std::string>(
           ResourcePtr(p, ResourceCloser(this)));
     }
@@ -702,10 +702,10 @@ class ResourceAsioVersionPool {
     waiter->timer->expires_after(timeout);
 
     // Join the waiting queue in a lock free way
-    if (!m_waiterQueue.push(waiter)) {
+    if (!waiter_queue_.push(waiter)) {
       delete waiter;
       co_return stdx::unexpected(
-          fmt::format("Waiter queue is full (max={})", m_maxWaiters));
+          fmt::format("Waiter queue is full (max={})", max_waiters_));
     }
 
     // Wait to be woken up or to time out
@@ -731,31 +731,31 @@ class ResourceAsioVersionPool {
       // returning thread or the destructor
       co_return stdx::unexpected(fmt::format(
           "ResourceAsioVersionPool get timeout, max_count={}, current_count={}",
-          m_maxCount, m_count.load(std::memory_order_relaxed)));
+          max_count_, count_.load(std::memory_order_relaxed)));
     }
   }
 
   /** The number of the currently active resources, i.e. all the resources
    * (including the idle and the used ones) */
-  size_t count() const { return m_count.load(); }
+  size_t count() const { return count_.load(); }
 
   /**
    * The current number of the idle resources (the exact value)
    * It is tracked with an atomic counter to avoid operating the queue itself
    */
-  size_t idleCount() const { return m_idleCount.load(); }
+  size_t idleCount() const { return idle_count_.load(); }
 
   /** Release all the currently idle resources */
   void releaseIdleResource() {
     ResourceType *p = nullptr;
-    while (m_resourceList.pop(p)) {
+    while (resource_list_.pop(p)) {
       if (p) {
-        m_idleCount.fetch_sub(1);  // Decrease the idle count
+        idle_count_.fetch_sub(1);  // Decrease the idle count
         delete p;
-        m_count.fetch_sub(1);  // Decrease the count
+        count_.fetch_sub(1);  // Decrease the count
 
         // Notify the destructor: the resource count has changed
-        m_destroy_cv.notify_one();
+        destroy_cv_.notify_one();
       }
     }
   }
@@ -763,14 +763,14 @@ class ResourceAsioVersionPool {
  private:
   class ResourceCloser {
    public:
-    explicit ResourceCloser(ResourceAsioVersionPool *pool) : m_pool(pool) {}
+    explicit ResourceCloser(ResourceAsioVersionPool *pool) : pool_(pool) {}
 
     void operator()(ResourceType *conn) {
       if (conn) {
         // If the pool is bound, the resource is returned; otherwise it is
         // deleted
-        if (m_pool) {
-          m_pool->returnResource(conn, this);
+        if (pool_) {
+          pool_->returnResource(conn, this);
         } else {
           delete conn;
         }
@@ -778,7 +778,7 @@ class ResourceAsioVersionPool {
     }
 
    private:
-    ResourceAsioVersionPool *m_pool;
+    ResourceAsioVersionPool *pool_;
   };
 
   /** Return it to the resource pool */
@@ -789,23 +789,23 @@ class ResourceAsioVersionPool {
     }
 
     // If it is being destructed, delete the resource directly
-    if (m_is_destroying.load(std::memory_order_acquire)) {
+    if (is_destroying_.load(std::memory_order_acquire)) {
       delete p;
-      m_count.fetch_sub(1);
-      m_destroy_cv.notify_one();
+      count_.fetch_sub(1);
+      destroy_cv_.notify_one();
       return;
     }
 
     // The returned resource is accepted only when its version equals the
     // resource pool version
-    if (p->getVersion() == m_version.load()) {
+    if (p->getVersion() == version_.load()) {
       // Try to wake up a waiter that has not timed out (the resource
       // reservation mechanism)
       WaiterNode *waiter = nullptr;
 
       // Pop in a loop until a waiter that has not timed out is found or the
       // queue is empty
-      while (m_waiterQueue.pop(waiter)) {
+      while (waiter_queue_.pop(waiter)) {
         // Reserve the resource first and then cancel the timer (key: ensure the
         // resource is ready before the wake-up)
         waiter->reserved_resource = p;
@@ -820,7 +820,7 @@ class ResourceAsioVersionPool {
 
           // The waiter is deleted by the coroutine after the resource is
           // acquired
-          m_destroy_cv.notify_one();
+          destroy_cv_.notify_one();
           return;
         } else {
           // cancel returns 0, meaning the timer has expired naturally (a
@@ -832,42 +832,42 @@ class ResourceAsioVersionPool {
       }
 
       // There is no valid waiter, put it back into the idle queue
-      if (!m_resourceList.push(p)) {
+      if (!resource_list_.push(p)) {
         // The queue is full, delete it directly
         delete p;
-        m_count.fetch_sub(1);
-        m_destroy_cv.notify_one();
+        count_.fetch_sub(1);
+        destroy_cv_.notify_one();
         return;
       }
 
-      m_idleCount.fetch_add(1);
-      m_destroy_cv.notify_one();
+      idle_count_.fetch_add(1);
+      destroy_cv_.notify_one();
     } else {
       delete p;
-      m_count.fetch_sub(1);
-      m_destroy_cv.notify_one();
+      count_.fetch_sub(1);
+      destroy_cv_.notify_one();
     }
   }
 
-  std::atomic<size_t> m_count{
+  std::atomic<size_t> count_{
       0};  // The number of the currently active resources
-  std::atomic<size_t> m_idleCount{
+  std::atomic<size_t> idle_count_{
       0};             // The current number of the idle resources
-  size_t m_maxCount;  // The maximum resource upper limit
-  Parameter m_param;
-  boost::lockfree::queue<ResourceType *> m_resourceList;
-  std::atomic<int> m_version{0};  // The current resource pool version
+  size_t max_count_;  // The maximum resource upper limit
+  Parameter param_;
+  boost::lockfree::queue<ResourceType *> resource_list_;
+  std::atomic<int> version_{0};  // The current resource pool version
 
-  mutable MutexType m_mutex;  // The mutex protecting the parameter access
-  size_t m_maxWaiters;        // The maximum number of the waiters
+  mutable MutexType mutex_;  // The mutex protecting the parameter access
+  size_t max_waiters_;        // The maximum number of the waiters
   boost::lockfree::queue<WaiterNode *>
-      m_waiterQueue;          // The lock free waiting queue
-  MutexType m_destroy_mutex;  // The mutex protecting the destructor waiting
+      waiter_queue_;          // The lock free waiting queue
+  MutexType destroy_mutex_;  // The mutex protecting the destructor waiting
                               // condition variable
   std::condition_variable_any
-      m_destroy_cv;  // Used to notify the destructor that a
+      destroy_cv_;  // Used to notify the destructor that a
                      // resource has been returned
-  std::atomic<bool> m_is_destroying{
+  std::atomic<bool> is_destroying_{
       false};  // Marks whether it is being destructed
 };
 

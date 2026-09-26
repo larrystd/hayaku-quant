@@ -90,11 +90,11 @@ class HAYAKU_API KQuery {
   /** Default constructor: query all daily data by index, without price
    * adjustment */
   KQuery()
-      : m_start(0),
-        m_end(Null<int64_t>()),
-        m_queryType(INDEX),
-        m_dataType(DAY),
-        m_recoverType(NO_RECOVER) {};
+      : start_(0),
+        end_(Null<int64_t>()),
+        query_type_(INDEX),
+        data_type_(DAY),
+        recover_type_(NO_RECOVER) {};
 
   /**
    * Query K-line data over the range [start, end)
@@ -107,12 +107,12 @@ class HAYAKU_API KQuery {
   KQuery(int64_t start,  // cppcheck-suppress [noExplicitConstructor]
          int64_t end = Null<int64_t>(), const KType& dataType = DAY,
          RecoverType recoverType = NO_RECOVER, QueryType queryType = INDEX)
-      : m_start(start),
-        m_end(end),
-        m_queryType(queryType),
-        m_dataType(dataType),
-        m_recoverType(recoverType) {
-    to_upper(m_dataType);
+      : start_(start),
+        end_(end),
+        query_type_(queryType),
+        data_type_(dataType),
+        recover_type_(recoverType) {
+    to_upper(data_type_);
   }
 
   /**
@@ -131,7 +131,7 @@ class HAYAKU_API KQuery {
    * Null<int64_t>()
    */
   int64_t start() const noexcept {
-    return m_queryType != INDEX ? Null<int64_t>() : m_start;
+    return query_type_ != INDEX ? Null<int64_t>() : start_;
   }
 
   /**
@@ -139,7 +139,7 @@ class HAYAKU_API KQuery {
    * Null<int64_t>()
    */
   int64_t end() const noexcept {
-    return m_queryType != INDEX ? Null<int64_t>() : m_end;
+    return query_type_ != INDEX ? Null<int64_t>() : end_;
   }
 
   /**
@@ -155,23 +155,23 @@ class HAYAKU_API KQuery {
   Datetime endDatetime() const;
 
   /** Get the query condition type */
-  QueryType queryType() const noexcept { return m_queryType; }
+  QueryType queryType() const noexcept { return query_type_; }
 
   /** Get the K-line data type */
   // KType kType() const { return m_dataType; }
-  const string& kType() const noexcept { return m_dataType; }
+  const string& kType() const noexcept { return data_type_; }
 
   /** Get the number of seconds corresponding to the K-line data type */
   TimeDelta kTypeInSeconds() const {
-    return Seconds(getKTypeInSeconds(m_dataType));
+    return Seconds(getKTypeInSeconds(data_type_));
   }
 
   /** Get the price adjustment type */
-  RecoverType recoverType() const noexcept { return m_recoverType; }
+  RecoverType recoverType() const noexcept { return recover_type_; }
 
   /** Set the price adjustment type */
   void recoverType(RecoverType recoverType) noexcept {
-    m_recoverType = recoverType;
+    recover_type_ = recoverType;
   }
 
   /**
@@ -184,10 +184,10 @@ class HAYAKU_API KQuery {
 
   /** Whether it is a right-open interval, i.e. no end time was specified */
   bool isRightOpening() const {
-    if (m_queryType == DATE) {
+    if (query_type_ == DATE) {
       return endDatetime().isNull();
     }
-    return m_end == Null<int64_t>();
+    return end_ == Null<int64_t>();
   }
 
   /** Get the name of the queryType, used for display output */
@@ -209,11 +209,11 @@ class HAYAKU_API KQuery {
   static RecoverType getRecoverTypeEnum(const string&);
 
  private:
-  int64_t m_start;
-  int64_t m_end;
-  QueryType m_queryType;
-  KType m_dataType;
-  RecoverType m_recoverType;
+  int64_t start_;
+  int64_t end_;
+  QueryType query_type_;
+  KType data_type_;
+  RecoverType recover_type_;
 };
 
 /**

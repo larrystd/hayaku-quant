@@ -1,0 +1,5 @@
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"], exclude = ["BUILD.bazel"]),
+    visibility = ["//visibility:public"],
+)

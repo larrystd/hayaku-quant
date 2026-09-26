@@ -18,20 +18,20 @@ namespace hayaku {
 BoolSignal::BoolSignal() : SignalBase("SG_Bool") {}
 
 BoolSignal::BoolSignal(const Indicator& buy, const Indicator& sell)
-    : SignalBase("SG_Bool"), m_bool_buy(buy), m_bool_sell(sell) {}
+    : SignalBase("SG_Bool"), bool_buy_(buy), bool_sell_(sell) {}
 
 BoolSignal::~BoolSignal() {}
 
 SignalPtr BoolSignal::_clone() {
   auto p = make_shared<BoolSignal>();
-  p->m_bool_buy = m_bool_buy.clone();
-  p->m_bool_sell = m_bool_sell.clone();
+  p->bool_buy_ = bool_buy_.clone();
+  p->bool_sell_ = bool_sell_.clone();
   return p;
 }
 
 void BoolSignal::_calculate(const KData& kdata) {
-  Indicator buy = ALIGN(m_bool_buy(kdata), kdata);
-  Indicator sell = ALIGN(m_bool_sell(kdata), kdata);
+  Indicator buy = ALIGN(bool_buy_(kdata), kdata);
+  Indicator sell = ALIGN(bool_sell_(kdata), kdata);
   HAYAKU_ERROR_IF_RETURN(buy.size() != sell.size(), void(),
                          "buy.size() != sell.size()");
 

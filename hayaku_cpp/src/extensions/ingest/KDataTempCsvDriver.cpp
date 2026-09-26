@@ -22,17 +22,17 @@ KDataTempCsvDriver::KDataTempCsvDriver() : KDataTempCsvDriver("", "") {}
 KDataTempCsvDriver::KDataTempCsvDriver(const string& day_filename,
                                        const string& min_filename)
     : KDataDriver("TMPCSV"),
-      m_day_filename(day_filename),
-      m_min_filename(min_filename) {
+      day_filename_(day_filename),
+      min_filename_(min_filename) {
   for (int i = 0; i < LAST; ++i) {
-    m_column[i] = Null<size_t>();
+    column_[i] = Null<size_t>();
   }
 
-  m_token_buf.reserve(LAST);
+  token_buf_.reserve(LAST);
 }
 
 void KDataTempCsvDriver::_get_token(const string& line) {
-  m_token_buf.clear();
+  token_buf_.clear();
 
   string token;
   size_t pos = 0, prepos = 0;
@@ -40,7 +40,7 @@ void KDataTempCsvDriver::_get_token(const string& line) {
   while (pos != line.npos) {
     token.assign(line, prepos, pos - prepos);
     boost::trim(token);
-    m_token_buf.push_back(token);
+    token_buf_.push_back(token);
     prepos = pos + 1;
     pos = line.find(',', prepos);
   }
@@ -48,39 +48,39 @@ void KDataTempCsvDriver::_get_token(const string& line) {
   if (prepos != pos) {
     token.assign(line, prepos, pos);
     boost::trim(token);
-    m_token_buf.push_back(token);
+    token_buf_.push_back(token);
   }
 }
 
 void KDataTempCsvDriver::_get_title_column(const string& line) {
   _get_token(line);
 
-  int total = (int)m_token_buf.size();
+  int total = (int)token_buf_.size();
   for (int i = 0; i < total; ++i) {
-    string token = m_token_buf[i];
+    string token = token_buf_[i];
     to_upper(token);
 
     if ("DATE" == token || "DATETIME" == token || "日期" == token) {
-      m_column[DATE] = i;
+      column_[DATE] = i;
 
     } else if ("OPEN" == token || "开盘价" == token) {
-      m_column[OPEN] = i;
+      column_[OPEN] = i;
 
     } else if ("HIGH" == token || "最高价" == token) {
-      m_column[HIGH] = i;
+      column_[HIGH] = i;
 
     } else if ("LOW" == token || "最低价" == token) {
-      m_column[LOW] = i;
+      column_[LOW] = i;
 
     } else if ("CLOSE" == token || "收盘价" == token) {
-      m_column[CLOSE] = i;
+      column_[CLOSE] = i;
 
     } else if ("AMOUNT" == token || "成交金额" == token) {
-      m_column[AMOUNT] = i;
+      column_[AMOUNT] = i;
 
     } else if ("VOLUME" == token || "COUNT" == token || "VOL" == token ||
                "成交量" == token) {
-      m_column[VOLUME] = i;
+      column_[VOLUME] = i;
     }
   }
 }
@@ -154,9 +154,9 @@ KRecordList KDataTempCsvDriver::_getKRecordListByIndex(
 
   string filename;
   if (kType == KQuery::DAY) {
-    filename = m_day_filename;
+    filename = day_filename_;
   } else if (kType == KQuery::MIN) {
-    filename = m_min_filename;
+    filename = min_filename_;
   } else {
     HAYAKU_INFO("Only support DAY and MIN!");
     return result;
@@ -180,44 +180,44 @@ KRecordList KDataTempCsvDriver::_getKRecordListByIndex(
     if (line_no >= end_ix) break;
 
     _get_token(line);
-    size_t token_count = m_token_buf.size();
+    size_t token_count = token_buf_.size();
 
     KRecord record;
     string action;
     try {
       action = "DATE";
-      if (token_count >= m_column[DATE])
-        record.datetime = Datetime(m_token_buf[m_column[DATE]]);
+      if (token_count >= column_[DATE])
+        record.datetime = Datetime(token_buf_[column_[DATE]]);
 
       action = "OPEN";
-      if (token_count >= m_column[OPEN])
+      if (token_count >= column_[OPEN])
         record.openPrice =
-            boost::lexical_cast<price_t>(m_token_buf[m_column[OPEN]]);
+            boost::lexical_cast<price_t>(token_buf_[column_[OPEN]]);
 
       action = "HIGH";
-      if (token_count >= m_column[HIGH])
+      if (token_count >= column_[HIGH])
         record.highPrice =
-            boost::lexical_cast<price_t>(m_token_buf[m_column[HIGH]]);
+            boost::lexical_cast<price_t>(token_buf_[column_[HIGH]]);
 
       action = "LOW";
-      if (token_count >= m_column[LOW])
+      if (token_count >= column_[LOW])
         record.lowPrice =
-            boost::lexical_cast<price_t>(m_token_buf[m_column[LOW]]);
+            boost::lexical_cast<price_t>(token_buf_[column_[LOW]]);
 
       action = "CLOSE";
-      if (token_count >= m_column[CLOSE])
+      if (token_count >= column_[CLOSE])
         record.closePrice =
-            boost::lexical_cast<price_t>(m_token_buf[m_column[CLOSE]]);
+            boost::lexical_cast<price_t>(token_buf_[column_[CLOSE]]);
 
       action = "VOLUME";
-      if (token_count >= m_column[VOLUME])
+      if (token_count >= column_[VOLUME])
         record.transCount =
-            boost::lexical_cast<price_t>(m_token_buf[m_column[VOLUME]]);
+            boost::lexical_cast<price_t>(token_buf_[column_[VOLUME]]);
 
       action = "AMOUNT";
-      if (token_count >= m_column[AMOUNT])
+      if (token_count >= column_[AMOUNT])
         record.transAmount =
-            boost::lexical_cast<price_t>(m_token_buf[m_column[AMOUNT]]);
+            boost::lexical_cast<price_t>(token_buf_[column_[AMOUNT]]);
 
       result.push_back(record);
 

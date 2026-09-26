@@ -9,9 +9,9 @@
  *      Author: fasiondog
  */
 
+#include "config.h"
 #include "common/Config.h"
 #include "common/time/TimeDelta.h"
-#include "config.h"
 
 #if HAYAKU_SUPPORT_SERIALIZATION
 #include <boost/serialization/nvp.hpp>

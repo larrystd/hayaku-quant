@@ -63,10 +63,10 @@ class HAYAKU_API HayakuSession {
   void _installExecution(const AccountConfig& accountConfig);
 
  private:
-  std::shared_ptr<std::atomic_bool> m_active;
-  DataEngine m_data;
-  std::unique_ptr<ExecutionEngine> m_execution;
-  std::unique_ptr<StrategyEngine> m_strategy;
+  std::shared_ptr<std::atomic_bool> active_;
+  DataEngine data_;
+  std::unique_ptr<ExecutionEngine> execution_;
+  std::unique_ptr<StrategyEngine> strategy_;
 };
 
 }  // namespace hayaku

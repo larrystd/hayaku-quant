@@ -62,13 +62,13 @@ class StrategyRuntime {
 
   template <typename T>
   [[nodiscard]] T getParam(const string& name) const {
-    return m_parameters.get<T>(name);
+    return parameters_.get<T>(name);
   }
 
   template <typename T>
   void setParam(const string& name, const T& value) {
-    m_parameters.set<T>(name, value);
-    m_calculated = false;
+    parameters_.set<T>(name, value);
+    calculated_ = false;
   }
 
   [[nodiscard]] const TradeRecordList& trades() const noexcept;
@@ -133,31 +133,31 @@ class StrategyRuntime {
                                       bool onOpen);
 
  private:
-  ExecutionAccountPortPtr m_account;
-  StrategyExecutionPort m_execution;
-  MoneyManagerPtr m_mm;
-  EnvironmentPtr m_ev;
-  ConditionPtr m_cn;
-  SignalPtr m_sg;
-  StoplossPtr m_st;
-  StoplossPtr m_tp;
-  ProfitGoalPtr m_pg;
-  SlippagePtr m_sp;
-  string m_name;
-  Parameter m_parameters;
-  Stock m_stock;
-  KData m_kdata;
-  KData m_rawKData;
-  bool m_calculated{false};
-  bool m_preEnvironmentValid{true};
-  bool m_preConditionValid{true};
-  int m_buyDays{0};
-  int m_sellShortDays{0};
-  TradeRecordList m_trades;
-  price_t m_lastTakeProfit{0.0};
-  price_t m_lastShortTakeProfit{0.0};
-  PendingOrderState m_pendingOrders;
-  const std::atomic_bool* m_stopToken{nullptr};
+  ExecutionAccountPortPtr account_;
+  StrategyExecutionPort execution_;
+  MoneyManagerPtr mm_;
+  EnvironmentPtr ev_;
+  ConditionPtr cn_;
+  SignalPtr sg_;
+  StoplossPtr st_;
+  StoplossPtr tp_;
+  ProfitGoalPtr pg_;
+  SlippagePtr sp_;
+  string name_;
+  Parameter parameters_;
+  Stock stock_;
+  KData kdata_;
+  KData raw_k_data_;
+  bool calculated_{false};
+  bool pre_environment_valid_{true};
+  bool pre_condition_valid_{true};
+  int buy_days_{0};
+  int sell_short_days_{0};
+  TradeRecordList trades_;
+  price_t last_take_profit_{0.0};
+  price_t last_short_take_profit_{0.0};
+  PendingOrderState pending_orders_;
+  const std::atomic_bool* stop_token_{nullptr};
 };
 
 }  // namespace hayaku::internal

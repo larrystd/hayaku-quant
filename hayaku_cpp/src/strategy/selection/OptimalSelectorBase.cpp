@@ -19,7 +19,7 @@ namespace hayaku {
 string OptimalSelectorBase::str() const {
   std::ostringstream buf;
   buf << "Selector(" << name() << ", " << getParameter()
-      << ", candidate systems count: " << m_pro_sys_list.size() << ")";
+      << ", candidate systems count: " << pro_sys_list_.size() << ")";
   return buf.str();
 }
 
@@ -61,8 +61,8 @@ void OptimalSelectorBase::_checkParam(const string& name) const {
 
 StrategyWeightList OptimalSelectorBase::_getSelected(Datetime date) {
   StrategyWeightList ret;
-  auto iter = m_sys_dict.find(date);
-  if (iter != m_sys_dict.end()) {
+  auto iter = sys_dict_.find(date);
+  if (iter != sys_dict_.end()) {
     int index = getParam<int>("index");
     if (index < iter->second->size()) {
       ret.emplace_back(iter->second->at(index));
@@ -76,8 +76,8 @@ StrategyWeightList OptimalSelectorBase::_getSelected(Datetime date) {
 bool OptimalSelectorBase::isMatchAF(const AFPtr& af) { return true; }
 
 void OptimalSelectorBase::_reset() {
-  m_sys_dict.clear();
-  m_run_ranges.clear();
+  sys_dict_.clear();
+  run_ranges_.clear();
 }
 
 void OptimalSelectorBase::_calculate() {}
@@ -85,19 +85,19 @@ void OptimalSelectorBase::_calculate() {}
 void OptimalSelectorBase::calculate(
     const internal::StrategyRuntimeList& pf_realSysList, const KQuery& query) {
   SPEND_TIME(OptimalSelectorBase_calculate);
-  HAYAKU_IF_RETURN(m_calculated && m_query == query, void());
+  HAYAKU_IF_RETURN(calculated_ && query_ == query, void());
 
-  m_query = query;
-  m_real_sys_list = pf_realSysList;
+  query_ = query;
+  real_sys_list_ = pf_realSysList;
 
   bool trace = getParam<bool>("trace");
-  CLS_INFO_IF(trace, "candidate sys list size: {}", m_pro_sys_list.size());
-  CLS_WARN_IF_RETURN(m_pro_sys_list.empty(), void(),
+  CLS_INFO_IF(trace, "candidate sys list size: {}", pro_sys_list_.size());
+  CLS_WARN_IF_RETURN(pro_sys_list_.empty(), void(),
                      "candidate sys list is empty!");
 
   // The check is done at runtime rather than in addSystem, so that
   // WalkForwardSystem can add the system list without a given security directly
-  for (const auto& sys : m_pro_sys_list) {
+  for (const auto& sys : pro_sys_list_) {
     CLS_ERROR_IF_RETURN(sys->getStock().isNull(), void(),
                         "The candidate sys ({}) was specified stock!",
                         sys->name());
@@ -125,7 +125,7 @@ void OptimalSelectorBase::calculate(
 
   _calculate_parallel(train_ranges, dates, test_len, trace);
 
-  m_calculated = true;
+  calculated_ = true;
 }
 
 void OptimalSelectorBase::_calculate_parallel(
@@ -134,7 +134,7 @@ void OptimalSelectorBase::_calculate_parallel(
   // SPEND_TIME(OptimalSelectorBase_calculate_parallel);
   auto sys_list = global_parallel_for_index(
       0, train_ranges.size(),
-      [this, &train_ranges, &dates, query = m_query, trace](size_t i) {
+      [this, &train_ranges, &dates, query = query_, trace](size_t i) {
         Datetime start_date = dates[train_ranges[i].first];
         Datetime end_date = dates[train_ranges[i].second];
         KQuery q = KQueryByDate(start_date, end_date, query.kType(),
@@ -143,7 +143,7 @@ void OptimalSelectorBase::_calculate_parallel(
                     train_ranges.size(), q);
 
         auto selected_sys_list = std::make_shared<StrategyWeightList>();
-        for (const auto& sys : m_pro_sys_list) {
+        for (const auto& sys : pro_sys_list_) {
           try {
             auto nsys = sys->clone();
             nsys->run(q, true);
@@ -184,14 +184,14 @@ void OptimalSelectorBase::_calculate_parallel(
       }
 
       for (size_t pos = test_start; pos < test_end; pos++) {
-        m_sys_dict[dates[pos]] = selected_sys_list;
+        sys_dict_[dates[pos]] = selected_sys_list;
       }
 
       if (test_end < dates_len) {
-        m_run_ranges.emplace_back(
+        run_ranges_.emplace_back(
             RunRanges(dates[train_start], dates[test_start], dates[test_end]));
       } else {
-        m_run_ranges.emplace_back(RunRanges(dates[train_start],
+        run_ranges_.emplace_back(RunRanges(dates[train_start],
                                             dates[test_start],
                                             dates[test_end - 1] + Minutes(1)));
       }

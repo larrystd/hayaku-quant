@@ -22,12 +22,11 @@ templates are excluded. The list is regenerated from Git on every run.
 `fmt-all` is the deliberate whole-tree rewrite. Build and test commands never
 format files.
 
-Generate Xmake's compilation database after configuring, and again whenever
-the target or build options change. Tidy accepts only compilation units listed
-in that database and never applies fixes:
+Run ``./op.sh compdb`` whenever Bazel targets or build options change. Tidy
+accepts only compilation units listed in that database and never applies fixes:
 
 ```sh
-HAYAKU_PYTHON="$(command -v python3.10)" xmake project -k compile_commands --lsp=clangd
+./op.sh compdb
 ./op.sh tidy hayaku_cpp/src/execution/OrderOrigin.cpp
 ./op.sh tidy-strict hayaku_cpp/src/execution/OrderOrigin.cpp
 ```
@@ -36,11 +35,3 @@ HAYAKU_PYTHON="$(command -v python3.10)" xmake project -k compile_commands --lsp
 checks. Existing warnings are recorded before strict checks become a gate for
 individual files. Public API names are handled in the interface review, not
 automatically renamed by tidy.
-
-`./op.sh asan-test` uses `build/asan` and instruments project targets while
-reusing the ordinary third-party packages. It restores the prior Xmake
-configuration on exit. On macOS, the command sets `detect_leaks=0` because
-LeakSanitizer is unavailable; Linux keeps leak detection enabled. Rebuild the
-ordinary `core`, `ingest`, and `realtime` targets after this command before
-using the Python extensions, since Xmake copies built extensions into the
-source package directories.

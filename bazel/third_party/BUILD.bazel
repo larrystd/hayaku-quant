@@ -1,0 +1,64 @@
+load("@rules_foreign_cc//foreign_cc:cmake.bzl", "cmake")
+
+exports_files([
+    "nng.BUILD.bazel",
+    "utf8proc.BUILD.bazel",
+    "hdf5.BUILD.bazel",
+    "talib.BUILD.bazel",
+    "zlib.BUILD.bazel",
+])
+
+cmake(
+    name = "zlib",
+    lib_source = "@zlib_src//:all_srcs",
+    out_static_libs = ["libz.a"],
+    cache_entries = {
+        "ZLIB_BUILD_SHARED": "OFF",
+        "ZLIB_BUILD_TESTING": "OFF",
+    },
+    visibility = ["//visibility:public"],
+)
+
+cmake(
+    name = "nng",
+    lib_source = "@nng_src//:all_srcs",
+    out_static_libs = ["libnng.a"],
+    alwayslink = True,
+    cache_entries = {
+        "BUILD_SHARED_LIBS": "OFF",
+        "NNG_ENABLE_TLS": "OFF",
+        "NNG_TESTS": "OFF",
+        "NNG_TOOLS": "OFF",
+    },
+    visibility = ["//visibility:public"],
+)
+
+cmake(
+    name = "hdf5",
+    lib_source = "@hdf5_src//:all_srcs",
+    deps = [":zlib"],
+    out_static_libs = ["libhdf5.a", "libhdf5_cpp.a", "libhdf5_hl.a"],
+    cache_entries = {
+        "BUILD_SHARED_LIBS": "OFF",
+        "BUILD_TESTING": "OFF",
+        "HDF5_BUILD_CPP_LIB": "ON",
+        "HDF5_BUILD_HL_LIB": "ON",
+        "HDF5_BUILD_TOOLS": "OFF",
+        "HDF5_ENABLE_EMBEDDED_LIBINFO": "OFF",
+        "HDF5_ENABLE_Z_LIB_SUPPORT": "ON",
+        # HDF5's first lookup requests both zlib CMake components, while this
+        # build installs only the static one. Use CMake's FindZLIB fallback.
+        "ZLIB_PACKAGE_NAME": "__bazel_static_zlib",
+    },
+    visibility = ["//visibility:public"],
+)
+
+cmake(
+    name = "talib",
+    lib_source = "@talib_src//:all_srcs",
+    out_static_libs = ["libta-lib.a"],
+    cache_entries = {
+        "BUILD_DEV_TOOLS": "OFF",
+    },
+    visibility = ["//visibility:public"],
+)

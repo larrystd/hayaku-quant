@@ -67,7 +67,7 @@ class MySQLKDataDriver : public KDataDriver {
                                  const KQuery& query);
 
  private:
-  MySQLConnect* m_connect;
+  MySQLConnect* connect_;
 };
 
 } /* namespace hayaku */

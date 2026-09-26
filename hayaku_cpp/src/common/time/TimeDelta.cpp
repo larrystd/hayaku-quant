@@ -39,16 +39,16 @@ TimeDelta::TimeDelta(int64_t days, int64_t hours, int64_t minutes,
        milliseconds) *
           1000 +
       microseconds;
-  HAYAKU_CHECK(total >= m_min_micro_seconds && total <= m_max_micro_seconds,
+  HAYAKU_CHECK(total >= min_micro_seconds_ && total <= max_micro_seconds_,
                "Out of total range!");
-  m_duration = bt::time_duration(0, 0, 0, total);
+  duration_ = bt::time_duration(0, 0, 0, total);
 }
 
 TimeDelta::TimeDelta(bt::time_duration td) {
   int64_t total = td.total_microseconds();
-  HAYAKU_CHECK(total >= m_min_micro_seconds && total <= m_max_micro_seconds,
+  HAYAKU_CHECK(total >= min_micro_seconds_ && total <= max_micro_seconds_,
                "Out of total range!");
-  m_duration = td;
+  duration_ = td;
 }
 
 /** Construct from a string, the format: -1 days, hh:mm:ss.000000) */
@@ -67,74 +67,74 @@ TimeDelta::TimeDelta(const std::string& delta) {
       static_cast<int64_t>(std::stod(std::string(vals[2])) * 1000000.0);
   int64_t total =
       (((days * 24) + hours) * 60 + minutes) * 60000000LL + microseconds;
-  HAYAKU_CHECK(total >= m_min_micro_seconds && total <= m_max_micro_seconds,
+  HAYAKU_CHECK(total >= min_micro_seconds_ && total <= max_micro_seconds_,
                "Out of total range!");
-  m_duration = bt::time_duration(0, 0, 0, total);
+  duration_ = bt::time_duration(0, 0, 0, total);
 }
 
 TimeDelta TimeDelta::fromTicks(int64_t ticks) {
-  HAYAKU_CHECK(ticks >= m_min_micro_seconds && ticks <= m_max_micro_seconds,
+  HAYAKU_CHECK(ticks >= min_micro_seconds_ && ticks <= max_micro_seconds_,
                "Out of total range!");
   return TimeDelta(bt::time_duration(0, 0, 0, ticks));
 }
 
 int64_t TimeDelta::days() const {
   if (isNegative()) {
-    if (ticks() % m_one_day_ticks == 0) {
-      return ticks() / m_one_day_ticks;
+    if (ticks() % one_day_ticks_ == 0) {
+      return ticks() / one_day_ticks_;
     } else {
-      return ticks() / m_one_day_ticks - 1;
+      return ticks() / one_day_ticks_ - 1;
     }
   }
-  return std::abs(m_duration.hours() / 24);
+  return std::abs(duration_.hours() / 24);
 }
 
 int64_t TimeDelta::hours() const {
   if (isNegative()) {
-    if (ticks() % m_one_day_ticks == 0) {
+    if (ticks() % one_day_ticks_ == 0) {
       return 0;
     } else {
       int64_t pos_ticks =
-          std::abs((ticks() / m_one_day_ticks - 1) * m_one_day_ticks) + ticks();
+          std::abs((ticks() / one_day_ticks_ - 1) * one_day_ticks_) + ticks();
       return bt::time_duration(0, 0, 0, pos_ticks).hours();
     }
   }
-  return std::abs(m_duration.hours()) % 24;
+  return std::abs(duration_.hours()) % 24;
 }
 
 int64_t TimeDelta::minutes() const {
   if (isNegative()) {
-    if (ticks() % m_one_day_ticks == 0) {
+    if (ticks() % one_day_ticks_ == 0) {
       return 0;
     } else {
       int64_t pos_ticks =
-          std::abs((ticks() / m_one_day_ticks - 1) * m_one_day_ticks) + ticks();
+          std::abs((ticks() / one_day_ticks_ - 1) * one_day_ticks_) + ticks();
       return bt::time_duration(0, 0, 0, pos_ticks).minutes();
     }
   }
-  return std::abs(m_duration.minutes());
+  return std::abs(duration_.minutes());
 }
 
 int64_t TimeDelta::seconds() const {
   if (isNegative()) {
-    if (ticks() % m_one_day_ticks == 0) {
+    if (ticks() % one_day_ticks_ == 0) {
       return 0;
     } else {
       int64_t pos_ticks =
-          std::abs((ticks() / m_one_day_ticks - 1) * m_one_day_ticks) + ticks();
+          std::abs((ticks() / one_day_ticks_ - 1) * one_day_ticks_) + ticks();
       return bt::time_duration(0, 0, 0, pos_ticks).seconds();
     }
   }
-  return std::abs(m_duration.seconds());
+  return std::abs(duration_.seconds());
 }
 
 int64_t TimeDelta::milliseconds() const {
   if (isNegative()) {
-    if (ticks() % m_one_day_ticks == 0) {
+    if (ticks() % one_day_ticks_ == 0) {
       return 0;
     } else {
       int64_t pos_ticks =
-          std::abs((ticks() / m_one_day_ticks - 1) * m_one_day_ticks) + ticks();
+          std::abs((ticks() / one_day_ticks_ - 1) * one_day_ticks_) + ticks();
       int64_t milli = pos_ticks % 1000000;
       return milli == 0 ? 0 : (milli - microseconds()) / 1000;
     }
@@ -144,7 +144,7 @@ int64_t TimeDelta::milliseconds() const {
 
 int64_t TimeDelta::microseconds() const {
   if (isNegative()) {
-    if (ticks() % m_one_day_ticks == 0) {
+    if (ticks() % one_day_ticks_ == 0) {
       return 0;
     } else {
       int64_t micro = ticks() % 1000;

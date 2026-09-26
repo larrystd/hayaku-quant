@@ -40,17 +40,17 @@ class PluginRuntime final {
   template <typename PluginInterfaceT>
   PluginInterfaceT* get(const std::string& pluginName,
                         bool print = true) noexcept {
-    return m_manager.getPlugin<PluginInterfaceT>(pluginName, print);
+    return manager_.getPlugin<PluginInterfaceT>(pluginName, print);
   }
 
  private:
   friend PluginRuntime& getPluginRuntime();
-  PluginRuntime() : m_manager("./plugin") {}
+  PluginRuntime() : manager_("./plugin") {}
 
  private:
-  mutable std::mutex m_mutex;
-  PluginManager m_manager;
-  bool m_userConfiguredPath{false};
+  mutable std::mutex mutex_;
+  PluginManager manager_;
+  bool user_configured_path_{false};
 };
 
 HAYAKU_API PluginRuntime& getPluginRuntime();

@@ -39,16 +39,16 @@ BOOST_CLASS_EXPORT(hayaku::IAd)
 
 namespace hayaku {
 
-IAd::IAd() : IndicatorImp("AD", 1) { m_need_context = true; }
+IAd::IAd() : IndicatorImp("AD", 1) { need_context_ = true; }
 
 IAd::~IAd() {}
 
 void IAd::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
-  m_discard = 0;
+  discard_ = 0;
   const KData& k = getContext();
   size_t total = k.size();
   HAYAKU_IF_RETURN(total == 0, void());
@@ -57,8 +57,8 @@ void IAd::_calculate(const Indicator& data) {
 
   value_t ad = 0.0;
   auto* dst = this->data();
-  dst[m_discard] = 0.0;
-  for (size_t i = m_discard + 1; i < total; i++) {
+  dst[discard_] = 0.0;
+  for (size_t i = discard_ + 1; i < total; i++) {
     const KRecord& r = k[i];
     value_t tmp = r.highPrice - r.lowPrice;
     if (tmp != 0.0) {
@@ -116,7 +116,7 @@ BOOST_CLASS_EXPORT(hayaku::ICost)
 namespace hayaku {
 
 ICost::ICost() : IndicatorImp("COST", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<double>("percent", 10.0);
 }
 
@@ -135,7 +135,7 @@ void ICost::_checkParam(const string& name) const {
 void ICost::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -144,7 +144,7 @@ void ICost::_calculate(const Indicator& data) {
   _readyBuffer(total, 1);
 
   // Set the discard to everything first, it is updated later
-  m_discard = total;
+  discard_ = total;
 
   Stock stock = k.getStock();
   auto* kdata = k.data();
@@ -222,7 +222,7 @@ void ICost::_calculate(const Indicator& data) {
   // Update the discard
   for (size_t i = 0; i < total; i++) {
     if (!std::isnan(dst[i])) {
-      m_discard = i;
+      discard_ = i;
       break;
     }
   }
@@ -277,14 +277,14 @@ BOOST_CLASS_EXPORT(hayaku::IHsl)
 
 namespace hayaku {
 
-IHsl::IHsl() : IndicatorImp("HSL", 1) { m_need_context = true; }
+IHsl::IHsl() : IndicatorImp("HSL", 1) { need_context_ = true; }
 
 IHsl::~IHsl() {}
 
 void IHsl::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -293,7 +293,7 @@ void IHsl::_calculate(const Indicator& data) {
   _readyBuffer(total, 1);
 
   // Set the discard to everything first, it is updated later
-  m_discard = total;
+  discard_ = total;
 
   Stock stock = k.getStock();
   auto* kdata = k.data();
@@ -354,7 +354,7 @@ void IHsl::_calculate(const Indicator& data) {
   // Update the discard
   for (size_t i = 0; i < total; i++) {
     if (!std::isnan(dst[i])) {
-      m_discard = i;
+      discard_ = i;
       break;
     }
   }
@@ -585,7 +585,7 @@ BOOST_CLASS_EXPORT(hayaku::ITime)
 namespace hayaku {
 
 ITime::ITime() : IndicatorImp("TIME") {
-  m_need_context = true;
+  need_context_ = true;
   setParam<string>("type", "TIME");
 }
 
@@ -605,7 +605,7 @@ void ITime::_checkParam(const string& name) const {
 void ITime::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& kdata = getContext();
   size_t total = kdata.size();
@@ -828,7 +828,7 @@ BOOST_CLASS_EXPORT(hayaku::ITimeLine)
 namespace hayaku {
 
 ITimeLine::ITimeLine() : IndicatorImp("TIMELINE", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<string>("part", "price");
 }
 
@@ -844,7 +844,7 @@ void ITimeLine::_checkParam(const string& name) const {
 void ITimeLine::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   KQuery q = k.getQuery();
@@ -857,13 +857,13 @@ void ITimeLine::_calculate(const Indicator& data) {
   _readyBuffer(total, 1);
   auto* dst = this->data();
 
-  m_discard = 0;
+  discard_ = 0;
   if (getParam<string>("part") == "price") {
-    for (size_t i = m_discard; i < total; i++) {
+    for (size_t i = discard_; i < total; i++) {
       dst[i] = time_line[i].price;
     }
   } else {
-    for (size_t i = m_discard; i < total; i++) {
+    for (size_t i = discard_; i < total; i++) {
       dst[i] = time_line[i].vol;
     }
   }
@@ -973,16 +973,16 @@ IWinner::~IWinner() {}
 
 void IWinner::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
   // Get the context of the input indicator
   auto context = data.getContext();
   if (context == Null<KData>()) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -990,8 +990,8 @@ void IWinner::_calculate(const Indicator& data) {
   value_t const* cost_data[101];
 
   cost_list[0] = COST(0)(context);
-  m_discard = cost_list[0].discard();
-  HAYAKU_IF_RETURN(m_discard >= total, void());
+  discard_ = cost_list[0].discard();
+  HAYAKU_IF_RETURN(discard_ >= total, void());
   cost_data[0] = cost_list[0].data();
 
   global_parallel_for_index_void(1, 101,
@@ -1002,7 +1002,7 @@ void IWinner::_calculate(const Indicator& data) {
 
   auto const* src = data.data();
   auto* dst = this->data();
-  for (size_t i = m_discard; i < total; ++i) {
+  for (size_t i = discard_; i < total; ++i) {
     int high_idx = 100;
     int low_idx = 0;
     while (low_idx <= high_idx) {

@@ -53,7 +53,7 @@ class HAYAKU_API OptimalSelectorBase : public SelectorBase {
     return Null<double>();
   }
 
-  const vector<RunRanges>& getRunRanges() const { return m_run_ranges; }
+  const vector<RunRanges>& getRunRanges() const { return run_ranges_; }
 
  private:
   void _initParams();
@@ -63,8 +63,8 @@ class HAYAKU_API OptimalSelectorBase : public SelectorBase {
       const DatetimeList& dates, size_t test_len, bool trace);
 
  protected:
-  unordered_map<Datetime, std::shared_ptr<StrategyWeightList>> m_sys_dict;
-  vector<RunRanges> m_run_ranges;
+  unordered_map<Datetime, std::shared_ptr<StrategyWeightList>> sys_dict_;
+  vector<RunRanges> run_ranges_;
 };
 
 #if HAYAKU_SUPPORT_SERIALIZATION

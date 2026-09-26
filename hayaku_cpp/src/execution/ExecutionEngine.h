@@ -60,9 +60,9 @@ class HAYAKU_API ExecutionEngine {
       const noexcept;
 
  private:
-  std::shared_ptr<ExecutionRuntime> m_runtime;
-  std::weak_ptr<std::atomic_bool> m_sessionActive;
-  bool m_sessionBound{false};
+  std::shared_ptr<ExecutionRuntime> runtime_;
+  std::weak_ptr<std::atomic_bool> session_active_;
+  bool session_bound_{false};
 };
 
 }  // namespace hayaku

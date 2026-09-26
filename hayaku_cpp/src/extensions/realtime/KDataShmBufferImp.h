@@ -45,32 +45,32 @@ class HAYAKU_API KDataShmBufferImp : public KDataImp {
 
   virtual ~KDataShmBufferImp() override;
 
-  virtual bool empty() const noexcept override { return m_size == 0; }
+  virtual bool empty() const noexcept override { return size_ == 0; }
 
-  virtual size_t size() const noexcept override { return m_size; }
+  virtual size_t size() const noexcept override { return size_; }
 
-  virtual size_t startPos() const override { return m_start; }
+  virtual size_t startPos() const override { return start_; }
 
-  virtual size_t endPos() const override { return m_end; }
+  virtual size_t endPos() const override { return end_; }
 
-  virtual size_t lastPos() const override { return m_end == 0 ? 0 : m_end - 1; }
+  virtual size_t lastPos() const override { return end_ == 0 ? 0 : end_ - 1; }
 
   virtual size_t getPos(const Datetime& datetime) const noexcept override;
 
   virtual const KRecord& getKRecord(size_t pos) const noexcept override {
-    return pos < m_size ? m_data[pos] : KRecord::NullKRecord;
+    return pos < size_ ? data_[pos] : KRecord::NullKRecord;
   }
 
-  virtual const KRecord& front() const override { return m_data[0]; }
+  virtual const KRecord& front() const override { return data_[0]; }
 
-  virtual const KRecord& back() const override { return m_data[m_size - 1]; }
+  virtual const KRecord& back() const override { return data_[size_ - 1]; }
 
-  virtual const KRecord* data() const noexcept override { return m_data; }
+  virtual const KRecord* data() const noexcept override { return data_; }
 
   virtual KRecord* data() noexcept override {
     // Read-only shared memory mapping, a write will crash; it exists only for
     // compatibility with the KDataImp interface (see the class comment)
-    return const_cast<KRecord*>(m_data);
+    return const_cast<KRecord*>(data_);
   }
 
   virtual DatetimeList getDatetimeList() const override;
@@ -81,12 +81,12 @@ class HAYAKU_API KDataShmBufferImp : public KDataImp {
   KDataShmBufferImp(const Stock& stock, const KQuery& query,
                     const KRecordView& view, size_t start);
 
-  size_t m_start{0};
-  size_t m_end{0};
-  size_t m_size{0};
-  const KRecord* m_data{nullptr};
+  size_t start_{0};
+  size_t end_{0};
+  size_t size_{0};
+  const KRecord* data_{nullptr};
   std::shared_ptr<void>
-      m_pin;  ///< Keeps the shm mapping alive (type-erased KDataShmReaderPtr)
+      pin_;  ///< Keeps the shm mapping alive (type-erased KDataShmReaderPtr)
 };
 
 } /* namespace hayaku */

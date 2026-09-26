@@ -167,11 +167,11 @@ class HAYAKU_UTILS_API SpendTimer {
  public:
   /** Constructor, it records the current system time */
   explicit SpendTimer()
-      : m_cycle(1),
-        m_msg(""),
-        m_lineno(0),
-        m_start_time(std::chrono::steady_clock::now()),
-        m_pre_keep_time(m_start_time) {}
+      : cycle_(1),
+        msg_(""),
+        lineno_(0),
+        start_time_(std::chrono::steady_clock::now()),
+        pre_keep_time_(start_time_) {}
 
   /**
    * Constructor, it records the current system time
@@ -180,13 +180,13 @@ class HAYAKU_UTILS_API SpendTimer {
    * @param lineno the current line number, corresponding to __LINE__
    */
   explicit SpendTimer(const char *id, const char *filename, int lineno)
-      : m_cycle(1),
-        m_id(id),
-        m_msg(""),
-        m_filename(filename),
-        m_lineno(lineno),
-        m_start_time(std::chrono::steady_clock::now()),
-        m_pre_keep_time(m_start_time) {}
+      : cycle_(1),
+        id_(id),
+        msg_(""),
+        filename_(filename),
+        lineno_(lineno),
+        start_time_(std::chrono::steady_clock::now()),
+        pre_keep_time_(start_time_) {}
 
   /**
    * Constructor, it records the current system time
@@ -197,13 +197,13 @@ class HAYAKU_UTILS_API SpendTimer {
    */
   explicit SpendTimer(const char *id, const char *msg, const char *filename,
                       int lineno)
-      : m_cycle(1),
-        m_id(id),
-        m_msg(msg),
-        m_filename(filename),
-        m_lineno(lineno),
-        m_start_time(std::chrono::steady_clock::now()),
-        m_pre_keep_time(m_start_time) {}
+      : cycle_(1),
+        id_(id),
+        msg_(msg),
+        filename_(filename),
+        lineno_(lineno),
+        start_time_(std::chrono::steady_clock::now()),
+        pre_keep_time_(start_time_) {}
 
   /** Destructor, it calculates the time consumed from the construction to the
    * destruction and prints the output */
@@ -215,7 +215,7 @@ class HAYAKU_UTILS_API SpendTimer {
    * @return std::chrono::duration<double>
    */
   std::chrono::duration<double> duration() const {
-    return std::chrono::steady_clock::now() - m_start_time;
+    return std::chrono::steady_clock::now() - start_time_;
   }
 
   /** Print the time consumed from the start of the timer until now, and return
@@ -238,7 +238,7 @@ class HAYAKU_UTILS_API SpendTimer {
    * @return const std::vector<std::chrono::duration<double>>&
    */
   const std::vector<std::chrono::duration<double>> &getKeepDurations() const {
-    return m_keep_seconds;
+    return keep_seconds_;
   }
 
   /**
@@ -246,22 +246,22 @@ class HAYAKU_UTILS_API SpendTimer {
    * @param cycle the number of the loops, used for the time consumption
    * statistics printing only
    */
-  void setCycle(int cycle) { m_cycle = cycle; }
+  void setCycle(int cycle) { cycle_ = cycle; }
 
  public:
   /** Get the current switch state of the time consumption printing */
   static bool isClosed() { return ms_closed; }
 
  private:
-  int m_cycle;  // Tells the number of the loops in the benchmark test
-  std::string m_id;
-  std::string m_msg;
-  std::string m_filename;
-  int m_lineno;
-  std::chrono::time_point<std::chrono::steady_clock> m_start_time;
-  std::chrono::time_point<std::chrono::steady_clock> m_pre_keep_time;
-  std::vector<std::chrono::duration<double>> m_keep_seconds;
-  std::vector<std::string> m_keep_desc;
+  int cycle_;  // Tells the number of the loops in the benchmark test
+  std::string id_;
+  std::string msg_;
+  std::string filename_;
+  int lineno_;
+  std::chrono::time_point<std::chrono::steady_clock> start_time_;
+  std::chrono::time_point<std::chrono::steady_clock> pre_keep_time_;
+  std::vector<std::chrono::duration<double>> keep_seconds_;
+  std::vector<std::string> keep_desc_;
 
   static bool ms_closed;
   friend void HAYAKU_UTILS_API close_spend_time();
@@ -291,12 +291,12 @@ class SpendTimerGuad {
    * consumption statistics according to open
    * @param open whether to turn on the time consumption statistics
    */
-  explicit SpendTimerGuad(bool open) : m_open(open), m_old_open(false) {
-    m_old_open = !SpendTimer::isClosed();
-    if (m_open == m_old_open) {
+  explicit SpendTimerGuad(bool open) : open_(open), old_open_(false) {
+    old_open_ = !SpendTimer::isClosed();
+    if (open_ == old_open_) {
       return;
     }
-    if (m_open) {
+    if (open_) {
       open_spend_time();
     } else {
       close_spend_time();
@@ -305,10 +305,10 @@ class SpendTimerGuad {
 
   /** Destructor, it exits the given state and restores the original state */
   ~SpendTimerGuad() {
-    if (m_open == m_old_open) {
+    if (open_ == old_open_) {
       return;
     }
-    if (m_old_open) {
+    if (old_open_) {
       open_spend_time();
     } else {
       close_spend_time();
@@ -316,8 +316,8 @@ class SpendTimerGuad {
   }
 
  private:
-  bool m_open;
-  bool m_old_open;
+  bool open_;
+  bool old_open_;
 };
 
 /** @} */

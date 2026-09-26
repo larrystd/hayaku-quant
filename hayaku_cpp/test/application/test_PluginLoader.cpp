@@ -53,16 +53,16 @@ int fixtureCount(void* handle, const char* symbol) {
 class FixtureHandle {
  public:
   explicit FixtureHandle(const std::string& filename)
-      : m_handle(openFixture(filename)) {}
-  ~FixtureHandle() { closeFixture(m_handle); }
+      : handle_(openFixture(filename)) {}
+  ~FixtureHandle() { closeFixture(handle_); }
 
   FixtureHandle(const FixtureHandle&) = delete;
   FixtureHandle& operator=(const FixtureHandle&) = delete;
 
-  void* get() const { return m_handle; }
+  void* get() const { return handle_; }
 
  private:
-  void* m_handle{nullptr};
+  void* handle_{nullptr};
 };
 
 }  // namespace

@@ -19,10 +19,10 @@ class SignalSelector : public SelectorBase {
   SignalSelector();
   virtual ~SignalSelector();
 
-  virtual void _reset() override { m_sys_dict.clear(); }
+  virtual void _reset() override { sys_dict_.clear(); }
 
  private:
-  unordered_map<Datetime, StrategyWeightList> m_sys_dict;
+  unordered_map<Datetime, StrategyWeightList> sys_dict_;
 };
 
 }  // namespace hayaku

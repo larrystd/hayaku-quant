@@ -23,9 +23,9 @@ class BandSignal2 : public SignalBase {
   virtual void _calculate(const KData& kdata) override;
 
  private:
-  Indicator m_ind;
-  Indicator m_lower;
-  Indicator m_upper;
+  Indicator ind_;
+  Indicator lower_;
+  Indicator upper_;
 
 //============================================
 // Serialization support
@@ -35,9 +35,9 @@ class BandSignal2 : public SignalBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SignalBase);
-    ar& BOOST_SERIALIZATION_NVP(m_ind);
-    ar& BOOST_SERIALIZATION_NVP(m_lower);
-    ar& BOOST_SERIALIZATION_NVP(m_upper);
+    ar& boost::serialization::make_nvp("m_ind", ind_);
+    ar& boost::serialization::make_nvp("m_lower", lower_);
+    ar& boost::serialization::make_nvp("m_upper", upper_);
   }
 #endif
 };

@@ -1,0 +1,22 @@
+package(default_visibility = ["//visibility:public"])
+
+cc_binary(
+    name = "demo1",
+    srcs = ["demo1.cpp"],
+    copts = ["-std=c++20"],
+    deps = ["//hayaku_cpp/src:core"],
+)
+
+cc_binary(
+    name = "demo2",
+    srcs = ["demo2.cpp"],
+    copts = ["-std=c++20"],
+    deps = ["//hayaku_cpp/src:core"],
+)
+
+cc_binary(
+    name = "demo3",
+    srcs = ["demo3.cpp"],
+    copts = ["-std=c++20"],
+    deps = ["//hayaku_cpp/src:realtime"],
+)

@@ -16,34 +16,34 @@ class ConditionTest : public ConditionBase {
  public:
   ConditionTest() : ConditionBase("TEST") {
     setParam<int>("n", 10);
-    m_flag = false;
+    flag_ = false;
   }
 
   ~ConditionTest() {}
 
-  KData getKData() const { return m_kdata; }
+  KData getKData() const { return kdata_; }
 
   virtual void _calculate() {
-    _addValid(m_kdata[2].datetime, 2.0);
-    _addValid(m_kdata[3].datetime, 1.5);
+    _addValid(kdata_[2].datetime, 2.0);
+    _addValid(kdata_[3].datetime, 1.5);
   }
 
   virtual void _reset() {
-    if (m_flag) {
-      m_flag = false;
+    if (flag_) {
+      flag_ = false;
     } else {
-      m_flag = true;
+      flag_ = true;
     }
   }
 
   virtual ConditionPtr _clone() {
     ConditionTest *p = new ConditionTest;
-    p->m_flag = m_flag;
+    p->flag_ = flag_;
     return ConditionPtr(p);
   }
 
  private:
-  bool m_flag;
+  bool flag_;
 };
 
 /**

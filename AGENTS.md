@@ -31,84 +31,45 @@
 ## 2. Repository Structure
 
 ```
-hayaku/
-├── xmake.lua                 # The top-level build script (an xmake project, defining the global options/dependencies)
-├── copy_dependents.lua       # The task that copies the third-party dependency headers/libraries
-├── requirements.txt          # The Python-side dependencies
-├── setup.py / sub_setup.py   # The Python package installation scripts
-├── hayaku_cpp/               # The C++ core engine library
-│   ├── src/                  # C++ core: common/data/operators/execution/metrics/strategy/application/extensions
-│   │   └── xmake.lua         # The core and optional native target definitions
-│   ├── test/                 # C++ tests (doctest), targets: unit-test / small-test / real-test
-│   └── demo/                 # The C++ demos
-├── hayaku_pywrap/            # The pybind11 bindings (the target "core" → core.so / core.pyd)
-│   ├── main.cpp              # The binding registration entry
-│   ├── common/ data/ operators/ execution/ metrics/ strategy/ application/ extensions/
-│   ├── Bindings.h            # Domain registration declarations
-│   └── xmake.lua
-├── hayaku/                   # The Python interface package
-│   ├── __init__.py           # The package entry: loading the compiled core.so and the dependency libraries
-│   ├── core.py               # Native core imports; opt-in enhancements live in domain _extensions.py files
-│   ├── common/ data/ operators/ execution/ metrics/ strategy/
-│   ├── application/          # Sessions, interactive tools, GUI, CLI, and configuration
-│   ├── extensions/           # Optional ingest, realtime, visualization, and SPI modules
-│   ├── _support/             # Internal Python helpers
-│   ├── plugin/               # The runtime plugins (the data import, the market data, etc.)
-│   ├── cpp/                  # The compiled artifacts directory: core310~core313.so, lib*.dylib, etc. (gitignored)
-├── tests/python/             # The Python tests (test.py is the entry)
-├── examples/python/          # The examples and notebook tutorials
-├── docs/                     # The Sphinx documentation (dual-source: docs/zh Chinese + docs/en English; docs/make.sh builds)
-├── test_data/                # The C++ test data (copied automatically when running the tests)
-├── i18n/                     # The internationalization/language files
-├── docker/                   # The containerization configuration
-└── .github/workflows/        # The CI: ubuntu.yml / windows.yml / macosx.yml
+hayaku-quant/
+├── MODULE.bazel / MODULE.bazel.lock  # Pinned C++ dependencies
+├── .bazelversion / .bazelrc          # Bazel version and compiler defaults
+├── BUILD.bazel                       # Shared test fixtures
+├── bazel/                            # Third-party builds, feature configuration, packaging tests
+├── hayaku_cpp/src/BUILD.bazel        # Core, ingest and realtime C++ libraries
+├── hayaku_cpp/test/BUILD.bazel       # C++ regression tests
+├── hayaku_cpp/demo/BUILD.bazel       # C++ examples
+├── hayaku_pywrap/BUILD.bazel         # Python 3.10 native extensions
+├── hayaku/                           # Python interface package
+├── hayaku_ingest_native/             # Optional ingestion package
+├── hayaku_realtime_native/           # Optional realtime package
+├── tools/wheels/                     # Optional wheel packaging definitions
+├── tests/python/                     # Python regression suite
+├── docs/                             # English and Chinese Sphinx documentation
+└── .github/workflows/                # Bazel, docs and architecture checks
 ```
 
-## 3. Build System (xmake)
+## 3. Build System (Bazel)
 
-- Build tool: **xmake** (the top-level `set_xmakever("3.0.0")`, and the CI uses 3.0.8). The C++ standard is **C++20**; Windows uses clang-cl.
-- All the third-party dependencies are pulled through the xmake package management (`add_requires`): boost, hdf5, mysql, fmt, spdlog, sqlite3, flatbuffers, nng, nlohmann_json, eigen, xxhash, utf8proc, ta-lib, mimalloc, pybind11, doctest, etc.; the external repository is `hayaku-extern-libs` (github/gitee).
-- The key configuration items (the `xmake f` options): `mysql`, `hdf5`, `sqlite`, `tdx`, `ta_lib`, `low_precision`, `omp`, `serialize`, `leak_check`, `stacktrace`, `log_level`, `async_log`, `feedback`, `spend_time`, etc.
-- The artifacts are output to `build/{mode}/{plat}/{arch}/lib`; the `core.so` and the dependency libraries needed by the Python package at runtime must be copied to `hayaku/cpp/` (see the workflow below).
-
-### Common Commands
+Bazel is the build system for macOS and Linux. Windows is outside the supported
+Bazel platforms. Bazelisk reads `.bazelversion`; dependencies are fixed in
+`MODULE.bazel` and its lockfile. The default feature set is in `bazel/config/`,
+and FlatBuffers generates `spot_generated.h` from `spot.fbs`.
 
 ```bash
-# Configure (the first time, or after changing the dependencies/options)
-xmake f -k shared -y -vD
-
-# Build the C++ core library
-xmake -b core
-
-# Build and run the C++ unit tests (doctest; small-test does not depend on the real data)
-xmake r small-test
-
-# Run the full unit tests (covering the strategy, indicator, data, and execution modules)
-xmake r unit-test
-
-# The real data test (requiring HAYAKU_USE_REAL_DATA_TEST and the real market data; usually run only in the CI or locally with the data)
-xmake r real-test
-
-# The debug/coverage mode
-xmake f -m debug -y          # debug
-xmake f -m coverage -y       # coverage (generating the lcov/genhtml reports)
+./op.sh build        # Build and stage the shared libraries and Python 3.10 extensions
+./op.sh test         # Full C++ suite and Python package loading tests
+./op.sh python-test  # Source-tree Python regression suite
+bazel build //...    # All Bazel targets
 ```
 
-> Note: when running the `xmake r` series tests, the build system automatically copies `test_data`, `hayaku/plugin` and `i18n` to the directory of the executable (see the `prepare_run` in `hayaku_cpp/test/xmake.lua`).
+`./op.sh build` copies the six native outputs into the source Python packages.
+`./op.sh wheel`, `wheel-ingest`, and `wheel-realtime` create binary wheels. See
+[BAZEL.md](BAZEL.md) for direct Bazel commands and output paths.
 
-### IDE / LSP Indexing (clangd)
-
-The sources under `hayaku_cpp/src/` use module-root includes such as `#include "data/KData.h"`, with `hayaku_cpp/src` as the include root. Tests and `hayaku_pywrap/` use the same include root through their target configuration. Therefore, **clangd must get the compilation database**, otherwise it will degrade to fallback arguments and report false missing-header/type errors; do not try to "fix" them by changing source code.
-
-```bash
-# Generate compile_commands.json in the project root (the locations discovered natively by clangd)
-xmake project -k compile_commands --lsp=clangd
-```
-
-- Re-run it after adding/deleting the source files or changing the `xmake f` options (the dependencies/switches); the generated artifacts are gitignored (`.vscode` and `.clangd` are both in the ignore list), do not commit them.
-- Do not use the `-I.` of `.clangd` to replace the compilation database: the relative paths are resolved against the compilation directory, and for the fallback commands they point to the directory of the source file rather than the include root — **verified to be ineffective**.
-- If you still want to put the database in `.vscode/` or another subdirectory, you can use `clangd.arguments: --compile-commands-dir=<dir>` to specify the directory.
-- Manually editing `hayaku_cpp/src/config.h` and `version.h` has no lasting effect (both are generated at build time by `add_configfiles` from `config.h.in`/`version.h.in`, and are gitignored); the recognition of `HAYAKU_*` conditional compilation macros by clangd also depends on the `-D` definitions carried in the compilation database, so regenerate `compile_commands.json` after changing them.
+For clangd or clang-tidy, generate `compile_commands.json` with `./op.sh compdb`.
+Regenerate it when targets or compiler flags change. Do not edit generated
+headers under `bazel-bin/`.
 
 ## 4. Testing
 
@@ -116,7 +77,7 @@ xmake project -k compile_commands --lsp=clangd
 
 ```bash
 export PYTHONPATH=.
-python3 tests/python/test.py     # the entry used by the CI
+./op.sh python-test           # the entry used by the CI
 ```
 
 - The independent test files of each module: `Indicator.py`, `KData.py`, `Signal.py`, `MoneyManager.py`, `Stoploss.py`, `AllocateFunds.py`, `Datetime.py`, `Parameter.py`, etc., which can be run individually (e.g. `python3 tests/python/Indicator.py`).
@@ -152,28 +113,28 @@ TEST_CASE("test_IniParser_hasSection") {
    - **The extreme value boundaries**: the minimum/maximum, an empty string, an empty range, `Null<T>()`, an out-of-bounds index, zero, a negative value (if allowed).
    - **The branch boundaries**: each branch of `if/else` and `switch`, both sides of the ternary expressions, and the paths of the early `return` / `break` / `continue`.
    - **The error/exception paths**: the invalid inputs, the missing files, the malformed formats, etc., which should trigger the exceptions.
-8. **The coverage requirements**: overall, aim for the branch coverage, with the line coverage as the minimum requirement. **The code paths that must be mocked to simulate are exempted** (e.g. the branches that can only be triggered by the external dependencies such as the network, the database and the live trading connections). `xmake f -m coverage -y` can generate the lcov coverage report for a self-check.
+8. **The coverage requirements**: overall, aim for the branch coverage, with the line coverage as the minimum requirement. **The code paths that must be mocked to simulate are exempted** (e.g. the branches that can only be triggered by the external dependencies such as the network, the database and the live trading connections). `bazel coverage //hayaku_cpp/test:cval_test` can generate a coverage report for a self-check.
 
 #### The Run Targets
 
-- `unit-test`: the complete unit test set covering most modules.
-- `small-test`: the minimal regression set, used by the CI by default.
-- `real-test`: requires the real market data, used together with `HAYAKU_USE_REAL_DATA_TEST`.
+- `//hayaku_cpp/test:cval_test`: focused indicator and serialization checks.
+- `//hayaku_cpp/test:unit_test`: full C++ suite (798 doctest cases on current fixtures).
+- `//bazel:python_package_smoke_test`: staged native package import checks.
+- `tests/python/test.py`: broader Python regression suite, run with Python 3.10.
 
 ## 5. Code Conventions
 
 | Language | Convention                                   | Key points                                                                                                                       |
 | -------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| C++      | `.clang-format` (Google style, LLVM 20) | use the pinned formatter for indentation, line length and include order; warning switches such as `-Wno-sign-compare` are in xmake.lua |
+| C++      | `.clang-format` (Google style as the base) | a 4-space indent, a column width of 100, the attached braces; compiler options are in the Bazel `BUILD.bazel` files |
 | Python   | `hayaku/.style.yapf` (yapf) + `.flake8`  | a 4-space indent, a column width of 120 (flake8`max-line-length=120`)                                                          |
-| Lua      | `.lua-format`                              | format the build scripts                                                                                                         |
 
 - Format the changed files with `clang-format` / `yapf` before committing, to avoid deviating from the existing style.
 - Adding a new public API requires synchronizing generated `.pyi` stubs through the release workflow and the documentation (`docs/zh/` and `docs/en/`; the two trees must be updated in pairs with a consistent structure).
 
 ### Naming Conventions (C++)
 
-The conventions below are distilled from the existing code of `hayaku_cpp/src/`; the new/modified code must follow them:
+The conventions below describe the existing public API. New and renamed instance members use Google C++ style: lowercase words with a trailing underscore. Existing public method names stay stable for source compatibility:
 
 | The identifier category                   | The convention                                                                                                                                               | The examples                                                                                                                                                                                                        |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -181,8 +142,8 @@ The conventions below are distilled from the existing code of `hayaku_cpp/src/`;
 | Class / struct                            | `PascalCase`, the business domain + the core concept; the exported classes carry the `HAYAKU_API` macro                                                     | `class HAYAKU_API StockManager`, `class SignalBase`, `struct ParamItemRecord`                                                                                                                                    |
 | Public member functions                   | `camelCase`, starting with a verb (`should/get/set/is/has/reload…`)                                                                                     | `shouldBuy()`, `getBuyValue()`, `reloadWith()`, `isIpcClientMode()`, `setTO()`, `nextTimeShouldBuy()`                                                                                                   |
 | Protected / private member functions      | the`_` prefix + `camelCase` (the hooks that the subclasses need to override start with `_`)                                                            | `_calculate()`, `_reset()`, `_clone()`, `_addBuySignal()`, `_testingSetIpcClientMode()`                                                                                                                   |
-| Member variables                          | the`m_` prefix + `camelCase`                                                                                                                             | `m_name`, `m_kdata`, `m_is_python_object`, `m_buySig`, `m_cycle_start`, `m_ipc_client_mode`                                                                                                             |
-| Class static member variables             | the`ms_` prefix + `camelCase` (distinguished from the non-static `m_`)                                                                                 | `ms_sm`, `ms_init_mutex`, `ms_stockDict` (note: the old code of `StockManager` still uses `m_sm`/`m_init_mutex`/`m_stockDict` as a historical legacy; all the newly added static members use `ms_`) |
+| Member variables                          | `snake_case_` (Google C++ style; no `m_` prefix) | `impl_`, `runtime_`, `base_info_driver_`, `buy_sig_` |
+| Class static member variables             | New names use `snake_case_`; existing `ms_` names are legacy | `sm_`, `init_mutex_`; legacy `ms_init_mutex` |
 | Global variables / file-scope statics     | the`g_` prefix + `camelCase`                                                                                                                             | `g_load_event`, `g_shm_server_role`, `g_all_base_ktype`, `g_ktype2min`, `g_log_level`                                                                                                                     |
 | The static local variables in functions   | the`g_` prefix + `camelCase` (consistent with the global variables, easy to identify the long-lived storage)                                             | `static std::once_flag g_tz_set;`, `static long int g_timezone;`                                                                                                                                                |
 | Type aliases / smart pointer aliases      | the business object name +`Ptr` (`typedef shared_ptr<T> XPtr;`)                                                                                          | `typedef shared_ptr<SignalBase> SignalPtr;`                                                                                                                                                                       |
@@ -265,23 +226,23 @@ The core components of the systematic trading framework are implemented under `h
 2. **After modifying the C++ code, you must recompile and let the Python package load the new artifacts**:
 
    ```bash
-   xmake -b core
-   # Synchronize the compiled artifacts to hayaku/cpp/ (for import hayaku to load)
+   ./op.sh build
+   # The wrapper stages the native libraries into the Python packages.
    ```
 
-   The Python package entry `hayaku/__init__.py` loads `core.so` and the dependency libraries from `hayaku/cpp/` (mac/linux sets the `LD_LIBRARY_PATH`).
+   The Python package loads `core310.so` and `libhayaku.so` from `hayaku/cpp/`.
 3. **When only changing the Python layer, there is no need to recompile the C++**, but note that the generated `.pyi` stubs must stay in sync with the implementations, and `hayaku/core.py` plus each domain's `_extensions.py` carry the Python enhancements.
 4. **Do not commit the compiled artifacts**: `*.so`, `*.pyd`, `*.dll`, `build/` are all in `.gitignore`; the `core3xx.so`, etc. under `hayaku/cpp/` are the local build artifacts.
-5. **Adding new dependencies**: the C++ dependencies go into `xmake.lua` with `add_requires` (note the platform differences and the versions, e.g. hdf5 is 1.13.3 on Windows, and mysql varies by platform); the Python dependencies go into `requirements.txt`.
-6. **Tests first**: when the change involves the C++ core, run at least `xmake r unit-test` + `python3 tests/python/test.py`; when a specific module is involved, run its corresponding test file.
-7. **The CI will verify**: the three pipelines of ubuntu (aarch64/x86_64), windows and macosx under `.github/workflows/`; the PRs must pass the builds and the tests before merging into `master`.
+5. **Adding new dependencies**: the C++ dependencies go into `MODULE.bazel` and the Bazel `BUILD.bazel` files; the Python dependencies go into `requirements.txt`.
+6. **Tests first**: when the change involves the C++ core, run `./op.sh test` and the relevant Python tests; when a specific module is involved, run its corresponding test file.
+7. **The CI will verify**: the macOS/Linux Bazel pipeline and the docs pipeline under `.github/workflows/`; the PRs must pass the builds and the tests before merging into `master`.
 8. **The git commit messages uniformly use English**: in the conventional commits style, e.g. `fix(data): fix cross-period aggregation of derived K-lines in the SQL backend`; the historical early commits have Chinese messages, but all the new commits use English, and the body text is also in English.
 9. **The AI must not commit proactively**: an AI coding agent is forbidden to execute `git commit`, and should also avoid `git add`; after completing each step, list "the list of the files to be committed + the suggested English commit message (a directly copyable `git commit -m "..."`)" and inform the user, letting the user decide the commit timing and the granularity.
-10. **Handle with care**: `hayaku_pywrap` uses a unity build (`c++.unity_build`); pay attention to the unity_group grouping when adding the .cpp files; after modifying `xmake.lua`, you need to reconfigure with `xmake f`.
+10. **Handle with care**: keep Bazel target source lists and dependency edges current when adding C++ or binding files.
 
 ## 9. The Quick Self-check Checklist (before committing)
 
 - [ ] The changed files have been formatted with `clang-format` / `yapf`
 - [ ] The C++ changes have compiled successfully and the Python side can `import hayaku` normally
-- [ ] The related unit tests have been run (C++: `xmake r small-test`; Python: `python3 tests/python/test.py`)
+- [ ] The related unit tests have been run (C++: `./op.sh test`; Python: `python3 tests/python/test.py`)
 - [ ] No compiled artifacts/local data files have been committed

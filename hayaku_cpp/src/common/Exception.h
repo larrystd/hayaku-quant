@@ -31,16 +31,16 @@ namespace hayaku {
 
 class HAYAKU_UTILS_API exception : public std::exception {
  public:
-  exception() : m_msg("Unknown exception!") {}
+  exception() : msg_("Unknown exception!") {}
   exception(const char *msg)
-      : m_msg(msg) {}  // cppcheck-suppress noExplicitConstructor
+      : msg_(msg) {}  // cppcheck-suppress noExplicitConstructor
   exception(const std::string &msg)
-      : m_msg(msg) {}  // cppcheck-suppress noExplicitConstructor
+      : msg_(msg) {}  // cppcheck-suppress noExplicitConstructor
   virtual ~exception() noexcept {}
   virtual const char *what() const noexcept;
 
  protected:
-  std::string m_msg;
+  std::string msg_;
 };
 
 #if defined(_MSC_VER)

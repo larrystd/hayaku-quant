@@ -5,6 +5,7 @@
  *      Author: fasiondog
  */
 
+#include <common/serialization/TimeDelta_serialization.h>
 #include <common/time/TimeDelta.h>
 #include <data/DataRuntime.h>
 
@@ -12,9 +13,6 @@
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <fstream>
-
-// The Boost split-free registration needs the archive declarations first.
-#include <common/serialization/TimeDelta_serialization.h>
 
 #include "doctest/doctest.h"
 

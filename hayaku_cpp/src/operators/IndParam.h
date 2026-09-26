@@ -27,12 +27,12 @@ class HAYAKU_API IndParam {
   explicit IndParam(const IndicatorImpPtr& ind);
   explicit IndParam(const Indicator& ind);
 
-  IndicatorImpPtr getImp() const noexcept { return m_ind; }
+  IndicatorImpPtr getImp() const noexcept { return ind_; }
 
   Indicator get() const;
 
  private:
-  IndicatorImpPtr m_ind;
+  IndicatorImpPtr ind_;
 };
 
 }  // namespace hayaku

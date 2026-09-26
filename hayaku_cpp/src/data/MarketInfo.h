@@ -43,45 +43,45 @@ class HAYAKU_API MarketInfo {
   MarketInfo& operator=(MarketInfo&&) noexcept;
 
   /** Get the market abbreviation */
-  const string& market() const noexcept { return m_market; }
+  const string& market() const noexcept { return market_; }
 
   /** Get the market name */
-  const string& name() const noexcept { return m_name; }
+  const string& name() const noexcept { return name_; }
 
   /** Get the market description */
-  const string& description() const noexcept { return m_description; }
+  const string& description() const noexcept { return description_; }
 
   /** Get the index code corresponding to the market */
-  const string& code() const noexcept { return m_code; }
+  const string& code() const noexcept { return code_; }
 
   /** Get the last update date of the market data */
-  Datetime lastDate() const noexcept { return m_lastDate; }
+  Datetime lastDate() const noexcept { return last_date_; }
 
   /** Opening time of session 1 */
-  TimeDelta openTime1() const noexcept { return m_openTime1; }
+  TimeDelta openTime1() const noexcept { return open_time1_; }
 
   /** Closing time of session 1 */
-  TimeDelta closeTime1() const noexcept { return m_closeTime1; }
+  TimeDelta closeTime1() const noexcept { return close_time1_; }
 
   /** Opening time of session 2 */
-  TimeDelta openTime2() const noexcept { return m_openTime2; }
+  TimeDelta openTime2() const noexcept { return open_time2_; }
 
   /** Closing time of session 2 */
-  TimeDelta closeTime2() const noexcept { return m_closeTime2; }
+  TimeDelta closeTime2() const noexcept { return close_time2_; }
 
   /** Used by __str__ of python only */
   string toString() const;
 
  private:
-  string m_market;       // Market identifier
-  string m_name;         // Market name
-  string m_description;  // Description
-  string m_code;  // Index code of the market, used to get the trading calendar
-  Datetime m_lastDate;     // Current last date of the market
-  TimeDelta m_openTime1;   // Morning opening time
-  TimeDelta m_closeTime1;  // Morning closing time
-  TimeDelta m_openTime2;   // Afternoon opening time
-  TimeDelta m_closeTime2;  // Afternoon closing time
+  string market_;       // Market identifier
+  string name_;         // Market name
+  string description_;  // Description
+  string code_;  // Index code of the market, used to get the trading calendar
+  Datetime last_date_;     // Current last date of the market
+  TimeDelta open_time1_;   // Morning opening time
+  TimeDelta close_time1_;  // Morning closing time
+  TimeDelta open_time2_;   // Afternoon opening time
+  TimeDelta close_time2_;  // Afternoon closing time
 };
 
 /**

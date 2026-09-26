@@ -31,26 +31,26 @@ class Ledger {
   using BorrowStockMap = std::map<uint64_t, BorrowRecord>;
   using PositionMap = std::map<uint64_t, PositionRecord>;
 
-  AccountId m_accountId;
-  Datetime m_initDatetime;
-  price_t m_initCash{0.0};
-  Datetime m_lastUpdateDatetime;
+  AccountId account_id_;
+  Datetime init_datetime_;
+  price_t init_cash_{0.0};
+  Datetime last_update_datetime_;
 
-  price_t m_cash{0.0};
-  price_t m_checkinCash{0.0};
-  price_t m_checkoutCash{0.0};
-  price_t m_checkinStock{0.0};
-  price_t m_checkoutStock{0.0};
-  price_t m_borrowCash{0.0};
+  price_t cash_{0.0};
+  price_t checkin_cash_{0.0};
+  price_t checkout_cash_{0.0};
+  price_t checkin_stock_{0.0};
+  price_t checkout_stock_{0.0};
+  price_t borrow_cash_{0.0};
 
-  std::list<LoanRecord> m_loanList;
-  BorrowStockMap m_borrowStock;
-  TradeRecordList m_tradeList;
-  PositionMap m_position;
-  PositionRecordList m_positionHistory;
-  PositionMap m_shortPosition;
-  PositionRecordList m_shortPositionHistory;
-  std::list<string> m_actions;
+  std::list<LoanRecord> loan_list_;
+  BorrowStockMap borrow_stock_;
+  TradeRecordList trade_list_;
+  PositionMap position_;
+  PositionRecordList position_history_;
+  PositionMap short_position_;
+  PositionRecordList short_position_history_;
+  std::list<string> actions_;
 };
 
 }  // namespace hayaku

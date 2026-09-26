@@ -11,6 +11,7 @@
  * covered by the code review; here the publicly
  */
 
+#include <data/DataRuntime.h>
 #include <operators/SeriesOperators.h>
 #include <operators/WindowOperators.h>
 

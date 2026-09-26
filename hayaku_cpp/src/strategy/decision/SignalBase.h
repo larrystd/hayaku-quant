@@ -134,28 +134,28 @@ class HAYAKU_API SignalBase : public enable_shared_from_this<SignalBase> {
   /** Subclass calculation interface, it is called in setTO */
   virtual void _calculate(const KData&) = 0;
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  private:
   void initParam();
 
  protected:
-  string m_name;
-  KData m_kdata;
-  bool m_is_python_object{false};
-  bool m_calculated{false};  // It is for the calculation at setTO only
+  string name_;
+  KData kdata_;
+  bool is_python_object_{false};
+  bool calculated_{false};  // It is for the calculation at setTO only
 
   /* Long positions */
-  bool m_hold_long;
+  bool hold_long_;
   /* Short positions */
-  bool m_hold_short;
+  bool hold_short_;
 
   // A map is used for the storage, so that the order can be kept when getting
-  std::map<Datetime, double> m_buySig;
-  std::map<Datetime, double> m_sellSig;
+  std::map<Datetime, double> buy_sig_;
+  std::map<Datetime, double> sell_sig_;
 
-  Datetime m_cycle_start;
-  Datetime m_cycle_end;
+  Datetime cycle_start_;
+  Datetime cycle_end_;
 
 //============================================
 // Serialization support
@@ -165,30 +165,30 @@ class HAYAKU_API SignalBase : public enable_shared_from_this<SignalBase> {
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_hold_long);
-    ar& BOOST_SERIALIZATION_NVP(m_hold_short);
-    ar& BOOST_SERIALIZATION_NVP(m_buySig);
-    ar& BOOST_SERIALIZATION_NVP(m_sellSig);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_hold_long", hold_long_);
+    ar& boost::serialization::make_nvp("m_hold_short", hold_short_);
+    ar& boost::serialization::make_nvp("m_buySig", buy_sig_);
+    ar& boost::serialization::make_nvp("m_sellSig", sell_sig_);
     // m_kdata is set temporarily when the system runs, it does not need to be
-    // serialized ar & BOOST_SERIALIZATION_NVP(m_kdata); ar &
-    // BOOST_SERIALIZATION_NVP(m_calculated);
+    // serialized ar & boost::serialization::make_nvp("m_kdata", kdata_); ar &
+    // boost::serialization::make_nvp("m_calculated", calculated_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_hold_long);
-    ar& BOOST_SERIALIZATION_NVP(m_hold_short);
-    ar& BOOST_SERIALIZATION_NVP(m_buySig);
-    ar& BOOST_SERIALIZATION_NVP(m_sellSig);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_hold_long", hold_long_);
+    ar& boost::serialization::make_nvp("m_hold_short", hold_short_);
+    ar& boost::serialization::make_nvp("m_buySig", buy_sig_);
+    ar& boost::serialization::make_nvp("m_sellSig", sell_sig_);
     // m_kdata is set temporarily when the system runs, it does not need to be
-    // serialized ar & BOOST_SERIALIZATION_NVP(m_kdata); ar &
-    // BOOST_SERIALIZATION_NVP(m_calculated);
+    // serialized ar & boost::serialization::make_nvp("m_kdata", kdata_); ar &
+    // boost::serialization::make_nvp("m_calculated", calculated_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -243,25 +243,25 @@ typedef shared_ptr<SignalBase> SGPtr;
 HAYAKU_API std::ostream& operator<<(std::ostream&, const SignalBase&);
 HAYAKU_API std::ostream& operator<<(std::ostream&, const SignalPtr&);
 
-inline const KData& SignalBase::getTO() const { return m_kdata; }
+inline const KData& SignalBase::getTO() const { return kdata_; }
 
-inline const string& SignalBase::name() const { return m_name; }
+inline const string& SignalBase::name() const { return name_; }
 
-inline void SignalBase::name(const string& name) { m_name = name; }
+inline void SignalBase::name(const string& name) { name_ = name; }
 
 inline bool SignalBase::shouldBuy(const Datetime& datetime) const {
-  return m_buySig.count(datetime) ? true : false;
+  return buy_sig_.count(datetime) ? true : false;
 }
 
 inline bool SignalBase::shouldSell(const Datetime& datetime) const {
-  return m_sellSig.count(datetime) ? true : false;
+  return sell_sig_.count(datetime) ? true : false;
 }
 
 inline const Datetime& SignalBase::getCycleStart() const {
-  return m_cycle_start;
+  return cycle_start_;
 }
 
-inline const Datetime& SignalBase::getCycleEnd() const { return m_cycle_end; }
+inline const Datetime& SignalBase::getCycleEnd() const { return cycle_end_; }
 
 inline double SignalBase::getValue(const Datetime& datetime) const {
   return getBuyValue(datetime) + getSellValue(datetime);

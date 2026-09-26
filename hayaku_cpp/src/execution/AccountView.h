@@ -18,40 +18,40 @@ class HAYAKU_API AccountView {
   AccountView(AccountId id, Datetime initDatetime, Datetime lastDatetime,
               FundsRecord funds, PositionRecordList positions,
               PositionRecordList shortPositions)
-      : m_id(id),
-        m_initDatetime(initDatetime),
-        m_lastDatetime(lastDatetime),
-        m_funds(std::move(funds)),
-        m_positions(std::move(positions)),
-        m_shortPositions(std::move(shortPositions)) {}
+      : id_(id),
+        init_datetime_(initDatetime),
+        last_datetime_(lastDatetime),
+        funds_(std::move(funds)),
+        positions_(std::move(positions)),
+        short_positions_(std::move(shortPositions)) {}
 
-  [[nodiscard]] AccountId id() const noexcept { return m_id; }
+  [[nodiscard]] AccountId id() const noexcept { return id_; }
 
   [[nodiscard]] Datetime initDatetime() const noexcept {
-    return m_initDatetime;
+    return init_datetime_;
   }
 
   [[nodiscard]] Datetime lastDatetime() const noexcept {
-    return m_lastDatetime;
+    return last_datetime_;
   }
 
-  [[nodiscard]] const FundsRecord& funds() const noexcept { return m_funds; }
+  [[nodiscard]] const FundsRecord& funds() const noexcept { return funds_; }
 
   [[nodiscard]] const PositionRecordList& positions() const noexcept {
-    return m_positions;
+    return positions_;
   }
 
   [[nodiscard]] const PositionRecordList& shortPositions() const noexcept {
-    return m_shortPositions;
+    return short_positions_;
   }
 
  private:
-  AccountId m_id;
-  Datetime m_initDatetime;
-  Datetime m_lastDatetime;
-  FundsRecord m_funds;
-  PositionRecordList m_positions;
-  PositionRecordList m_shortPositions;
+  AccountId id_;
+  Datetime init_datetime_;
+  Datetime last_datetime_;
+  FundsRecord funds_;
+  PositionRecordList positions_;
+  PositionRecordList short_positions_;
 };
 
 }  // namespace hayaku

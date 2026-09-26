@@ -13,9 +13,9 @@
 namespace hayaku {
 
 KDataToClickHouseImporter::KDataToClickHouseImporter() {
-  m_plugin = getPlugin<ImportKDataToClickHousePluginInterface>(
+  plugin_ = getPlugin<ImportKDataToClickHousePluginInterface>(
       HAYAKU_PLUGIN_IMPORTKDATATOCLICKHOUSE);
-  if (!m_plugin) {
+  if (!plugin_) {
     HAYAKU_ERROR(
         htr("Can't find {} plugin!", HAYAKU_PLUGIN_IMPORTKDATATOCLICKHOUSE));
   }
@@ -26,13 +26,13 @@ KDataToClickHouseImporter::~KDataToClickHouseImporter() {}
 bool KDataToClickHouseImporter::setConfig(const string& host, int port,
                                           const string& user, const string& pwd,
                                           const string& baseinfo_db) {
-  return m_plugin ? m_plugin->setConfig(host, port, user, pwd, baseinfo_db)
+  return plugin_ ? plugin_->setConfig(host, port, user, pwd, baseinfo_db)
                   : false;
 }
 
 Datetime KDataToClickHouseImporter::getLastDatetime(
     const string& market, const string& code, const KQuery::KType& ktype) {
-  return m_plugin ? m_plugin->getLastDatetime(market, code, ktype)
+  return plugin_ ? plugin_->getLastDatetime(market, code, ktype)
                   : Null<Datetime>();
 }
 
@@ -40,40 +40,40 @@ void KDataToClickHouseImporter::addKRecordList(const string& market,
                                                const string& code,
                                                const vector<KRecord>& krecords,
                                                const KQuery::KType& ktype) {
-  if (m_plugin) {
-    m_plugin->addKRecordList(market, code, krecords, ktype);
+  if (plugin_) {
+    plugin_->addKRecordList(market, code, krecords, ktype);
   }
 }
 
 void KDataToClickHouseImporter::updateIndex(const string& market,
                                             const string& code,
                                             const KQuery::KType& ktype) {
-  if (m_plugin) {
-    m_plugin->updateIndex(market, code, ktype);
+  if (plugin_) {
+    plugin_->updateIndex(market, code, ktype);
   }
 }
 
 void KDataToClickHouseImporter::remove(const string& market, const string& code,
                                        const KQuery::KType& ktype,
                                        Datetime start) {
-  if (m_plugin) {
-    m_plugin->remove(market, code, ktype, start);
+  if (plugin_) {
+    plugin_->remove(market, code, ktype, start);
   }
 }
 
 void KDataToClickHouseImporter::addTimeLineList(const string& market,
                                                 const string& code,
                                                 const TimeLineList& timeline) {
-  if (m_plugin) {
-    m_plugin->addTimeLineList(market, code, timeline);
+  if (plugin_) {
+    plugin_->addTimeLineList(market, code, timeline);
   }
 }
 
 void KDataToClickHouseImporter::addTransList(const string& market,
                                              const string& code,
                                              const TransRecordList& translist) {
-  if (m_plugin) {
-    m_plugin->addTransList(market, code, translist);
+  if (plugin_) {
+    plugin_->addTransList(market, code, translist);
   }
 }
 
@@ -83,7 +83,7 @@ bool KDataToClickHouseImporter::addMarket(const string& market,
                                           const string& index_code,
                                           uint64_t open1, uint64_t close1,
                                           uint64_t open2, uint64_t close2) {
-  return m_plugin ? m_plugin->addMarket(market, name, description, index_code,
+  return plugin_ ? plugin_->addMarket(market, name, description, index_code,
                                         open1, close1, open2, close2)
                   : false;
 }
@@ -91,8 +91,8 @@ bool KDataToClickHouseImporter::addMarket(const string& market,
 bool KDataToClickHouseImporter::addStockType(
     uint32_t type_id, const string& description, uint32_t precision,
     double tick, double tick_value, double min_trade, double max_trade) {
-  return m_plugin
-             ? m_plugin->addStockType(type_id, description, precision, tick,
+  return plugin_
+             ? plugin_->addStockType(type_id, description, precision, tick,
                                       tick_value, min_trade, max_trade)
              : false;
 }

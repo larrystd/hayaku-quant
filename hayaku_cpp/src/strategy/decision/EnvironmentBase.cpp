@@ -27,16 +27,16 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-EnvironmentBase::EnvironmentBase() : m_name("EnvironmentBase") {}
+EnvironmentBase::EnvironmentBase() : name_("EnvironmentBase") {}
 
 EnvironmentBase::EnvironmentBase(const EnvironmentBase& base)
-    : m_params(base.m_params),
-      m_name(base.m_name),
-      m_query(base.m_query),
-      m_date_index(base.m_date_index),
-      m_values(base.m_values) {}
+    : params_(base.params_),
+      name_(base.name_),
+      query_(base.query_),
+      date_index_(base.date_index_),
+      values_(base.values_) {}
 
-EnvironmentBase::EnvironmentBase(const string& name) : m_name(name) {}
+EnvironmentBase::EnvironmentBase(const string& name) : name_(name) {}
 
 EnvironmentBase::~EnvironmentBase() {}
 
@@ -44,10 +44,10 @@ void EnvironmentBase::baseCheckParam(const string& name) const {}
 void EnvironmentBase::paramChanged() {}
 
 void EnvironmentBase::reset() {
-  std::unique_lock<std::shared_mutex> lock(m_mutex);
-  m_query = Null<KQuery>();
-  m_date_index.clear();
-  m_values.clear();
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  query_ = Null<KQuery>();
+  date_index_.clear();
+  values_.clear();
   _reset();
 }
 
@@ -65,61 +65,61 @@ EnvironmentPtr EnvironmentBase::clone() {
     return shared_from_this();
   }
 
-  p->m_params = m_params;
-  p->m_name = m_name;
-  p->m_is_python_object = m_is_python_object;
-  p->m_query = m_query;
-  p->m_date_index = m_date_index;
-  p->m_values = m_values;
+  p->params_ = params_;
+  p->name_ = name_;
+  p->is_python_object_ = is_python_object_;
+  p->query_ = query_;
+  p->date_index_ = date_index_;
+  p->values_ = values_;
   return p;
 }
 
 void EnvironmentBase::setQuery(const KQuery& query) {
-  std::unique_lock<std::shared_mutex> lock(m_mutex);
-  if (m_query != query) {
-    m_query = Null<KQuery>();
-    m_date_index.clear();
-    m_values.clear();
+  std::unique_lock<std::shared_mutex> lock(mutex_);
+  if (query_ != query) {
+    query_ = Null<KQuery>();
+    date_index_.clear();
+    values_.clear();
     _reset();
-    m_query = query;
+    query_ = query;
     _calculate();
   }
 }
 
 void EnvironmentBase::_addValid(const Datetime& datetime, price_t value) {
-  auto iter = m_date_index.find(datetime);
-  if (iter == m_date_index.end()) {
-    m_date_index[datetime] = m_values.size();
-    m_values.push_back(value);
+  auto iter = date_index_.find(datetime);
+  if (iter == date_index_.end()) {
+    date_index_[datetime] = values_.size();
+    values_.push_back(value);
   } else {
-    m_values[iter->second] += value;
+    values_[iter->second] += value;
   }
 }
 
 bool EnvironmentBase::isValid(const Datetime& datetime) const {
-  std::shared_lock<std::shared_mutex> lock(m_mutex);
-  auto iter = m_date_index.find(datetime);
-  HAYAKU_IF_RETURN(iter == m_date_index.end(), false);
-  return m_values[iter->second] > 0.;
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  auto iter = date_index_.find(datetime);
+  HAYAKU_IF_RETURN(iter == date_index_.end(), false);
+  return values_[iter->second] > 0.;
 }
 
 price_t EnvironmentBase::getValue(const Datetime& datetime) const {
-  std::shared_lock<std::shared_mutex> lock(m_mutex);
-  auto iter = m_date_index.find(datetime);
-  return iter == m_date_index.end() ? 0. : m_values[iter->second];
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  auto iter = date_index_.find(datetime);
+  return iter == date_index_.end() ? 0. : values_[iter->second];
 }
 
 Indicator EnvironmentBase::getValues() const {
-  std::shared_lock<std::shared_mutex> lock(m_mutex);
+  std::shared_lock<std::shared_mutex> lock(mutex_);
   DatetimeList dates;
   PriceList values;
-  for (const auto& d : m_date_index) {
+  for (const auto& d : date_index_) {
     dates.emplace_back(d.first);
   }
 
   values.reserve(dates.size());
   for (const auto& d : dates) {
-    values.emplace_back(m_values[m_date_index.at(d)]);
+    values.emplace_back(values_[date_index_.at(d)]);
   }
 
   return PRICELIST(values, dates);

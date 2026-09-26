@@ -33,59 +33,59 @@ string StockTypeInfo::toString() const {
   }
 
   string sp(", ");
-  os << "StockTypeInfo(" << m_type << sp << m_description << sp << m_tick << sp
-     << m_tickValue << sp << m_unit << sp << m_precision << sp
-     << m_minTradeNumber << sp << m_maxTradeNumber << ")";
+  os << "StockTypeInfo(" << type_ << sp << description_ << sp << tick_ << sp
+     << tick_value_ << sp << unit_ << sp << precision_ << sp
+     << min_trade_number_ << sp << max_trade_number_ << ")";
   return os.str();
 }
 
 StockTypeInfo::StockTypeInfo()
-    : m_type(Null<uint32_t>()),
-      m_tick(0.0),
-      m_tickValue(0.0),
-      m_unit(1.0),
-      m_precision(0),
-      m_minTradeNumber(0),
-      m_maxTradeNumber(0) {}
+    : type_(Null<uint32_t>()),
+      tick_(0.0),
+      tick_value_(0.0),
+      unit_(1.0),
+      precision_(0),
+      min_trade_number_(0),
+      max_trade_number_(0) {}
 
 StockTypeInfo::StockTypeInfo(uint32_t type, const string& description,
                              price_t tick, price_t tickValue, int precision,
                              double minTradeNumber, double maxTradeNumber)
-    : m_type(type),
-      m_description(description),
-      m_tick(tick),
-      m_tickValue(tickValue),
-      m_precision(precision),
-      m_minTradeNumber(minTradeNumber),
-      m_maxTradeNumber(maxTradeNumber) {
-  if (m_tick == 0.0) {
-    m_unit = 1.0;
+    : type_(type),
+      description_(description),
+      tick_(tick),
+      tick_value_(tickValue),
+      precision_(precision),
+      min_trade_number_(minTradeNumber),
+      max_trade_number_(maxTradeNumber) {
+  if (tick_ == 0.0) {
+    unit_ = 1.0;
     HAYAKU_WARN("tick should not be zero!");
   } else {
-    m_unit = m_tickValue / m_tick;
+    unit_ = tick_value_ / tick_;
   }
 }
 
 StockTypeInfo::StockTypeInfo(StockTypeInfo&& rhs) noexcept
-    : m_type(rhs.m_type),
-      m_description(std::move(rhs.m_description)),
-      m_tick(rhs.m_tick),
-      m_tickValue(rhs.m_tickValue),
-      m_unit(rhs.m_unit),
-      m_precision(rhs.m_precision),
-      m_minTradeNumber(rhs.m_minTradeNumber),
-      m_maxTradeNumber(rhs.m_maxTradeNumber) {}
+    : type_(rhs.type_),
+      description_(std::move(rhs.description_)),
+      tick_(rhs.tick_),
+      tick_value_(rhs.tick_value_),
+      unit_(rhs.unit_),
+      precision_(rhs.precision_),
+      min_trade_number_(rhs.min_trade_number_),
+      max_trade_number_(rhs.max_trade_number_) {}
 
 StockTypeInfo& StockTypeInfo::operator=(StockTypeInfo&& rhs) noexcept {
   HAYAKU_IF_RETURN(this == &rhs, *this);
-  m_type = rhs.m_type;
-  m_description = std::move(rhs.m_description);
-  m_tick = rhs.m_tick;
-  m_tickValue = rhs.m_tickValue;
-  m_unit = rhs.m_unit;
-  m_precision = rhs.m_precision;
-  m_minTradeNumber = rhs.m_minTradeNumber;
-  m_maxTradeNumber = rhs.m_maxTradeNumber;
+  type_ = rhs.type_;
+  description_ = std::move(rhs.description_);
+  tick_ = rhs.tick_;
+  tick_value_ = rhs.tick_value_;
+  unit_ = rhs.unit_;
+  precision_ = rhs.precision_;
+  min_trade_number_ = rhs.min_trade_number_;
+  max_trade_number_ = rhs.max_trade_number_;
   return *this;
 };
 

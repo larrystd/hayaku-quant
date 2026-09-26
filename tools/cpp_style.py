@@ -80,22 +80,18 @@ def tracked_source_files():
         capture_output=True,
         check=True,
     )
-    files = []
-    for name in result.stdout.split(b"\0"):
-        if not name:
-            continue
-        path = PROJECT_ROOT / os.fsdecode(name)
-        if path.is_file() and path.suffix in FORMAT_EXTENSIONS:
-            files.append(path)
-    return files
+    return [
+        PROJECT_ROOT / os.fsdecode(name)
+        for name in result.stdout.split(b"\0")
+        if name and Path(os.fsdecode(name)).suffix in FORMAT_EXTENSIONS
+    ]
 
 
 def compile_database_files():
     database = PROJECT_ROOT / "compile_commands.json"
     if not database.is_file():
         raise RuntimeError(
-            "compile_commands.json is missing; run "
-            "'xmake project -k compile_commands --lsp=clangd' first."
+            "compile_commands.json is missing; run ./op.sh compdb first."
         )
     entries = json.loads(database.read_text(encoding="utf-8"))
     return {
@@ -132,7 +128,7 @@ def run_tidy(tool, files, strict):
     missing = [path for path in files if path not in available]
     if missing:
         raise ValueError(
-            "not found in compile_commands.json (check the Xmake configuration): "
+            "not found in compile_commands.json (check the Bazel build configuration): "
             + ", ".join(str(path.relative_to(PROJECT_ROOT)) for path in missing)
         )
 

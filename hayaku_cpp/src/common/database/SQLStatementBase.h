@@ -189,8 +189,8 @@ class HAYAKU_UTILS_API SQLStatementBase {
   SQLStatementBase() = delete;
 
  protected:
-  DBConnectBase *m_driver;   ///< Database connection
-  std::string m_sql_string;  ///< Original SQL statement
+  DBConnectBase *driver_;   ///< Database connection
+  std::string sql_string_;  ///< Original SQL statement
 };
 
 /** @ingroup DBConnect */
@@ -198,15 +198,15 @@ typedef std::shared_ptr<SQLStatementBase> SQLStatementPtr;
 
 inline SQLStatementBase ::SQLStatementBase(DBConnectBase *driver,
                                            const std::string &sql_statement)
-    : m_driver(driver), m_sql_string(sql_statement) {
+    : driver_(driver), sql_string_(sql_statement) {
   HAYAKU_CHECK(driver, "driver is null!");
 }
 
 inline const std::string &SQLStatementBase::getSqlString() const {
-  return m_sql_string;
+  return sql_string_;
 }
 
-inline DBConnectBase *SQLStatementBase::getConnect() const { return m_driver; }
+inline DBConnectBase *SQLStatementBase::getConnect() const { return driver_; }
 
 inline void SQLStatementBase::bind(int idx, float item) {
   bind(idx, (double)item);
@@ -214,7 +214,7 @@ inline void SQLStatementBase::bind(int idx, float item) {
 
 inline void SQLStatementBase::exec() {
 #if HAYAKU_SQL_TRACE
-  HAYAKU_DEBUG(m_sql_string);
+  HAYAKU_DEBUG(sql_string_);
 #endif
   sub_exec();
 }

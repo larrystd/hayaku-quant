@@ -32,6 +32,7 @@ void init_hayaku_test() {
   fmt::print("configure file: {}\n", config_file);
   g_testSession =
       std::make_unique<HayakuSession>(HayakuSession::open(config_file));
+  g_testSession->waitReady();
   auto& data_runtime = getDataRuntime();
   createDir(data_runtime.tmpdir());
   std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -61,6 +62,7 @@ void init_hayaku_test() {
   fmt::print("configure file: {}\n", config_file);
   g_testSession =
       std::make_unique<HayakuSession>(HayakuSession::open(config_file));
+  g_testSession->waitReady();
   fmt::print("current plugin path: {}\n", getPluginPath());
 
   std::string tmp_dir(fmt::format("{}/tmp", current));
@@ -102,6 +104,9 @@ int main(int argc, char** argv) {
     res = context.run();  // run
     std::cout << std::endl;
   }
+
+  // Release the runtime while its process-wide mutexes are still alive.
+  g_testSession.reset();
 
   if (context.shouldExit())  // important - query flags (and --exit) rely on the
                              // user doing this

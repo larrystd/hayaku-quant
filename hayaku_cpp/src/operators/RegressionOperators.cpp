@@ -26,7 +26,7 @@ class IIc : public IndicatorImp {
   virtual bool selfAlike(const IndicatorImp& other) const noexcept override;
 
  private:
-  StockList m_stks;
+  StockList stks_;
 
 //============================================
 // Serialization support
@@ -37,7 +37,7 @@ class IIc : public IndicatorImp {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(IndicatorImp);
-    ar& BOOST_SERIALIZATION_NVP(m_stks);
+    ar& boost::serialization::make_nvp("m_stks", stks_);
   }
 #endif
 };
@@ -124,7 +124,7 @@ BOOST_CLASS_EXPORT(hayaku::IIc)
 namespace hayaku {
 
 IIc::IIc() : IndicatorImp("IC", 1) {
-  m_need_self_alike_compare = true;
+  need_self_alike_compare_ = true;
   setParam<int>("n", 1);  // Position adjustment cycle
   // Whether to fill with nan during the alignment, otherwise the last value
   // earlier than the current date is used as the fill
@@ -139,8 +139,8 @@ IIc::IIc() : IndicatorImp("IC", 1) {
 }
 
 IIc::IIc(const StockList& stks, int n, bool spearman, bool strict)
-    : IndicatorImp("IC", 1), m_stks(stks) {
-  m_need_self_alike_compare = true;
+    : IndicatorImp("IC", 1), stks_(stks) {
+  need_self_alike_compare_ = true;
   setParam<int>("n", n);
   setParam<bool>("fill_null", true);
   setParam<bool>("use_spearman", spearman);
@@ -157,20 +157,20 @@ void IIc::_checkParam(const string& name) const {
 
 IndicatorImpPtr IIc::_clone() {
   auto p = make_shared<IIc>();
-  p->m_stks = m_stks;
+  p->stks_ = stks_;
   return p;
 }
 
 bool IIc::selfAlike(const IndicatorImp& other) const noexcept {
   const auto* other_ind = dynamic_cast<const IIc*>(&other);
   HAYAKU_IF_RETURN(other_ind == nullptr, false);
-  HAYAKU_IF_RETURN(other_ind->m_stks.size() != m_stks.size(), false);
+  HAYAKU_IF_RETURN(other_ind->stks_.size() != stks_.size(), false);
   std::unordered_set<string> names;
-  names.reserve(m_stks.size());
-  for (const auto& stk : m_stks) {
+  names.reserve(stks_.size());
+  for (const auto& stk : stks_) {
     names.insert(stk.market_code());
   }
-  for (const auto& stk : other_ind->m_stks) {
+  for (const auto& stk : other_ind->stks_) {
     if (names.find(stk.market_code()) == names.end()) {
       return false;
     }
@@ -185,16 +185,16 @@ void IIc::_calculate(const Indicator& inputInd) {
   _readyBuffer(days_total, 1);
 
   // Detect the abnormal input data
-  m_discard = days_total;
+  discard_ = days_total;
   HAYAKU_IF_RETURN(days_total < 2, void());
 
-  size_t stk_count = m_stks.size();
+  size_t stk_count = stks_.size();
   HAYAKU_ERROR_IF_RETURN(
       stk_count < 2, void(),
       "The number(>=2) of stock is insufficient! current stock number: {}",
       stk_count);
   for (size_t i = 0; i < stk_count; i++) {
-    HAYAKU_ERROR_IF_RETURN(m_stks[i].isNull(), void(),
+    HAYAKU_ERROR_IF_RETURN(stks_[i].isNull(), void(),
                            "The [{}] stock is null!", i);
   }
 
@@ -216,7 +216,7 @@ void IIc::_calculate(const Indicator& inputInd) {
   // only introduces a negligible calculation error)
   global_parallel_for_index_void(
       0, stk_count, [&, n, fill_null, ind = inputInd.clone()](size_t i) {
-        auto k = m_stks[i].getKData(query);
+        auto k = stks_[i].getKData(query);
         // Suppose IC originally needs "the factor value at t -> the return at
         // t+1"; it is changed to calculate "the factor value at t -> the return
         // of the N days before t" (such as the return of the past 5 days),
@@ -230,7 +230,7 @@ void IIc::_calculate(const Indicator& inputInd) {
             ALIGN(ROCP(CLOSE(), n), ref_dates, fill_null)(k).getResult(0)();
       });
 
-  m_discard = n;
+  discard_ = n;
 
   Indicator (*spearman)(const Indicator&, const Indicator&, int, bool) =
       hayaku::SPEARMAN;
@@ -240,7 +240,7 @@ void IIc::_calculate(const Indicator& inputInd) {
 
   auto* dst = this->data();
   global_parallel_for_index_void(
-      m_discard, days_total, [&, stk_count, dst](size_t i) {
+      discard_, days_total, [&, stk_count, dst](size_t i) {
         // Calculate the daily cross-sectional spearman correlation coefficient,
         // i.e. the IC value
         PriceList tmp(stk_count, Null<price_t>());
@@ -260,7 +260,7 @@ void IIc::_calculate(const Indicator& inputInd) {
   if (getParam<bool>("strict")) {
     // The strict mode, i.e. the calculation result of the current moment
     // corresponding to the future return
-    for (size_t i = m_discard; i < days_total; i++) {
+    for (size_t i = discard_; i < days_total; i++) {
       dst[i - n] = dst[i];
     }
     if (days_total > n) {
@@ -268,7 +268,7 @@ void IIc::_calculate(const Indicator& inputInd) {
         dst[i] = Null<price_t>();
       }
     }
-    m_discard = 0;
+    discard_ = 0;
   }
 
   updateDiscard();
@@ -389,9 +389,9 @@ void ISlope::_checkParam(const string& name) const {
 
 void ISlope::_calculate(const Indicator& ind) {
   size_t total = ind.size();
-  m_discard = ind.discard() + 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -402,7 +402,7 @@ void ISlope::_calculate(const Indicator& ind) {
 
   int n = getParam<int>("n");
   if (n <= 1) {
-    for (size_t i = m_discard; i < total; i++) {
+    for (size_t i = discard_; i < total; i++) {
       dst_slope[i] = 0.0;
       dst_r2[i] = 0.0;
       dst_relmaxres[i] = 0.0;
@@ -410,7 +410,7 @@ void ISlope::_calculate(const Indicator& ind) {
     return;
   }
 
-  size_t startPos = m_discard - 1;
+  size_t startPos = discard_ - 1;
   price_t xsum = 0.0, ysum = 0.0, xysum = 0.0, x2sum = 0.0, y2sum = 0.0;
   size_t first_end = startPos + n >= total ? total : startPos + n;
   for (size_t i = startPos; i < first_end; i++) {
@@ -622,7 +622,7 @@ void ITsRank::_checkParam(const string& name) const {
 void ITsRank::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   if (0 == total || ind.discard() >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -630,13 +630,13 @@ void ITsRank::_calculate(const Indicator& ind) {
   auto* dst = this->data();
 
   int n = getParam<int>("n");
-  m_discard = ind.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  global_parallel_for_index_void(m_discard, total, [&, n, src, dst](size_t i) {
+  global_parallel_for_index_void(discard_, total, [&, n, src, dst](size_t i) {
     int count = 0;
     size_t start = i + 1 - n;
     value_t current = src[i];

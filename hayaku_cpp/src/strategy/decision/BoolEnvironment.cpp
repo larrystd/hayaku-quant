@@ -20,7 +20,7 @@ BoolEnvironment::BoolEnvironment() : EnvironmentBase("EV_Bool") {
 }
 
 BoolEnvironment::BoolEnvironment(const Indicator& ind)
-    : EnvironmentBase("EV_Bool"), m_ind(ind) {
+    : EnvironmentBase("EV_Bool"), ind_(ind) {
   setParam<string>("market", "SH");
 }
 
@@ -36,7 +36,7 @@ void BoolEnvironment::_checkParam(const string& name) const {
 }
 
 EnvironmentPtr BoolEnvironment::_clone() {
-  return make_shared<BoolEnvironment>(m_ind.clone());
+  return make_shared<BoolEnvironment>(ind_.clone());
 }
 
 void BoolEnvironment::_calculate() {
@@ -47,12 +47,12 @@ void BoolEnvironment::_calculate() {
                          "Can't find maket({}) info!", market);
 
   Stock stock = sm.getStock(market + market_info.code());
-  KData kdata = stock.getKData(m_query);
+  KData kdata = stock.getKData(query_);
 
   auto ds = kdata.getDatetimeList();
-  m_ind.setContext(kdata);
-  auto const* ind_data = m_ind.data();
-  for (size_t i = m_ind.discard(), len = m_ind.size(); i < len; i++) {
+  ind_.setContext(kdata);
+  auto const* ind_data = ind_.data();
+  for (size_t i = ind_.discard(), len = ind_.size(); i < len; i++) {
     if (!std::isnan(ind_data[i]) && ind_data[i] > 0.) {
       _addValid(ds[i]);
     }

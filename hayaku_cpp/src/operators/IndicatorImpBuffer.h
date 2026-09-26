@@ -66,7 +66,7 @@ class HAYAKU_API IndicatorImpBuffer {
     void reallocate(size_type new_capacity);
   };
 
-  Buffer m_buffer;
+  Buffer buffer_;
 
  public:
   /** Default constructor */
@@ -75,43 +75,43 @@ class HAYAKU_API IndicatorImpBuffer {
   /** Constructor with the given capacity */
   explicit IndicatorImpBuffer(size_type count) {
     if (count > 0) {
-      m_buffer.allocate(count);
-      m_buffer.size = count;
-      std::uninitialized_value_construct_n(m_buffer.data, count);
+      buffer_.allocate(count);
+      buffer_.size = count;
+      std::uninitialized_value_construct_n(buffer_.data, count);
     }
   }
 
   /** Constructor with an initial value */
   IndicatorImpBuffer(size_type count, const value_type& value) {
     if (count > 0) {
-      m_buffer.allocate(count);
-      m_buffer.size = count;
-      std::uninitialized_fill_n(m_buffer.data, count, value);
+      buffer_.allocate(count);
+      buffer_.size = count;
+      std::uninitialized_fill_n(buffer_.data, count, value);
     }
   }
 
   /** Copy constructor */
   IndicatorImpBuffer(const IndicatorImpBuffer& other) {
-    if (other.m_buffer.size > 0) {
-      m_buffer.allocate(other.m_buffer.capacity);
-      m_buffer.size = other.m_buffer.size;
-      std::uninitialized_copy(other.m_buffer.data,
-                              other.m_buffer.data + other.m_buffer.size,
-                              m_buffer.data);
+    if (other.buffer_.size > 0) {
+      buffer_.allocate(other.buffer_.capacity);
+      buffer_.size = other.buffer_.size;
+      std::uninitialized_copy(other.buffer_.data,
+                              other.buffer_.data + other.buffer_.size,
+                              buffer_.data);
     }
   }
 
   /** Move constructor */
   IndicatorImpBuffer(IndicatorImpBuffer&& other) noexcept {
     // Transfer the resources directly
-    m_buffer.data = other.m_buffer.data;
-    m_buffer.size = other.m_buffer.size;
-    m_buffer.capacity = other.m_buffer.capacity;
+    buffer_.data = other.buffer_.data;
+    buffer_.size = other.buffer_.size;
+    buffer_.capacity = other.buffer_.capacity;
 
     // Clear the source object
-    other.m_buffer.data = nullptr;
-    other.m_buffer.size = 0;
-    other.m_buffer.capacity = 0;
+    other.buffer_.data = nullptr;
+    other.buffer_.size = 0;
+    other.buffer_.capacity = 0;
   }
 
   /** Construct from an iterator range */
@@ -121,8 +121,8 @@ class HAYAKU_API IndicatorImpBuffer {
     size_type count = static_cast<size_type>(std::distance(first, last));
     if (count > 0) {
       reserve(count);
-      std::uninitialized_copy(first, last, m_buffer.data);
-      m_buffer.size = count;
+      std::uninitialized_copy(first, last, buffer_.data);
+      buffer_.size = count;
     }
   }
 
@@ -131,28 +131,28 @@ class HAYAKU_API IndicatorImpBuffer {
     if (init_list.size() > 0) {
       reserve(init_list.size());
       std::uninitialized_copy(init_list.begin(), init_list.end(),
-                              m_buffer.data);
-      m_buffer.size = init_list.size();
+                              buffer_.data);
+      buffer_.size = init_list.size();
     }
   }
 
   /** Assignment operator */
   IndicatorImpBuffer& operator=(const IndicatorImpBuffer& other) {
     if (this != &other) {
-      if (other.m_buffer.size > m_buffer.capacity) {
+      if (other.buffer_.size > buffer_.capacity) {
         // The memory needs to be reallocated
         Buffer new_buffer;
-        new_buffer.allocate(other.m_buffer.capacity);
-        std::uninitialized_copy(other.m_buffer.data,
-                                other.m_buffer.data + other.m_buffer.size,
+        new_buffer.allocate(other.buffer_.capacity);
+        std::uninitialized_copy(other.buffer_.data,
+                                other.buffer_.data + other.buffer_.size,
                                 new_buffer.data);
-        new_buffer.size = other.m_buffer.size;
+        new_buffer.size = other.buffer_.size;
 
         // Clean up the old resources and replace them
-        m_buffer.deallocate();
-        m_buffer.data = new_buffer.data;
-        m_buffer.size = new_buffer.size;
-        m_buffer.capacity = new_buffer.capacity;
+        buffer_.deallocate();
+        buffer_.data = new_buffer.data;
+        buffer_.size = new_buffer.size;
+        buffer_.capacity = new_buffer.capacity;
 
         // Clear new_buffer to avoid a double free
         new_buffer.data = nullptr;
@@ -160,12 +160,12 @@ class HAYAKU_API IndicatorImpBuffer {
         new_buffer.capacity = 0;
       } else {
         // Destroy the existing elements
-        destroy_elements(m_buffer.data, m_buffer.data + m_buffer.size);
+        destroy_elements(buffer_.data, buffer_.data + buffer_.size);
 
         // Copy the new elements
-        std::copy(other.m_buffer.data,
-                  other.m_buffer.data + other.m_buffer.size, m_buffer.data);
-        m_buffer.size = other.m_buffer.size;
+        std::copy(other.buffer_.data,
+                  other.buffer_.data + other.buffer_.size, buffer_.data);
+        buffer_.size = other.buffer_.size;
       }
     }
     return *this;
@@ -176,17 +176,17 @@ class HAYAKU_API IndicatorImpBuffer {
     if (this != &other) {
       // Clean up the resources of the current object
       clear();
-      m_buffer.deallocate();
+      buffer_.deallocate();
 
       // Transfer the resources
-      m_buffer.data = other.m_buffer.data;
-      m_buffer.size = other.m_buffer.size;
-      m_buffer.capacity = other.m_buffer.capacity;
+      buffer_.data = other.buffer_.data;
+      buffer_.size = other.buffer_.size;
+      buffer_.capacity = other.buffer_.capacity;
 
       // Clear the source object
-      other.m_buffer.data = nullptr;
-      other.m_buffer.size = 0;
-      other.m_buffer.capacity = 0;
+      other.buffer_.data = nullptr;
+      other.buffer_.size = 0;
+      other.buffer_.capacity = 0;
     }
     return *this;
   }
@@ -207,94 +207,94 @@ class HAYAKU_API IndicatorImpBuffer {
   static void operator delete[](void* ptr) noexcept;
 
   // Capacity related interface
-  size_type size() const noexcept { return m_buffer.size; }
-  size_type capacity() const noexcept { return m_buffer.capacity; }
-  bool empty() const noexcept { return m_buffer.size == 0; }
+  size_type size() const noexcept { return buffer_.size; }
+  size_type capacity() const noexcept { return buffer_.capacity; }
+  bool empty() const noexcept { return buffer_.size == 0; }
   size_type max_size() const noexcept {
     return static_cast<size_type>(-1) / sizeof(value_type);
   }
 
   // Modifier interface
   void resize(size_type count) {
-    if (count < m_buffer.size) {
+    if (count < buffer_.size) {
       // Shrink
-      destroy_elements(m_buffer.data + count, m_buffer.data + m_buffer.size);
-      m_buffer.size = count;
-    } else if (count > m_buffer.size) {
+      destroy_elements(buffer_.data + count, buffer_.data + buffer_.size);
+      buffer_.size = count;
+    } else if (count > buffer_.size) {
       // Expand
-      if (count > m_buffer.capacity) {
+      if (count > buffer_.capacity) {
         reserve(count);
       }
-      std::uninitialized_value_construct(m_buffer.data + m_buffer.size,
-                                         m_buffer.data + count);
-      m_buffer.size = count;
+      std::uninitialized_value_construct(buffer_.data + buffer_.size,
+                                         buffer_.data + count);
+      buffer_.size = count;
     }
   }
 
   void resize(size_type count, const value_type& value) {
-    if (count < m_buffer.size) {
+    if (count < buffer_.size) {
       // Shrink
-      destroy_elements(m_buffer.data + count, m_buffer.data + m_buffer.size);
-      m_buffer.size = count;
-    } else if (count > m_buffer.size) {
+      destroy_elements(buffer_.data + count, buffer_.data + buffer_.size);
+      buffer_.size = count;
+    } else if (count > buffer_.size) {
       // Expand
-      if (count > m_buffer.capacity) {
+      if (count > buffer_.capacity) {
         reserve(count);
       }
-      std::uninitialized_fill(m_buffer.data + m_buffer.size,
-                              m_buffer.data + count, value);
-      m_buffer.size = count;
+      std::uninitialized_fill(buffer_.data + buffer_.size,
+                              buffer_.data + count, value);
+      buffer_.size = count;
     }
   }
 
   void reserve(size_type new_cap) {
-    if (new_cap > m_buffer.capacity) {
-      m_buffer.reallocate(calculate_growth(new_cap));
+    if (new_cap > buffer_.capacity) {
+      buffer_.reallocate(calculate_growth(new_cap));
     }
   }
 
   void shrink_to_fit() {
-    if (m_buffer.capacity > m_buffer.size) {
-      m_buffer.reallocate(m_buffer.size);
+    if (buffer_.capacity > buffer_.size) {
+      buffer_.reallocate(buffer_.size);
     }
   }
 
   void clear() noexcept {
-    destroy_elements(m_buffer.data, m_buffer.data + m_buffer.size);
-    m_buffer.size = 0;
+    destroy_elements(buffer_.data, buffer_.data + buffer_.size);
+    buffer_.size = 0;
   }
 
   // Element access interface
   reference at(size_type pos) {
-    if (pos >= m_buffer.size) {
+    if (pos >= buffer_.size) {
       throw std::out_of_range("IndicatorImpBuffer::at: position out of range");
     }
-    return m_buffer.data[pos];
+    return buffer_.data[pos];
   }
 
   const_reference at(size_type pos) const {
-    if (pos >= m_buffer.size) {
+    if (pos >= buffer_.size) {
       throw std::out_of_range("IndicatorImpBuffer::at: position out of range");
     }
-    return m_buffer.data[pos];
+    return buffer_.data[pos];
   }
 
-  reference operator[](size_type pos) { return m_buffer.data[pos]; }
-  const_reference operator[](size_type pos) const { return m_buffer.data[pos]; }
-  reference front() { return m_buffer.data[0]; }
-  const_reference front() const { return m_buffer.data[0]; }
-  reference back() { return m_buffer.data[m_buffer.size - 1]; }
-  const_reference back() const { return m_buffer.data[m_buffer.size - 1]; }
-  pointer data() noexcept { return m_buffer.data; }
-  const_pointer data() const noexcept { return m_buffer.data; }
+  reference operator[](size_type pos) { return buffer_.data[pos]; }
+  const_reference operator[](size_type pos) const { return buffer_.data[pos]; }
+  reference front() { return buffer_.data[0]; }
+  const_reference front() const { return buffer_.data[0]; }
+  reference back() { return buffer_.data[buffer_.size - 1]; }
+  const_reference back() const { return buffer_.data[buffer_.size - 1]; }
+  pointer data() noexcept { return buffer_.data; }
+  const_pointer data() const noexcept { return buffer_.data; }
 
   // Iterator interface
-  iterator begin() noexcept { return m_buffer.data; }
-  const_iterator begin() const noexcept { return m_buffer.data; }
-  const_iterator cbegin() const noexcept { return m_buffer.data; }
-  iterator end() noexcept { return m_buffer.data + m_buffer.size; }
-  const_iterator end() const noexcept { return m_buffer.data + m_buffer.size; }
-  const_iterator cend() const noexcept { return m_buffer.data + m_buffer.size; }
+  iterator begin() noexcept { return buffer_.data; }
+  const_iterator begin() const noexcept { return buffer_.data; }
+  const_iterator cbegin() const noexcept { return buffer_.data; }
+  iterator end() noexcept { return buffer_.data + buffer_.size; }
+  const_iterator end() const noexcept { return buffer_.data + buffer_.size; }
+  const_iterator cend() const noexcept { return buffer_.data + buffer_.size; }
   reverse_iterator rbegin() noexcept { return reverse_iterator(end()); }
   const_reverse_iterator rbegin() const noexcept {
     return const_reverse_iterator(end());
@@ -308,37 +308,37 @@ class HAYAKU_API IndicatorImpBuffer {
 
   // Modifier interface
   void push_back(const value_type& value) {
-    if (m_buffer.size >= m_buffer.capacity) {
-      reserve(m_buffer.size + 1);
+    if (buffer_.size >= buffer_.capacity) {
+      reserve(buffer_.size + 1);
     }
-    new (m_buffer.data + m_buffer.size) value_type(value);
-    ++m_buffer.size;
+    new (buffer_.data + buffer_.size) value_type(value);
+    ++buffer_.size;
   }
 
   void push_back(value_type&& value) {
-    if (m_buffer.size >= m_buffer.capacity) {
-      reserve(m_buffer.size + 1);
+    if (buffer_.size >= buffer_.capacity) {
+      reserve(buffer_.size + 1);
     }
-    new (m_buffer.data + m_buffer.size) value_type(std::move(value));
-    ++m_buffer.size;
+    new (buffer_.data + buffer_.size) value_type(std::move(value));
+    ++buffer_.size;
   }
 
   template <class... Args>
   reference emplace_back(Args&&... args) {
-    if (m_buffer.size >= m_buffer.capacity) {
-      reserve(calculate_growth(m_buffer.size + 1));
+    if (buffer_.size >= buffer_.capacity) {
+      reserve(calculate_growth(buffer_.size + 1));
     }
 
-    pointer pos = m_buffer.data + m_buffer.size;
+    pointer pos = buffer_.data + buffer_.size;
     new (pos) value_type(std::forward<Args>(args)...);
-    ++m_buffer.size;
+    ++buffer_.size;
     return *pos;
   }
 
   void pop_back() {
-    if (m_buffer.size > 0) {
-      --m_buffer.size;
-      std::destroy_at(m_buffer.data + m_buffer.size);
+    if (buffer_.size > 0) {
+      --buffer_.size;
+      std::destroy_at(buffer_.data + buffer_.size);
     }
   }
 
@@ -352,73 +352,73 @@ class HAYAKU_API IndicatorImpBuffer {
 
   iterator insert(const_iterator pos, size_type count,
                   const value_type& value) {
-    difference_type pos_offset = pos - m_buffer.data;
+    difference_type pos_offset = pos - buffer_.data;
 
     if (count == 0) return const_cast<iterator>(pos);
 
-    if (m_buffer.size + count > m_buffer.capacity) {
-      reserve(calculate_growth(m_buffer.size + count));
+    if (buffer_.size + count > buffer_.capacity) {
+      reserve(calculate_growth(buffer_.size + count));
       // Recalculate the position because reserve may cause the memory to be
       // reallocated
-      pos = m_buffer.data + pos_offset;
+      pos = buffer_.data + pos_offset;
     }
 
     iterator pos_it = const_cast<iterator>(pos);
-    if (pos_offset < static_cast<difference_type>(m_buffer.size)) {
-      move_elements_backward(pos_it, m_buffer.data + m_buffer.size,
+    if (pos_offset < static_cast<difference_type>(buffer_.size)) {
+      move_elements_backward(pos_it, buffer_.data + buffer_.size,
                              pos_it + count);
     }
 
     std::uninitialized_fill_n(pos_it, count, value);
-    m_buffer.size += count;
+    buffer_.size += count;
 
     return pos_it;
   }
 
   template <class InputIt>
   iterator insert(const_iterator pos, InputIt first, InputIt last) {
-    difference_type pos_offset = pos - m_buffer.data;
+    difference_type pos_offset = pos - buffer_.data;
     difference_type count = std::distance(first, last);
 
     if (count == 0) return const_cast<iterator>(pos);
 
-    if (m_buffer.size + count > m_buffer.capacity) {
-      reserve(calculate_growth(m_buffer.size + count));
+    if (buffer_.size + count > buffer_.capacity) {
+      reserve(calculate_growth(buffer_.size + count));
       // Recalculate the position because reserve may cause the memory to be
       // reallocated
-      pos = m_buffer.data + pos_offset;
+      pos = buffer_.data + pos_offset;
     }
 
     iterator pos_it = const_cast<iterator>(pos);
-    if (pos_offset < static_cast<difference_type>(m_buffer.size)) {
-      move_elements_backward(pos_it, m_buffer.data + m_buffer.size,
+    if (pos_offset < static_cast<difference_type>(buffer_.size)) {
+      move_elements_backward(pos_it, buffer_.data + buffer_.size,
                              pos_it + count);
     }
 
     std::uninitialized_copy(first, last, pos_it);
-    m_buffer.size += count;
+    buffer_.size += count;
 
     return pos_it;
   }
 
   template <class... Args>
   iterator emplace(const_iterator pos, Args&&... args) {
-    difference_type pos_offset = pos - m_buffer.data;
+    difference_type pos_offset = pos - buffer_.data;
 
-    if (m_buffer.size >= m_buffer.capacity) {
-      reserve(calculate_growth(m_buffer.size + 1));
+    if (buffer_.size >= buffer_.capacity) {
+      reserve(calculate_growth(buffer_.size + 1));
       // Recalculate the position because reserve may cause the memory to be
       // reallocated
-      pos = m_buffer.data + pos_offset;
+      pos = buffer_.data + pos_offset;
     }
 
     iterator pos_it = const_cast<iterator>(pos);
-    if (pos_offset < static_cast<difference_type>(m_buffer.size)) {
-      move_elements_backward(pos_it, m_buffer.data + m_buffer.size, pos_it + 1);
+    if (pos_offset < static_cast<difference_type>(buffer_.size)) {
+      move_elements_backward(pos_it, buffer_.data + buffer_.size, pos_it + 1);
     }
 
     new (pos_it) value_type(std::forward<Args>(args)...);
-    ++m_buffer.size;
+    ++buffer_.size;
 
     return pos_it;
   }
@@ -428,8 +428,8 @@ class HAYAKU_API IndicatorImpBuffer {
     // Destroy the elements to be erased first
     std::destroy_at(pos_it);
     // Then move the following elements
-    std::move(pos_it + 1, m_buffer.data + m_buffer.size, pos_it);
-    --m_buffer.size;
+    std::move(pos_it + 1, buffer_.data + buffer_.size, pos_it);
+    --buffer_.size;
     return pos_it;
   }
 
@@ -443,17 +443,17 @@ class HAYAKU_API IndicatorImpBuffer {
     destroy_elements(first_it, last_it);
 
     // Move the following elements
-    std::move(last_it, m_buffer.data + m_buffer.size, first_it);
+    std::move(last_it, buffer_.data + buffer_.size, first_it);
     size_type count = last - first;
-    m_buffer.size -= count;
+    buffer_.size -= count;
 
     return first_it;
   }
 
   void swap(IndicatorImpBuffer& other) noexcept {
-    std::swap(m_buffer.data, other.m_buffer.data);
-    std::swap(m_buffer.size, other.m_buffer.size);
-    std::swap(m_buffer.capacity, other.m_buffer.capacity);
+    std::swap(buffer_.data, other.buffer_.data);
+    std::swap(buffer_.size, other.buffer_.size);
+    std::swap(buffer_.capacity, other.buffer_.capacity);
   }
 
   // STL algorithm compatible interface
@@ -461,8 +461,8 @@ class HAYAKU_API IndicatorImpBuffer {
   iterator erase_if(UnaryPredicate p) {
     iterator it = std::remove_if(begin(), end(), p);
     size_type new_size = it - begin();
-    destroy_elements(m_buffer.data + new_size, m_buffer.data + m_buffer.size);
-    m_buffer.size = new_size;
+    destroy_elements(buffer_.data + new_size, buffer_.data + buffer_.size);
+    buffer_.size = new_size;
     return it;
   }
 
@@ -496,7 +496,7 @@ class HAYAKU_API IndicatorImpBuffer {
   }
 
   size_type calculate_growth(size_type new_size) const {
-    size_type current_capacity = m_buffer.capacity;
+    size_type current_capacity = buffer_.capacity;
     if (current_capacity == 0) {
       return std::max(new_size, static_cast<size_type>(16));
     }

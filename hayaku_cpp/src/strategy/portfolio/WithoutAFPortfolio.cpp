@@ -35,15 +35,15 @@ void WithoutAFPortfolio::initParam() {
 }
 
 void WithoutAFPortfolio::_reset() {
-  m_force_sell_sys_list.clear();
-  m_running_sys_list.clear();
-  m_selected_list.clear();
-  m_se_sys_to_pf_sys_dict.clear();
+  force_sell_sys_list_.clear();
+  running_sys_list_.clear();
+  selected_list_.clear();
+  se_sys_to_pf_sys_dict_.clear();
 }
 
 void WithoutAFPortfolio::_readyForRun() {
   // Get the prototype system list from se
-  auto pro_sys_list = m_se->getProtoSystemList();
+  auto pro_sys_list = se_->getProtoSystemList();
   HAYAKU_WARN_IF_RETURN(pro_sys_list.empty(), void(),
                         "Can't fetch proto_sys_lsit from Selector!");
 
@@ -52,7 +52,7 @@ void WithoutAFPortfolio::_readyForRun() {
   bool strategy_use_own_account = getParam<bool>("strategy_use_own_account");
 
   size_t total = pro_sys_list.size();
-  m_real_sys_list.reserve(total);
+  real_sys_list_.reserve(total);
   internal::StrategyRuntimeList se_sys_list;
   se_sys_list.reserve(total);
   for (size_t i = 0; i < total; i++) {
@@ -68,19 +68,19 @@ void WithoutAFPortfolio::_readyForRun() {
       if (!strategy_use_own_account || !se_sys->getAccount()) {
         // When using its own tm or having no tm of its own, the pf tm is copied
         // and used
-        se_sys->setAccount(m_account->cloneAccount());
+        se_sys->setAccount(account_->cloneAccount());
         se_sys_list.emplace_back(se_sys);
       }
 
-      m_se->bindRealToProto(se_sys, pro_sys);
-      m_real_sys_list.emplace_back(sys);
-      m_se_sys_to_pf_sys_dict[se_sys] = sys;
+      se_->bindRealToProto(se_sys, pro_sys);
+      real_sys_list_.emplace_back(sys);
+      se_sys_to_pf_sys_dict_[se_sys] = sys;
 
-      KData k = sys->getStock().getKData(m_query);
+      KData k = sys->getStock().getKData(query_);
       se_sys->prepare();
       se_sys->bind(k);
 
-      sys->setAccount(m_account);
+      sys->setAccount(account_);
       string sys_name =
           fmt::format("{}_{}_{}", sys->name(), sys->getStock().market_code(),
                       sys->getStock().name());
@@ -91,7 +91,7 @@ void WithoutAFPortfolio::_readyForRun() {
   }
 
   // Tell se to calculate
-  m_se->calculate(se_sys_list, m_query);
+  se_->calculate(se_sys_list, query_);
 }
 
 void WithoutAFPortfolio::_runMomentOnOpen(const Datetime& date,
@@ -102,14 +102,14 @@ void WithoutAFPortfolio::_runMomentOnOpen(const Datetime& date,
   // in this round but still holding a position; they are removed when there is
   // no position left
   bool trace = getParam<bool>("trace");
-  for (auto iter = m_force_sell_sys_list.begin();
-       iter != m_force_sell_sys_list.end();) {
+  for (auto iter = force_sell_sys_list_.begin();
+       iter != force_sell_sys_list_.end();) {
     auto& sys = *iter;
     auto stk = sys->getStock();
-    auto num = m_account->getHoldNumber(date, stk);
+    auto num = account_->getHoldNumber(date, stk);
     if (iszero(num)) {
       HAYAKU_INFO_IF(trace, htr("[PF] removed system {}", sys->name()));
-      iter = m_force_sell_sys_list.erase(iter);
+      iter = force_sell_sys_list_.erase(iter);
     } else {
       if (getParam<bool>("sell_at_not_selected")) {
         auto tr = sys->sellForceOnOpen(date, num, OrderOrigin::PORTFOLIO);
@@ -125,12 +125,12 @@ void WithoutAFPortfolio::_runMomentOnOpen(const Datetime& date,
     // perform the possible sell Note: a buy issued by some system that buys
     // multiple times cannot be avoided for now
     if (getParam<bool>("sell_at_not_selected")) {
-      for (auto& sys : m_force_sell_sys_list) {
+      for (auto& sys : force_sell_sys_list_) {
         static_cast<void>(sys->runMomentOnOpen(date));
       }
     }
 
-    for (auto& sys : m_running_sys_list) {
+    for (auto& sys : running_sys_list_) {
       static_cast<void>(sys->runMomentOnOpen(date));
     }
 
@@ -153,12 +153,12 @@ void WithoutAFPortfolio::_runMomentOnClose(const Datetime& date,
     // perform the possible sell Note: a buy issued by some system that buys
     // multiple times cannot be avoided for now
     if (getParam<bool>("sell_at_not_selected")) {
-      for (auto& sys : m_force_sell_sys_list) {
+      for (auto& sys : force_sell_sys_list_) {
         static_cast<void>(sys->runMomentOnClose(date));
       }
     }
 
-    for (auto& sys : m_running_sys_list) {
+    for (auto& sys : running_sys_list_) {
       static_cast<void>(sys->runMomentOnClose(date));
     }
 
@@ -169,37 +169,37 @@ void WithoutAFPortfolio::_runMomentOnClose(const Datetime& date,
   // On the adjustment day, re-select the system pool
   //---------------------------------------------------
   bool trade_on_close = getParam<bool>("trade_on_close");
-  auto current_selected_list = m_se->getSelected(date);
+  auto current_selected_list = se_->getSelected(date);
   HAYAKU_INFO_IF(trace, "[PF] {}: {}", htr("current select system count"),
                  current_selected_list.size());
 
-  m_selected_list.clear();
+  selected_list_.clear();
   for (auto& sw : current_selected_list) {
-    m_selected_list.push_back(m_se_sys_to_pf_sys_dict[sw.strategy]);
+    selected_list_.push_back(se_sys_to_pf_sys_dict_[sw.strategy]);
   }
 
   // Remove the systems outside the selected system pool from the current
   // running pool
   std::unordered_set<internal::StrategyRuntimePtr> tmp_selected_set;
-  for (auto& sys : m_selected_list) {
+  for (auto& sys : selected_list_) {
     tmp_selected_set.insert(sys);
   }
 
   std::unordered_set<internal::StrategyRuntimePtr> will_remove_sys_list;
-  for (auto& sys : m_running_sys_set) {
+  for (auto& sys : running_sys_set_) {
     if (tmp_selected_set.find(sys) == tmp_selected_set.end()) {
       will_remove_sys_list.insert(sys);
     }
   }
 
-  size_t running_sys_count = m_running_sys_list.size();
+  size_t running_sys_count = running_sys_list_.size();
   size_t out_sys_count = will_remove_sys_list.size();
   size_t in_sys_count = 0;
 
   for (auto& sys : will_remove_sys_list) {
     HAYAKU_INFO_IF(trace, htr("[PF] will remove system: {}", sys->name()));
-    m_running_sys_set.erase(sys);
-    m_running_sys_list.remove(sys);
+    running_sys_set_.erase(sys);
+    running_sys_list_.remove(sys);
   }
 
   // When a removed system has a position, run it once to let it sell and add it
@@ -207,20 +207,20 @@ void WithoutAFPortfolio::_runMomentOnClose(const Datetime& date,
   if (!trade_on_close) {
     for (auto& sys : will_remove_sys_list) {
       auto stk = sys->getStock();
-      auto num = m_account->getHoldNumber(date, stk);
+      auto num = account_->getHoldNumber(date, stk);
       if (!iszero(num)) {
         static_cast<void>(sys->runMomentOnClose(date));
       }
-      m_force_sell_sys_list.emplace_back(sys);
+      force_sell_sys_list_.emplace_back(sys);
     }
   }
 
   // Add it into the current running system set and set the position adjustment
   // cycle
-  for (auto& sys : m_selected_list) {
-    auto [it, ok] = m_running_sys_set.insert(sys);
+  for (auto& sys : selected_list_) {
+    auto [it, ok] = running_sys_set_.insert(sys);
     if (ok) {
-      m_running_sys_list.emplace_back(sys);
+      running_sys_list_.emplace_back(sys);
       auto sg = sys->getSG();
       sg->startCycle(date, nextCycle);
       in_sys_count++;
@@ -230,7 +230,7 @@ void WithoutAFPortfolio::_runMomentOnClose(const Datetime& date,
   //----------------------------------------------------------------------------
   // Run all the running systems in turn
   //----------------------------------------------------------------------------
-  for (auto& sys : m_running_sys_list) {
+  for (auto& sys : running_sys_list_) {
     static_cast<void>(sys->runMomentOnClose(date));
   }
 
@@ -239,7 +239,7 @@ void WithoutAFPortfolio::_runMomentOnClose(const Datetime& date,
   if (trade_on_close) {
     for (auto& sys : will_remove_sys_list) {
       auto stk = sys->getStock();
-      auto num = m_account->getHoldNumber(date, stk);
+      auto num = account_->getHoldNumber(date, stk);
       if (!iszero(num)) {
         if (getParam<bool>("sell_at_not_selected")) {
           auto _ = sys->sellForceOnClose(date, num, OrderOrigin::PORTFOLIO);
@@ -248,14 +248,14 @@ void WithoutAFPortfolio::_runMomentOnClose(const Datetime& date,
         }
       }
       if (sys->getAccount()->have(stk)) {
-        m_force_sell_sys_list.emplace_back(sys);
+        force_sell_sys_list_.emplace_back(sys);
       }
     }
   }
 
   // Calculate the position adjustment turnover
   if (running_sys_count > 0) {
-    m_adjust_turnover.emplace_back(
+    adjust_turnover_.emplace_back(
         date,
         static_cast<double>(in_sys_count + out_sys_count) / running_sys_count);
   }
@@ -268,14 +268,14 @@ void WithoutAFPortfolio::_runMomentWithoutAFNotForceSell(
   // in this round but still holding a position; they are removed when there is
   // no position left
   bool trace = getParam<bool>("trace");
-  for (auto iter = m_force_sell_sys_list.begin();
-       iter != m_force_sell_sys_list.end();) {
+  for (auto iter = force_sell_sys_list_.begin();
+       iter != force_sell_sys_list_.end();) {
     auto& sys = *iter;
     auto stk = sys->getStock();
-    auto num = m_account->getHoldNumber(date, stk);
+    auto num = account_->getHoldNumber(date, stk);
     if (iszero(num)) {
       HAYAKU_INFO_IF(trace, htr("[PF] removed system {}", sys->name()));
-      iter = m_force_sell_sys_list.erase(iter);
+      iter = force_sell_sys_list_.erase(iter);
     } else {
       ++iter;
     }
@@ -291,11 +291,11 @@ void WithoutAFPortfolio::_runMomentWithoutAFNotForceSell(
     // Run the systems outside the selected system pool first, letting them
     // perform the possible sell Note: a buy issued by some system that buys
     // multiple times cannot be avoided for now
-    for (auto& sys : m_force_sell_sys_list) {
+    for (auto& sys : force_sell_sys_list_) {
       static_cast<void>(sys->runMoment(date));
     }
 
-    for (auto& sys : m_running_sys_list) {
+    for (auto& sys : running_sys_list_) {
       static_cast<void>(sys->runMoment(date));
     }
     return;
@@ -305,24 +305,24 @@ void WithoutAFPortfolio::_runMomentWithoutAFNotForceSell(
   // On the adjustment day, re-select the system pool
   //---------------------------------------------------
   bool trade_on_close = getParam<bool>("trade_on_close");
-  auto current_selected_list = m_se->getSelected(date);
+  auto current_selected_list = se_->getSelected(date);
   HAYAKU_INFO_IF(trace, "[PF] {}: {}", htr("current select system count"),
                  current_selected_list.size());
 
-  m_selected_list.clear();
+  selected_list_.clear();
   for (auto& sw : current_selected_list) {
-    m_selected_list.push_back(m_se_sys_to_pf_sys_dict[sw.strategy]);
+    selected_list_.push_back(se_sys_to_pf_sys_dict_[sw.strategy]);
   }
 
   // Remove the systems outside the selected system pool from the current
   // running pool
   std::unordered_set<internal::StrategyRuntimePtr> tmp_selected_set;
-  for (auto& sys : m_selected_list) {
+  for (auto& sys : selected_list_) {
     tmp_selected_set.insert(sys);
   }
 
   std::unordered_set<internal::StrategyRuntimePtr> will_remove_sys_list;
-  for (auto& sys : m_running_sys_set) {
+  for (auto& sys : running_sys_set_) {
     if (tmp_selected_set.find(sys) == tmp_selected_set.end()) {
       will_remove_sys_list.insert(sys);
     }
@@ -330,8 +330,8 @@ void WithoutAFPortfolio::_runMomentWithoutAFNotForceSell(
 
   for (auto& sys : will_remove_sys_list) {
     HAYAKU_INFO_IF(trace, htr("[PF] will remove system: {}", sys->name()));
-    m_running_sys_set.erase(sys);
-    m_running_sys_list.remove(sys);
+    running_sys_set_.erase(sys);
+    running_sys_list_.remove(sys);
   }
 
   // When a removed system has a position, run it once to let it sell and add it
@@ -339,20 +339,20 @@ void WithoutAFPortfolio::_runMomentWithoutAFNotForceSell(
   if (!trade_on_close) {
     for (auto& sys : will_remove_sys_list) {
       auto stk = sys->getStock();
-      auto num = m_account->getHoldNumber(date, stk);
+      auto num = account_->getHoldNumber(date, stk);
       if (!iszero(num)) {
         static_cast<void>(sys->runMoment(date));
       }
-      m_force_sell_sys_list.emplace_back(sys);
+      force_sell_sys_list_.emplace_back(sys);
     }
   }
 
   // Add it into the current running system set and set the position adjustment
   // cycle
-  for (auto& sys : m_selected_list) {
-    auto [it, ok] = m_running_sys_set.insert(sys);
+  for (auto& sys : selected_list_) {
+    auto [it, ok] = running_sys_set_.insert(sys);
     if (ok) {
-      m_running_sys_list.emplace_back(sys);
+      running_sys_list_.emplace_back(sys);
       auto sg = sys->getSG();
       sg->startCycle(date, nextCycle);
     }
@@ -361,7 +361,7 @@ void WithoutAFPortfolio::_runMomentWithoutAFNotForceSell(
   //----------------------------------------------------------------------------
   // Run all the running systems in turn
   //----------------------------------------------------------------------------
-  for (auto& sys : m_running_sys_list) {
+  for (auto& sys : running_sys_list_) {
     static_cast<void>(sys->runMoment(date));
   }
 
@@ -370,11 +370,11 @@ void WithoutAFPortfolio::_runMomentWithoutAFNotForceSell(
   if (trade_on_close) {
     for (auto& sys : will_remove_sys_list) {
       auto stk = sys->getStock();
-      auto num = m_account->getHoldNumber(date, stk);
+      auto num = account_->getHoldNumber(date, stk);
       if (!iszero(num)) {
         static_cast<void>(sys->runMoment(date));
       }
-      m_force_sell_sys_list.emplace_back(sys);
+      force_sell_sys_list_.emplace_back(sys);
     }
   }
 }
@@ -386,13 +386,13 @@ void WithoutAFPortfolio::_runMomentWithoutAFForceSell(const Datetime& date,
   // At the open, process the forced sell system list; a system without a
   // position is removed from the list, otherwise the sell is executed and it is
   // kept (whether it still has a position is judged on the next trading day)
-  for (auto iter = m_force_sell_sys_list.begin();
-       iter != m_force_sell_sys_list.end();) {
+  for (auto iter = force_sell_sys_list_.begin();
+       iter != force_sell_sys_list_.end();) {
     auto& sys = *iter;
     auto stk = sys->getStock();
-    auto num = m_account->getHoldNumber(date, stk);
+    auto num = account_->getHoldNumber(date, stk);
     if (iszero(num)) {
-      iter = m_force_sell_sys_list.erase(iter);
+      iter = force_sell_sys_list_.erase(iter);
     } else {
       auto tr = sys->sellForceOnOpen(date, num, OrderOrigin::PORTFOLIO);
       HAYAKU_INFO_IF(trace && !tr.isNull(),
@@ -405,7 +405,7 @@ void WithoutAFPortfolio::_runMomentWithoutAFForceSell(const Datetime& date,
   // On a non-adjustment day, just run the currently running systems in turn
   //---------------------------------------------------
   if (!adjust) {
-    for (auto& sys : m_running_sys_list) {
+    for (auto& sys : running_sys_list_) {
       static_cast<void>(sys->runMoment(date));
     }
     return;
@@ -415,24 +415,24 @@ void WithoutAFPortfolio::_runMomentWithoutAFForceSell(const Datetime& date,
   // On the adjustment day, re-select the system pool
   //---------------------------------------------------
   bool trade_on_close = getParam<bool>("trade_on_close");
-  auto current_selected_list = m_se->getSelected(date);
+  auto current_selected_list = se_->getSelected(date);
   HAYAKU_INFO_IF(trace, "[PF] {}: {}", htr("current selected system count"),
                  current_selected_list.size());
 
-  m_selected_list.clear();
+  selected_list_.clear();
   for (auto& sw : current_selected_list) {
-    m_selected_list.push_back(m_se_sys_to_pf_sys_dict[sw.strategy]);
+    selected_list_.push_back(se_sys_to_pf_sys_dict_[sw.strategy]);
   }
 
   // Remove the systems outside the selected system pool from the current
   // running pool
   std::unordered_set<internal::StrategyRuntimePtr> tmp_selected_set;
-  for (auto& sys : m_selected_list) {
+  for (auto& sys : selected_list_) {
     tmp_selected_set.insert(sys);
   }
 
   std::unordered_set<internal::StrategyRuntimePtr> will_remove_sys_list;
-  for (auto& sys : m_running_sys_set) {
+  for (auto& sys : running_sys_set_) {
     if (tmp_selected_set.find(sys) == tmp_selected_set.end()) {
       will_remove_sys_list.insert(sys);
     }
@@ -440,8 +440,8 @@ void WithoutAFPortfolio::_runMomentWithoutAFForceSell(const Datetime& date,
 
   for (auto& sys : will_remove_sys_list) {
     HAYAKU_INFO_IF(trace, htr("[PF] remove system: {}", sys->name()));
-    m_running_sys_set.erase(sys);
-    m_running_sys_list.remove(sys);
+    running_sys_set_.erase(sys);
+    running_sys_list_.remove(sys);
   }
 
   // When a removed system has a position, force an immediate sell executed at
@@ -449,18 +449,18 @@ void WithoutAFPortfolio::_runMomentWithoutAFForceSell(const Datetime& date,
   if (!trade_on_close) {
     for (auto& sys : will_remove_sys_list) {
       auto stk = sys->getStock();
-      auto num = m_account->getHoldNumber(date, stk);
+      auto num = account_->getHoldNumber(date, stk);
       auto _ = sys->sellForceOnOpen(date, num, OrderOrigin::PORTFOLIO);
-      m_force_sell_sys_list.emplace_back(sys);
+      force_sell_sys_list_.emplace_back(sys);
     }
   }
 
   // Add it into the current running system set and set the position adjustment
   // cycle
-  for (auto& sys : m_selected_list) {
-    auto [it, ok] = m_running_sys_set.insert(sys);
+  for (auto& sys : selected_list_) {
+    auto [it, ok] = running_sys_set_.insert(sys);
     if (ok) {
-      m_running_sys_list.emplace_back(sys);
+      running_sys_list_.emplace_back(sys);
       auto sg = sys->getSG();
       sg->startCycle(date, nextCycle);
     }
@@ -468,7 +468,7 @@ void WithoutAFPortfolio::_runMomentWithoutAFForceSell(const Datetime& date,
   //----------------------------------------------------------------------------
   // Run all the running systems in turn
   //----------------------------------------------------------------------------
-  for (auto& sys : m_running_sys_list) {
+  for (auto& sys : running_sys_list_) {
     static_cast<void>(sys->runMoment(date));
   }
 
@@ -477,12 +477,12 @@ void WithoutAFPortfolio::_runMomentWithoutAFForceSell(const Datetime& date,
   if (trade_on_close) {
     for (auto& sys : will_remove_sys_list) {
       auto stk = sys->getStock();
-      auto num = m_account->getHoldNumber(date, stk);
+      auto num = account_->getHoldNumber(date, stk);
       if (!iszero(num)) {
         auto tr = sys->sellForceOnClose(date, num, OrderOrigin::PORTFOLIO);
         HAYAKU_INFO_IF(trace && !tr.isNull(),
                        htr("[PF] force sell not selected sys {}", sys->name()));
-        m_force_sell_sys_list.emplace_back(sys);
+        force_sell_sys_list_.emplace_back(sys);
       }
     }
   }
@@ -490,10 +490,10 @@ void WithoutAFPortfolio::_runMomentWithoutAFForceSell(const Datetime& date,
 
 json WithoutAFPortfolio::lastSuggestion() const {
   json sys_json_list = json::array();
-  for (const auto& sys : m_force_sell_sys_list) {
+  for (const auto& sys : force_sell_sys_list_) {
     sys_json_list.emplace_back(sys->lastSuggestion());
   }
-  for (const auto& sys : m_running_sys_set) {
+  for (const auto& sys : running_sys_set_) {
     sys_json_list.emplace_back(sys->lastSuggestion());
   }
 

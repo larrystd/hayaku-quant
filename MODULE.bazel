@@ -1,0 +1,84 @@
+module(name = "hayaku", version = "2.8.2")
+
+# Versions are pinned here; MODULE.bazel.lock records resolved registries and
+# source integrity. Bazel is currently supported on macOS and Linux only.
+bazel_dep(name = "rules_cc", version = "0.2.20")
+bazel_dep(name = "rules_python", version = "1.9.0")
+bazel_dep(name = "rules_foreign_cc", version = "0.15.1")
+bazel_dep(name = "platforms", version = "1.1.0")
+bazel_dep(name = "boost.algorithm", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.any", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.asio", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.beast", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.date_time", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.functional", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.lexical_cast", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.lockfree", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.math", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.serialization", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.stacktrace", version = "1.90.0.bcr.1")
+bazel_dep(name = "boost.uuid", version = "1.90.0.bcr.1")
+bazel_dep(name = "fmt", version = "12.2.0")
+bazel_dep(name = "spdlog", version = "1.17.0")
+bazel_dep(name = "flatbuffers", version = "25.2.10")
+bazel_dep(name = "sqlite3", version = "3.53.2")
+bazel_dep(name = "nlohmann_json", version = "3.12.0.bcr.1")
+bazel_dep(name = "eigen", version = "5.0.1.bcr.2")
+bazel_dep(name = "xxhash", version = "0.8.3.bcr.1")
+bazel_dep(name = "tl-expected", version = "1.3.1")
+bazel_dep(name = "doctest", version = "2.5.2")
+bazel_dep(name = "pybind11_bazel", version = "3.0.1")
+
+# Build the Python extension against one reproducible interpreter ABI.
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(python_version = "3.10")
+use_repo(python, "python_3_10")
+
+# These projects do not publish Bazel modules. Fetch immutable commits and
+# verify their archives instead of depending on the machine's package cache.
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "nng_src",
+    urls = ["https://codeload.github.com/nanomsg/nng/tar.gz/45f8116f2dd1b0438ab77344a75628d77656c61a"],
+    sha256 = "d817fef38eee69109586431879979531a9181347f6d76d78ec15d13128ab2c3d",
+    type = "tar.gz",
+    strip_prefix = "nng-45f8116f2dd1b0438ab77344a75628d77656c61a",
+    build_file = "//bazel/third_party:nng.BUILD.bazel",
+)
+
+http_archive(
+    name = "utf8proc_src",
+    urls = ["https://codeload.github.com/JuliaStrings/utf8proc/tar.gz/e5e799221b45bbb90f5fdc5c69b6b8dfbf017e78"],
+    sha256 = "8b9d92ebfc6ff54cf34b0f1d5879e284aebd67f0b44999497a9c7a918061f49b",
+    type = "tar.gz",
+    strip_prefix = "utf8proc-e5e799221b45bbb90f5fdc5c69b6b8dfbf017e78",
+    build_file = "//bazel/third_party:utf8proc.BUILD.bazel",
+)
+
+http_archive(
+    name = "hdf5_src",
+    urls = ["https://codeload.github.com/HDFGroup/hdf5/tar.gz/3e847e003632bdd5fdc189ccbffe25ad2661e16f"],
+    sha256 = "2f65609c4e96d5494b9df6b4f6e9f2ae3f21a83434696611ac968a088964f7c3",
+    type = "tar.gz",
+    strip_prefix = "hdf5-3e847e003632bdd5fdc189ccbffe25ad2661e16f",
+    build_file = "//bazel/third_party:hdf5.BUILD.bazel",
+)
+
+http_archive(
+    name = "talib_src",
+    urls = ["https://codeload.github.com/TA-Lib/ta-lib/tar.gz/2247d599bddf37ed37e3a709371517e46efc66f6"],
+    sha256 = "c9cce2810eab127722c9a0f6c721fc2e955ac86e6e999563ed1176d29e22fc2d",
+    type = "tar.gz",
+    strip_prefix = "ta-lib-2247d599bddf37ed37e3a709371517e46efc66f6",
+    build_file = "//bazel/third_party:talib.BUILD.bazel",
+)
+
+http_archive(
+    name = "zlib_src",
+    urls = ["https://codeload.github.com/madler/zlib/tar.gz/216c70c020aa53f0c40920d155f808b6b59c9acb"],
+    sha256 = "a0c6d883cfc04cd5aba7e34c72c62aa0d1ae677ae39251d2a3c895d2d3135d2a",
+    type = "tar.gz",
+    strip_prefix = "zlib-216c70c020aa53f0c40920d155f808b6b59c9acb",
+    build_file = "//bazel/third_party:zlib.BUILD.bazel",
+)

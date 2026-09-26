@@ -23,39 +23,39 @@
 namespace hayaku {
 
 MySQLBaseInfoDriver::MySQLBaseInfoDriver()
-    : BaseInfoDriver("mysql"), m_pool(nullptr) {}
+    : BaseInfoDriver("mysql"), pool_(nullptr) {}
 
 MySQLBaseInfoDriver::~MySQLBaseInfoDriver() {
-  if (m_pool) {
-    delete m_pool;
+  if (pool_) {
+    delete pool_;
   }
 }
 
 bool MySQLBaseInfoDriver::_init() {
-  HAYAKU_CHECK(m_pool == nullptr, "Maybe repeat initialization!");
+  HAYAKU_CHECK(pool_ == nullptr, "Maybe repeat initialization!");
   Parameter connect_param;
   connect_param.set<string>(
-      "host", getParamFromOther<string>(m_params, "host", "127.0.0.1"));
+      "host", getParamFromOther<string>(params_, "host", "127.0.0.1"));
   connect_param.set<string>("usr",
-                            getParamFromOther<string>(m_params, "usr", "root"));
+                            getParamFromOther<string>(params_, "usr", "root"));
   connect_param.set<string>("pwd",
-                            getParamFromOther<string>(m_params, "pwd", ""));
+                            getParamFromOther<string>(params_, "pwd", ""));
   connect_param.set<string>(
-      "db", getParamFromOther<string>(m_params, "db", "hayaku_base"));
-  string port_str = getParamFromOther<string>(m_params, "port", "3306");
+      "db", getParamFromOther<string>(params_, "db", "hayaku_base"));
+  string port_str = getParamFromOther<string>(params_, "port", "3306");
   unsigned int port = boost::lexical_cast<unsigned int>(port_str);
   connect_param.set<int>("port", port);
-  m_pool = new ResourcePool<MySQLConnect>(connect_param);
-  HAYAKU_CHECK(m_pool, "Failed malloc ConnectPool!");
+  pool_ = new ResourcePool<MySQLConnect>(connect_param);
+  HAYAKU_CHECK(pool_, "Failed malloc ConnectPool!");
   return true;
 }
 
 vector<MarketInfo> MySQLBaseInfoDriver::getAllMarketInfo() {
   vector<MarketInfo> result;
-  HAYAKU_ERROR_IF_RETURN(!m_pool, result, "Connect pool ptr is null!");
+  HAYAKU_ERROR_IF_RETURN(!pool_, result, "Connect pool ptr is null!");
 
   try {
-    auto con = m_pool->get();
+    auto con = pool_->get();
     vector<MarketInfoTable> infoTables;
     con->batchLoad(infoTables);
     for (auto &info : infoTables) {
@@ -82,10 +82,10 @@ vector<MarketInfo> MySQLBaseInfoDriver::getAllMarketInfo() {
 
 vector<StockTypeInfo> MySQLBaseInfoDriver::getAllStockTypeInfo() {
   vector<StockTypeInfo> result;
-  HAYAKU_ERROR_IF_RETURN(!m_pool, result, "Connect pool ptr is null!");
+  HAYAKU_ERROR_IF_RETURN(!pool_, result, "Connect pool ptr is null!");
 
   try {
-    auto con = m_pool->get();
+    auto con = pool_->get();
     vector<StockTypeInfoTable> infoTables;
     con->batchLoad(infoTables);
     for (auto &info : infoTables) {
@@ -108,10 +108,10 @@ StockWeightList MySQLBaseInfoDriver::getStockWeightList(const string &market,
                                                         Datetime start,
                                                         Datetime end) {
   StockWeightList result;
-  HAYAKU_ASSERT(m_pool);
+  HAYAKU_ASSERT(pool_);
 
   try {
-    auto con = m_pool->get();
+    auto con = pool_->get();
     HAYAKU_CHECK(con, "Failed fetch connect!");
 
     vector<StockWeightTable> table;
@@ -153,10 +153,10 @@ StockWeightList MySQLBaseInfoDriver::getStockWeightList(const string &market,
 unordered_map<string, StockWeightList>
 MySQLBaseInfoDriver::getAllStockWeightList() {
   unordered_map<string, StockWeightList> result;
-  HAYAKU_ASSERT(m_pool);
+  HAYAKU_ASSERT(pool_);
 
   try {
-    auto con = m_pool->get();
+    auto con = pool_->get();
     HAYAKU_CHECK(con, "Failed fetch connect!");
 
     vector<StockWeightTableView> view;
@@ -202,9 +202,9 @@ MySQLBaseInfoDriver::getAllStockWeightList() {
 
 vector<StockInfo> MySQLBaseInfoDriver::getAllStockInfo() {
   vector<StockInfo> result;
-  HAYAKU_ERROR_IF_RETURN(!m_pool, result, "Connect pool ptr is null!");
+  HAYAKU_ERROR_IF_RETURN(!pool_, result, "Connect pool ptr is null!");
   try {
-    auto con = m_pool->get();
+    auto con = pool_->get();
     con->batchLoad(result);
   } catch (...) {
   }
@@ -212,11 +212,11 @@ vector<StockInfo> MySQLBaseInfoDriver::getAllStockInfo() {
 }
 
 StockInfo MySQLBaseInfoDriver::getStockInfo(string market, const string &code) {
-  HAYAKU_ASSERT(m_pool);
+  HAYAKU_ASSERT(pool_);
   StockInfo result;
   try {
     to_upper(market);
-    auto con = m_pool->get();
+    auto con = pool_->get();
     string sql = format("{} and a.code='{}' and c.market='{}'",
                         StockInfo::getSelectSQL(), code, market);
     SQLStatementPtr st = con->getStatement(sql);
@@ -231,8 +231,8 @@ StockInfo MySQLBaseInfoDriver::getStockInfo(string market, const string &code) {
 
 MarketInfo MySQLBaseInfoDriver::getMarketInfo(const string &market) {
   MarketInfo result;
-  HAYAKU_ERROR_IF_RETURN(!m_pool, result, "Connect pool ptr is null!");
-  auto con = m_pool->get();
+  HAYAKU_ERROR_IF_RETURN(!pool_, result, "Connect pool ptr is null!");
+  auto con = pool_->get();
   try {
     MarketInfoTable info;
     string new_market(market);
@@ -251,8 +251,8 @@ MarketInfo MySQLBaseInfoDriver::getMarketInfo(const string &market) {
 
 StockTypeInfo MySQLBaseInfoDriver::getStockTypeInfo(uint32_t type) {
   StockTypeInfo result;
-  HAYAKU_ERROR_IF_RETURN(!m_pool, result, "Connect pool ptr is null!");
-  auto con = m_pool->get();
+  HAYAKU_ERROR_IF_RETURN(!pool_, result, "Connect pool ptr is null!");
+  auto con = pool_->get();
   try {
     StockTypeInfoTable info;
     con->load(info, format("type={}", type));
@@ -267,10 +267,10 @@ StockTypeInfo MySQLBaseInfoDriver::getStockTypeInfo(uint32_t type) {
 }
 
 std::unordered_set<Datetime> MySQLBaseInfoDriver::getAllHolidays() {
-  HAYAKU_ASSERT(m_pool);
+  HAYAKU_ASSERT(pool_);
   std::unordered_set<Datetime> result;
   try {
-    auto con = m_pool->get();
+    auto con = pool_->get();
     std::vector<HolidayTable> holidays;
     con->batchLoad(holidays);
     for (const auto &holiday : holidays) {
@@ -290,7 +290,7 @@ std::unordered_set<Datetime> MySQLBaseInfoDriver::getAllHolidays() {
 Parameter MySQLBaseInfoDriver::getFinanceInfo(const string &market,
                                               const string &code) {
   Parameter result;
-  HAYAKU_IF_RETURN(!m_pool, result);
+  HAYAKU_IF_RETURN(!pool_, result);
 
   std::stringstream buf;
   buf << "select f.updated_date, f.ipo_date, f.province,"
@@ -307,7 +307,7 @@ Parameter MySQLBaseInfoDriver::getFinanceInfo(const string &market,
       << " and s.code = '" << code << "'" << " and s.marketid = m.marketid"
       << " and f.stockid = s.stockid" << " order by updated_date DESC limit 1";
 
-  auto con = m_pool->get();
+  auto con = pool_->get();
 
   auto st = con->getStatement(buf.str());
   st->exec();
@@ -380,7 +380,7 @@ Parameter MySQLBaseInfoDriver::getFinanceInfo(const string &market,
 
 ZhBond10List MySQLBaseInfoDriver::getAllZhBond10() {
   ZhBond10List result;
-  auto con = m_pool->get();
+  auto con = pool_->get();
   try {
     vector<ZhBond10Table> records;
     con->batchLoad(records, "1=1 order by date asc");
@@ -399,7 +399,7 @@ ZhBond10List MySQLBaseInfoDriver::getAllZhBond10() {
 vector<std::pair<size_t, string>>
 MySQLBaseInfoDriver::getHistoryFinanceField() {
   vector<std::pair<size_t, string>> result;
-  auto con = m_pool->get();
+  auto con = pool_->get();
   try {
     vector<HistoryFinanceFieldTable> fields;
     con->batchLoad(fields);
@@ -423,7 +423,7 @@ vector<HistoryFinanceInfo> MySQLBaseInfoDriver::getHistoryFinance(
   Datetime new_end = end.isNull() ? Datetime::max() : end;
   HAYAKU_IF_RETURN(start >= end, result);
 
-  auto con = m_pool->get();
+  auto con = pool_->get();
   try {
     string market_code(fmt::format("{}{}", market, code));
     to_upper(market_code);

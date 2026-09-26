@@ -1137,15 +1137,15 @@ class PyIndicatorImp : public IndicatorImp {
   PY_CLONE(PyIndicatorImp, IndicatorImp)
 
  public:
-  PyIndicatorImp() : IndicatorImp() { m_is_python_object = true; }
+  PyIndicatorImp() : IndicatorImp() { is_python_object_ = true; }
 
   PyIndicatorImp(const string& name) : IndicatorImp(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PyIndicatorImp(const string& name, size_t result_num)
       : IndicatorImp(name, result_num) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   void _calculate(const Indicator& ind) override {

@@ -49,7 +49,7 @@ Historical data import
 ----------------------
 
 The ingestion extension is not loaded when importing the core package. When building from source,
-use ``xmake ingest`` to build the optional Python extension. ``import hayaku`` still works without
+use ``./op.sh build`` to build the optional Python extension. ``import hayaku`` still works without
 it; calling ingestion functionality then raises an actionable missing-extension error.
 
 .. code-block:: python
@@ -69,7 +69,7 @@ Real-time quotes
 ----------------
 
 The optional ``hayaku-realtime`` package provides real-time quote reception and data services.
-Build it from source with ``xmake realtime``. With only the core installed, ``import hayaku``
+Build it from source with ``./op.sh build``. With only the core installed, ``import hayaku``
 and research/backtesting do not require the realtime extension. Import runtime controls such as
 ``start_spot_agent`` and ``stop_spot_agent`` explicitly from ``hayaku.extensions.realtime`` when needed.
 Calling them without the optional extension gives an installation hint.

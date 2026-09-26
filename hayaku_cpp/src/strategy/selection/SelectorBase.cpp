@@ -28,14 +28,14 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const SelectorPtr& st) {
 
 string SelectorBase::str() const {
   std::ostringstream buf;
-  buf << "Selector(" << name() << ", " << getParameter() << ", " << m_sc_filter
+  buf << "Selector(" << name() << ", " << getParameter() << ", " << sc_filter_
       << ")";
   return buf.str();
 }
 
-SelectorBase::SelectorBase() : m_name("SelectorBase") { initParam(); }
+SelectorBase::SelectorBase() : name_("SelectorBase") { initParam(); }
 
-SelectorBase::SelectorBase(const string& name) : m_name(name) { initParam(); }
+SelectorBase::SelectorBase(const string& name) : name_(name) { initParam(); }
 
 SelectorBase::~SelectorBase() {}
 
@@ -55,64 +55,64 @@ void SelectorBase::initParam() {
 void SelectorBase::baseCheckParam(const string& name) const {}
 
 void SelectorBase::paramChanged() {
-  m_calculated = false;
-  m_proto_calculated = false;
+  calculated_ = false;
+  proto_calculated_ = false;
 }
 
 void SelectorBase::removeAll() {
-  m_pro_sys_list.clear();
+  pro_sys_list_.clear();
   _removeAll();
   reset();
 }
 
 void SelectorBase::reset() {
-  internal::StrategyRuntimeList::const_iterator iter = m_pro_sys_list.begin();
-  for (; iter != m_pro_sys_list.end(); ++iter) {
+  internal::StrategyRuntimeList::const_iterator iter = pro_sys_list_.begin();
+  for (; iter != pro_sys_list_.end(); ++iter) {
     (*iter)->reset();
   }
 
-  m_real_sys_list.clear();
+  real_sys_list_.clear();
   _reset();
 
-  m_calculated = false;
-  m_proto_calculated = false;
+  calculated_ = false;
+  proto_calculated_ = false;
 }
 
 SelectorPtr SelectorBase::clone() {
   SelectorPtr p = _clone();
-  p->m_params = m_params;
-  p->m_name = m_name;
-  p->m_is_python_object = m_is_python_object;
-  p->m_query = m_query;
-  p->m_proto_query = m_proto_query;
-  p->m_calculated = m_calculated;
-  p->m_proto_calculated = m_proto_calculated;
+  p->params_ = params_;
+  p->name_ = name_;
+  p->is_python_object_ = is_python_object_;
+  p->query_ = query_;
+  p->proto_query_ = proto_query_;
+  p->calculated_ = calculated_;
+  p->proto_calculated_ = proto_calculated_;
 
-  p->m_real_sys_list.reserve(m_real_sys_list.size());
-  for (const auto& sys : m_real_sys_list) {
-    p->m_real_sys_list.emplace_back(sys->clone());
+  p->real_sys_list_.reserve(real_sys_list_.size());
+  for (const auto& sys : real_sys_list_) {
+    p->real_sys_list_.emplace_back(sys->clone());
   }
 
-  p->m_pro_sys_list.reserve(m_pro_sys_list.size());
-  for (const auto& sys : m_pro_sys_list) {
-    p->m_pro_sys_list.emplace_back(sys->clone());
+  p->pro_sys_list_.reserve(pro_sys_list_.size());
+  for (const auto& sys : pro_sys_list_) {
+    p->pro_sys_list_.emplace_back(sys->clone());
   }
 
-  if (m_sc_filter) {
-    p->m_sc_filter = m_sc_filter->clone();
+  if (sc_filter_) {
+    p->sc_filter_ = sc_filter_->clone();
   }
 
-  p->m_pf = m_pf;  // A reference to PF only, not cloned
+  p->pf_ = pf_;  // A reference to PF only, not cloned
 
   return p;
 }
 
 void SelectorBase::calculate(
     const internal::StrategyRuntimeList& pf_realSysList, const KQuery& query) {
-  HAYAKU_IF_RETURN(m_calculated && m_query == query, void());
+  HAYAKU_IF_RETURN(calculated_ && query_ == query, void());
 
-  m_query = query;
-  m_real_sys_list = pf_realSysList;
+  query_ = query;
+  real_sys_list_ = pf_realSysList;
 
   // It depends on the running system and must be calculated before its own
   // calculation
@@ -121,18 +121,18 @@ void SelectorBase::calculate(
   }
 
   _calculate();
-  m_calculated = true;
+  calculated_ = true;
 }
 
 void SelectorBase::calculate_proto(const KQuery& query) {
-  if (m_proto_query != query && !m_proto_calculated) {
-    HAYAKU_WARN_IF_RETURN(m_pro_sys_list.empty(), void(),
+  if (proto_query_ != query && !proto_calculated_) {
+    HAYAKU_WARN_IF_RETURN(pro_sys_list_.empty(), void(),
                           "m_pro_sys_list is empty!");
-    for (auto& sys : m_pro_sys_list) {
+    for (auto& sys : pro_sys_list_) {
       sys->run(query);
     }
-    m_proto_calculated = true;
-    m_proto_query = query;
+    proto_calculated_ = true;
+    proto_query_ = query;
   }
 }
 
@@ -151,9 +151,9 @@ void SelectorBase::addSystem(const internal::StrategyRuntimePtr& sys) {
   sys->reset();
   _addSystem(sys);
 
-  m_pro_sys_list.emplace_back(sys);
-  m_calculated = false;
-  m_proto_calculated = false;
+  pro_sys_list_.emplace_back(sys);
+  calculated_ = false;
+  proto_calculated_ = false;
 }
 
 void SelectorBase::addSystemList(const internal::StrategyRuntimeList& sysList) {
@@ -182,10 +182,10 @@ void SelectorBase::addStock(const Stock& stock,
   sys->reset();
   sys->setStock(stock);
   _addSystem(sys);
-  m_pro_sys_list.emplace_back(sys);
+  pro_sys_list_.emplace_back(sys);
 
-  m_calculated = false;
-  m_proto_calculated = false;
+  calculated_ = false;
+  proto_calculated_ = false;
 }
 
 void SelectorBase::addStockList(const StockList& stkList,

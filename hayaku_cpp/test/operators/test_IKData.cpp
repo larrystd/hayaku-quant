@@ -11,6 +11,7 @@
 #include <fstream>
 
 #include "doctest/doctest.h"
+#include "test_config.h"
 
 using namespace hayaku;
 

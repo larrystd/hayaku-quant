@@ -1,0 +1,152 @@
+package(default_visibility = ["//visibility:public"])
+
+_OPTIONAL_LIBRARY_RPATH = select({
+    "@platforms//os:osx": ["-Wl,-rpath,@loader_path/../hayaku/cpp"],
+    "@platforms//os:linux": ["-Wl,-rpath,$ORIGIN/../hayaku/cpp"],
+    "//conditions:default": [],
+})
+
+# Core library for macOS and Linux. Optional ingest/realtime frontends are
+# separate targets; their shared transport implementation stays in core.
+cc_library(
+    name = "core",
+    srcs = glob(
+        ["**/*.cpp"],
+        exclude = [
+            "application/plugin_fixtures/**",
+            "extensions/ingest/CheckData.cpp",
+            "extensions/ingest/KDataTo*Importer.cpp",
+            "extensions/mysql/**",
+            "extensions/realtime/DataServerPlugin.cpp",
+            "extensions/realtime/GlobalSpotAgent.cpp",
+            "extensions/realtime/ShmServerPlugin.cpp",
+            "extensions/realtime/SpotAgent.cpp",
+        ],
+    ),
+    hdrs = glob(
+        ["**/*.h"],
+        exclude = ["config.h", "version.h", "common/Config.h", "extensions/realtime/spot_generated.h"],
+    ),
+    strip_include_prefix = ".",
+    copts = [
+        "-std=c++20",
+        "-fno-strict-aliasing",
+        "-ftemplate-depth=1023",
+        "-Wno-sign-compare",
+        "-Wno-missing-braces",
+        "-Wno-error=deprecated-declarations",
+    ],
+    defines = [
+        "BOOST_ASIO_DISABLE_DEPRECATED",
+        "HAYAKU_API=",
+        "HAYAKU_UTILS_API=",
+        "SPDLOG_DISABLE_DEFAULT_LOGGER",
+        "SPDLOG_ACTIVE_LEVEL=2",
+    ],
+    deps = [
+        "//bazel/config:config",
+        "//bazel/third_party:hdf5",
+        "//bazel/third_party:nng",
+        "//bazel/third_party:talib",
+        "@boost.algorithm//:boost.algorithm",
+        "@boost.any//:boost.any",
+        "@boost.asio//:boost.asio",
+        "@boost.beast//:boost.beast",
+        "@boost.date_time//:boost.date_time",
+        "@boost.functional//:boost.functional",
+        "@boost.lexical_cast//:boost.lexical_cast",
+        "@boost.lockfree//:boost.lockfree",
+        "@boost.math//:boost.math",
+        "@boost.serialization//:boost.serialization",
+        "@boost.stacktrace//:boost.stacktrace",
+        "@boost.uuid//:boost.uuid",
+        "@eigen//:eigen",
+        "@flatbuffers//:runtime_cc",
+        "@fmt//:fmt",
+        "@nlohmann_json//:json",
+        "@spdlog//:spdlog",
+        "@sqlite3//:sqlite3",
+        "@tl-expected//:tl-expected",
+        "@utf8proc_src//:utf8proc",
+        "@xxhash//:xxhash",
+    ],
+    linkopts = select({
+        "@platforms//os:osx": ["-framework CoreFoundation", "-liconv"],
+        "@platforms//os:linux": ["-ldl", "-pthread"],
+        "//conditions:default": [],
+    }),
+    target_compatible_with = select({
+        "@platforms//os:osx": [],
+        "@platforms//os:linux": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
+
+cc_shared_library(
+    name = "core_shared",
+    deps = [":core"],
+    exports_filter = ["//bazel/third_party:nng"],
+    shared_lib_name = "libhayaku.so",
+)
+
+genrule(
+    name = "spot_schema",
+    srcs = ["extensions/realtime/spot.fbs"],
+    outs = ["extensions/realtime/spot_generated.h"],
+    tools = ["@flatbuffers//:flatc"],
+    cmd = "mkdir -p $(@D) && $(location @flatbuffers//:flatc) --cpp -o $(@D) $(location extensions/realtime/spot.fbs)",
+)
+
+cc_library(
+    name = "realtime",
+    srcs = [
+        "extensions/realtime/DataServerPlugin.cpp",
+        "extensions/realtime/GlobalSpotAgent.cpp",
+        "extensions/realtime/ShmServerPlugin.cpp",
+        "extensions/realtime/SpotAgent.cpp",
+    ],
+    hdrs = ["extensions/realtime/spot_generated.h"],
+    strip_include_prefix = ".",
+    copts = ["-std=c++20"],
+    defines = ["HAYAKU_REALTIME_BUILD"],
+    deps = [":core", "//bazel/third_party:nng", "@flatbuffers//:runtime_cc"],
+    target_compatible_with = select({
+        "@platforms//os:osx": [],
+        "@platforms//os:linux": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
+
+cc_shared_library(
+    name = "realtime_shared",
+    deps = [":realtime"],
+    dynamic_deps = [":core_shared"],
+    shared_lib_name = "libhayaku_realtime.so",
+    user_link_flags = _OPTIONAL_LIBRARY_RPATH,
+)
+
+cc_library(
+    name = "ingest",
+    srcs = [
+        "extensions/ingest/CheckData.cpp",
+        "extensions/ingest/KDataToClickHouseImporter.cpp",
+        "extensions/ingest/KDataToHdf5Importer.cpp",
+        "extensions/ingest/KDataToMySQLImporter.cpp",
+    ],
+    copts = ["-std=c++20"],
+    defines = ["HAYAKU_INGEST_BUILD"],
+    deps = [":core"],
+    target_compatible_with = select({
+        "@platforms//os:osx": [],
+        "@platforms//os:linux": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
+
+cc_shared_library(
+    name = "ingest_shared",
+    deps = [":ingest"],
+    dynamic_deps = [":core_shared"],
+    shared_lib_name = "libhayaku_ingest.so",
+    user_link_flags = _OPTIONAL_LIBRARY_RPATH,
+)

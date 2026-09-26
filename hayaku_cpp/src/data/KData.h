@@ -216,7 +216,7 @@ class HAYAKU_API KData {
   }
 
  private:
-  KDataImpPtr m_imp;
+  KDataImpPtr imp_;
 };
 
 /**
@@ -272,31 +272,31 @@ KData HAYAKU_API getKData(const string& market_code, int64_t start = 0,
                           const KQuery::KType& ktype = KQuery::DAY,
                           KQuery::RecoverType recoverType = KQuery::NO_RECOVER);
 
-inline KData::KData(const KData& x) noexcept : m_imp(x.m_imp) {}
+inline KData::KData(const KData& x) noexcept : imp_(x.imp_) {}
 
-inline KData::KData(KData&& x) : m_imp(std::move(x.m_imp)) {
-  x.m_imp = get_null_kdata_imp();
+inline KData::KData(KData&& x) : imp_(std::move(x.imp_)) {
+  x.imp_ = get_null_kdata_imp();
 }
 
 inline KData& KData::operator=(const KData& x) noexcept {
   HAYAKU_IF_RETURN(this == &x, *this);
-  m_imp = x.m_imp;
+  imp_ = x.imp_;
   return *this;
 }
 
 inline KData& KData::operator=(KData&& x) {
   HAYAKU_IF_RETURN(this == &x, *this);
-  m_imp = std::move(x.m_imp);
-  x.m_imp = get_null_kdata_imp();
+  imp_ = std::move(x.imp_);
+  x.imp_ = get_null_kdata_imp();
   return *this;
 }
 
 inline DatetimeList KData::getDatetimeList() const {
-  return m_imp->getDatetimeList();
+  return imp_->getDatetimeList();
 }
 
 inline const KRecord& KData::getKRecord(size_t pos) const noexcept {
-  return m_imp->getKRecord(pos);  // Never throws
+  return imp_->getKRecord(pos);  // Never throws
 }
 
 inline const KRecord& KData::getKRecord(Datetime datetime) const noexcept {
@@ -305,36 +305,36 @@ inline const KRecord& KData::getKRecord(Datetime datetime) const noexcept {
 }
 
 inline size_t KData::getPos(const Datetime& datetime) const noexcept {
-  return m_imp->getPos(datetime);
+  return imp_->getPos(datetime);
 }
 
-inline size_t KData::size() const noexcept { return m_imp->size(); }
+inline size_t KData::size() const noexcept { return imp_->size(); }
 
-inline bool KData::empty() const noexcept { return m_imp->empty(); }
+inline bool KData::empty() const noexcept { return imp_->empty(); }
 
-inline const KQuery& KData::getQuery() const { return m_imp->getQuery(); }
+inline const KQuery& KData::getQuery() const { return imp_->getQuery(); }
 
-inline const Stock& KData::getStock() const { return m_imp->getStock(); }
+inline const Stock& KData::getStock() const { return imp_->getStock(); }
 
-inline const KRecord& KData::front() const { return m_imp->front(); }
+inline const KRecord& KData::front() const { return imp_->front(); }
 
-inline const KRecord& KData::back() const { return m_imp->back(); }
+inline const KRecord& KData::back() const { return imp_->back(); }
 
-inline size_t KData::startPos() const { return m_imp->startPos(); }
+inline size_t KData::startPos() const { return imp_->startPos(); }
 
-inline size_t KData::endPos() const { return m_imp->endPos(); }
+inline size_t KData::endPos() const { return imp_->endPos(); }
 
-inline size_t KData::lastPos() const { return m_imp->lastPos(); }
+inline size_t KData::lastPos() const { return imp_->lastPos(); }
 
 inline bool KData::operator!=(const KData& other) const noexcept {
   return !(*this == other);
 }
 
-inline const KRecord* KData::data() const noexcept { return m_imp->data(); }
+inline const KRecord* KData::data() const noexcept { return imp_->data(); }
 
-inline KRecord* KData::data() noexcept { return m_imp->data(); }
+inline KRecord* KData::data() noexcept { return imp_->data(); }
 
-inline KDataImpPtr KData::getImp() const noexcept { return m_imp; }
+inline KDataImpPtr KData::getImp() const noexcept { return imp_; }
 
 } /* namespace hayaku */
 

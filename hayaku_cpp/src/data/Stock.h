@@ -333,23 +333,23 @@ class HAYAKU_API Stock {
 
  private:
   struct HAYAKU_API Data;
-  shared_ptr<Data> m_data;
-  KDataDriverConnectPoolPtr m_kdataDriver;
+  shared_ptr<Data> data_;
+  KDataDriverConnectPoolPtr kdata_driver_;
 };
 
 struct HAYAKU_API Stock::Data {
-  string m_market;       // The market abbreviation it belongs to
-  string m_code;         // Security code
-  string m_market_code;  // Market abbreviation + security code
-  string m_name;         // Security name
-  uint32_t m_type;       // Security type
-  bool m_valid;          // Whether the security is currently valid
-  Datetime m_startDate;  // Start date of the security
-  Datetime m_lastDate;   // Last date of the security
+  string market_;       // The market abbreviation it belongs to
+  string code_;         // Security code
+  string market_code_;  // Market abbreviation + security code
+  string name_;         // Security name
+  uint32_t type_;       // Security type
+  bool valid_;          // Whether the security is currently valid
+  Datetime start_date_;  // Start date of the security
+  Datetime last_date_;   // Last date of the security
 
   StockWeightList
-      m_weightList;  // Equity/dividend adjustment (weight) record list
-  std::shared_mutex m_weight_mutex;
+      weight_list_;  // Equity/dividend adjustment (weight) record list
+  std::shared_mutex weight_mutex_;
   // Whether the weight data has been initialized (materialized at startup or
   // lazily loaded as a fallback; it may be empty). When it is set:
   // - Client mode: set when materialized at startup while load_stock_weight is
@@ -363,33 +363,33 @@ struct HAYAKU_API Stock::Data {
   //   through the driver;
   // An empty result sets it as well, so securities without weight data do not
   // hit the driver again on every query.
-  mutable std::atomic_bool m_weight_ready{false};
+  mutable std::atomic_bool weight_ready_{false};
 
   mutable vector<HistoryFinanceInfo>
-      m_history_finance;  // Historical financial info [report date, field 1,
+      history_finance_;  // Historical financial info [report date, field 1,
                           // field 2, ...]
   // Whether the historical finance data has been initialized (set when the main
   // process preloads it at startup; set to false after it is released by
   // releaseShmServerBaseInfoCache(), and set again after the next access lazily
   // reloads it; in client mode it is never materialized locally, so it stays
   // false)
-  mutable std::atomic_bool m_history_finance_ready{false};
-  mutable std::shared_mutex m_history_finance_mutex;
+  mutable std::atomic_bool history_finance_ready_{false};
+  mutable std::shared_mutex history_finance_mutex_;
 
-  price_t m_tick;
-  price_t m_tickValue;
-  price_t m_unit;
-  int m_precision;
-  double m_minTradeNumber;
-  double m_maxTradeNumber;
+  price_t tick_;
+  price_t tick_value_;
+  price_t unit_;
+  int precision_;
+  double min_trade_number_;
+  double max_trade_number_;
 
   std::unordered_set<string>
-      m_ktype_preload;  // Records whether the K-line data of this security
+      ktype_preload_;  // Records whether the K-line data of this security
                         // needs to be preloaded
   unordered_map<string, KRecordList*> pKData;
   unordered_map<string, std::shared_mutex*> pMutex;
   unordered_map<string, Datetime>
-      m_lastUpdate;  // Last update time of each K-line data type
+      last_update_;  // Last update time of each K-line data type
 
   Data();
   Data(const string& market, const string& code, const string& name,
@@ -429,14 +429,14 @@ inline bool operator<(const Stock& s1, const Stock& s2) {
 }
 
 inline uint64_t Stock::id() const noexcept {
-  return isNull() ? 0 : (int64_t)m_data.get();
+  return isNull() ? 0 : (int64_t)data_.get();
 }
 
 inline bool Stock::operator!=(const Stock& stock) const {
   return !(*this == stock);
 }
 
-inline bool Stock::isNull() const noexcept { return !m_data || !m_kdataDriver; }
+inline bool Stock::isNull() const noexcept { return !data_ || !kdata_driver_; }
 
 }  // namespace hayaku
 

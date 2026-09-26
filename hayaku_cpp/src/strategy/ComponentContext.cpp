@@ -9,68 +9,68 @@
 namespace hayaku::internal {
 
 ComponentContext::ComponentContext(StrategyRuntime& runtime) noexcept
-    : m_runtime(runtime) {}
+    : runtime_(runtime) {}
 
 const KData& ComponentContext::kdata() const noexcept {
-  return m_runtime.m_kdata;
+  return runtime_.kdata_;
 }
 
 const KData& ComponentContext::rawKData() const noexcept {
-  return m_runtime.m_rawKData;
+  return runtime_.raw_k_data_;
 }
 
 const Stock& ComponentContext::stock() const noexcept {
-  return m_runtime.m_stock;
+  return runtime_.stock_;
 }
 
 void ComponentContext::prepare() {
-  HAYAKU_CHECK(m_runtime.m_account, "Strategy has no execution account: {}",
-               m_runtime.m_name);
-  HAYAKU_CHECK(m_runtime.m_mm, "Strategy has no MoneyManager: {}",
-               m_runtime.m_name);
-  HAYAKU_CHECK(m_runtime.m_sg, "Strategy has no Signal: {}", m_runtime.m_name);
+  HAYAKU_CHECK(runtime_.account_, "Strategy has no execution account: {}",
+               runtime_.name_);
+  HAYAKU_CHECK(runtime_.mm_, "Strategy has no MoneyManager: {}",
+               runtime_.name_);
+  HAYAKU_CHECK(runtime_.sg_, "Strategy has no Signal: {}", runtime_.name_);
 
-  if (m_runtime.m_ev) {
-    m_runtime.m_preEnvironmentValid = false;
-  }
-
-  if (m_runtime.m_cn) {
-    m_runtime.m_cn->setAccount(m_runtime.m_account);
-    m_runtime.m_cn->setSG(m_runtime.m_sg);
-    m_runtime.m_preConditionValid = false;
+  if (runtime_.ev_) {
+    runtime_.pre_environment_valid_ = false;
   }
 
-  m_runtime.m_mm->setAccount(m_runtime.m_account);
-  if (m_runtime.m_pg) {
-    m_runtime.m_pg->setAccount(m_runtime.m_account);
+  if (runtime_.cn_) {
+    runtime_.cn_->setAccount(runtime_.account_);
+    runtime_.cn_->setSG(runtime_.sg_);
+    runtime_.pre_condition_valid_ = false;
   }
-  if (m_runtime.m_st) {
-    m_runtime.m_st->setAccount(m_runtime.m_account);
+
+  runtime_.mm_->setAccount(runtime_.account_);
+  if (runtime_.pg_) {
+    runtime_.pg_->setAccount(runtime_.account_);
   }
-  if (m_runtime.m_tp) {
-    m_runtime.m_tp->setAccount(m_runtime.m_account);
+  if (runtime_.st_) {
+    runtime_.st_->setAccount(runtime_.account_);
+  }
+  if (runtime_.tp_) {
+    runtime_.tp_->setAccount(runtime_.account_);
   }
 }
 
 void ComponentContext::bind(const KData& kdata) {
-  if (m_runtime.m_kdata != kdata) {
-    m_runtime.m_calculated = false;
-    m_runtime.m_kdata = kdata;
+  if (runtime_.kdata_ != kdata) {
+    runtime_.calculated_ = false;
+    runtime_.kdata_ = kdata;
   }
 
-  HAYAKU_TRACE_IF_RETURN(m_runtime.m_calculated, void(),
+  HAYAKU_TRACE_IF_RETURN(runtime_.calculated_, void(),
                          "No need to calculate!");
 
-  m_runtime.m_stock = m_runtime.m_kdata.getStock();
-  KQuery query = m_runtime.m_kdata.getQuery();
-  if (m_runtime.m_stock.isNull() || query.recoverType() == KQuery::NO_RECOVER) {
-    m_runtime.m_rawKData = m_runtime.m_kdata;
+  runtime_.stock_ = runtime_.kdata_.getStock();
+  KQuery query = runtime_.kdata_.getQuery();
+  if (runtime_.stock_.isNull() || query.recoverType() == KQuery::NO_RECOVER) {
+    runtime_.raw_k_data_ = runtime_.kdata_;
   } else {
     KQuery noRecoverQuery = query;
     noRecoverQuery.recoverType(KQuery::NO_RECOVER);
-    m_runtime.m_rawKData = m_runtime.m_stock.getKData(noRecoverQuery);
+    runtime_.raw_k_data_ = runtime_.stock_.getKData(noRecoverQuery);
   }
-  HAYAKU_ASSERT(m_runtime.m_kdata.size() == m_runtime.m_rawKData.size());
+  HAYAKU_ASSERT(runtime_.kdata_.size() == runtime_.raw_k_data_.size());
 
   HAYAKU_WARN_IF(query.recoverType() == KQuery::FORWARD ||
                      query.recoverType() == KQuery::EQUAL_FORWARD,
@@ -78,29 +78,29 @@ void ComponentContext::bind(const KData& kdata) {
                      "data, which introduces "
                      "look-ahead bias!"));
 
-  if (m_runtime.m_sg) {
-    m_runtime.m_sg->setTO(m_runtime.m_kdata);
+  if (runtime_.sg_) {
+    runtime_.sg_->setTO(runtime_.kdata_);
   }
-  if (m_runtime.m_cn) {
-    m_runtime.m_cn->setTO(m_runtime.m_kdata);
+  if (runtime_.cn_) {
+    runtime_.cn_->setTO(runtime_.kdata_);
   }
-  if (m_runtime.m_st) {
-    m_runtime.m_st->setTO(m_runtime.m_kdata);
+  if (runtime_.st_) {
+    runtime_.st_->setTO(runtime_.kdata_);
   }
-  if (m_runtime.m_tp) {
-    m_runtime.m_tp->setTO(m_runtime.m_kdata);
+  if (runtime_.tp_) {
+    runtime_.tp_->setTO(runtime_.kdata_);
   }
-  if (m_runtime.m_pg) {
-    m_runtime.m_pg->setTO(m_runtime.m_rawKData);
+  if (runtime_.pg_) {
+    runtime_.pg_->setTO(runtime_.raw_k_data_);
   }
-  if (m_runtime.m_sp) {
-    m_runtime.m_sp->setTO(m_runtime.m_rawKData);
+  if (runtime_.sp_) {
+    runtime_.sp_->setTO(runtime_.raw_k_data_);
   }
-  if (m_runtime.m_ev) {
-    m_runtime.m_ev->setQuery(query);
+  if (runtime_.ev_) {
+    runtime_.ev_->setQuery(query);
   }
-  if (m_runtime.m_mm) {
-    m_runtime.m_mm->setQuery(query);
+  if (runtime_.mm_) {
+    runtime_.mm_->setQuery(query);
   }
 }
 

@@ -4,6 +4,7 @@ FROM fedora:latest AS builder
 WORKDIR /app
 
 ARG TARGETARCH
+ARG BAZELISK_VERSION=1.29.0
 
 # 设置时区为上海，环境变量
 ENV TimeZone=Asia/Shanghai \
@@ -19,11 +20,9 @@ RUN ln -snf /usr/share/zoneinfo/$TimeZone /etc/localtime && echo $TimeZone > /et
     && dnf clean all \
     # 配置git使用https而非ssl
     && git config --global http.sslVerify false \
-    # 安装xmake（使用官方安装脚本）
-    && wget https://xmake.io/shget.text -O - | bash \
-    && echo ". /root/.xmake/profile" >> /root/.bashrc \
-    && echo "export XMAKE_ROOT=y" >> /root/.bashrc \
-    # && echo "export XMAKE_MAIN_REPO=https://gitee.com/tboox/xmake-repo.git" >> /root/.bashrc \
+    # 安装 Bazelisk；.bazelversion 选择项目使用的 Bazel 版本
+    && wget --quiet "https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-${TARGETARCH}" -O /usr/local/bin/bazel \
+    && chmod +x /usr/local/bin/bazel \
     # clone hayaku 源码（使用国内镜像源）
     && git clone https://github.com/larrystd/hayaku-quant.git hayaku \
     # 安装Miniconda
@@ -46,7 +45,7 @@ RUN ln -snf /usr/share/zoneinfo/$TimeZone /etc/localtime && echo $TimeZone > /et
         ${MINICONDA_PATH}/bin/pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
         ${MINICONDA_PATH}/bin/pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn && \
         ${MINICONDA_PATH}/bin/pip install --no-cache-dir --upgrade pip && \
-        ${MINICONDA_PATH}/bin/conda install -y ipython && \
+        ${MINICONDA_PATH}/bin/conda install -y python=3.10 ipython && \
         ${MINICONDA_PATH}/bin/python -m pip install --no-cache-dir -r hayaku/requirements.txt && \
         ${MINICONDA_PATH}/bin/conda clean -afy && \
         rm -rf ${MINICONDA_PATH}/pkgs/*/info \
@@ -56,7 +55,7 @@ RUN ln -snf /usr/share/zoneinfo/$TimeZone /etc/localtime && echo $TimeZone > /et
     # 通过conda init配置bash，自动激活base环境
     # 设置LD_LIBRARY_PATH和PYTHONPATH环境变量
     # 替换 Miniconda 的 libstdc++ 为系统库
-    && bash -c "$MINICONDA_PATH/bin/conda init bash" && \  
+    && bash -c "$MINICONDA_PATH/bin/conda init bash" && \
     echo "conda activate base" >> /root/.bashrc && \
     echo "export LD_LIBRARY_PATH=/usr/lib64:/opt/miniconda3/lib" >> /root/.bashrc && \
     echo "export PYTHONPATH=/app/hayaku" >> /root/.bashrc && \

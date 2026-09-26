@@ -17,11 +17,11 @@ namespace hayaku {
 KDataShmBufferImp::KDataShmBufferImp(const Stock& stock, const KQuery& query,
                                      const KRecordView& view, size_t start)
     : KDataImp(stock, query),
-      m_start(start),
-      m_end(start + view.count),
-      m_size(view.count),
-      m_data(view.data),
-      m_pin(view.pin) {}
+      start_(start),
+      end_(start + view.count),
+      size_(view.count),
+      data_(view.data),
+      pin_(view.pin) {}
 
 KDataShmBufferImp::~KDataShmBufferImp() {}
 
@@ -111,18 +111,18 @@ size_t KDataShmBufferImp::getPos(const Datetime& datetime) const noexcept {
 
   size_t mid, low = 0, high = size() - 1;
   while (low <= high) {
-    if (datetime > m_data[high].datetime) {
+    if (datetime > data_[high].datetime) {
       mid = high + 1;
       break;
     }
 
-    if (m_data[low].datetime >= datetime) {
+    if (data_[low].datetime >= datetime) {
       mid = low;
       break;
     }
 
     mid = (low + high) / 2;
-    if (datetime > m_data[mid].datetime) {
+    if (datetime > data_[mid].datetime) {
       low = mid + 1;
     } else {
       high = mid - 1;
@@ -133,13 +133,13 @@ size_t KDataShmBufferImp::getPos(const Datetime& datetime) const noexcept {
     return Null<size_t>();
   }
 
-  return m_data[mid].datetime == datetime ? mid : Null<size_t>();
+  return data_[mid].datetime == datetime ? mid : Null<size_t>();
 }
 
 DatetimeList KDataShmBufferImp::getDatetimeList() const {
-  DatetimeList result(m_size);
-  for (size_t i = 0; i < m_size; ++i) {
-    result[i] = m_data[i].datetime;
+  DatetimeList result(size_);
+  for (size_t i = 0; i < size_; ++i) {
+    result[i] = data_[i].datetime;
   }
   return result;
 }
@@ -147,8 +147,8 @@ DatetimeList KDataShmBufferImp::getDatetimeList() const {
 KDataImpPtr KDataShmBufferImp::getOtherFromSelf(const KQuery& query) const {
   // If a derived query still meets the view condition the zero-copy view is
   // reused, otherwise it falls back to the private copy path
-  auto imp = create(m_stock, query);
-  return imp ? imp : std::make_shared<KDataPrivatedBufferImp>(m_stock, query);
+  auto imp = create(stock_, query);
+  return imp ? imp : std::make_shared<KDataPrivatedBufferImp>(stock_, query);
 }
 
 } /* namespace hayaku */

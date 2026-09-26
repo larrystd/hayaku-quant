@@ -96,7 +96,7 @@ class HAYAKU_UTILS_API IniParser {
  private:
   typedef std::map<std::string, std::string> item_map_type;
   typedef std::map<std::string, item_map_type> section_map_type;
-  section_map_type m_sections;
+  section_map_type sections_;
 };
 
 }  // namespace hayaku

@@ -41,14 +41,14 @@ bool MySQLBlockInfoDriver::_init() { return true; }
 DBConnectPtr MySQLBlockInfoDriver::getConnect() {
   Parameter connect_param;
   connect_param.set<string>(
-      "host", getParamFromOther<string>(m_params, "host", "127.0.0.1"));
+      "host", getParamFromOther<string>(params_, "host", "127.0.0.1"));
   connect_param.set<string>("usr",
-                            getParamFromOther<string>(m_params, "usr", "root"));
+                            getParamFromOther<string>(params_, "usr", "root"));
   connect_param.set<string>("pwd",
-                            getParamFromOther<string>(m_params, "pwd", ""));
+                            getParamFromOther<string>(params_, "pwd", ""));
   connect_param.set<string>(
-      "db", getParamFromOther<string>(m_params, "db", "hayaku_base"));
-  string port_str = getParamFromOther<string>(m_params, "port", "3306");
+      "db", getParamFromOther<string>(params_, "db", "hayaku_base"));
+  string port_str = getParamFromOther<string>(params_, "port", "3306");
   unsigned int port = boost::lexical_cast<unsigned int>(port_str);
   connect_param.set<int>("port", port);
   return std::make_shared<MySQLConnect>(connect_param);
@@ -64,13 +64,13 @@ void MySQLBlockInfoDriver::load() {
       "join `hayaku_base`.`BlockIndex` b on a.category=b.category and a.name = "
       "b.name");
 
-  std::unique_lock<std::shared_mutex> lock(m_buffer_mutex);
+  std::unique_lock<std::shared_mutex> lock(buffer_mutex_);
   for (auto& record : records) {
-    auto category_iter = m_buffer.find(record.category);
-    if (category_iter == m_buffer.end()) {
-      m_buffer[record.category] = {};
+    auto category_iter = buffer_.find(record.category);
+    if (category_iter == buffer_.end()) {
+      buffer_[record.category] = {};
     }
-    auto& name_dict = m_buffer[record.category];
+    auto& name_dict = buffer_[record.category];
     auto name_iter = name_dict.find(record.name);
     if (name_iter == name_dict.end()) {
       name_dict[record.name] = {
@@ -82,9 +82,9 @@ void MySQLBlockInfoDriver::load() {
 
 StringList MySQLBlockInfoDriver::getAllCategory() {
   StringList ret;
-  std::shared_lock<std::shared_mutex> lock(m_buffer_mutex);
-  ret.reserve(m_buffer.size());
-  for (auto& category_iter : m_buffer) {
+  std::shared_lock<std::shared_mutex> lock(buffer_mutex_);
+  ret.reserve(buffer_.size());
+  for (auto& category_iter : buffer_) {
     ret.push_back(category_iter.first);
   }
   return ret;
@@ -93,9 +93,9 @@ StringList MySQLBlockInfoDriver::getAllCategory() {
 Block MySQLBlockInfoDriver::getBlock(const string& category,
                                      const string& name) {
   Block ret;
-  std::shared_lock<std::shared_mutex> lock(m_buffer_mutex);
-  auto category_iter = m_buffer.find(category);
-  HAYAKU_IF_RETURN(category_iter == m_buffer.end(), ret);
+  std::shared_lock<std::shared_mutex> lock(buffer_mutex_);
+  auto category_iter = buffer_.find(category);
+  HAYAKU_IF_RETURN(category_iter == buffer_.end(), ret);
 
   auto block_iter = category_iter->second.find(name);
   HAYAKU_IF_RETURN(block_iter == category_iter->second.end(), ret);
@@ -106,9 +106,9 @@ Block MySQLBlockInfoDriver::getBlock(const string& category,
 
 BlockList MySQLBlockInfoDriver::getBlockList(const string& category) {
   BlockList ret;
-  std::shared_lock<std::shared_mutex> lock(m_buffer_mutex);
-  auto category_iter = m_buffer.find(category);
-  HAYAKU_IF_RETURN(category_iter == m_buffer.end(), ret);
+  std::shared_lock<std::shared_mutex> lock(buffer_mutex_);
+  auto category_iter = buffer_.find(category);
+  HAYAKU_IF_RETURN(category_iter == buffer_.end(), ret);
 
   const auto& category_blocks = category_iter->second;
   for (auto iter = category_blocks.begin(); iter != category_blocks.end();
@@ -121,8 +121,8 @@ BlockList MySQLBlockInfoDriver::getBlockList(const string& category) {
 
 BlockList MySQLBlockInfoDriver::getBlockList() {
   BlockList ret;
-  std::shared_lock<std::shared_mutex> lock(m_buffer_mutex);
-  for (auto category_iter = m_buffer.begin(); category_iter != m_buffer.end();
+  std::shared_lock<std::shared_mutex> lock(buffer_mutex_);
+  for (auto category_iter = buffer_.begin(); category_iter != buffer_.end();
        ++category_iter) {
     const auto& category_blocks = category_iter->second;
     for (auto iter = category_blocks.begin(); iter != category_blocks.end();
@@ -134,10 +134,10 @@ BlockList MySQLBlockInfoDriver::getBlockList() {
 }
 
 void MySQLBlockInfoDriver::save(const Block& block) {
-  std::unique_lock<std::shared_mutex> lock(m_buffer_mutex);
-  auto category_iter = m_buffer.find(block.category());
-  if (category_iter == m_buffer.end()) {
-    m_buffer.emplace(block.category(),
+  std::unique_lock<std::shared_mutex> lock(buffer_mutex_);
+  auto category_iter = buffer_.find(block.category());
+  if (category_iter == buffer_.end()) {
+    buffer_.emplace(block.category(),
                      unordered_map<string, Block>{{block.name(), block}});
   } else {
     category_iter->second.emplace(block.name(), block);
@@ -176,15 +176,15 @@ void MySQLBlockInfoDriver::remove(const string& category, const string& name) {
     connect->remove(MySQLBlockIndexTable::getTableName(), condition, false);
   }
 
-  std::unique_lock<std::shared_mutex> lock(m_buffer_mutex);
-  auto category_iter = m_buffer.find(category);
-  HAYAKU_IF_RETURN(category_iter == m_buffer.end(), void());
+  std::unique_lock<std::shared_mutex> lock(buffer_mutex_);
+  auto category_iter = buffer_.find(category);
+  HAYAKU_IF_RETURN(category_iter == buffer_.end(), void());
 
   auto block_iter = category_iter->second.find(name);
   HAYAKU_IF_RETURN(block_iter == category_iter->second.end(), void());
 
   category_iter->second.erase(block_iter);
-  m_buffer.erase(category_iter);
+  buffer_.erase(category_iter);
 }
 
 }  // namespace hayaku

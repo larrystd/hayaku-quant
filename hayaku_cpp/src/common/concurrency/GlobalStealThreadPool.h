@@ -54,23 +54,23 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
    * empty
    */
   explicit GlobalStealThreadPool(size_t n, bool until_empty = true)
-      : m_done(false),
-        m_worker_num(n),
-        m_running_until_empty(until_empty),
-        m_sleep_count(0) {
+      : done_(false),
+        worker_num_(n),
+        running_until_empty_(until_empty),
+        sleep_count_(0) {
     try {
-      m_interrupt_flags.resize(m_worker_num, nullptr);
-      for (int i = 0; i < m_worker_num; i++) {
+      interrupt_flags_.resize(worker_num_, nullptr);
+      for (int i = 0; i < worker_num_; i++) {
         // Create the worker threads and their task queues
-        m_queues.emplace_back(new WorkStealQueue);
+        queues_.emplace_back(new WorkStealQueue);
       }
       // The threads are started after all the thread resources have been
       // initialized
-      for (int i = 0; i < m_worker_num; i++) {
-        m_threads.emplace_back(&GlobalStealThreadPool::worker_thread, this, i);
+      for (int i = 0; i < worker_num_; i++) {
+        threads_.emplace_back(&GlobalStealThreadPool::worker_thread, this, i);
       }
     } catch (...) {
-      m_done.store(true, std::memory_order_release);
+      done_.store(true, std::memory_order_release);
       throw;
     }
   }
@@ -80,17 +80,17 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
    * finished
    */
   ~GlobalStealThreadPool() {
-    if (!m_done.load(std::memory_order_acquire)) {
+    if (!done_.load(std::memory_order_acquire)) {
       join();
     }
   }
 
   /** Get the number of the worker threads */
-  size_t worker_num() const { return m_worker_num; }
+  size_t worker_num() const { return worker_num_; }
 
   /** Get the number of the currently sleeping worker threads */
   int sleep_count() const {
-    return m_sleep_count.load(std::memory_order_acquire);
+    return sleep_count_.load(std::memory_order_acquire);
   }
 
   /**
@@ -100,8 +100,8 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
    * @return the number of the actually woken threads
    */
   int wake_up() {
-    HAYAKU_IF_RETURN(m_done.load(std::memory_order_acquire), 0);
-    int sleeping_count = m_sleep_count.load(std::memory_order_acquire);
+    HAYAKU_IF_RETURN(done_.load(std::memory_order_acquire), 0);
+    int sleeping_count = sleep_count_.load(std::memory_order_acquire);
     if (sleeping_count <= 0) {
       return 0;
     }
@@ -124,7 +124,7 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
     if (remaining_tasks >= static_cast<size_t>(sleeping_count)) {
       // The tasks are sufficient, use notify_all to wake up all the sleeping
       // threads (better performance)
-      m_cv.notify_all();
+      cv_.notify_all();
       threads_to_wake = sleeping_count;
     } else {
       // There are few tasks, wake up precisely as needed
@@ -134,7 +134,7 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
 
       // Wake up precisely the given number of the threads
       for (int i = 0; i < threads_to_wake; ++i) {
-        m_cv.notify_one();
+        cv_.notify_one();
       }
     }
 
@@ -143,18 +143,18 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
 
   /** Number of the remaining tasks */
   size_t remain_task_count() const {
-    if (m_done.load(std::memory_order_acquire)) {
+    if (done_.load(std::memory_order_acquire)) {
       return 0;
     }
-    size_t total = m_master_work_queue.size();
-    for (size_t i = 0; i < m_worker_num; i++) {
-      total += m_queues[i]->size();
+    size_t total = master_work_queue_.size();
+    for (size_t i = 0; i < worker_num_; i++) {
+      total += queues_[i]->size();
     }
     return total;
   }
 
   /** Whether the current thread is a worker thread */
-  static bool is_work_thread() { return m_local_work_queue != nullptr; }
+  static bool is_work_thread() { return local_work_queue_ != nullptr; }
 
   /** The type of the corresponding future returned after submitting a task to
    * the thread pool */
@@ -169,7 +169,7 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
   /** Submit a task to the thread pool */
   template <typename FunctionType>
   auto submit(FunctionType&& f) {
-    if (m_thread_need_stop.isSet() || m_done.load(std::memory_order_acquire)) {
+    if (thread_need_stop_.isSet() || done_.load(std::memory_order_acquire)) {
       throw std::logic_error(
           "You can't submit a task to the stopped GlobalStealThreadPool!!");
     }
@@ -179,13 +179,13 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
     task_handle<result_type> res(task.get_future());
 
     std::thread::id id = std::this_thread::get_id();
-    if (m_local_work_queue && id == m_thread_id) {
+    if (local_work_queue_ && id == thread_id_) {
       // The local thread tasks enter the queue from the front (recursion
       // becomes a stack)
-      m_local_work_queue->push_front(std::move(task));
+      local_work_queue_->push_front(std::move(task));
     } else {
-      m_master_work_queue.push(std::move(task));
-      m_cv.notify_one();
+      master_work_queue_.push(std::move(task));
+      cv_.notify_one();
     }
 
     return res;
@@ -196,41 +196,41 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
 #endif
 
   /** Return the end state of the thread pool */
-  bool done() const { return m_done.load(std::memory_order_acquire); }
+  bool done() const { return done_.load(std::memory_order_acquire); }
 
   /**
    * It waits for every thread to finish the currently executed task and then
    * exits immediately
    */
   void stop() {
-    if (m_done.exchange(true, std::memory_order_acq_rel)) {
+    if (done_.exchange(true, std::memory_order_acq_rel)) {
       return;
     }
 
     // Reset the sleep count
-    m_sleep_count.store(0, std::memory_order_release);
+    sleep_count_.store(0, std::memory_order_release);
 
     // At the same time the end task indication is added, so that it can also be
     // terminated when the dll exits
-    for (size_t i = 0; i < m_worker_num; i++) {
-      if (m_interrupt_flags[i]) {
-        m_interrupt_flags[i]->set();
+    for (size_t i = 0; i < worker_num_; i++) {
+      if (interrupt_flags_[i]) {
+        interrupt_flags_[i]->set();
       }
-      m_queues[i]->push_front(FuncWrapper());
+      queues_[i]->push_front(FuncWrapper());
     }
 
-    m_cv.notify_all();  // Wake up all the worker threads
-    for (size_t i = 0; i < m_worker_num; i++) {
-      if (m_threads[i].joinable()) {
-        m_threads[i].join();
+    cv_.notify_all();  // Wake up all the worker threads
+    for (size_t i = 0; i < worker_num_; i++) {
+      if (threads_[i].joinable()) {
+        threads_[i].join();
       }
     }
 
-    m_master_work_queue.clear();
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_queues[i]->clear();
+    master_work_queue_.clear();
+    for (size_t i = 0; i < worker_num_; i++) {
+      queues_[i]->clear();
     }
-    m_threads.clear();
+    threads_.clear();
   }
 
   /**
@@ -239,19 +239,19 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
    * are ended
    */
   void join() {
-    if (m_done.load(std::memory_order_acquire)) {
+    if (done_.load(std::memory_order_acquire)) {
       return;
     }
 
     // It instructs every worker thread to stop running when no work task is got
-    if (m_running_until_empty) {
+    if (running_until_empty_) {
       while (true) {
-        if (m_master_work_queue.size() != 0) {
+        if (master_work_queue_.size() != 0) {
           std::this_thread::yield();
         } else {
           bool can_quit = true;
-          for (size_t i = 0; i < m_worker_num; i++) {
-            if (m_queues[i]->size() != 0) {
+          for (size_t i = 0; i < worker_num_; i++) {
+            if (queues_[i]->size() != 0) {
               can_quit = false;
               break;
             }
@@ -264,34 +264,34 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
         }
       }
 
-      m_done.store(true, std::memory_order_release);
-      for (size_t i = 0; i < m_worker_num; i++) {
-        if (m_interrupt_flags[i]) {
-          m_interrupt_flags[i]->set();
+      done_.store(true, std::memory_order_release);
+      for (size_t i = 0; i < worker_num_; i++) {
+        if (interrupt_flags_[i]) {
+          interrupt_flags_[i]->set();
         }
       }
     }
 
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_master_work_queue.push(FuncWrapper());
+    for (size_t i = 0; i < worker_num_; i++) {
+      master_work_queue_.push(FuncWrapper());
     }
 
     // Wake up all the worker threads
-    m_cv.notify_all();
+    cv_.notify_all();
 
     // Wait for the threads to be finished
-    for (size_t i = 0; i < m_worker_num; i++) {
-      if (m_threads[i].joinable()) {
-        m_threads[i].join();
+    for (size_t i = 0; i < worker_num_; i++) {
+      if (threads_[i].joinable()) {
+        threads_[i].join();
       }
     }
 
-    m_done.store(true, std::memory_order_release);
-    m_master_work_queue.clear();
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_queues[i]->clear();
+    done_.store(true, std::memory_order_release);
+    master_work_queue_.clear();
+    for (size_t i = 0; i < worker_num_; i++) {
+      queues_[i]->clear();
     }
-    m_threads.clear();
+    threads_.clear();
   }
 
   struct ExecutorWrapper {
@@ -308,17 +308,17 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
  public:
   bool run_available_task_once() {
     HAYAKU_IF_RETURN(
-        m_done.load(std::memory_order_acquire) || m_thread_need_stop.isSet(),
+        done_.load(std::memory_order_acquire) || thread_need_stop_.isSet(),
         false);
     bool task_run = false;
     task_type task;
-    if (m_local_work_queue) {
+    if (local_work_queue_) {
       if (pop_task_from_local_queue(task)) {
         if (!task.isNullTask()) {
           task();
           task_run = true;
         } else {
-          m_thread_need_stop.set();
+          thread_need_stop_.set();
         }
       } else if (pop_task_from_other_thread_queue(task)) {
         task();
@@ -328,7 +328,7 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
           task();
           task_run = true;
         } else {
-          m_thread_need_stop.set();
+          thread_need_stop_.set();
         }
       }
     } else if (pop_task_from_master_queue(task)) {
@@ -343,60 +343,60 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
  private:
   typedef FuncWrapper task_type;
   std::atomic_bool
-      m_done;           // The global termination indication of the thread pool
-  size_t m_worker_num;  // Number of the worker threads
-  bool m_running_until_empty;    // It stops running automatically when the task
+      done_;           // The global termination indication of the thread pool
+  size_t worker_num_;  // Number of the worker threads
+  bool running_until_empty_;    // It stops running automatically when the task
                                  // queue is empty
-  std::condition_variable m_cv;  // Semaphore, it blocks the threads and waits
+  std::condition_variable cv_;  // Semaphore, it blocks the threads and waits
                                  // when there is no task
-  std::mutex m_cv_mutex;  // The mutex working together with the semaphore
-  std::atomic<int> m_sleep_count;  // Sleep count
+  std::mutex cv_mutex_;  // The mutex working together with the semaphore
+  std::atomic<int> sleep_count_;  // Sleep count
 
-  std::vector<InterruptFlag*> m_interrupt_flags;  // Worker thread states
+  std::vector<InterruptFlag*> interrupt_flags_;  // Worker thread states
   ThreadSafeQueue<task_type>
-      m_master_work_queue;  // Task queue of the master thread
+      master_work_queue_;  // Task queue of the master thread
   std::vector<std::unique_ptr<WorkStealQueue> >
-      m_queues;                        // Task queues (one for every worker
+      queues_;                        // Task queues (one for every worker
                                        // thread)
-  std::vector<std::thread> m_threads;  // Worker threads
+  std::vector<std::thread> threads_;  // Worker threads
 
 // Thread local variables
 #if HAYAKU_OS_WINDOWS
-  static WorkStealQueue* m_local_work_queue;  // Local task queue
-  static int m_index;                         // The index in the thread pool
+  static WorkStealQueue* local_work_queue_;  // Local task queue
+  static int index_;                         // The index in the thread pool
   static InterruptFlag
-      m_thread_need_stop;  // The indication for stopping the thread
-  static std::thread::id m_thread_id;
+      thread_need_stop_;  // The indication for stopping the thread
+  static std::thread::id thread_id_;
 
 #else
 #if CPP_STANDARD >= CPP_STANDARD_17 && !defined(__clang__)
-  inline static thread_local WorkStealQueue* m_local_work_queue =
+  inline static thread_local WorkStealQueue* local_work_queue_ =
       nullptr;                                  // Local task queue
-  inline static thread_local int m_index = -1;  // The index in the thread pool
+  inline static thread_local int index_ = -1;  // The index in the thread pool
   inline static thread_local InterruptFlag
-      m_thread_need_stop;  // The indication for stopping the
+      thread_need_stop_;  // The indication for stopping the
                            // thread
-  inline static thread_local std::thread::id m_thread_id;
+  inline static thread_local std::thread::id thread_id_;
 #else
-  static thread_local WorkStealQueue* m_local_work_queue;  // Local task queue
-  static thread_local int m_index;  // The index in the thread pool
+  static thread_local WorkStealQueue* local_work_queue_;  // Local task queue
+  static thread_local int index_;  // The index in the thread pool
   static thread_local InterruptFlag
-      m_thread_need_stop;  // The indication for stopping the thread
-  static thread_local std::thread::id m_thread_id;
+      thread_need_stop_;  // The indication for stopping the thread
+  static thread_local std::thread::id thread_id_;
 #endif
 #endif
 
   void worker_thread(int index) {
-    m_thread_id = std::this_thread::get_id();
-    m_interrupt_flags[index] = &m_thread_need_stop;
-    m_index = index;
-    m_local_work_queue = m_queues[index].get();
-    while (!m_thread_need_stop.isSet() &&
-           !m_done.load(std::memory_order_acquire)) {
+    thread_id_ = std::this_thread::get_id();
+    interrupt_flags_[index] = &thread_need_stop_;
+    index_ = index;
+    local_work_queue_ = queues_[index].get();
+    while (!thread_need_stop_.isSet() &&
+           !done_.load(std::memory_order_acquire)) {
       run_pending_task();
     }
-    m_local_work_queue = nullptr;
-    m_interrupt_flags[index] = nullptr;
+    local_work_queue_ = nullptr;
+    interrupt_flags_[index] = nullptr;
   }
 
   void run_pending_task() {
@@ -409,48 +409,48 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
       if (!task.isNullTask()) {
         task();
       } else {
-        m_thread_need_stop.set();
+        thread_need_stop_.set();
       }
     } else if (pop_task_from_master_queue(task)) {
       if (!task.isNullTask()) {
         task();
       } else {
-        m_thread_need_stop.set();
+        thread_need_stop_.set();
       }
     } else if (pop_task_from_other_thread_queue(task)) {
       task();
     } else {
       // Increase the sleep count before entering the waiting state
-      m_sleep_count.fetch_add(1, std::memory_order_acq_rel);
+      sleep_count_.fetch_add(1, std::memory_order_acq_rel);
 
       // std::this_thread::yield();
-      std::unique_lock<std::mutex> lk(m_cv_mutex);
-      m_cv.wait(lk, [this] {
-        return this->m_done.load(std::memory_order_acquire) ||
-               !this->m_master_work_queue.empty() ||
-               (m_local_work_queue && !m_local_work_queue->empty()) ||
+      std::unique_lock<std::mutex> lk(cv_mutex_);
+      cv_.wait(lk, [this] {
+        return this->done_.load(std::memory_order_acquire) ||
+               !this->master_work_queue_.empty() ||
+               (local_work_queue_ && !local_work_queue_->empty()) ||
                has_other_remain_task();
       });
 
       // Decrease the sleep count after being woken up
-      m_sleep_count.fetch_sub(1, std::memory_order_acq_rel);
+      sleep_count_.fetch_sub(1, std::memory_order_acq_rel);
     }
   }
 
   bool pop_task_from_master_queue(task_type& task) {
-    return m_master_work_queue.try_pop(task);
+    return master_work_queue_.try_pop(task);
   }
 
   // cppcheck-suppress functionStatic  // Suppress the cppcheck suggestion of
   // converting it into a static function
   bool pop_task_from_local_queue(task_type& task) {
-    return m_local_work_queue && m_local_work_queue->try_pop(task);
+    return local_work_queue_ && local_work_queue_->try_pop(task);
   }
 
   bool pop_task_from_other_thread_queue(task_type& task) {
-    for (int i = 0; i < m_worker_num; ++i) {
-      int index = (m_index + i + 1) % m_worker_num;
-      if (index != m_index && m_queues[index]->try_steal(task)) {
+    for (int i = 0; i < worker_num_; ++i) {
+      int index = (index_ + i + 1) % worker_num_;
+      if (index != index_ && queues_[index]->try_steal(task)) {
         return true;
       }
     }
@@ -458,8 +458,8 @@ class HAYAKU_UTILS_API GlobalStealThreadPool {
   }
 
   bool has_other_remain_task() {
-    for (int i = 0; i < m_worker_num; ++i) {
-      if (i != m_index && m_queues[i] && !m_queues[i]->empty()) {
+    for (int i = 0; i < worker_num_; ++i) {
+      if (i != index_ && queues_[i] && !queues_[i]->empty()) {
         return true;
       }
     }

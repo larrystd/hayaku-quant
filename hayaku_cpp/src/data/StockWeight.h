@@ -28,42 +28,42 @@ class HAYAKU_API StockWeight {
               price_t suogu);
 
   /** Ex-rights/ex-dividend date */
-  Datetime datetime() const noexcept { return m_datetime; }
+  Datetime datetime() const noexcept { return datetime_; }
 
   /** Bonus shares per 10 shares (X shares given per 10 shares) */
-  price_t countAsGift() const noexcept { return m_countAsGift; }
+  price_t countAsGift() const noexcept { return count_as_gift_; }
 
   /** Rights shares per 10 shares (X shares allotted per 10 shares) */
-  price_t countForSell() const noexcept { return m_countForSell; }
+  price_t countForSell() const noexcept { return count_for_sell_; }
 
   /** Rights issue price */
-  price_t priceForSell() const noexcept { return m_priceForSell; }
+  price_t priceForSell() const noexcept { return price_for_sell_; }
 
   /** Dividend per 10 shares */
-  price_t bonus() const noexcept { return m_bonus; }
+  price_t bonus() const noexcept { return bonus_; }
 
   /** Capitalized shares per 10 shares (X shares converted per 10 shares) */
-  price_t increasement() const noexcept { return m_increasement; }
+  price_t increasement() const noexcept { return increasement_; }
 
   /** Total share capital (in units of 10 thousand shares) */
-  price_t totalCount() const noexcept { return m_totalCount; }
+  price_t totalCount() const noexcept { return total_count_; }
 
   /** Outstanding shares (in units of 10 thousand shares) */
-  price_t freeCount() const noexcept { return m_freeCount; }
+  price_t freeCount() const noexcept { return free_count_; }
 
   /** Share expansion/contraction ratio (suogu) */
-  price_t suogu() const noexcept { return m_suogu; }
+  price_t suogu() const noexcept { return suogu_; }
 
  private:
-  Datetime m_datetime;         // Ex-rights/ex-dividend date
-  price_t m_countAsGift{0.};   // Bonus shares per 10 shares
-  price_t m_countForSell{0.};  // Rights shares per 10 shares
-  price_t m_priceForSell{0.};  // Rights issue price
-  price_t m_bonus{0.};         // Dividend per 10 shares
-  price_t m_increasement{0.};  // Capitalized shares per 10 shares
-  price_t m_totalCount{0.};    // Total share capital (10 thousand shares)
-  price_t m_freeCount{0.};     // Outstanding shares (10 thousand shares)
-  price_t m_suogu{0.};         // Share expansion/contraction ratio
+  Datetime datetime_;         // Ex-rights/ex-dividend date
+  price_t count_as_gift_{0.};   // Bonus shares per 10 shares
+  price_t count_for_sell_{0.};  // Rights shares per 10 shares
+  price_t price_for_sell_{0.};  // Rights issue price
+  price_t bonus_{0.};         // Dividend per 10 shares
+  price_t increasement_{0.};  // Capitalized shares per 10 shares
+  price_t total_count_{0.};    // Total share capital (10 thousand shares)
+  price_t free_count_{0.};     // Outstanding shares (10 thousand shares)
+  price_t suogu_{0.};         // Share expansion/contraction ratio
 };
 
 /** @ingroup StockManage */

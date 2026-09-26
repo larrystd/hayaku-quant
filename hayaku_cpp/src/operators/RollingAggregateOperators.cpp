@@ -125,12 +125,12 @@ void ICount::_checkParam(const string& name) const {
 void ICount::_calculate(const Indicator& data) {
   size_t total = data.size();
   if (0 == total) {
-    m_discard = 0;
+    discard_ = 0;
     return;
   }
 
   if (data.discard() >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -140,9 +140,9 @@ void ICount::_calculate(const Indicator& data) {
   auto* dst = this->data();
 
   if (0 == n) {
-    m_discard = data.discard();
+    discard_ = data.discard();
     int count = 0;
-    for (size_t i = m_discard; i < total; ++i) {
+    for (size_t i = discard_; i < total; ++i) {
       if (src[i] != 0) {
         count++;
       }
@@ -151,9 +151,9 @@ void ICount::_calculate(const Indicator& data) {
     return;
   }
 
-  m_discard = data.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -240,7 +240,7 @@ void ISum::_checkParam(const string& name) const {
 void ISum::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   if (0 == total || ind.discard() >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -249,28 +249,28 @@ void ISum::_calculate(const Indicator& ind) {
 
   int n = getParam<int>("n");
   if (n <= 0) {
-    m_discard = ind.discard();
+    discard_ = ind.discard();
     price_t sum = 0;
-    for (size_t i = m_discard; i < total; i++) {
+    for (size_t i = discard_; i < total; i++) {
       sum += src[i];
       dst[i] = sum;
     }
     return;
   }
 
-  m_discard = ind.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
   if (n == 1) {
-    memcpy(dst + m_discard, src + m_discard,
-           (total - m_discard) * sizeof(value_t));
+    memcpy(dst + discard_, src + discard_,
+           (total - discard_) * sizeof(value_t));
     return;
   }
 
-  _increment_calculate(ind, m_discard);
+  _increment_calculate(ind, discard_);
   return;
 }
 
@@ -351,13 +351,13 @@ void IDevsq::_calculate(const Indicator& data) {
   size_t total = data.size();
   int n = getParam<int>("n");
 
-  m_discard = data.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 size_t IDevsq::min_increment_start() const { return getParam<int>("n"); }

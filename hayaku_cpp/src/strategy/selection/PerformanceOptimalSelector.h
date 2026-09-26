@@ -34,7 +34,7 @@ class PerformanceOptimalSelector : public OptimalSelectorBase {
       bool trace);
 
  private:
-  unordered_map<Datetime, internal::StrategyRuntimePtr> m_sys_dict;
+  unordered_map<Datetime, internal::StrategyRuntimePtr> sys_dict_;
 };
 
 }  // namespace hayaku

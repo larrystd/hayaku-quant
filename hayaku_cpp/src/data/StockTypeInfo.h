@@ -44,42 +44,42 @@ class HAYAKU_API StockTypeInfo {
   StockTypeInfo& operator=(StockTypeInfo&&) noexcept;
 
   /** Get the security type */
-  uint32_t type() const noexcept { return m_type; }
+  uint32_t type() const noexcept { return type_; }
 
   /** Get the description of the security type */
-  const string& description() const noexcept { return m_description; }
+  const string& description() const noexcept { return description_; }
 
   /** Get the minimum tick size */
-  price_t tick() const noexcept { return m_tick; }
+  price_t tick() const noexcept { return tick_; }
 
   /** Price per tick */
-  price_t tickValue() const noexcept { return m_tickValue; }
+  price_t tickValue() const noexcept { return tick_value_; }
 
   /** Price per unit = tickValue / tick */
-  price_t unit() const noexcept { return m_unit; }
+  price_t unit() const noexcept { return unit_; }
 
   /** Get the price precision */
-  int precision() const noexcept { return m_precision; }
+  int precision() const noexcept { return precision_; }
 
   /** Get the minimum trade quantity per order */
-  double minTradeNumber() const noexcept { return m_minTradeNumber; }
+  double minTradeNumber() const noexcept { return min_trade_number_; }
 
   /** Get the maximum trade quantity per order */
-  double maxTradeNumber() const noexcept { return m_maxTradeNumber; }
+  double maxTradeNumber() const noexcept { return max_trade_number_; }
 
   /** Used by __str__ of python only */
   string toString() const;
 
  private:
-  uint32_t m_type;       // Security type
-  string m_description;  // Description
-  price_t m_tick;        // Minimum tick size
-  price_t m_tickValue;   // Price of every tick
+  uint32_t type_;       // Security type
+  string description_;  // Description
+  price_t tick_;        // Minimum tick size
+  price_t tick_value_;   // Price of every tick
   price_t
-      m_unit;  // Price per minimum change, i.e. unit price = tickValue / tick
-  int m_precision;          // Price precision
-  double m_minTradeNumber;  // Minimum trade quantity per order
-  double m_maxTradeNumber;  // Maximum trade quantity per order
+      unit_;  // Price per minimum change, i.e. unit price = tickValue / tick
+  int precision_;          // Price precision
+  double min_trade_number_;  // Minimum trade quantity per order
+  double max_trade_number_;  // Maximum trade quantity per order
 };
 
 /**

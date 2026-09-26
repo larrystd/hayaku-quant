@@ -40,37 +40,37 @@ class HAYAKU_API MultiFactorBase
   virtual ~MultiFactorBase() = default;
 
   /** Get the name */
-  const string& name() const { return m_name; }
+  const string& name() const { return name_; }
 
   /** Set the name */
-  void name(const string& name) { m_name = name; }
+  void name(const string& name) { name_ = name; }
 
   /** Get the reference date list */
   const DatetimeList& getDatetimeList();
 
   /** Get the query range */
-  const KQuery& getQuery() const { return m_query; }
+  const KQuery& getQuery() const { return query_; }
 
   /** Set the query range */
   void setQuery(const KQuery& query);
 
   /** Get the reference security */
-  const Stock& getRefStock() const { return m_ref_stk; }
+  const Stock& getRefStock() const { return ref_stk_; }
 
   /** Set the reference security */
   void setRefStock(const Stock& stk);
 
   /** Get the security list */
-  const StockList& getStockList() const { return m_stks; }
+  const StockList& getStockList() const { return stks_; }
 
   /** Set the security list of the calculation range */
   void setStockList(const StockList& stks);
 
   /** Get the current number of the securities in the security list */
-  size_t getStockListNumber() const { return m_stks.size(); }
+  size_t getStockListNumber() const { return stks_.size(); }
 
   /** Get the original factor set */
-  const FactorSet& getRefFactorSet() const { return m_factorset; }
+  const FactorSet& getRefFactorSet() const { return factorset_; }
 
   /** Set the original factor set */
   void setRefFactorSet(const FactorSet& factorset);
@@ -173,7 +173,7 @@ class HAYAKU_API MultiFactorBase
   virtual MultiFactorPtr _clone() = 0;
   virtual IndicatorList _calculate(const vector<IndicatorList>&) = 0;
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
   /**
    * Execute the calculation. It is calculated automatically when the result is
@@ -221,43 +221,43 @@ class HAYAKU_API MultiFactorBase
   IndicatorList _getAllReturns(int ndays) const;
 
  protected:
-  bool m_is_python_object{false};
-  string m_name;
-  FactorSet m_factorset;  // The input original factor set
-  StockList m_stks;       // Security portfolio
-  Stock m_ref_stk;  // The given reference security, it is used to align the
+  bool is_python_object_{false};
+  string name_;
+  FactorSet factorset_;  // The input original factor set
+  StockList stks_;       // Security portfolio
+  Stock ref_stk_;  // The given reference security, it is used to align the
                     // dates only
-  KQuery m_query;   // The date range condition of the calculation
+  KQuery query_;   // The date range condition of the calculation
 
-  NormPtr m_norm;  // Global standardization / normalization
+  NormPtr norm_;  // Global standardization / normalization
                    // operation
   unordered_map<string, NormPtr>
-      m_special_norms;  // The specific standardization operation
+      special_norms_;  // The specific standardization operation
                         // performed on a specific indicator
   unordered_map<string, string>
-      m_special_category;  // The block category given when the industry
+      special_category_;  // The block category given when the industry
                            // neutralization is performed on a specific
                            // indicator
   unordered_map<string, IndicatorList>
-      m_special_style_inds;  // The style factors given when the style factor
+      special_style_inds_;  // The style factors given when the style factor
                              // neutralization is performed on a specific
                              // indicator
 
   // The following variables are generated after the calculation
-  DatetimeList m_ref_dates;  // The reference dates calculated from the
+  DatetimeList ref_dates_;  // The reference dates calculated from the
                              // reference security and the query, the
                              // synthesized factor is aligned to these dates
-  unordered_map<Stock, size_t> m_stk_map;  // Security -> the position index of
+  unordered_map<Stock, size_t> stk_map_;  // Security -> the position index of
                                            // the synthesized factor
-  IndicatorList m_all_factors;  // Saves the new factors synthesized from all
+  IndicatorList all_factors_;  // Saves the new factors synthesized from all
                                 // the securities
-  unordered_map<Datetime, size_t> m_date_index;
-  vector<ScoreRecordList> m_stk_factor_by_date;
-  Indicator m_ic;
+  unordered_map<Datetime, size_t> date_index_;
+  vector<ScoreRecordList> stk_factor_by_date_;
+  Indicator ic_;
 
  private:
-  std::mutex m_mutex;
-  std::atomic<bool> m_calculated{false};
+  std::mutex mutex_;
+  std::atomic<bool> calculated_{false};
 
 //============================================
 // Serialization support
@@ -267,45 +267,45 @@ class HAYAKU_API MultiFactorBase
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_factorset);
-    ar& BOOST_SERIALIZATION_NVP(m_stks);
-    ar& BOOST_SERIALIZATION_NVP(m_ref_stk);
-    ar& BOOST_SERIALIZATION_NVP(m_query);
-    ar& BOOST_SERIALIZATION_NVP(m_norm);
-    ar& BOOST_SERIALIZATION_NVP(m_special_norms);
-    ar& BOOST_SERIALIZATION_NVP(m_special_category);
-    ar& BOOST_SERIALIZATION_NVP(m_special_style_inds);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_factorset", factorset_);
+    ar& boost::serialization::make_nvp("m_stks", stks_);
+    ar& boost::serialization::make_nvp("m_ref_stk", ref_stk_);
+    ar& boost::serialization::make_nvp("m_query", query_);
+    ar& boost::serialization::make_nvp("m_norm", norm_);
+    ar& boost::serialization::make_nvp("m_special_norms", special_norms_);
+    ar& boost::serialization::make_nvp("m_special_category", special_category_);
+    ar& boost::serialization::make_nvp("m_special_style_inds", special_style_inds_);
     // The following do not need to be saved, they are recalculated after
-    // loading ar& BOOST_SERIALIZATION_NVP(m_stk_map); ar&
-    // BOOST_SERIALIZATION_NVP(m_all_factors); ar&
-    // BOOST_SERIALIZATION_NVP(m_date_index); ar& BOOST_SERIALIZATION_NVP(m_ic);
-    // ar& BOOST_SERIALIZATION_NVP(m_calculated);
-    // ar& BOOST_SERIALIZATION_NVP(m_stk_factor_by_date);
+    // loading ar& boost::serialization::make_nvp("m_stk_map", stk_map_); ar&
+    // boost::serialization::make_nvp("m_all_factors", all_factors_); ar&
+    // boost::serialization::make_nvp("m_date_index", date_index_); ar& boost::serialization::make_nvp("m_ic", ic_);
+    // ar& boost::serialization::make_nvp("m_calculated", calculated_);
+    // ar& boost::serialization::make_nvp("m_stk_factor_by_date", stk_factor_by_date_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_factorset);
-    ar& BOOST_SERIALIZATION_NVP(m_stks);
-    ar& BOOST_SERIALIZATION_NVP(m_ref_stk);
-    ar& BOOST_SERIALIZATION_NVP(m_query);
-    ar& BOOST_SERIALIZATION_NVP(m_norm);
-    ar& BOOST_SERIALIZATION_NVP(m_special_norms);
-    ar& BOOST_SERIALIZATION_NVP(m_special_category);
-    ar& BOOST_SERIALIZATION_NVP(m_special_style_inds);
-    // ar& BOOST_SERIALIZATION_NVP(m_stk_map);
-    // ar& BOOST_SERIALIZATION_NVP(m_all_factors);
-    // ar& BOOST_SERIALIZATION_NVP(m_date_index);
-    // ar& BOOST_SERIALIZATION_NVP(m_ic);
-    // ar& BOOST_SERIALIZATION_NVP(m_calculated);
-    // ar& BOOST_SERIALIZATION_NVP(m_stk_factor_by_date);
-    m_calculated.store(false, std::memory_order_relaxed);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_factorset", factorset_);
+    ar& boost::serialization::make_nvp("m_stks", stks_);
+    ar& boost::serialization::make_nvp("m_ref_stk", ref_stk_);
+    ar& boost::serialization::make_nvp("m_query", query_);
+    ar& boost::serialization::make_nvp("m_norm", norm_);
+    ar& boost::serialization::make_nvp("m_special_norms", special_norms_);
+    ar& boost::serialization::make_nvp("m_special_category", special_category_);
+    ar& boost::serialization::make_nvp("m_special_style_inds", special_style_inds_);
+    // ar& boost::serialization::make_nvp("m_stk_map", stk_map_);
+    // ar& boost::serialization::make_nvp("m_all_factors", all_factors_);
+    // ar& boost::serialization::make_nvp("m_date_index", date_index_);
+    // ar& boost::serialization::make_nvp("m_ic", ic_);
+    // ar& boost::serialization::make_nvp("m_calculated", calculated_);
+    // ar& boost::serialization::make_nvp("m_stk_factor_by_date", stk_factor_by_date_);
+    calculated_.store(false, std::memory_order_relaxed);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()

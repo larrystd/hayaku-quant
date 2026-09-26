@@ -15,29 +15,29 @@
 namespace hayaku {
 
 MySQLKDataDriver::MySQLKDataDriver()
-    : KDataDriver("mysql"), m_connect(nullptr) {}
+    : KDataDriver("mysql"), connect_(nullptr) {}
 
 MySQLKDataDriver::~MySQLKDataDriver() {
-  if (m_connect) {
-    delete m_connect;
+  if (connect_) {
+    delete connect_;
   }
 }
 
 bool MySQLKDataDriver::_init() {
-  HAYAKU_CHECK(m_connect == nullptr, "Maybe repeat initialization!");
+  HAYAKU_CHECK(connect_ == nullptr, "Maybe repeat initialization!");
   Parameter connect_param;
   connect_param.set<string>(
       "db", "");  // The database must be given in the SQL statement
   connect_param.set<string>(
-      "host", getParamFromOther<string>(m_params, "host", "127.0.0.1"));
+      "host", getParamFromOther<string>(params_, "host", "127.0.0.1"));
   connect_param.set<string>("usr",
-                            getParamFromOther<string>(m_params, "usr", "root"));
+                            getParamFromOther<string>(params_, "usr", "root"));
   connect_param.set<string>("pwd",
-                            getParamFromOther<string>(m_params, "pwd", ""));
-  string port_str = getParamFromOther<string>(m_params, "port", "3306");
+                            getParamFromOther<string>(params_, "pwd", ""));
+  string port_str = getParamFromOther<string>(params_, "port", "3306");
   unsigned int port = boost::lexical_cast<unsigned int>(port_str);
   connect_param.set<int>("port", port);
-  m_connect = new MySQLConnect(connect_param);
+  connect_ = new MySQLConnect(connect_param);
   return true;
 }
 
@@ -126,7 +126,7 @@ KRecordList MySQLKDataDriver::_getKRecordList(const string& market,
 
     uint64_t date;
     price_t open, high, low, close, amount, count;
-    SQLStatementPtr st = m_connect->getStatement(sql);
+    SQLStatementPtr st = connect_->getStatement(sql);
     st->exec();
     while (st->moveNext()) {
       try {
@@ -156,7 +156,7 @@ KRecordList MySQLKDataDriver::_getKRecordList(const string& market,
 
   try {
     KRecordTable r(market, code, ktype);
-    SQLStatementPtr st = m_connect->getStatement(
+    SQLStatementPtr st = connect_->getStatement(
         fmt::format("{} where date >= {} and date < {} order by date",
                     r.getSelectSQL(), start_date.number(), end_date.number()));
     st->exec();
@@ -189,7 +189,7 @@ size_t MySQLKDataDriver::getCount(const string& market, const string& code,
 
   try {
     result =
-        m_connect->queryNumber(fmt::format("select count(1) from {}",
+        connect_->queryNumber(fmt::format("select count(1) from {}",
                                            _getTableName(market, code, kType)),
                                0);
   } catch (...) {
@@ -227,7 +227,7 @@ bool MySQLKDataDriver::getIndexRangeByDate(const string& market,
         "WHEN date<{} THEN 1 "
         "END) AS endix from {}",
         start, end, tablename);
-    SQLStatementPtr st = m_connect->getStatement(sql);
+    SQLStatementPtr st = connect_->getStatement(sql);
     st->exec();
     if (st->moveNext()) {
       st->getColumn(0, out_start, out_end);
@@ -265,12 +265,12 @@ TimeLineList MySQLKDataDriver::_getTimeLineListByDate(const string& market,
 
   TimeLineList result;
   try {
-    SQLStatementPtr st = m_connect->getStatement(fmt::format(
+    SQLStatementPtr st = connect_->getStatement(fmt::format(
         "select `date`, `price`, `vol` from {} where date >= {} and date < {} "
         "order by date",
         table, query.startDatetime().number(), query.endDatetime().number()));
 
-    m_connect->transaction();
+    connect_->transaction();
     st->exec();
     while (st->moveNext()) {
       try {
@@ -285,12 +285,12 @@ TimeLineList MySQLKDataDriver::_getTimeLineListByDate(const string& market,
       }
     }
 
-    m_connect->commit();
+    connect_->commit();
 
   } catch (const std::exception&) {
-    m_connect->rollback();
+    connect_->rollback();
   } catch (...) {
-    m_connect->rollback();
+    connect_->rollback();
   }
 
   return result;
@@ -304,10 +304,10 @@ TimeLineList MySQLKDataDriver::_getTimeLineListByIndex(const string& market,
 
   TimeLineList result;
   try {
-    m_connect->transaction();
+    connect_->transaction();
 
     int64_t startix = query.start(), endix = query.end();
-    int64_t total = m_connect->queryNumber(
+    int64_t total = connect_->queryNumber(
         fmt::format("select count(1) from {}", table), 0LL);
 
     if (startix < 0) {
@@ -338,7 +338,7 @@ TimeLineList MySQLKDataDriver::_getTimeLineListByIndex(const string& market,
             "{}) a order by date limit 0, {}",
             table, total - startix, endix - startix);
       }
-      SQLStatementPtr st = m_connect->getStatement(sql);
+      SQLStatementPtr st = connect_->getStatement(sql);
 
       st->exec();
       while (st->moveNext()) {
@@ -355,12 +355,12 @@ TimeLineList MySQLKDataDriver::_getTimeLineListByIndex(const string& market,
       }
     }
 
-    m_connect->commit();
+    connect_->commit();
 
   } catch (const std::exception&) {
-    m_connect->rollback();
+    connect_->rollback();
   } catch (...) {
-    m_connect->rollback();
+    connect_->rollback();
   }
 
   return result;
@@ -388,13 +388,13 @@ TransList MySQLKDataDriver::_getTransListByDate(const string& market,
 
   TransList result;
   try {
-    SQLStatementPtr st = m_connect->getStatement(fmt::format(
+    SQLStatementPtr st = connect_->getStatement(fmt::format(
         "select `date`, `price`, `vol`, `buyorsell` from {} where date >= {} "
         "and "
         "date < {} order by date",
         table, query.startDatetime().ymdhms(), query.endDatetime().ymdhms()));
 
-    m_connect->transaction();
+    connect_->transaction();
     st->exec();
     while (st->moveNext()) {
       try {
@@ -410,12 +410,12 @@ TransList MySQLKDataDriver::_getTransListByDate(const string& market,
       }
     }
 
-    m_connect->commit();
+    connect_->commit();
 
   } catch (const std::exception&) {
-    m_connect->rollback();
+    connect_->rollback();
   } catch (...) {
-    m_connect->rollback();
+    connect_->rollback();
   }
 
   return result;
@@ -429,10 +429,10 @@ TransList MySQLKDataDriver::_getTransListByIndex(const string& market,
 
   TransList result;
   try {
-    m_connect->transaction();
+    connect_->transaction();
 
     int64_t startix = query.start(), endix = query.end();
-    int64_t total = m_connect->queryNumber(
+    int64_t total = connect_->queryNumber(
         fmt::format("select count(1) from {}", table), 0LL);
 
     if (startix < 0) {
@@ -464,7 +464,7 @@ TransList MySQLKDataDriver::_getTransListByIndex(const string& market,
             "desc limit {}) a order by date limit 0, {}",
             table, total - startix, endix - startix);
       }
-      SQLStatementPtr st = m_connect->getStatement(sql);
+      SQLStatementPtr st = connect_->getStatement(sql);
 
       st->exec();
       while (st->moveNext()) {
@@ -482,12 +482,12 @@ TransList MySQLKDataDriver::_getTransListByIndex(const string& market,
       }
     }
 
-    m_connect->commit();
+    connect_->commit();
 
   } catch (const std::exception&) {
-    m_connect->rollback();
+    connect_->rollback();
   } catch (...) {
-    m_connect->rollback();
+    connect_->rollback();
   }
 
   return result;

@@ -200,9 +200,9 @@ void IBarsCount::_calculate(const Indicator& ind) {
   Stock stk = k.getStock();
 
   size_t total = ind.size();
-  m_discard = ind.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -211,8 +211,8 @@ void IBarsCount::_calculate(const Indicator& ind) {
   // If there is no context, take the discard of this indicator for the
   // calculation directly
   if (stk.isNull()) {
-    for (size_t i = m_discard; i < total; i++) {
-      dst[i] = i + 1 - m_discard;
+    for (size_t i = discard_; i < total; i++) {
+      dst[i] = i + 1 - discard_;
     }
 
     return;
@@ -222,9 +222,9 @@ void IBarsCount::_calculate(const Indicator& ind) {
   KQuery q = k.getQuery();
   auto const* krecords = k.data();
   if (q.kType() == KQuery::MIN) {
-    Datetime pre_d = krecords[m_discard].datetime.startOfDay();
+    Datetime pre_d = krecords[discard_].datetime.startOfDay();
     size_t count = 0;
-    for (size_t i = m_discard; i < total; i++) {
+    for (size_t i = discard_; i < total; i++) {
       Datetime d = krecords[i].datetime.startOfDay();
       if (d != pre_d) {
         pre_d = d;
@@ -239,7 +239,7 @@ void IBarsCount::_calculate(const Indicator& ind) {
   // Get the total number of the trading days since the listing
   size_t k_start_pos = k.startPos();
   if (k_start_pos != Null<size_t>()) {
-    for (size_t i = m_discard; i < total; i++) {
+    for (size_t i = discard_; i < total; i++) {
       dst[i] = 1 + k_start_pos + i;
     }
   }
@@ -274,26 +274,26 @@ IBarsLast::~IBarsLast() {}
 
 void IBarsLast::_calculate(const Indicator& ind) {
   size_t total = ind.size();
-  m_discard = ind.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
   auto const* src = ind.data();
   auto* dst = this->data();
 
-  if (total == m_discard + 1) {
-    if (src[m_discard] != 0.0) {
-      dst[m_discard] = 0.0;
+  if (total == discard_ + 1) {
+    if (src[discard_] != 0.0) {
+      dst[discard_] = 0.0;
     } else {
-      m_discard = total;
+      discard_ = total;
     }
     return;
   }
 
   size_t pos = total;
-  for (size_t i = total - 1; i != m_discard; i--) {
+  for (size_t i = total - 1; i != discard_; i--) {
     if (src[i] != 0.0) {
       for (size_t j = i; j < pos; j++) {
         dst[j] = j - i;
@@ -302,12 +302,12 @@ void IBarsLast::_calculate(const Indicator& ind) {
     }
   }
 
-  if (src[m_discard] != 0.0) {
-    for (size_t i = m_discard; i < pos; i++) {
-      dst[i] = i - m_discard;
+  if (src[discard_] != 0.0) {
+    for (size_t i = discard_; i < pos; i++) {
+      dst[i] = i - discard_;
     }
   } else {
-    m_discard = pos;
+    discard_ = pos;
   }
 }
 
@@ -334,21 +334,21 @@ IBarsLastCount::~IBarsLastCount() {}
 
 void IBarsLastCount::_calculate(const Indicator& ind) {
   size_t total = ind.size();
-  m_discard = ind.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
   auto const* src = ind.data();
   auto* dst = this->data();
-  if (src[m_discard] > 0.0) {
-    dst[m_discard] = 1.0;
+  if (src[discard_] > 0.0) {
+    dst[discard_] = 1.0;
   } else {
-    dst[m_discard] = 0;
+    dst[discard_] = 0;
   }
 
-  for (size_t i = m_discard + 1; i < total; ++i) {
+  for (size_t i = discard_ + 1; i < total; ++i) {
     if (src[i] > 0.0) {
       dst[i] = dst[i - 1] + 1.0;
     } else {
@@ -388,7 +388,7 @@ void IBarsLasts::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   size_t ind_discard = ind.discard();
   if (ind_discard >= total) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -397,7 +397,7 @@ void IBarsLasts::_calculate(const Indicator& ind) {
 
   // Parameter validation: if n <= 0, return a sequence of all NaN
   if (n <= 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -408,9 +408,9 @@ void IBarsLasts::_calculate(const Indicator& ind) {
   if (total == ind_discard + 1) {
     if (src[ind_discard] != 0.0 && n == 1) {
       dst[ind_discard] = 0.0;
-      m_discard = ind_discard;
+      discard_ = ind_discard;
     } else {
-      m_discard = total;
+      discard_ = total;
     }
     return;
   }
@@ -425,7 +425,7 @@ void IBarsLasts::_calculate(const Indicator& ind) {
 
   // If the condition holds fewer than N times, return NaN for everything
   if (true_positions.size() < n) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -471,10 +471,10 @@ void IBarsLasts::_dyn_calculate(const Indicator& ind) {
 
   size_t total = ind.size();
   size_t ind_discard = ind.discard();
-  m_discard = std::max(ind_discard, ind_param.discard());
+  discard_ = std::max(ind_discard, ind_param.discard());
 
-  if (m_discard >= total) {
-    m_discard = total;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -483,7 +483,7 @@ void IBarsLasts::_dyn_calculate(const Indicator& ind) {
   auto const* n_data = ind_param.data();
 
   // Calculate for every position separately
-  for (size_t i = m_discard; i < total; i++) {
+  for (size_t i = discard_; i < total; i++) {
     int n = static_cast<int>(n_data[i]);
 
     // Parameter validation: if n <= 0, return NaN
@@ -565,9 +565,9 @@ void IBarsSince::_checkParam(const string& name) const {
 
 void IBarsSince::_calculate(const Indicator& ind) {
   size_t total = ind.size();
-  m_discard = ind.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -577,8 +577,8 @@ void IBarsSince::_calculate(const Indicator& ind) {
   int n = getParam<int>("n");
   if (0 == n) {
     bool found = false;
-    size_t pos = m_discard;
-    for (size_t i = m_discard; i < total; ++i) {
+    size_t pos = discard_;
+    for (size_t i = discard_; i < total; ++i) {
       if (found) {
         dst[i] = i - pos;
       } else {
@@ -590,12 +590,12 @@ void IBarsSince::_calculate(const Indicator& ind) {
       }
     }
 
-    m_discard = pos;
+    discard_ = pos;
     return;
   }
 
   if (1 == n) {
-    for (size_t i = m_discard; i < total; ++i) {
+    for (size_t i = discard_; i < total; ++i) {
       if (!std::isnan(src[i]) && src[i] != 0.0) {
         dst[i] = 0.0;
       } else {
@@ -606,7 +606,7 @@ void IBarsSince::_calculate(const Indicator& ind) {
     return;
   }
 
-  size_t first = m_discard + n - 1;
+  size_t first = discard_ + n - 1;
   for (size_t i = first; i < total; ++i) {
     size_t pos = 0;
     bool found = false;
@@ -655,9 +655,9 @@ ISumBars::~ISumBars() {}
 
 void ISumBars::_calculate(const Indicator& ind) {
   size_t total = ind.size();
-  m_discard = ind.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -665,11 +665,11 @@ void ISumBars::_calculate(const Indicator& ind) {
   auto* dst = this->data();
 
   double a = getParam<double>("a");
-  if (total == m_discard + 1) {
-    if (src[m_discard] >= a) {
-      dst[m_discard] = 0.0;
+  if (total == discard_ + 1) {
+    if (src[discard_] >= a) {
+      dst[discard_] = 0.0;
     } else {
-      m_discard = total;
+      discard_ = total;
     }
     return;
   }
@@ -679,7 +679,7 @@ void ISumBars::_calculate(const Indicator& ind) {
   size_t pos = start;
   size_t last_pos = start;
   double sum = src[pos];
-  for (size_t i = start; i >= m_discard; i--) {
+  for (size_t i = start; i >= discard_; i--) {
     if (i != start) {
       sum = sum - src[i + 1];
     }
@@ -691,14 +691,14 @@ void ISumBars::_calculate(const Indicator& ind) {
 
     if (sum < a) {
       if (pos >= 1) {
-        for (size_t j = pos - 1; j >= m_discard; j--) {
+        for (size_t j = pos - 1; j >= discard_; j--) {
           sum += src[j];
           if (sum >= a) {
             pos = j;
             break;
           }
 
-          if (j == m_discard) {
+          if (j == discard_) {
             pos = null_pos;
             break;
           }
@@ -712,13 +712,13 @@ void ISumBars::_calculate(const Indicator& ind) {
       dst[i] = i - pos;
     }
 
-    if (i == m_discard || pos == null_pos) {
+    if (i == discard_ || pos == null_pos) {
       last_pos = i;
       break;
     }
   }
 
-  m_discard = pos == null_pos ? last_pos + 1 : last_pos;
+  discard_ = pos == null_pos ? last_pos + 1 : last_pos;
 }
 
 void ISumBars::_dyn_calculate(const Indicator& ind) {
@@ -726,11 +726,11 @@ void ISumBars::_dyn_calculate(const Indicator& ind) {
   HAYAKU_CHECK(ind_param.size() == ind.size(),
                "ind_param->size()={}, ind.size()={}!", ind_param.size(),
                ind.size());
-  m_discard = std::max(ind.discard(), ind_param.discard());
+  discard_ = std::max(ind.discard(), ind_param.discard());
   size_t total = ind.size();
-  HAYAKU_IF_RETURN(0 == total || m_discard >= total, void());
+  HAYAKU_IF_RETURN(0 == total || discard_ >= total, void());
 
-  for (size_t i = m_discard; i < total; i++) {
+  for (size_t i = discard_; i < total; i++) {
     price_t a = ind_param[i];
     price_t sum = 0.0;
     price_t n = Null<price_t>();

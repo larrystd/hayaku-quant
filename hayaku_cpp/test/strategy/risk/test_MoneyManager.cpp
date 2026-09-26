@@ -15,27 +15,27 @@ using namespace hayaku;
 
 class MoneyManagerTest : public MoneyManagerBase {
  public:
-  MoneyManagerTest() : MoneyManagerBase("MoneyManagerTest") { m_x = 0; }
+  MoneyManagerTest() : MoneyManagerBase("MoneyManagerTest") { x_ = 0; }
   virtual ~MoneyManagerTest() {}
 
-  int getX() const { return m_x; }
-  void setX(int x) { m_x = x; }
+  int getX() const { return x_; }
+  void setX(int x) { x_ = x; }
 
   virtual double _getBuyNumber(const Datetime &datetime, const Stock &stock,
                                price_t price, price_t risk, OrderOrigin from) {
     return 0;
   }
 
-  virtual void _reset() { m_x = 0; }
+  virtual void _reset() { x_ = 0; }
 
   virtual MoneyManagerPtr _clone() {
     MoneyManagerTest *p = new MoneyManagerTest;
-    p->m_x = m_x;
+    p->x_ = x_;
     return MoneyManagerPtr(p);
   }
 
  private:
-  int m_x;
+  int x_;
 };
 
 /**

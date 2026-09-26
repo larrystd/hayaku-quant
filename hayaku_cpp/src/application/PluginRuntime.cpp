@@ -15,29 +15,29 @@ PluginRuntime& getPluginRuntime() {
 }
 
 void PluginRuntime::setPluginPath(const std::string& path) noexcept {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  m_manager.pluginPath(path);
-  m_userConfiguredPath = true;
+  std::lock_guard<std::mutex> lock(mutex_);
+  manager_.pluginPath(path);
+  user_configured_path_ = true;
 }
 
 std::string PluginRuntime::pluginPath() const {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  return m_manager.pluginPath();
+  std::lock_guard<std::mutex> lock(mutex_);
+  return manager_.pluginPath();
 }
 
 void PluginRuntime::configurePluginPath(const std::string& sessionPath) {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  if (m_userConfiguredPath) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (user_configured_path_) {
     return;
   }
 
   const std::string requestedPath =
       sessionPath.empty() ? "./plugin" : sessionPath;
-  m_manager.pluginPath(requestedPath);
-  HAYAKU_CHECK(m_manager.pluginPath() == requestedPath,
+  manager_.pluginPath(requestedPath);
+  HAYAKU_CHECK(manager_.pluginPath() == requestedPath,
                "Plugin path cannot change after a plugin has been loaded "
                "(current: {}, requested: {})",
-               m_manager.pluginPath(), requestedPath);
+               manager_.pluginPath(), requestedPath);
 }
 
 void setPluginPath(const std::string& path) noexcept {

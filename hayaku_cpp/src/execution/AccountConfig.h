@@ -25,57 +25,57 @@ class HAYAKU_API AccountConfig {
                          bool supportBorrowStock = false,
                          AccountId accountId = {},
                          std::vector<OrderBrokerPtr> brokers = {})
-      : m_initDatetime(initDatetime),
-        m_initialCash(initialCash),
-        m_costPolicy(std::move(costPolicy)),
-        m_name(std::move(name)),
-        m_precision(precision),
-        m_supportBorrowCash(supportBorrowCash),
-        m_supportBorrowStock(supportBorrowStock),
-        m_accountId(accountId),
-        m_brokers(std::move(brokers)) {
-    HAYAKU_CHECK(m_precision > 0,
+      : init_datetime_(initDatetime),
+        initial_cash_(initialCash),
+        cost_policy_(std::move(costPolicy)),
+        name_(std::move(name)),
+        precision_(precision),
+        support_borrow_cash_(supportBorrowCash),
+        support_borrow_stock_(supportBorrowStock),
+        account_id_(accountId),
+        brokers_(std::move(brokers)) {
+    HAYAKU_CHECK(precision_ > 0,
                  "Account precision must be greater than zero");
   }
 
   [[nodiscard]] Datetime initDatetime() const noexcept {
-    return m_initDatetime;
+    return init_datetime_;
   }
 
-  [[nodiscard]] price_t initialCash() const noexcept { return m_initialCash; }
+  [[nodiscard]] price_t initialCash() const noexcept { return initial_cash_; }
 
   [[nodiscard]] const TradeCostPtr& costPolicy() const noexcept {
-    return m_costPolicy;
+    return cost_policy_;
   }
 
-  [[nodiscard]] const string& name() const noexcept { return m_name; }
+  [[nodiscard]] const string& name() const noexcept { return name_; }
 
-  [[nodiscard]] int precision() const noexcept { return m_precision; }
+  [[nodiscard]] int precision() const noexcept { return precision_; }
 
   [[nodiscard]] bool supportBorrowCash() const noexcept {
-    return m_supportBorrowCash;
+    return support_borrow_cash_;
   }
 
   [[nodiscard]] bool supportBorrowStock() const noexcept {
-    return m_supportBorrowStock;
+    return support_borrow_stock_;
   }
 
-  [[nodiscard]] AccountId accountId() const noexcept { return m_accountId; }
+  [[nodiscard]] AccountId accountId() const noexcept { return account_id_; }
 
   [[nodiscard]] const std::vector<OrderBrokerPtr>& brokers() const noexcept {
-    return m_brokers;
+    return brokers_;
   }
 
  private:
-  Datetime m_initDatetime;
-  price_t m_initialCash;
-  TradeCostPtr m_costPolicy;
-  string m_name;
-  int m_precision;
-  bool m_supportBorrowCash;
-  bool m_supportBorrowStock;
-  AccountId m_accountId;
-  std::vector<OrderBrokerPtr> m_brokers;
+  Datetime init_datetime_;
+  price_t initial_cash_;
+  TradeCostPtr cost_policy_;
+  string name_;
+  int precision_;
+  bool support_borrow_cash_;
+  bool support_borrow_stock_;
+  AccountId account_id_;
+  std::vector<OrderBrokerPtr> brokers_;
 };
 
 }  // namespace hayaku

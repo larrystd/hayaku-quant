@@ -75,7 +75,7 @@ string ExecutionRuntime::str() const {
     os << "    " << iter->stock.market_code() << " " << iter->stock.name()
        << " " << iter->takeDatetime << " " << date_list.size() << " "
        << iter->number << " " << invest << " " << cur_val << " " << bonus << " "
-       << 100 * bonus / invest << "% " << 100 * bonus / m_ledger.m_initCash
+       << 100 * bonus / invest << "% " << 100 * bonus / ledger_.init_cash_
        << "%\n";
   }
 
@@ -104,27 +104,27 @@ string ExecutionRuntime::str() const {
 ExecutionRuntime::ExecutionRuntime(const Datetime& datetime, price_t initcash,
                                    const TradeCostPtr& costfunc,
                                    const string& name)
-    : m_name(name),
-      m_costfunc(costfunc),
-      m_broker_last_datetime(Datetime::now()) {
+    : name_(name),
+      costfunc_(costfunc),
+      broker_last_datetime_(Datetime::now()) {
   setParam<int>("precision", 2);  // Calculation precision
-  m_ledger.m_accountId = nextAccountId();
-  m_ledger.m_initDatetime = datetime;
-  m_ledger.m_lastUpdateDatetime = datetime;
+  ledger_.account_id_ = nextAccountId();
+  ledger_.init_datetime_ = datetime;
+  ledger_.last_update_datetime_ = datetime;
   setParam<bool>("support_borrow_cash",
                  false);  // Whether to finance automatically
   setParam<bool>("support_borrow_stock",
                  false);  // Whether to borrow stocks automatically
   setParam<bool>("save_action", true);  // Whether to save the commands
-  m_ledger.m_initCash = roundEx(initcash, 2);
-  m_ledger.m_cash = m_ledger.m_initCash;
-  m_ledger.m_checkinCash = m_ledger.m_initCash;
-  m_ledger.m_tradeList.push_back(TradeRecord(
-      Null<Stock>(), m_ledger.m_initDatetime, BUSINESS_INIT,
-      m_ledger.m_initCash, m_ledger.m_initCash, 0.0, 0, CostRecord(), 0.0,
-      m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
-  m_broker_last_datetime = Datetime::now();
-  _saveAction(m_ledger.m_tradeList.back());
+  ledger_.init_cash_ = roundEx(initcash, 2);
+  ledger_.cash_ = ledger_.init_cash_;
+  ledger_.checkin_cash_ = ledger_.init_cash_;
+  ledger_.trade_list_.push_back(TradeRecord(
+      Null<Stock>(), ledger_.init_datetime_, BUSINESS_INIT,
+      ledger_.init_cash_, ledger_.init_cash_, 0.0, 0, CostRecord(), 0.0,
+      ledger_.cash_, OrderOrigin::UNSPECIFIED));
+  broker_last_datetime_ = Datetime::now();
+  _saveAction(ledger_.trade_list_.back());
 }
 
 ExecutionRuntime::ExecutionRuntime(const AccountConfig& config)
@@ -134,7 +134,7 @@ ExecutionRuntime::ExecutionRuntime(const AccountConfig& config)
   setParam<bool>("support_borrow_cash", config.supportBorrowCash());
   setParam<bool>("support_borrow_stock", config.supportBorrowStock());
   if (config.accountId().valid()) {
-    m_ledger.m_accountId = config.accountId();
+    ledger_.account_id_ = config.accountId();
   }
   for (const auto& broker : config.brokers()) {
     regBroker(broker);
@@ -144,55 +144,55 @@ ExecutionRuntime::ExecutionRuntime(const AccountConfig& config)
 ExecutionRuntime::~ExecutionRuntime() {}
 
 void ExecutionRuntime::_reset() {
-  m_ledger.m_lastUpdateDatetime = m_ledger.m_initDatetime;
-  m_ledger.m_cash = m_ledger.m_initCash;
-  m_ledger.m_checkinCash = m_ledger.m_initCash;
-  m_ledger.m_checkoutCash = 0.0;
-  m_ledger.m_checkinStock = 0.0;
-  m_ledger.m_checkoutStock = 0.0;
-  m_ledger.m_borrowCash = 0.0;
+  ledger_.last_update_datetime_ = ledger_.init_datetime_;
+  ledger_.cash_ = ledger_.init_cash_;
+  ledger_.checkin_cash_ = ledger_.init_cash_;
+  ledger_.checkout_cash_ = 0.0;
+  ledger_.checkin_stock_ = 0.0;
+  ledger_.checkout_stock_ = 0.0;
+  ledger_.borrow_cash_ = 0.0;
 
-  m_ledger.m_loanList.clear();
-  m_ledger.m_borrowStock.clear();
+  ledger_.loan_list_.clear();
+  ledger_.borrow_stock_.clear();
 
-  m_ledger.m_tradeList.clear();
-  m_ledger.m_tradeList.push_back(TradeRecord(
-      Null<Stock>(), m_ledger.m_initDatetime, BUSINESS_INIT,
-      m_ledger.m_initCash, m_ledger.m_initCash, 0.0, 0, CostRecord(), 0.0,
-      m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
+  ledger_.trade_list_.clear();
+  ledger_.trade_list_.push_back(TradeRecord(
+      Null<Stock>(), ledger_.init_datetime_, BUSINESS_INIT,
+      ledger_.init_cash_, ledger_.init_cash_, 0.0, 0, CostRecord(), 0.0,
+      ledger_.cash_, OrderOrigin::UNSPECIFIED));
 
-  m_ledger.m_position.clear();
-  m_ledger.m_positionHistory.clear();
-  m_ledger.m_actions.clear();
-  _saveAction(m_ledger.m_tradeList.back());
+  ledger_.position_.clear();
+  ledger_.position_history_.clear();
+  ledger_.actions_.clear();
+  _saveAction(ledger_.trade_list_.back());
 }
 
 void ExecutionRuntime::copyRuntimeStateTo(ExecutionRuntime& target) const {
   // Keep the established account clone semantics. In particular, legacy clone()
   // did not copy active/history short positions.
-  target.m_ledger.m_initDatetime = m_ledger.m_initDatetime;
-  target.m_ledger.m_initCash = m_ledger.m_initCash;
-  target.m_ledger.m_lastUpdateDatetime = m_ledger.m_lastUpdateDatetime;
-  target.m_ledger.m_cash = m_ledger.m_cash;
-  target.m_ledger.m_checkinCash = m_ledger.m_checkinCash;
-  target.m_ledger.m_checkoutCash = m_ledger.m_checkoutCash;
-  target.m_ledger.m_checkinStock = m_ledger.m_checkinStock;
-  target.m_ledger.m_checkoutStock = m_ledger.m_checkoutStock;
-  target.m_ledger.m_borrowCash = m_ledger.m_borrowCash;
-  target.m_ledger.m_loanList = m_ledger.m_loanList;
-  target.m_ledger.m_borrowStock = m_ledger.m_borrowStock;
-  target.m_ledger.m_tradeList = m_ledger.m_tradeList;
-  target.m_ledger.m_position = m_ledger.m_position;
-  target.m_ledger.m_positionHistory = m_ledger.m_positionHistory;
-  target.m_ledger.m_actions = m_ledger.m_actions;
+  target.ledger_.init_datetime_ = ledger_.init_datetime_;
+  target.ledger_.init_cash_ = ledger_.init_cash_;
+  target.ledger_.last_update_datetime_ = ledger_.last_update_datetime_;
+  target.ledger_.cash_ = ledger_.cash_;
+  target.ledger_.checkin_cash_ = ledger_.checkin_cash_;
+  target.ledger_.checkout_cash_ = ledger_.checkout_cash_;
+  target.ledger_.checkin_stock_ = ledger_.checkin_stock_;
+  target.ledger_.checkout_stock_ = ledger_.checkout_stock_;
+  target.ledger_.borrow_cash_ = ledger_.borrow_cash_;
+  target.ledger_.loan_list_ = ledger_.loan_list_;
+  target.ledger_.borrow_stock_ = ledger_.borrow_stock_;
+  target.ledger_.trade_list_ = ledger_.trade_list_;
+  target.ledger_.position_ = ledger_.position_;
+  target.ledger_.position_history_ = ledger_.position_history_;
+  target.ledger_.actions_ = ledger_.actions_;
 }
 
 shared_ptr<ExecutionRuntime> ExecutionRuntime::cloneRuntime() const {
   auto result = make_shared<ExecutionRuntime>(
-      m_ledger.m_initDatetime, m_ledger.m_initCash, m_costfunc, m_name);
-  result->m_params = m_params;
-  result->m_broker_last_datetime = m_broker_last_datetime;
-  result->m_broker_list = m_broker_list;
+      ledger_.init_datetime_, ledger_.init_cash_, costfunc_, name_);
+  result->params_ = params_;
+  result->broker_last_datetime_ = broker_last_datetime_;
+  result->broker_list_ = broker_list_;
   copyRuntimeStateTo(*result);
   return result;
 }
@@ -204,12 +204,12 @@ internal::PortfolioAccountPortPtr ExecutionRuntime::cloneAccount() const {
 internal::PortfolioAccountPortPtr ExecutionRuntime::createChildAccount(
     string name, price_t initialCash) const {
   return std::make_shared<ExecutionRuntime>(
-      AccountConfig(initDatetime(), initialCash, m_costfunc, std::move(name),
+      AccountConfig(initDatetime(), initialCash, costfunc_, std::move(name),
                     precision(), supportsBorrowCash(), supportsBorrowStock()));
 }
 
 AccountView ExecutionRuntime::view() const {
-  return AccountView(m_ledger.m_accountId, m_ledger.m_initDatetime,
+  return AccountView(ledger_.account_id_, ledger_.init_datetime_,
                      lastDatetime(), getFunds(), getPositionList(),
                      getShortPositionList());
 }
@@ -251,10 +251,10 @@ void ExecutionRuntime::fetchAssetInfoFromBroker(const OrderBrokerPtr& broker,
   const string brokerAsset = broker->getAssetInfo();
   if (brokerAsset.empty()) {
     HAYAKU_WARN("Failed fetch asset info from broker!");
-    m_ledger.m_initDatetime = Datetime::now();
-    m_ledger.m_initCash = 0.0;
+    ledger_.init_datetime_ = Datetime::now();
+    ledger_.init_cash_ = 0.0;
     _reset();
-    m_broker_last_datetime = m_ledger.m_initDatetime;
+    broker_last_datetime_ = ledger_.init_datetime_;
     return;
   }
 
@@ -295,11 +295,11 @@ void ExecutionRuntime::fetchAssetInfoFromBroker(const OrderBrokerPtr& broker,
       }
     }
 
-    m_ledger.m_initDatetime = brokerDatetime;
-    m_ledger.m_initCash = brokerCash;
+    ledger_.init_datetime_ = brokerDatetime;
+    ledger_.init_cash_ = brokerCash;
     _reset();
-    m_ledger.m_position = std::move(positions);
-    m_broker_last_datetime = brokerDatetime;
+    ledger_.position_ = std::move(positions);
+    broker_last_datetime_ = brokerDatetime;
   } catch (const std::exception& e) {
     HAYAKU_ERROR(e.what());
   }
@@ -313,8 +313,8 @@ double ExecutionRuntime::getMarginRate(const Datetime& datetime,
 
 Datetime ExecutionRuntime::firstDatetime() const {
   Datetime result;
-  TradeRecordList::const_iterator iter = m_ledger.m_tradeList.begin();
-  for (; iter != m_ledger.m_tradeList.end(); ++iter) {
+  TradeRecordList::const_iterator iter = ledger_.trade_list_.begin();
+  for (; iter != ledger_.trade_list_.end(); ++iter) {
     if (iter->business == BUSINESS_BUY) {
       result = iter->datetime;
       break;
@@ -326,7 +326,7 @@ Datetime ExecutionRuntime::firstDatetime() const {
 double ExecutionRuntime::getHoldNumber(const Datetime& datetime,
                                        const Stock& stock) {
   // The date is earlier than the account creation date, return 0
-  HAYAKU_IF_RETURN(datetime < m_ledger.m_initDatetime, 0.0);
+  HAYAKU_IF_RETURN(datetime < ledger_.init_datetime_, 0.0);
 
   // Adjust the position quantity according to the ex-rights/ex-dividend
   // information
@@ -336,8 +336,8 @@ double ExecutionRuntime::getHoldNumber(const Datetime& datetime,
   // current position record directly
   if (datetime >= lastDatetime()) {
     position_map_type::const_iterator pos_iter =
-        m_ledger.m_position.find(stock.id());
-    if (pos_iter != m_ledger.m_position.end()) {
+        ledger_.position_.find(stock.id());
+    if (pos_iter != ledger_.position_.end()) {
       return pos_iter->second.number;
     }
     return 0.0;
@@ -346,8 +346,8 @@ double ExecutionRuntime::getHoldNumber(const Datetime& datetime,
   // In the historical trade records, recalculate the position quantity of the
   // trading object at the given query date
   double number = 0;
-  TradeRecordList::const_iterator iter = m_ledger.m_tradeList.begin();
-  for (; iter != m_ledger.m_tradeList.end(); ++iter) {
+  TradeRecordList::const_iterator iter = ledger_.trade_list_.begin();
+  for (; iter != ledger_.trade_list_.end(); ++iter) {
     // Break the loop when the trade date in the trade record is already later
     // than the query date
     if (iter->datetime > datetime) {
@@ -375,7 +375,7 @@ double ExecutionRuntime::getHoldNumber(const Datetime& datetime,
 double ExecutionRuntime::getShortHoldNumber(const Datetime& datetime,
                                             const Stock& stock) {
   // The date is earlier than the account creation date, return 0
-  HAYAKU_IF_RETURN(datetime < m_ledger.m_initDatetime, 0.0);
+  HAYAKU_IF_RETURN(datetime < ledger_.init_datetime_, 0.0);
 
   // Adjust the position quantity according to the ex-rights/ex-dividend
   // information
@@ -385,8 +385,8 @@ double ExecutionRuntime::getShortHoldNumber(const Datetime& datetime,
   // current position record directly
   if (datetime >= lastDatetime()) {
     position_map_type::const_iterator pos_iter =
-        m_ledger.m_shortPosition.find(stock.id());
-    if (pos_iter != m_ledger.m_shortPosition.end()) {
+        ledger_.short_position_.find(stock.id());
+    if (pos_iter != ledger_.short_position_.end()) {
       return pos_iter->second.number;
     }
     return 0;
@@ -395,8 +395,8 @@ double ExecutionRuntime::getShortHoldNumber(const Datetime& datetime,
   // In the historical trade records, recalculate the position quantity of the
   // trading object at the given query date
   double number = 0;
-  TradeRecordList::const_iterator iter = m_ledger.m_tradeList.begin();
-  for (; iter != m_ledger.m_tradeList.end(); ++iter) {
+  TradeRecordList::const_iterator iter = ledger_.trade_list_.begin();
+  for (; iter != ledger_.trade_list_.end(); ++iter) {
     // Break the loop when the trade date in the trade record is already later
     // than the query date
     if (iter->datetime > datetime) {
@@ -420,7 +420,7 @@ double ExecutionRuntime::getShortHoldNumber(const Datetime& datetime,
 
 double ExecutionRuntime::getDebtNumber(const Datetime& datetime,
                                        const Stock& stock) {
-  HAYAKU_IF_RETURN(datetime < m_ledger.m_initDatetime, 0.0);
+  HAYAKU_IF_RETURN(datetime < ledger_.init_datetime_, 0.0);
 
   // Adjust the position quantity according to the ex-rights/ex-dividend
   // information
@@ -428,16 +428,16 @@ double ExecutionRuntime::getDebtNumber(const Datetime& datetime,
 
   if (datetime >= lastDatetime()) {
     borrow_stock_map_type::const_iterator bor_iter;
-    bor_iter = m_ledger.m_borrowStock.find(stock.id());
-    if (bor_iter != m_ledger.m_borrowStock.end()) {
+    bor_iter = ledger_.borrow_stock_.find(stock.id());
+    if (bor_iter != ledger_.borrow_stock_.end()) {
       return bor_iter->second.number;
     }
     return 0;
   }
 
   double debt_n = 0;
-  TradeRecordList::const_iterator iter = m_ledger.m_tradeList.begin();
-  for (; iter != m_ledger.m_tradeList.end(); ++iter) {
+  TradeRecordList::const_iterator iter = ledger_.trade_list_.begin();
+  for (; iter != ledger_.trade_list_.end(); ++iter) {
     if (iter->datetime > datetime) {
       break;
     }
@@ -453,17 +453,17 @@ double ExecutionRuntime::getDebtNumber(const Datetime& datetime,
 }
 
 price_t ExecutionRuntime::getDebtCash(const Datetime& datetime) {
-  HAYAKU_IF_RETURN(datetime < m_ledger.m_initDatetime, 0.0);
+  HAYAKU_IF_RETURN(datetime < ledger_.init_datetime_, 0.0);
 
   // Adjust the position quantity according to the ex-rights/ex-dividend
   // information
   updateWithWeight(datetime);
 
-  HAYAKU_IF_RETURN(datetime >= lastDatetime(), m_ledger.m_borrowCash);
+  HAYAKU_IF_RETURN(datetime >= lastDatetime(), ledger_.borrow_cash_);
 
   price_t debt_cash = 0.0;
-  TradeRecordList::const_iterator iter = m_ledger.m_tradeList.begin();
-  for (; iter != m_ledger.m_tradeList.end(); ++iter) {
+  TradeRecordList::const_iterator iter = ledger_.trade_list_.begin();
+  for (; iter != ledger_.trade_list_.end(); ++iter) {
     if (iter->datetime > datetime) {
       break;
     }
@@ -481,20 +481,20 @@ TradeRecordList ExecutionRuntime::getTradeList(const Datetime& start_date,
   TradeRecordList result;
   HAYAKU_IF_RETURN(start_date >= end_date, result);
 
-  size_t total = m_ledger.m_tradeList.size();
+  size_t total = ledger_.trade_list_.size();
   HAYAKU_IF_RETURN(total == 0, result);
 
   TradeRecord temp_record;
   temp_record.datetime = start_date;
   auto low = lower_bound(
-      m_ledger.m_tradeList.begin(), m_ledger.m_tradeList.end(), temp_record,
+      ledger_.trade_list_.begin(), ledger_.trade_list_.end(), temp_record,
       std::bind(std::less<Datetime>(),
                 std::bind(&TradeRecord::datetime, std::placeholders::_1),
                 std::bind(&TradeRecord::datetime, std::placeholders::_2)));
 
   temp_record.datetime = end_date;
   auto high = lower_bound(
-      m_ledger.m_tradeList.begin(), m_ledger.m_tradeList.end(), temp_record,
+      ledger_.trade_list_.begin(), ledger_.trade_list_.end(), temp_record,
       std::bind(std::less<Datetime>(),
                 std::bind(&TradeRecord::datetime, std::placeholders::_1),
                 std::bind(&TradeRecord::datetime, std::placeholders::_2)));
@@ -506,8 +506,8 @@ TradeRecordList ExecutionRuntime::getTradeList(const Datetime& start_date,
 
 PositionRecordList ExecutionRuntime::getPositionList() const {
   PositionRecordList result;
-  position_map_type::const_iterator iter = m_ledger.m_position.begin();
-  for (; iter != m_ledger.m_position.end(); ++iter) {
+  position_map_type::const_iterator iter = ledger_.position_.begin();
+  for (; iter != ledger_.position_.end(); ++iter) {
     result.push_back(iter->second);
   }
   return result;
@@ -515,8 +515,8 @@ PositionRecordList ExecutionRuntime::getPositionList() const {
 
 PositionRecordList ExecutionRuntime::getShortPositionList() const {
   PositionRecordList result;
-  position_map_type::const_iterator iter = m_ledger.m_shortPosition.begin();
-  for (; iter != m_ledger.m_shortPosition.end(); ++iter) {
+  position_map_type::const_iterator iter = ledger_.short_position_.begin();
+  for (; iter != ledger_.short_position_.end(); ++iter) {
     result.push_back(iter->second);
   }
   return result;
@@ -526,7 +526,7 @@ PositionRecord ExecutionRuntime::getPosition(const Datetime& datetime,
                                              const Stock& stock) {
   PositionRecord result;
   HAYAKU_IF_RETURN(stock.isNull(), result);
-  HAYAKU_IF_RETURN(datetime < m_ledger.m_initDatetime, result);
+  HAYAKU_IF_RETURN(datetime < ledger_.init_datetime_, result);
 
   // Adjust the position quantity according to the ex-rights/ex-dividend
   // information
@@ -536,8 +536,8 @@ PositionRecord ExecutionRuntime::getPosition(const Datetime& datetime,
   // current position record directly
   if (datetime >= lastDatetime()) {
     position_map_type::const_iterator pos_iter =
-        m_ledger.m_position.find(stock.id());
-    if (pos_iter != m_ledger.m_position.end()) {
+        ledger_.position_.find(stock.id());
+    if (pos_iter != ledger_.position_.end()) {
       result = pos_iter->second;
     }
     return result;
@@ -546,8 +546,8 @@ PositionRecord ExecutionRuntime::getPosition(const Datetime& datetime,
   // In the historical trade records, recalculate the position quantity of the
   // trading object at the given query date
   double number = 0.0;
-  for (auto iter = m_ledger.m_tradeList.begin();
-       iter != m_ledger.m_tradeList.end(); ++iter) {
+  for (auto iter = ledger_.trade_list_.begin();
+       iter != ledger_.trade_list_.end(); ++iter) {
     // Break the loop when the trade date in the trade record is already later
     // than the query date
     if (iter->datetime > datetime) {
@@ -574,8 +574,8 @@ PositionRecord ExecutionRuntime::getPosition(const Datetime& datetime,
 
   // Traverse the historical positions in reverse order to find the last
   // position record
-  for (auto iter = m_ledger.m_positionHistory.rbegin();
-       iter != m_ledger.m_positionHistory.rend(); ++iter) {
+  for (auto iter = ledger_.position_history_.rbegin();
+       iter != ledger_.position_history_.rend(); ++iter) {
     if (iter->stock == stock) {
       result = *iter;
       break;
@@ -592,15 +592,15 @@ PositionRecord ExecutionRuntime::getPosition(const Datetime& datetime,
 PositionRecord ExecutionRuntime::getShortPosition(const Stock& stock) const {
   HAYAKU_IF_RETURN(stock.isNull(), PositionRecord());
   position_map_type::const_iterator iter;
-  iter = m_ledger.m_shortPosition.find(stock.id());
-  return iter == m_ledger.m_shortPosition.end() ? PositionRecord()
+  iter = ledger_.short_position_.find(stock.id());
+  return iter == ledger_.short_position_.end() ? PositionRecord()
                                                 : iter->second;
 }
 
 BorrowRecordList ExecutionRuntime::getBorrowStockList() const {
   BorrowRecordList result;
-  borrow_stock_map_type::const_iterator iter = m_ledger.m_borrowStock.begin();
-  for (; iter != m_ledger.m_borrowStock.end(); ++iter) {
+  borrow_stock_map_type::const_iterator iter = ledger_.borrow_stock_.begin();
+  for (; iter != ledger_.borrow_stock_.end(); ++iter) {
     result.push_back(iter->second);
   }
   return result;
@@ -619,12 +619,12 @@ bool ExecutionRuntime::checkin(const Datetime& datetime, price_t cash) {
 
   int precision = getParam<int>("precision");
   price_t in_cash = roundEx(cash, precision);
-  m_ledger.m_cash = roundEx(m_ledger.m_cash + in_cash, precision);
-  m_ledger.m_checkinCash = roundEx(m_ledger.m_checkinCash + in_cash, precision);
-  m_ledger.m_tradeList.push_back(TradeRecord(
+  ledger_.cash_ = roundEx(ledger_.cash_ + in_cash, precision);
+  ledger_.checkin_cash_ = roundEx(ledger_.checkin_cash_ + in_cash, precision);
+  ledger_.trade_list_.push_back(TradeRecord(
       Null<Stock>(), datetime, BUSINESS_CHECKIN, in_cash, in_cash, 0.0, 0,
-      CostRecord(), 0.0, m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
-  _saveAction(m_ledger.m_tradeList.back());
+      CostRecord(), 0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
+  _saveAction(ledger_.trade_list_.back());
   return true;
 }
 
@@ -642,18 +642,18 @@ bool ExecutionRuntime::checkout(const Datetime& datetime, price_t cash) {
   int precision = getParam<int>("precision");
   price_t out_cash = roundEx(cash, precision);
 
-  price_t tmp_cash = roundEx(m_ledger.m_cash - out_cash, precision);
+  price_t tmp_cash = roundEx(ledger_.cash_ - out_cash, precision);
   HAYAKU_ERROR_IF_RETURN(tmp_cash < 0.0, false,
                          "{} cash({:<.4f}) must be <= current cash({:<.4f})!",
-                         datetime, cash, m_ledger.m_cash);
+                         datetime, cash, ledger_.cash_);
 
-  m_ledger.m_cash = tmp_cash;
-  m_ledger.m_checkoutCash =
-      roundEx(m_ledger.m_checkoutCash + out_cash, precision);
-  m_ledger.m_tradeList.push_back(TradeRecord(
+  ledger_.cash_ = tmp_cash;
+  ledger_.checkout_cash_ =
+      roundEx(ledger_.checkout_cash_ + out_cash, precision);
+  ledger_.trade_list_.push_back(TradeRecord(
       Null<Stock>(), datetime, BUSINESS_CHECKOUT, out_cash, out_cash, 0.0, 0,
-      CostRecord(), 0.0, m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
-  _saveAction(m_ledger.m_tradeList.back());
+      CostRecord(), 0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
+  _saveAction(ledger_.trade_list_.back());
   return true;
 }
 
@@ -677,12 +677,12 @@ bool ExecutionRuntime::checkinStock(const Datetime& datetime,
   // Add it to the current positions
   int precision = getParam<int>("precision");
   price_t market_value = roundEx(price * number * stock.unit(), precision);
-  position_map_type::iterator pos_iter = m_ledger.m_position.find(stock.id());
-  if (pos_iter == m_ledger.m_position.end()) {
+  position_map_type::iterator pos_iter = ledger_.position_.find(stock.id());
+  if (pos_iter == ledger_.position_.end()) {
     PositionRecord pos(stock, datetime, Null<Datetime>(), number, 0.0, 0.0,
                        number, market_value, 0.0, 0.0, 0.0);
     pos.buyCount = 1;
-    m_ledger.m_position[stock.id()] = pos;
+    ledger_.position_[stock.id()] = pos;
   } else {
     PositionRecord& pos = pos_iter->second;
     pos.number += number;
@@ -696,13 +696,13 @@ bool ExecutionRuntime::checkinStock(const Datetime& datetime,
   }
 
   // Add it to the trade records
-  m_ledger.m_tradeList.push_back(TradeRecord(
+  ledger_.trade_list_.push_back(TradeRecord(
       stock, datetime, BUSINESS_CHECKIN_STOCK, price, price, 0.0, number,
-      CostRecord(), 0.0, m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
+      CostRecord(), 0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
 
   // Update the record of the accumulated deposited asset value
-  m_ledger.m_checkinStock =
-      roundEx(m_ledger.m_checkinStock + market_value, precision);
+  ledger_.checkin_stock_ =
+      roundEx(ledger_.checkin_stock_ + market_value, precision);
 
   return true;
 }
@@ -726,8 +726,8 @@ bool ExecutionRuntime::checkoutStock(const Datetime& datetime,
   updateWithWeight(datetime);
 
   // Whether there is a current position
-  position_map_type::iterator pos_iter = m_ledger.m_position.find(stock.id());
-  HAYAKU_ERROR_IF_RETURN(pos_iter == m_ledger.m_position.end(), false,
+  position_map_type::iterator pos_iter = ledger_.position_.find(stock.id());
+  HAYAKU_ERROR_IF_RETURN(pos_iter == ledger_.position_.end(), false,
                          "Try to checkout nonexistent stock!");
 
   PositionRecord& pos = pos_iter->second;
@@ -746,18 +746,18 @@ bool ExecutionRuntime::checkoutStock(const Datetime& datetime,
   // After the withdrawal all the current position quantities become 0, clear
   // the current position and store it into the historical positions
   if (0 == pos.number) {
-    m_ledger.m_positionHistory.push_back(pos);
-    m_ledger.m_position.erase(stock.id());
+    ledger_.position_history_.push_back(pos);
+    ledger_.position_.erase(stock.id());
   }
 
   // Update the trade records
-  m_ledger.m_tradeList.push_back(TradeRecord(
+  ledger_.trade_list_.push_back(TradeRecord(
       stock, datetime, BUSINESS_CHECKOUT_STOCK, price, price, 0.0, number,
-      CostRecord(), 0.0, m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
+      CostRecord(), 0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
 
   // Update the accumulated withdrawn stock value
-  m_ledger.m_checkoutStock = roundEx(
-      m_ledger.m_checkoutStock - price * number * stock.unit(), precision);
+  ledger_.checkout_stock_ = roundEx(
+      ledger_.checkout_stock_ - price * number * stock.unit(), precision);
 
   return true;
 }
@@ -776,12 +776,12 @@ bool ExecutionRuntime::borrowCash(const Datetime& datetime, price_t cash) {
   int precision = getParam<int>("precision");
   price_t in_cash = roundEx(cash, precision);
   CostRecord cost = getBorrowCashCost(datetime, cash);
-  m_ledger.m_cash = roundEx(m_ledger.m_cash + in_cash - cost.total, precision);
-  m_ledger.m_borrowCash = roundEx(m_ledger.m_borrowCash + in_cash, precision);
-  m_ledger.m_loanList.push_back(LoanRecord(datetime, in_cash));
-  m_ledger.m_tradeList.push_back(TradeRecord(
+  ledger_.cash_ = roundEx(ledger_.cash_ + in_cash - cost.total, precision);
+  ledger_.borrow_cash_ = roundEx(ledger_.borrow_cash_ + in_cash, precision);
+  ledger_.loan_list_.push_back(LoanRecord(datetime, in_cash));
+  ledger_.trade_list_.push_back(TradeRecord(
       Null<Stock>(), datetime, BUSINESS_BORROW_CASH, in_cash, in_cash, 0.0, 0,
-      cost, 0.0, m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
+      cost, 0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
   return true;
 }
 
@@ -791,11 +791,11 @@ bool ExecutionRuntime::returnCash(const Datetime& datetime, price_t cash) {
   HAYAKU_ERROR_IF_RETURN(datetime < lastDatetime(), false,
                          "{} datetime must be >= lastDatetime({})!", datetime,
                          lastDatetime());
-  HAYAKU_ERROR_IF_RETURN(m_ledger.m_loanList.empty(), false,
+  HAYAKU_ERROR_IF_RETURN(ledger_.loan_list_.empty(), false,
                          "{} not borrow any cash!", datetime);
-  HAYAKU_ERROR_IF_RETURN(datetime < m_ledger.m_loanList.back().datetime, false,
+  HAYAKU_ERROR_IF_RETURN(datetime < ledger_.loan_list_.back().datetime, false,
                          "{} must be >= the datetime({}) of last loan record!",
-                         datetime, m_ledger.m_loanList.back().datetime);
+                         datetime, ledger_.loan_list_.back().datetime);
 
   // Adjust the current position according to the ex-rights/ex-dividend
   // information
@@ -806,8 +806,8 @@ bool ExecutionRuntime::returnCash(const Datetime& datetime, price_t cash) {
   CostRecord cost, cur_cost;
   price_t in_cash = roundEx(cash, precision);
   price_t return_cash = in_cash;
-  list<LoanRecord>::iterator iter = m_ledger.m_loanList.begin();
-  for (; iter != m_ledger.m_loanList.end(); ++iter) {
+  list<LoanRecord>::iterator iter = ledger_.loan_list_.begin();
+  for (; iter != ledger_.loan_list_.end(); ++iter) {
     if (return_cash <= iter->value) {
       cur_cost = getReturnCashCost(iter->datetime, datetime, return_cash);
       return_cash = 0.0;
@@ -830,30 +830,30 @@ bool ExecutionRuntime::returnCash(const Datetime& datetime, price_t cash) {
                          "{} return cash must <= borrowed cash!", datetime);
 
   price_t out_cash = roundEx(in_cash + cost.total, precision);
-  HAYAKU_ERROR_IF_RETURN(out_cash > m_ledger.m_cash, false,
+  HAYAKU_ERROR_IF_RETURN(out_cash > ledger_.cash_, false,
                          "{} cash({:<.4f}) must be <= current cash({:<.4f})!",
-                         datetime, cash, m_ledger.m_cash);
+                         datetime, cash, ledger_.cash_);
 
   return_cash = in_cash;
   do {
-    iter = m_ledger.m_loanList.begin();
+    iter = ledger_.loan_list_.begin();
     if (return_cash == iter->value) {
-      m_ledger.m_loanList.pop_front();
+      ledger_.loan_list_.pop_front();
       break;
     } else if (return_cash < iter->value) {
       iter->value = roundEx(iter->value - return_cash, precision);
       break;
     } else {  // return_cash > iter->value
       return_cash = roundEx(return_cash - iter->value, precision);
-      m_ledger.m_loanList.pop_front();
+      ledger_.loan_list_.pop_front();
     }
-  } while (!m_ledger.m_loanList.empty());
+  } while (!ledger_.loan_list_.empty());
 
-  m_ledger.m_cash = roundEx(m_ledger.m_cash - out_cash, precision);
-  m_ledger.m_borrowCash = roundEx(m_ledger.m_borrowCash - in_cash, precision);
-  m_ledger.m_tradeList.push_back(TradeRecord(
+  ledger_.cash_ = roundEx(ledger_.cash_ - out_cash, precision);
+  ledger_.borrow_cash_ = roundEx(ledger_.borrow_cash_ - in_cash, precision);
+  ledger_.trade_list_.push_back(TradeRecord(
       Null<Stock>(), datetime, BUSINESS_RETURN_CASH, in_cash, in_cash, 0.0, 0,
-      cost, 0.0, m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
+      cost, 0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
   return true;
 }
 
@@ -881,21 +881,21 @@ bool ExecutionRuntime::borrowStock(const Datetime& datetime, const Stock& stock,
   CostRecord cost = getBorrowStockCost(datetime, stock, price, number);
 
   // Update the cash, deducting the cost spent when borrowing
-  m_ledger.m_cash = roundEx(m_ledger.m_cash - cost.total, precision);
+  ledger_.cash_ = roundEx(ledger_.cash_ - cost.total, precision);
 
   // Add it to the trade records
-  m_ledger.m_tradeList.push_back(TradeRecord(
+  ledger_.trade_list_.push_back(TradeRecord(
       stock, datetime, BUSINESS_BORROW_STOCK, price, price, 0.0, number, cost,
-      0.0, m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
+      0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
 
   // Update the current borrowed stock information
   borrow_stock_map_type::iterator iter =
-      m_ledger.m_borrowStock.find(stock.id());
-  if (iter == m_ledger.m_borrowStock.end()) {
+      ledger_.borrow_stock_.find(stock.id());
+  if (iter == ledger_.borrow_stock_.end()) {
     BorrowRecord record(stock, number, market_value);
     BorrowRecord::Data data(datetime, price, number);
     record.record_list.push_back(data);
-    m_ledger.m_borrowStock[stock.id()] = record;
+    ledger_.borrow_stock_[stock.id()] = record;
   } else {
     // iter->second.stock = stock;
     iter->second.number += number;
@@ -927,10 +927,10 @@ bool ExecutionRuntime::returnStock(const Datetime& datetime, const Stock& stock,
 
   // Query the borrowed stock information
   borrow_stock_map_type::iterator bor_iter =
-      m_ledger.m_borrowStock.find(stock.id());
+      ledger_.borrow_stock_.find(stock.id());
 
   // No stock was borrowed
-  HAYAKU_ERROR_IF_RETURN(bor_iter == m_ledger.m_borrowStock.end(), false,
+  HAYAKU_ERROR_IF_RETURN(bor_iter == ledger_.borrow_stock_.end(), false,
                          "{} {} Try to return nonborrowed stock! ", datetime,
                          stock.market_code());
 
@@ -990,16 +990,16 @@ bool ExecutionRuntime::returnStock(const Datetime& datetime, const Stock& stock,
   } while (!bor.record_list.empty());
 
   if (bor.record_list.empty()) {
-    m_ledger.m_borrowStock.erase(bor_iter);
+    ledger_.borrow_stock_.erase(bor_iter);
   }
 
   // Update the cash, deducting the cost spent when returning
-  m_ledger.m_cash = roundEx(m_ledger.m_cash - cost.total, precision);
+  ledger_.cash_ = roundEx(ledger_.cash_ - cost.total, precision);
 
   // Update the trade records
-  m_ledger.m_tradeList.push_back(TradeRecord(
+  ledger_.trade_list_.push_back(TradeRecord(
       stock, datetime, BUSINESS_RETURN_STOCK, price, price, 0.0, number, cost,
-      0.0, m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
+      0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
 
   return true;
 }
@@ -1068,7 +1068,7 @@ TradeRecord ExecutionRuntime::buy(const Datetime& datetime, const Stock& stock,
     // Get the required principal amount
     CostRecord bor_cost = getBorrowCashCost(datetime, money);
     double rate = getMarginRate(datetime, stock);
-    price_t x = roundEx(m_ledger.m_cash / rate + cost.total + bor_cost.total,
+    price_t x = roundEx(ledger_.cash_ / rate + cost.total + bor_cost.total,
                         precision);
     if (x < money) {
       // The financing that can be obtained is not enough, add the principal
@@ -1081,30 +1081,30 @@ TradeRecord ExecutionRuntime::buy(const Datetime& datetime, const Stock& stock,
   }
 
   HAYAKU_WARN_IF_RETURN(
-      m_ledger.m_cash < roundEx(money + cost.total, precision), result,
+      ledger_.cash_ < roundEx(money + cost.total, precision), result,
       "{} {} Can't buy, need cash({:<.4f}) > current cash({:<.4f})!", datetime,
       stock.market_code(), roundEx(money + cost.total, precision),
-      m_ledger.m_cash);
+      ledger_.cash_);
 
   // Update the cash
-  m_ledger.m_cash = roundEx(m_ledger.m_cash - money - cost.total, precision);
+  ledger_.cash_ = roundEx(ledger_.cash_ - money - cost.total, precision);
 
   // Add it to the trade records
   result = TradeRecord(stock, datetime, BUSINESS_BUY, planPrice, realPrice,
-                       goalPrice, number, cost, stoploss, m_ledger.m_cash, from,
+                       goalPrice, number, cost, stoploss, ledger_.cash_, from,
                        remark);
-  m_ledger.m_tradeList.push_back(result);
+  ledger_.trade_list_.push_back(result);
 
   // Update the current position record
-  position_map_type::iterator pos_iter = m_ledger.m_position.find(stock.id());
-  if (pos_iter == m_ledger.m_position.end()) {
+  position_map_type::iterator pos_iter = ledger_.position_.find(stock.id());
+  if (pos_iter == ledger_.position_.end()) {
     PositionRecord position(
         stock, datetime, Null<Datetime>(), number, stoploss, goalPrice, number,
         money, cost.total,
         roundEx((realPrice - stoploss) * number * stock.unit(), precision),
         0.0);
     position.buyCount = 1;
-    m_ledger.m_position[stock.id()] = position;
+    ledger_.position_[stock.id()] = position;
   } else {
     PositionRecord& position = pos_iter->second;
     position.number += number;
@@ -1119,14 +1119,14 @@ TradeRecord ExecutionRuntime::buy(const Datetime& datetime, const Stock& stock,
     position.buyCount++;
   }
 
-  if (datetime > m_broker_last_datetime) {
-    list<OrderBrokerPtr>::const_iterator broker_iter = m_broker_list.begin();
-    for (; broker_iter != m_broker_list.end(); ++broker_iter) {
+  if (datetime > broker_last_datetime_) {
+    list<OrderBrokerPtr>::const_iterator broker_iter = broker_list_.begin();
+    for (; broker_iter != broker_list_.end(); ++broker_iter) {
       (*broker_iter)
           ->buy(datetime, stock.market(), stock.code(), realPrice, number,
                 stoploss, goalPrice, from, remark);
-      if (datetime > m_broker_last_datetime) {
-        m_broker_last_datetime = datetime;
+      if (datetime > broker_last_datetime_) {
+        broker_last_datetime_ = datetime;
       }
     }
   }
@@ -1164,9 +1164,9 @@ TradeRecord ExecutionRuntime::sell(const Datetime& datetime, const Stock& stock,
       stock.market_code(), number, stock.maxTradeNumber());
 
   // There is no position
-  position_map_type::iterator pos_iter = m_ledger.m_position.find(stock.id());
+  position_map_type::iterator pos_iter = ledger_.position_.find(stock.id());
   HAYAKU_TRACE_IF_RETURN(
-      pos_iter == m_ledger.m_position.end(), result,
+      pos_iter == ledger_.position_.end(), result,
       "{} {} This stock was not bought never! ({}, {:<.4f}, {}, {})", datetime,
       stock.market_code(), datetime, realPrice, number,
       getOrderOriginName(from));
@@ -1193,13 +1193,13 @@ TradeRecord ExecutionRuntime::sell(const Datetime& datetime, const Stock& stock,
   price_t money = roundEx(realPrice * real_number * stock.unit(), precision);
 
   // Update the cash balance
-  m_ledger.m_cash = roundEx(m_ledger.m_cash + money - cost.total, precision);
+  ledger_.cash_ = roundEx(ledger_.cash_ + money - cost.total, precision);
 
   // Update the trade records
   result = TradeRecord(stock, datetime, BUSINESS_SELL, planPrice, realPrice,
-                       goalPrice, real_number, cost, stoploss, m_ledger.m_cash,
+                       goalPrice, real_number, cost, stoploss, ledger_.cash_,
                        from, remark);
-  m_ledger.m_tradeList.push_back(result);
+  ledger_.trade_list_.push_back(result);
 
   // Update the current position
   position.number -= real_number;
@@ -1212,27 +1212,27 @@ TradeRecord ExecutionRuntime::sell(const Datetime& datetime, const Stock& stock,
 
   if (position.number == 0) {
     position.cleanDatetime = datetime;
-    m_ledger.m_positionHistory.push_back(position);
+    ledger_.position_history_.push_back(position);
     // Delete the current position
-    m_ledger.m_position.erase(stock.id());
+    ledger_.position_.erase(stock.id());
   }
 
   // Return the loan if there is one
-  if (getParam<bool>("support_borrow_cash") && m_ledger.m_borrowCash > 0.0 &&
-      m_ledger.m_cash > 0.0) {
-    returnCash(datetime, m_ledger.m_borrowCash < m_ledger.m_cash
-                             ? m_ledger.m_borrowCash
-                             : m_ledger.m_cash);
+  if (getParam<bool>("support_borrow_cash") && ledger_.borrow_cash_ > 0.0 &&
+      ledger_.cash_ > 0.0) {
+    returnCash(datetime, ledger_.borrow_cash_ < ledger_.cash_
+                             ? ledger_.borrow_cash_
+                             : ledger_.cash_);
   }
 
-  if (datetime > m_broker_last_datetime) {
-    list<OrderBrokerPtr>::const_iterator broker_iter = m_broker_list.begin();
-    for (; broker_iter != m_broker_list.end(); ++broker_iter) {
+  if (datetime > broker_last_datetime_) {
+    list<OrderBrokerPtr>::const_iterator broker_iter = broker_list_.begin();
+    for (; broker_iter != broker_list_.end(); ++broker_iter) {
       (*broker_iter)
           ->sell(datetime, stock.market(), stock.code(), realPrice, real_number,
                  stoploss, goalPrice, from, remark);
-      if (datetime > m_broker_last_datetime) {
-        m_broker_last_datetime = datetime;
+      if (datetime > broker_last_datetime_) {
+        broker_last_datetime_ = datetime;
       }
     }
   }
@@ -1281,7 +1281,7 @@ TradeRecord ExecutionRuntime::sellShort(const Datetime& datetime,
     price_t money =
         roundEx(realPrice * number * stock.unit() + cost.total, precision);
     price_t x =
-        roundEx(m_ledger.m_cash / getMarginRate(datetime, stock), precision);
+        roundEx(ledger_.cash_ / getMarginRate(datetime, stock), precision);
     if (x < money) {
       checkin(datetime, roundEx(money - x, precision));
     }
@@ -1291,16 +1291,16 @@ TradeRecord ExecutionRuntime::sellShort(const Datetime& datetime,
 
   // Judge whether there is a borrowed stock and its quantity
   borrow_stock_map_type::const_iterator bor_iter;
-  bor_iter = m_ledger.m_borrowStock.find(stock.id());
-  HAYAKU_ERROR_IF_RETURN(bor_iter == m_ledger.m_borrowStock.end(), result,
+  bor_iter = ledger_.borrow_stock_.find(stock.id());
+  HAYAKU_ERROR_IF_RETURN(bor_iter == ledger_.borrow_stock_.end(), result,
                          "{} {} Non borrowed, can't sell short! ", datetime,
                          stock.market_code());
 
   double total_borrow_num = bor_iter->second.number;
   double can_sell_num = 0;
   position_map_type::iterator pos_iter =
-      m_ledger.m_shortPosition.find(stock.id());
-  if (pos_iter == m_ledger.m_shortPosition.end()) {
+      ledger_.short_position_.find(stock.id());
+  if (pos_iter == ledger_.short_position_.end()) {
     // The borrowed stock has not been sold
     can_sell_num = total_borrow_num;
 
@@ -1328,24 +1328,24 @@ TradeRecord ExecutionRuntime::sellShort(const Datetime& datetime,
       roundEx(realPrice * sell_num * stock.unit() - cost.total, precision);
 
   // Update the cash
-  m_ledger.m_cash = roundEx(m_ledger.m_cash + money, precision);
+  ledger_.cash_ = roundEx(ledger_.cash_ + money, precision);
 
   // Add it to the trade records
   result = TradeRecord(stock, datetime, BUSINESS_SELL_SHORT, planPrice,
                        realPrice, goalPrice, sell_num, cost, stoploss,
-                       m_ledger.m_cash, from, remark);
-  m_ledger.m_tradeList.push_back(result);
+                       ledger_.cash_, from, remark);
+  ledger_.trade_list_.push_back(result);
 
   // Update the current short position record
   price_t risk =
       roundEx((stoploss - realPrice) * sell_num * stock.unit(), precision);
 
-  if (pos_iter == m_ledger.m_shortPosition.end()) {
+  if (pos_iter == ledger_.short_position_.end()) {
     PositionRecord position(stock, datetime, Null<Datetime>(), sell_num,
                             stoploss, goalPrice, sell_num, cost.total,
                             cost.total, risk, money);
     position.sellCount = 1;
-    m_ledger.m_shortPosition[stock.id()] = position;
+    ledger_.short_position_[stock.id()] = position;
   } else {
     PositionRecord& position = pos_iter->second;
     position.number += sell_num;
@@ -1359,14 +1359,14 @@ TradeRecord ExecutionRuntime::sellShort(const Datetime& datetime,
     position.sellCount++;
   }
 
-  if (datetime > m_broker_last_datetime) {
-    list<OrderBrokerPtr>::const_iterator broker_iter = m_broker_list.begin();
-    for (; broker_iter != m_broker_list.end(); ++broker_iter) {
+  if (datetime > broker_last_datetime_) {
+    list<OrderBrokerPtr>::const_iterator broker_iter = broker_list_.begin();
+    for (; broker_iter != broker_list_.end(); ++broker_iter) {
       (*broker_iter)
           ->sell(datetime, stock.market(), stock.code(), realPrice, sell_num,
                  stoploss, goalPrice, from, remark);
-      if (datetime > m_broker_last_datetime) {
-        m_broker_last_datetime = datetime;
+      if (datetime > broker_last_datetime_) {
+        broker_last_datetime_ = datetime;
       }
     }
   }
@@ -1399,8 +1399,8 @@ TradeRecord ExecutionRuntime::buyShort(const Datetime& datetime,
 
   // There is no short position
   position_map_type::iterator pos_iter =
-      m_ledger.m_shortPosition.find(stock.id());
-  HAYAKU_WARN_IF_RETURN(pos_iter == m_ledger.m_shortPosition.end(), result,
+      ledger_.short_position_.find(stock.id());
+  HAYAKU_WARN_IF_RETURN(pos_iter == ledger_.short_position_.end(), result,
                         "{} {} This stock was not sell never! ", datetime,
                         stock.market_code());
 
@@ -1422,13 +1422,13 @@ TradeRecord ExecutionRuntime::buyShort(const Datetime& datetime,
   price_t money = roundEx(realPrice * real_number * stock.unit(), precision);
 
   // Update the cash balance
-  m_ledger.m_cash = roundEx(m_ledger.m_cash - money - cost.total, precision);
+  ledger_.cash_ = roundEx(ledger_.cash_ - money - cost.total, precision);
 
   // Update the trade records
   result = TradeRecord(stock, datetime, BUSINESS_BUY_SHORT, planPrice,
                        realPrice, goalPrice, real_number, cost, stoploss,
-                       m_ledger.m_cash, from, remark);
-  m_ledger.m_tradeList.push_back(result);
+                       ledger_.cash_, from, remark);
+  ledger_.trade_list_.push_back(result);
 
   // Update the current short position
   position.number -= real_number;
@@ -1440,19 +1440,19 @@ TradeRecord ExecutionRuntime::buyShort(const Datetime& datetime,
 
   if (position.number == 0) {
     position.cleanDatetime = datetime;
-    m_ledger.m_shortPositionHistory.push_back(position);
+    ledger_.short_position_history_.push_back(position);
     // Delete the current position
-    m_ledger.m_shortPosition.erase(stock.id());
+    ledger_.short_position_.erase(stock.id());
   }
 
-  if (datetime > m_broker_last_datetime) {
-    list<OrderBrokerPtr>::const_iterator broker_iter = m_broker_list.begin();
-    for (; broker_iter != m_broker_list.end(); ++broker_iter) {
+  if (datetime > broker_last_datetime_) {
+    list<OrderBrokerPtr>::const_iterator broker_iter = broker_list_.begin();
+    for (; broker_iter != broker_list_.end(); ++broker_iter) {
       (*broker_iter)
           ->buy(datetime, stock.market(), stock.code(), realPrice, real_number,
                 stoploss, goalPrice, from, remark);
-      if (datetime > m_broker_last_datetime) {
-        m_broker_last_datetime = datetime;
+      if (datetime > broker_last_datetime_) {
+        broker_last_datetime_ = datetime;
       }
     }
   }
@@ -1469,14 +1469,14 @@ TradeRecord ExecutionRuntime::buyShort(const Datetime& datetime,
 price_t ExecutionRuntime::cash(const Datetime& datetime, KQuery::KType ktype) {
   // If the given time is later than the last ex-rights/ex-dividend update time,
   // update the ex-rights/ex-dividend data first
-  if (datetime > m_ledger.m_lastUpdateDatetime) {
+  if (datetime > ledger_.last_update_datetime_) {
     updateWithWeight(datetime);
-    return m_ledger.m_cash;
+    return ledger_.cash_;
   }
 
   // If the given time equals the last ex-rights/ex-dividend update time, return
   // the current cash directly
-  HAYAKU_IF_RETURN(datetime == m_ledger.m_lastUpdateDatetime, m_ledger.m_cash);
+  HAYAKU_IF_RETURN(datetime == ledger_.last_update_datetime_, ledger_.cash_);
 
   // If the given time is earlier than the last ex-rights/ex-dividend update
   // time, get the funds balance by calculating the assets at the given moment
@@ -1492,8 +1492,8 @@ FundsRecord ExecutionRuntime::getFunds(KQuery::KType inktype) const {
   to_upper(ktype);
 
   price_t value{0.0};  // Current market value
-  position_map_type::const_iterator iter = m_ledger.m_position.begin();
-  for (; iter != m_ledger.m_position.end(); ++iter) {
+  position_map_type::const_iterator iter = ledger_.position_.begin();
+  for (; iter != ledger_.position_.end(); ++iter) {
     const PositionRecord& record = iter->second;
     auto price = record.stock.getMarketValue(lastDatetime(), ktype);
     value = roundEx((value + record.number * price * record.stock.unit()),
@@ -1501,23 +1501,23 @@ FundsRecord ExecutionRuntime::getFunds(KQuery::KType inktype) const {
   }
 
   price_t short_value = 0.0;  // Current market value of the short position
-  iter = m_ledger.m_shortPosition.begin();
-  for (; iter != m_ledger.m_shortPosition.end(); ++iter) {
+  iter = ledger_.short_position_.begin();
+  for (; iter != ledger_.short_position_.end(); ++iter) {
     const PositionRecord& record = iter->second;
     auto price = record.stock.getMarketValue(lastDatetime(), ktype);
     short_value = roundEx(
         (short_value + record.number * price * record.stock.unit()), precision);
   }
-  funds.cash = m_ledger.m_cash;
+  funds.cash = ledger_.cash_;
   funds.market_value = value;
   funds.short_market_value = short_value;
-  funds.base_cash = m_ledger.m_checkinCash - m_ledger.m_checkoutCash;
-  funds.base_asset = m_ledger.m_checkinStock - m_ledger.m_checkoutStock;
-  funds.borrow_cash = m_ledger.m_borrowCash;
+  funds.base_cash = ledger_.checkin_cash_ - ledger_.checkout_cash_;
+  funds.base_asset = ledger_.checkin_stock_ - ledger_.checkout_stock_;
+  funds.borrow_cash = ledger_.borrow_cash_;
   funds.borrow_asset = 0;
   borrow_stock_map_type::const_iterator bor_iter =
-      m_ledger.m_borrowStock.begin();
-  for (; bor_iter != m_ledger.m_borrowStock.end(); ++bor_iter) {
+      ledger_.borrow_stock_.begin();
+  for (; bor_iter != ledger_.borrow_stock_.end(); ++bor_iter) {
     funds.borrow_asset += bor_iter->second.value;
   }
   return funds;
@@ -1545,16 +1545,16 @@ FundsRecord ExecutionRuntime::getFunds(const Datetime& indatetime,
 
     // When the query date is later than or equal to the last trade date,
     // calculate the market value of the currently held securities directly
-    position_map_type::const_iterator iter = m_ledger.m_position.begin();
-    for (; iter != m_ledger.m_position.end(); ++iter) {
+    position_map_type::const_iterator iter = ledger_.position_.begin();
+    for (; iter != ledger_.position_.end(); ++iter) {
       price_t price = iter->second.stock.getMarketValue(datetime, ktype);
       market_value = roundEx(market_value + price * iter->second.number *
                                                 iter->second.stock.unit(),
                              precision);
     }
 
-    iter = m_ledger.m_shortPosition.begin();
-    for (; iter != m_ledger.m_shortPosition.end(); ++iter) {
+    iter = ledger_.short_position_.begin();
+    for (; iter != ledger_.short_position_.end(); ++iter) {
       price_t price = iter->second.stock.getMarketValue(datetime, ktype);
       short_market_value =
           roundEx(short_market_value +
@@ -1562,15 +1562,15 @@ FundsRecord ExecutionRuntime::getFunds(const Datetime& indatetime,
                   precision);
     }
 
-    funds.cash = m_ledger.m_cash;
+    funds.cash = ledger_.cash_;
     funds.market_value = market_value;
     funds.short_market_value = short_market_value;
-    funds.base_cash = m_ledger.m_checkinCash - m_ledger.m_checkoutCash;
-    funds.base_asset = m_ledger.m_checkinStock - m_ledger.m_checkoutStock;
-    funds.borrow_cash = m_ledger.m_borrowCash;
+    funds.base_cash = ledger_.checkin_cash_ - ledger_.checkout_cash_;
+    funds.base_asset = ledger_.checkin_stock_ - ledger_.checkout_stock_;
+    funds.borrow_cash = ledger_.borrow_cash_;
     funds.borrow_asset = 0;
-    borrow_stock_map_type::iterator bor_iter = m_ledger.m_borrowStock.begin();
-    for (; bor_iter != m_ledger.m_borrowStock.end(); ++bor_iter) {
+    borrow_stock_map_type::iterator bor_iter = ledger_.borrow_stock_.begin();
+    for (; bor_iter != ledger_.borrow_stock_.end(); ++bor_iter) {
       funds.borrow_asset += bor_iter->second.value;
     }
 
@@ -1579,7 +1579,7 @@ FundsRecord ExecutionRuntime::getFunds(const Datetime& indatetime,
 
   // When the query date is earlier than the last trade date, traverse the trade
   // records and calculate the market value and the cash of that day
-  price_t cash = m_ledger.m_initCash;
+  price_t cash = ledger_.init_cash_;
   struct Stock_Number {
     Stock_Number() : number(0) {}
     Stock_Number(const Stock& stock, size_t number)
@@ -1600,8 +1600,8 @@ FundsRecord ExecutionRuntime::getFunds(const Datetime& indatetime,
   map<uint64_t, BorrowRecord> bor_stock_map;
   map<uint64_t, BorrowRecord>::iterator bor_stock_iter;
 
-  TradeRecordList::const_iterator iter = m_ledger.m_tradeList.begin();
-  for (; iter != m_ledger.m_tradeList.end(); ++iter) {
+  TradeRecordList::const_iterator iter = ledger_.trade_list_.begin();
+  for (; iter != ledger_.trade_list_.end(); ++iter) {
     if (iter->datetime > datetime) {
       // If the date of the trade record is later than the given date, break the
       // loop; it is done
@@ -1821,7 +1821,7 @@ PriceList ExecutionRuntime::getProfitCurve(const DatetimeList& dates,
  *Input parameter: the date of this operation History: 1) added on 2009/12/22
  *****************************************************************************/
 void ExecutionRuntime::updateWithWeight(const Datetime& datetime) {
-  HAYAKU_IF_RETURN(datetime <= m_ledger.m_lastUpdateDatetime, void());
+  HAYAKU_IF_RETURN(datetime <= ledger_.last_update_datetime_, void());
 
   // Query date range of the ex-rights/ex-dividend information
   Datetime start_date(lastDatetime().date() + bd::days(1));
@@ -1831,8 +1831,8 @@ void ExecutionRuntime::updateWithWeight(const Datetime& datetime) {
   TradeRecordList new_trade_buffer;
 
   // Update the position information and cache the newly added trade records
-  position_map_type::iterator position_iter = m_ledger.m_position.begin();
-  for (; position_iter != m_ledger.m_position.end(); ++position_iter) {
+  position_map_type::iterator position_iter = ledger_.position_.begin();
+  for (; position_iter != ledger_.position_.end(); ++position_iter) {
     PositionRecord& position = position_iter->second;
     Stock stock = position.stock;
 
@@ -1852,11 +1852,11 @@ void ExecutionRuntime::updateWithWeight(const Datetime& datetime) {
         price_t bonus =
             roundEx(position.number * weight_iter->bonus() * 0.1, precision);
         position.sellMoney += bonus;
-        m_ledger.m_cash += bonus;
+        ledger_.cash_ += bonus;
 
         TradeRecord record(stock, weight_iter->datetime(), BUSINESS_BONUS,
                            bonus, bonus, 0.0, 0, CostRecord(), 0.0,
-                           m_ledger.m_cash, OrderOrigin::UNSPECIFIED);
+                           ledger_.cash_, OrderOrigin::UNSPECIFIED);
         new_trade_buffer.push_back(record);
       }
 
@@ -1868,7 +1868,7 @@ void ExecutionRuntime::updateWithWeight(const Datetime& datetime) {
         position.totalNumber += addcount;
         TradeRecord record(stock, weight_iter->datetime(), BUSINESS_GIFT, 0.0,
                            0.0, 0.0, addcount, CostRecord(), 0.0,
-                           m_ledger.m_cash, OrderOrigin::UNSPECIFIED);
+                           ledger_.cash_, OrderOrigin::UNSPECIFIED);
         new_trade_buffer.push_back(record);
       }
 
@@ -1890,7 +1890,7 @@ void ExecutionRuntime::updateWithWeight(const Datetime& datetime) {
         if (change_number != 0.0) {
           TradeRecord record(stock, weight_iter->datetime(), BUSINESS_SUOGU,
                              0.0, 0.0, 0.0, change_number, CostRecord(), 0.0,
-                             m_ledger.m_cash, OrderOrigin::UNSPECIFIED);
+                             ledger_.cash_, OrderOrigin::UNSPECIFIED);
           new_trade_buffer.push_back(record);
         }
       }
@@ -1915,10 +1915,10 @@ void ExecutionRuntime::updateWithWeight(const Datetime& datetime) {
   }
 
   for (size_t i = 0; i < total; ++i) {
-    m_ledger.m_tradeList.push_back(new_trade_buffer[i]);
+    ledger_.trade_list_.push_back(new_trade_buffer[i]);
   }
 
-  m_ledger.m_lastUpdateDatetime = datetime;
+  ledger_.last_update_datetime_ = datetime;
 }
 
 void ExecutionRuntime::_saveAction(const TradeRecord& record) {
@@ -1932,10 +1932,10 @@ void ExecutionRuntime::_saveAction(const TradeRecord& record) {
              "ExecutionEngine(AccountConfig(init_datetime=Datetime('"
           << record.datetime.str() << "'), " << "initial_cash=" << record.cash
           << sep << "cost_policy=";
-      if (m_costfunc) {
-        buf << m_costfunc->name() << "("
-            << m_costfunc->getParameter().getNameValueList() << "), "
-            << "name='" << m_name << "'" << "))";
+      if (costfunc_) {
+        buf << costfunc_->name() << "("
+            << costfunc_->getParameter().getNameValueList() << "), "
+            << "name='" << name_ << "'" << "))";
       } else {
         buf << "TC_Zero()))";
       }
@@ -1975,22 +1975,22 @@ void ExecutionRuntime::_saveAction(const TradeRecord& record) {
       break;
   }
 
-  m_ledger.m_actions.push_back(buf.str());
+  ledger_.actions_.push_back(buf.str());
 }
 
 void ExecutionRuntime::tocsv(const string& path) {
   string filename1, filename2, filename3, filename4;
-  if (m_name.empty()) {
-    string date = m_ledger.m_initDatetime.str();
+  if (name_.empty()) {
+    string date = ledger_.init_datetime_.str();
     filename1 = path + "/" + date + "_交易记录.csv";
     filename2 = path + "/" + date + "_已平仓记录.csv";
     filename3 = path + "/" + date + "_未平仓记录.csv";
     filename4 = path + "/" + date + "_actions.txt";
   } else {
-    filename1 = path + "/" + m_name + "_交易记录.csv";
-    filename2 = path + "/" + m_name + "_已平仓记录.csv";
-    filename3 = path + "/" + m_name + "_未平仓记录.csv";
-    filename4 = path + "/" + m_name + "_actions.txt";
+    filename1 = path + "/" + name_ + "_交易记录.csv";
+    filename2 = path + "/" + name_ + "_已平仓记录.csv";
+    filename3 = path + "/" + name_ + "_未平仓记录.csv";
+    filename4 = path + "/" + name_ + "_actions.txt";
   }
 
 #if defined(_MSC_VER)
@@ -2014,8 +2014,8 @@ void ExecutionRuntime::tocsv(const string& path) {
           "止损价,现金余额,信号来源,日期,开盘价,最高价,最低价,收盘价,"
           "成交金额,成交量,备注"
        << std::endl;
-  TradeRecordList::const_iterator trade_iter = m_ledger.m_tradeList.begin();
-  for (; trade_iter != m_ledger.m_tradeList.end(); ++trade_iter) {
+  TradeRecordList::const_iterator trade_iter = ledger_.trade_list_.begin();
+  for (; trade_iter != ledger_.trade_list_.end(); ++trade_iter) {
     const TradeRecord& record = *trade_iter;
     if (record.stock.isNull()) {
       file << record.datetime << sep << sep << sep
@@ -2064,8 +2064,8 @@ void ExecutionRuntime::tocsv(const string& path) {
           "累计卖出次数"
        << std::endl;
   PositionRecordList::const_iterator history_iter =
-      m_ledger.m_positionHistory.begin();
-  for (; history_iter != m_ledger.m_positionHistory.end(); ++history_iter) {
+      ledger_.position_history_.begin();
+  for (; history_iter != ledger_.position_history_.end(); ++history_iter) {
     const PositionRecord& record = *history_iter;
     file << record.takeDatetime << sep << record.cleanDatetime << sep
          << record.stock.market_code() << sep << record.stock.name() << sep
@@ -2087,8 +2087,8 @@ void ExecutionRuntime::tocsv(const string& path) {
           "累计卖出次数,"
           "累计浮动盈亏,当前盈亏成本价, 浮动盈亏比率"
        << std::endl;
-  position_map_type::const_iterator position_iter = m_ledger.m_position.begin();
-  for (; position_iter != m_ledger.m_position.end(); ++position_iter) {
+  position_map_type::const_iterator position_iter = ledger_.position_.begin();
+  for (; position_iter != ledger_.position_.end(); ++position_iter) {
     const PositionRecord& record = position_iter->second;
     file << record.takeDatetime << sep << record.cleanDatetime << sep
          << record.stock.market_code() << sep << record.stock.name() << sep
@@ -2116,8 +2116,8 @@ void ExecutionRuntime::tocsv(const string& path) {
   // Export the closed position records
   file.open(filename4.c_str());
   HAYAKU_ERROR_IF_RETURN(!file, void(), "Can't create file {}!", filename4);
-  list<string>::const_iterator action_iter = m_ledger.m_actions.begin();
-  for (; action_iter != m_ledger.m_actions.end(); ++action_iter) {
+  list<string>::const_iterator action_iter = ledger_.actions_.begin();
+  for (; action_iter != ledger_.actions_.end(); ++action_iter) {
     file << *action_iter << std::endl;
   }
   file.close();
@@ -2132,16 +2132,16 @@ bool ExecutionRuntime::addPosition(const PositionRecord& pr) {
   HAYAKU_ERROR_IF_RETURN(pr.takeDatetime < initDatetime(), false,
                          "Position takeDatetime({}) > initDatetime({})",
                          pr.takeDatetime, initDatetime());
-  HAYAKU_ERROR_IF_RETURN(!m_ledger.m_tradeList.empty(), false,
+  HAYAKU_ERROR_IF_RETURN(!ledger_.trade_list_.empty(), false,
                          "Exist trade list!");
 
-  auto iter = m_ledger.m_position.find(pr.stock.id());
-  HAYAKU_ERROR_IF_RETURN(iter != m_ledger.m_position.end(), false,
+  auto iter = ledger_.position_.find(pr.stock.id());
+  HAYAKU_ERROR_IF_RETURN(iter != ledger_.position_.end(), false,
                          "The stock({}) has position!", pr.stock.market_code());
 
-  m_ledger.m_position[pr.stock.id()] = pr;
-  if (pr.takeDatetime > m_ledger.m_initDatetime) {
-    m_ledger.m_initDatetime = pr.takeDatetime;
+  ledger_.position_[pr.stock.id()] = pr;
+  if (pr.takeDatetime > ledger_.init_datetime_) {
+    ledger_.init_datetime_ = pr.takeDatetime;
   }
   return true;
 }
@@ -2213,8 +2213,8 @@ bool ExecutionRuntime::addTradeRecord(const TradeRecord& tr) {
 bool ExecutionRuntime::_add_init_tr(const TradeRecord& tr) {
   assert(BUSINESS_INIT == tr.business);
 
-  m_ledger.m_initDatetime = tr.datetime;
-  m_ledger.m_initCash = roundEx(tr.realPrice, getParam<int>("precision"));
+  ledger_.init_datetime_ = tr.datetime;
+  ledger_.init_cash_ = roundEx(tr.realPrice, getParam<int>("precision"));
   reset();
 
   return true;
@@ -2233,18 +2233,18 @@ bool ExecutionRuntime::_add_buy_tr(const TradeRecord& tr) {
       roundEx(tr.realPrice * tr.number * tr.stock.unit(), precision);
 
   HAYAKU_WARN_IF_RETURN(
-      m_ledger.m_cash < roundEx(money + tr.cost.total, precision), false,
-      "Don't have enough money! {} < {}, {}", m_ledger.m_cash,
+      ledger_.cash_ < roundEx(money + tr.cost.total, precision), false,
+      "Don't have enough money! {} < {}, {}", ledger_.cash_,
       roundEx(money + tr.cost.total, precision), tr);
 
-  m_ledger.m_cash = roundEx(m_ledger.m_cash - money - tr.cost.total, precision);
-  new_tr.cash = m_ledger.m_cash;
-  m_ledger.m_tradeList.push_back(new_tr);
+  ledger_.cash_ = roundEx(ledger_.cash_ - money - tr.cost.total, precision);
+  new_tr.cash = ledger_.cash_;
+  ledger_.trade_list_.push_back(new_tr);
 
   // Update the current position record
   position_map_type::iterator pos_iter =
-      m_ledger.m_position.find(tr.stock.id());
-  if (pos_iter == m_ledger.m_position.end()) {
+      ledger_.position_.find(tr.stock.id());
+  if (pos_iter == ledger_.position_.end()) {
     PositionRecord position(
         tr.stock, tr.datetime, Null<Datetime>(), tr.number, tr.stoploss,
         tr.goalPrice, tr.number, money, tr.cost.total,
@@ -2252,7 +2252,7 @@ bool ExecutionRuntime::_add_buy_tr(const TradeRecord& tr) {
                 precision),
         0.0);
     position.buyCount = 1;
-    m_ledger.m_position[tr.stock.id()] = position;
+    ledger_.position_[tr.stock.id()] = position;
   } else {
     PositionRecord& position = pos_iter->second;
     position.number += tr.number;
@@ -2280,8 +2280,8 @@ bool ExecutionRuntime::_add_sell_tr(const TradeRecord& tr) {
 
   // There is no position
   position_map_type::iterator pos_iter =
-      m_ledger.m_position.find(tr.stock.id());
-  HAYAKU_ERROR_IF_RETURN(pos_iter == m_ledger.m_position.end(), false,
+      ledger_.position_.find(tr.stock.id());
+  HAYAKU_ERROR_IF_RETURN(pos_iter == ledger_.position_.end(), false,
                          "No position!");
 
   PositionRecord& position = pos_iter->second;
@@ -2295,12 +2295,12 @@ bool ExecutionRuntime::_add_sell_tr(const TradeRecord& tr) {
       roundEx(tr.realPrice * tr.number * tr.stock.unit(), precision);
 
   // Update the cash balance
-  m_ledger.m_cash = roundEx(m_ledger.m_cash + money - tr.cost.total, precision);
+  ledger_.cash_ = roundEx(ledger_.cash_ + money - tr.cost.total, precision);
 
   // Update the trade records
   TradeRecord new_tr(tr);
-  new_tr.cash = m_ledger.m_cash;
-  m_ledger.m_tradeList.push_back(new_tr);
+  new_tr.cash = ledger_.cash_;
+  ledger_.trade_list_.push_back(new_tr);
 
   // Update the current position
   position.number -= tr.number;
@@ -2313,9 +2313,9 @@ bool ExecutionRuntime::_add_sell_tr(const TradeRecord& tr) {
 
   if (position.number == 0) {
     position.cleanDatetime = tr.datetime;
-    m_ledger.m_positionHistory.push_back(position);
+    ledger_.position_history_.push_back(position);
     // Delete the current position
-    m_ledger.m_position.erase(tr.stock.id());
+    ledger_.position_.erase(tr.stock.id());
   }
 
   _saveAction(new_tr);
@@ -2327,12 +2327,12 @@ bool ExecutionRuntime::_add_checkin_tr(const TradeRecord& tr) {
   HAYAKU_ERROR_IF_RETURN(tr.realPrice <= 0.0, false, "tr.realPrice <= 0.0!");
   int precision = getParam<int>("precision");
   price_t in_cash = roundEx(tr.realPrice, precision);
-  m_ledger.m_cash = roundEx(m_ledger.m_cash + in_cash, precision);
-  m_ledger.m_checkinCash = roundEx(m_ledger.m_checkinCash + in_cash, precision);
-  m_ledger.m_tradeList.push_back(TradeRecord(
+  ledger_.cash_ = roundEx(ledger_.cash_ + in_cash, precision);
+  ledger_.checkin_cash_ = roundEx(ledger_.checkin_cash_ + in_cash, precision);
+  ledger_.trade_list_.push_back(TradeRecord(
       Null<Stock>(), tr.datetime, BUSINESS_CHECKIN, in_cash, in_cash, 0.0, 0,
-      CostRecord(), 0.0, m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
-  _saveAction(m_ledger.m_tradeList.back());
+      CostRecord(), 0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
+  _saveAction(ledger_.trade_list_.back());
   return true;
 }
 
@@ -2341,16 +2341,16 @@ bool ExecutionRuntime::_add_checkout_tr(const TradeRecord& tr) {
 
   int precision = getParam<int>("precision");
   price_t out_cash = roundEx(tr.realPrice, precision);
-  HAYAKU_ERROR_IF_RETURN(out_cash > m_ledger.m_cash, false,
+  HAYAKU_ERROR_IF_RETURN(out_cash > ledger_.cash_, false,
                          "Checkout money > current cash!");
 
-  m_ledger.m_cash = roundEx(m_ledger.m_cash - out_cash, precision);
-  m_ledger.m_checkoutCash =
-      roundEx(m_ledger.m_checkoutCash + out_cash, precision);
-  m_ledger.m_tradeList.push_back(TradeRecord(
+  ledger_.cash_ = roundEx(ledger_.cash_ - out_cash, precision);
+  ledger_.checkout_cash_ =
+      roundEx(ledger_.checkout_cash_ + out_cash, precision);
+  ledger_.trade_list_.push_back(TradeRecord(
       Null<Stock>(), tr.datetime, BUSINESS_CHECKOUT, out_cash, out_cash, 0.0, 0,
-      CostRecord(), 0.0, m_ledger.m_cash, OrderOrigin::UNSPECIFIED));
-  _saveAction(m_ledger.m_tradeList.back());
+      CostRecord(), 0.0, ledger_.cash_, OrderOrigin::UNSPECIFIED));
+  _saveAction(ledger_.trade_list_.back());
   return true;
 }
 

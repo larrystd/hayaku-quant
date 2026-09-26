@@ -19,9 +19,9 @@ class HAYAKU_API KDataPrivatedBufferImp : public KDataImp {
                          const KRecordList& krecords);
   virtual ~KDataPrivatedBufferImp() override;
 
-  virtual bool empty() const noexcept override { return m_buffer.empty(); }
+  virtual bool empty() const noexcept override { return buffer_.empty(); }
 
-  virtual size_t size() const noexcept override { return m_buffer.size(); }
+  virtual size_t size() const noexcept override { return buffer_.size(); }
 
   virtual size_t startPos() const override;
   virtual size_t endPos() const override;
@@ -30,18 +30,18 @@ class HAYAKU_API KDataPrivatedBufferImp : public KDataImp {
   virtual size_t getPos(const Datetime& datetime) const noexcept override;
 
   virtual const KRecord& getKRecord(size_t pos) const noexcept override {
-    return m_buffer[pos];
+    return buffer_[pos];
   }
 
-  virtual const KRecord& front() const override { return m_buffer.front(); }
+  virtual const KRecord& front() const override { return buffer_.front(); }
 
-  virtual const KRecord& back() const override { return m_buffer.back(); }
+  virtual const KRecord& back() const override { return buffer_.back(); }
 
   virtual const KRecord* data() const noexcept override {
-    return m_buffer.data();
+    return buffer_.data();
   }
 
-  virtual KRecord* data() noexcept override { return m_buffer.data(); }
+  virtual KRecord* data() noexcept override { return buffer_.data(); }
 
   virtual DatetimeList getDatetimeList() const override;
 
@@ -60,10 +60,10 @@ class HAYAKU_API KDataPrivatedBufferImp : public KDataImp {
   KDataImpPtr _getOtherFromSelfByDate(const KQuery& query) const;
 
  private:
-  KRecordList m_buffer;
-  mutable size_t m_start{0};
-  mutable size_t m_end{0};
-  mutable bool m_have_pos_in_stock{false};
+  KRecordList buffer_;
+  mutable size_t start_{0};
+  mutable size_t end_{0};
+  mutable bool have_pos_in_stock_{false};
 };
 
 // typedef shared_ptr<KDataPrivatedBufferImp> KDataPrivatedBufferImpPtr;

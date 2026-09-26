@@ -23,40 +23,40 @@ HAYAKU_API std::ostream& operator<<(std::ostream& out,
                                     const MultiFactorBase& mf) {
   out << "MultiFactor{" << "\n  name: " << mf.name()
       << "\n  params: " << mf.getParameter() << "\n  query: " << mf.getQuery()
-      << "\n  ref stock: " << mf.m_ref_stk;
+      << "\n  ref stock: " << mf.ref_stk_;
 
-  out << "\n  src inds count: " << mf.m_factorset.size() << " [";
-  if (mf.m_factorset.size() <= 5) {
-    for (const auto& ind : mf.m_factorset) {
+  out << "\n  src inds count: " << mf.factorset_.size() << " [";
+  if (mf.factorset_.size() <= 5) {
+    for (const auto& ind : mf.factorset_) {
       out << ind.name() << ", ";
     }
   } else {
     for (size_t i = 0; i < 5; i++) {
-      out << mf.m_factorset[i].name() << ", ";
+      out << mf.factorset_[i].name() << ", ";
     }
     out << "......";
   }
   out << "]";
 
-  out << "\n  normalize: " << (mf.m_norm ? mf.m_norm->name() : "NULL");
+  out << "\n  normalize: " << (mf.norm_ ? mf.norm_->name() : "NULL");
 
-  if (!mf.m_special_norms.empty()) {
-    out << "\n  special norms: " << mf.m_special_norms.size();
-    for (const auto& [name, norm] : mf.m_special_norms) {
+  if (!mf.special_norms_.empty()) {
+    out << "\n  special norms: " << mf.special_norms_.size();
+    for (const auto& [name, norm] : mf.special_norms_) {
       out << "\n    " << name << " -> " << norm->name();
     }
   }
 
-  if (!mf.m_special_category.empty()) {
-    out << "\n  special catogory handle: " << mf.m_special_category.size();
-    for (const auto& [name, category] : mf.m_special_category) {
+  if (!mf.special_category_.empty()) {
+    out << "\n  special catogory handle: " << mf.special_category_.size();
+    for (const auto& [name, category] : mf.special_category_) {
       out << "\n    " << name << " -> " << category;
     }
   }
 
-  if (!mf.m_special_style_inds.empty()) {
-    out << "\n  special style inds: " << mf.m_special_style_inds.size();
-    for (const auto& [name, style_inds] : mf.m_special_style_inds) {
+  if (!mf.special_style_inds_.empty()) {
+    out << "\n  special style inds: " << mf.special_style_inds_.size();
+    for (const auto& [name, style_inds] : mf.special_style_inds_) {
       out << "\n    " << name << " -> [";
       for (const auto& ind : style_inds) {
         out << ind.name() << ", ";
@@ -65,12 +65,12 @@ HAYAKU_API std::ostream& operator<<(std::ostream& out,
     }
   }
 
-  out << "\n  stocks count: " << mf.m_stks.size() << " [";
-  size_t print_stk_len = std::min<size_t>(5, mf.m_stks.size());
+  out << "\n  stocks count: " << mf.stks_.size() << " [";
+  size_t print_stk_len = std::min<size_t>(5, mf.stks_.size());
   for (size_t i = 0; i < print_stk_len; i++) {
-    out << mf.m_stks[i].market_code() << ", ";
+    out << mf.stks_[i].market_code() << ", ";
   }
-  if (mf.m_stks.size() > 5) {
+  if (mf.stks_.size() > 5) {
     out << "......";
   }
   out << "]";
@@ -89,25 +89,25 @@ HAYAKU_API std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-MultiFactorBase::MultiFactorBase() : m_name("MultiFactorBase") { initParam(); }
+MultiFactorBase::MultiFactorBase() : name_("MultiFactorBase") { initParam(); }
 
-MultiFactorBase::MultiFactorBase(const string& name) : m_name(name) {
+MultiFactorBase::MultiFactorBase(const string& name) : name_(name) {
   initParam();
 }
 
 MultiFactorBase::MultiFactorBase(const MultiFactorBase& base)
-    : m_params(base.m_params),
-      m_name(base.m_name),
-      m_factorset(base.m_factorset),
-      m_stks(base.m_stks),
-      m_ref_stk(base.m_ref_stk),
-      m_query(base.m_query) {}
+    : params_(base.params_),
+      name_(base.name_),
+      factorset_(base.factorset_),
+      stks_(base.stks_),
+      ref_stk_(base.ref_stk_),
+      query_(base.query_) {}
 
 MultiFactorBase::MultiFactorBase(const StockList& stks, const KQuery& query,
                                  const Stock& ref_stk, const string& name,
                                  int ic_n, bool spearman, int mode,
                                  bool save_all_factors)
-    : m_name(name), m_stks(stks), m_ref_stk(ref_stk), m_query(query) {
+    : name_(name), stks_(stks), ref_stk_(ref_stk), query_(query) {
   initParam();
   setParam<bool>("use_spearman", spearman);
   setParam<int>("ic_n", ic_n);
@@ -143,39 +143,39 @@ void MultiFactorBase::baseCheckParam(const string& name) const {
 }
 
 void MultiFactorBase::paramChanged() {
-  m_calculated.store(false, std::memory_order_relaxed);
+  calculated_.store(false, std::memory_order_relaxed);
 }
 
 void MultiFactorBase::_checkData() {
-  HAYAKU_CHECK(!m_factorset.empty(), "Input factor set is empty!");
+  HAYAKU_CHECK(!factorset_.empty(), "Input factor set is empty!");
 
   // The subsequent calculation needs to stay aligned and handling a mixed Null
   // stock is troublesome, so an exception is thrown to block it
-  for (const auto& stk : m_stks) {
+  for (const auto& stk : stks_) {
     HAYAKU_CHECK(!stk.isNull(), "Exist null stock in stks!");
   }
 
   // Get the reference dates used for the alignment
-  if (m_ref_stk.isNull()) {
-    m_ref_stk = getDataRuntime().getMarketStock("SH");
+  if (ref_stk_.isNull()) {
+    ref_stk_ = getDataRuntime().getMarketStock("SH");
   }
-  m_ref_dates = m_ref_stk.getDatetimeList(m_query);
-  HAYAKU_CHECK(m_ref_dates.size() >= 2,
+  ref_dates_ = ref_stk_.getDatetimeList(query_);
+  HAYAKU_CHECK(ref_dates_.size() >= 2,
                "The dates len is insufficient! current len: {}",
-               m_ref_dates.size());
+               ref_dates_.size());
 
-  HAYAKU_CHECK(m_stks.size() >= 2,
+  HAYAKU_CHECK(stks_.size() >= 2,
                "The number of stock is insufficient! current stock number: {}",
-               m_stks.size());
+               stks_.size());
 }
 
 void MultiFactorBase::clearCalculatedData() {
-  m_ref_dates = {};
-  m_stk_map = {};
-  m_all_factors = {};
-  m_date_index = {};
-  m_stk_factor_by_date = {};
-  m_ic = {};
+  ref_dates_ = {};
+  stk_map_ = {};
+  all_factors_ = {};
+  date_index_ = {};
+  stk_factor_by_date_ = {};
+  ic_ = {};
 }
 
 void MultiFactorBase::reset() {
@@ -183,10 +183,10 @@ void MultiFactorBase::reset() {
   // ongoing calculate. Note: _reset() is a virtual function and a custom
   // implementation must not re-enter, inside the lock, a method of the same
   // instance that needs m_mutex.
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(mutex_);
   _reset();
   clearCalculatedData();
-  m_calculated.store(false, std::memory_order_release);
+  calculated_.store(false, std::memory_order_release);
 }
 
 MultiFactorPtr MultiFactorBase::clone() {
@@ -203,27 +203,27 @@ MultiFactorPtr MultiFactorBase::clone() {
     return shared_from_this();
   }
 
-  p->m_name = m_name;
-  p->m_params = m_params;
-  p->m_is_python_object = m_is_python_object;
-  p->m_stks = m_stks;
-  p->m_ref_stk = m_ref_stk;
+  p->name_ = name_;
+  p->params_ = params_;
+  p->is_python_object_ = is_python_object_;
+  p->stks_ = stks_;
+  p->ref_stk_ = ref_stk_;
   // p->m_ref_dates = m_ref_dates;
-  p->m_query = m_query;
+  p->query_ = query_;
 
-  p->m_factorset = m_factorset;
+  p->factorset_ = factorset_;
 
-  if (m_norm) {
-    p->m_norm = m_norm->clone();
+  if (norm_) {
+    p->norm_ = norm_->clone();
   }
 
-  for (const auto& [norm_name, norm] : m_special_norms) {
-    p->m_special_norms[norm_name] = norm->clone();
+  for (const auto& [norm_name, norm] : special_norms_) {
+    p->special_norms_[norm_name] = norm->clone();
   }
 
-  p->m_special_category = m_special_category;
+  p->special_category_ = special_category_;
 
-  p->m_calculated.store(false, std::memory_order_relaxed);
+  p->calculated_.store(false, std::memory_order_relaxed);
   // Force a recalculation without cloning the following caches, to avoid the
   // thread unsafety p->m_stk_map = m_stk_map; p->m_date_index = m_date_index;
   // p->m_stk_factor_by_date = m_stk_factor_by_date;
@@ -236,18 +236,18 @@ MultiFactorPtr MultiFactorBase::clone() {
 }
 
 void MultiFactorBase::setQuery(const KQuery& query) {
-  m_query = query;
-  m_calculated.store(false, std::memory_order_relaxed);
+  query_ = query;
+  calculated_.store(false, std::memory_order_relaxed);
 }
 
 void MultiFactorBase::setRefStock(const Stock& stk) {
   Stock tmp_stk = stk.isNull() ? getDataRuntime().getMarketStock("SH") : stk;
-  DatetimeList ref_dates = tmp_stk.getDatetimeList(m_query);
+  DatetimeList ref_dates = tmp_stk.getDatetimeList(query_);
   HAYAKU_CHECK(ref_dates.size() >= 2,
                "The dates len is insufficient! current len: {}",
                ref_dates.size());
-  m_ref_stk = tmp_stk;
-  m_calculated.store(false, std::memory_order_relaxed);
+  ref_stk_ = tmp_stk;
+  calculated_.store(false, std::memory_order_relaxed);
 }
 
 void MultiFactorBase::setStockList(const StockList& stks) {
@@ -257,20 +257,20 @@ void MultiFactorBase::setStockList(const StockList& stks) {
     HAYAKU_CHECK(!stk.isNull(), "Exist null stock in stks!");
   }
 
-  m_stks = stks;
-  m_calculated.store(false, std::memory_order_relaxed);
+  stks_ = stks;
+  calculated_.store(false, std::memory_order_relaxed);
 }
 
 void MultiFactorBase::setRefFactorSet(const FactorSet& factorset) {
   HAYAKU_CHECK(!factorset.isNull() && !factorset.empty(),
                "Input factor set is null or empty!");
-  m_factorset = factorset;
-  m_calculated.store(false, std::memory_order_relaxed);
+  factorset_ = factorset;
+  calculated_.store(false, std::memory_order_relaxed);
 }
 
 void MultiFactorBase::setNormalize(NormPtr norm) {
-  m_norm = norm;
-  m_calculated.store(false, std::memory_order_relaxed);
+  norm_ = norm;
+  calculated_.store(false, std::memory_order_relaxed);
 }
 
 void MultiFactorBase::addSpecialNormalize(const string& name, NormalizePtr norm,
@@ -282,7 +282,7 @@ void MultiFactorBase::addSpecialNormalize(const string& name, NormalizePtr norm,
 
   bool found = false;
   string found_name;
-  for (const auto& ind : m_factorset) {
+  for (const auto& ind : factorset_) {
     // An indicator may use a Chinese name, but a Factor may not
     if (utf8_fold_equal(ind.name(), name)) {
       found = true;
@@ -298,32 +298,32 @@ void MultiFactorBase::addSpecialNormalize(const string& name, NormalizePtr norm,
   }
 
   if (norm) {
-    m_special_norms[found_name] = norm;
+    special_norms_[found_name] = norm;
   }
 
   if (!category.empty()) {
-    m_special_category[found_name] = category;
+    special_category_[found_name] = category;
   }
 
   if (!style_inds.empty()) {
-    m_special_style_inds[found_name] = style_inds;
+    special_style_inds_[found_name] = style_inds;
   }
 
-  m_calculated.store(false, std::memory_order_relaxed);
+  calculated_.store(false, std::memory_order_relaxed);
 }
 
 const DatetimeList& MultiFactorBase::getDatetimeList() {
   calculate();
-  return m_ref_dates;
+  return ref_dates_;
 }
 
 const Indicator& MultiFactorBase::getFactor(const Stock& stk) {
   HAYAKU_CHECK(getParam<bool>("save_all_factors"),
                "param \"save_all_factors\" is false, can't get all factors!");
   calculate();
-  const auto iter = m_stk_map.find(stk);
-  HAYAKU_CHECK(iter != m_stk_map.cend(), "Could not find this stock: {}", stk);
-  return m_all_factors[iter->second];
+  const auto iter = stk_map_.find(stk);
+  HAYAKU_CHECK(iter != stk_map_.cend(), "Could not find this stock: {}", stk);
+  return all_factors_[iter->second];
 }
 
 const IndicatorList& MultiFactorBase::getAllFactors() {
@@ -332,15 +332,15 @@ const IndicatorList& MultiFactorBase::getAllFactors() {
   } else {
     HAYAKU_WARN("param \"save_all_factors\" is false, can't get all factors!");
   }
-  return m_all_factors;
+  return all_factors_;
 }
 
 ScoreRecordList MultiFactorBase::getScores(const Datetime& d) {
   calculate();
   ScoreRecordList ret;
-  const auto iter = m_date_index.find(d);
-  HAYAKU_IF_RETURN(iter == m_date_index.cend(), ret);
-  ret = m_stk_factor_by_date[iter->second];
+  const auto iter = date_index_.find(d);
+  HAYAKU_IF_RETURN(iter == date_index_.cend(), ret);
+  ret = stk_factor_by_date_[iter->second];
   return ret;
 }
 
@@ -439,7 +439,7 @@ ScoreRecordList MultiFactorBase::getScores(const Datetime& date, size_t start,
   }
 
   if (filter) {
-    ret = filter->filter(ret, date, m_query);
+    ret = filter->filter(ret, date, query_);
   }
 
   return ret;
@@ -447,7 +447,7 @@ ScoreRecordList MultiFactorBase::getScores(const Datetime& date, size_t start,
 
 const vector<ScoreRecordList>& MultiFactorBase::getAllScores() {
   calculate();
-  return m_stk_factor_by_date;
+  return stk_factor_by_date_;
 }
 
 Indicator MultiFactorBase::getIC(int ndays) {
@@ -458,7 +458,7 @@ Indicator MultiFactorBase::getIC(int ndays) {
 
   calculate();
 
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(mutex_);
 
   // When ndays equals the ic_n parameter, the cached IC result is taken first
   // The IC of a new factor essentially needs no cache (such as the equal
@@ -472,17 +472,17 @@ Indicator MultiFactorBase::getIC(int ndays) {
   if (ndays <= 0) {
     ndays = ic_n;
   }
-  HAYAKU_IF_RETURN(ic_n == ndays && !m_ic.empty(), m_ic.clone());
+  HAYAKU_IF_RETURN(ic_n == ndays && !ic_.empty(), ic_.clone());
 
   auto all_returns = _getAllReturns(ndays);
   Indicator result =
-      IC(m_all_factors, all_returns, ndays, getParam<bool>("use_spearman"));
-  result.setParam<DatetimeList>("align_date_list", m_ref_dates);
+      IC(all_factors_, all_returns, ndays, getParam<bool>("use_spearman"));
+  result.setParam<DatetimeList>("align_date_list", ref_dates_);
   result.name("IC");
 
   // When ndays equals the ic_n parameter, cache the calculation result
   if (ic_n == ndays) {
-    m_ic = result;
+    ic_ = result;
   }
   return result;
 }
@@ -501,8 +501,8 @@ MultiFactorBase::_buildDummyIndex() {
   // When the industry neutralization of a special indicator is given, build its
   // industry membership labels
   unordered_map<string, std::pair<PriceList, size_t>> stock_dummy_index;
-  for (const auto& [ind_name, catefory] : m_special_category) {
-    stock_dummy_index[ind_name] = {PriceList(m_stks.size(), Null<price_t>()),
+  for (const auto& [ind_name, catefory] : special_category_) {
+    stock_dummy_index[ind_name] = {PriceList(stks_.size(), Null<price_t>()),
                                    0};
     auto blks = getDataRuntime().getBlockList(catefory);
     if (blks.empty()) {
@@ -516,11 +516,11 @@ MultiFactorBase::_buildDummyIndex() {
     size_t blk_count = blks.size();
     iter->second.second = blk_count;
 
-    for (size_t i = 0; i < m_stks.size(); i++) {
+    for (size_t i = 0; i < stks_.size(); i++) {
       bool found = false;
       size_t j = 0;
       for (const auto& blk : blks) {
-        if (blk.have(m_stks[i])) {
+        if (blk.have(stks_[i])) {
           dummy[i] = j;
           found = true;
           break;
@@ -542,9 +542,9 @@ MultiFactorBase::_buildDummyIndex() {
 IndicatorList MultiFactorBase::_getAllReturns(int ndays) const {
   bool fill_null = getParam<bool>("fill_null");
   return global_parallel_for_index(
-      0, m_stks.size(), [this, ndays, fill_null](size_t i) {
-        auto k = m_stks[i].getKData(m_query);
-        return ALIGN(ROCP(CLOSE(), ndays), m_ref_dates, fill_null)(k).getResult(
+      0, stks_.size(), [this, ndays, fill_null](size_t i) {
+        auto k = stks_[i].getKData(query_);
+        return ALIGN(ROCP(CLOSE(), ndays), ref_dates_, fill_null)(k).getResult(
             0);
       });
 }
@@ -559,21 +559,21 @@ IndicatorList MultiFactorBase::_getAllReturns(int ndays) const {
 
 vector<IndicatorList> MultiFactorBase::getAllSrcFactors() {
   vector<IndicatorList> all_stk_inds;
-  size_t stk_count = m_stks.size();
+  size_t stk_count = stks_.size();
   HAYAKU_IF_RETURN(stk_count == 0, all_stk_inds);
   all_stk_inds.resize(stk_count);
 
-  size_t ind_count = m_factorset.size();
+  size_t ind_count = factorset_.size();
   HAYAKU_IF_RETURN(ind_count == 0, all_stk_inds);
 
-  size_t days_total = m_ref_dates.size();
+  size_t days_total = ref_dates_.size();
   auto null_ind =
-      PRICELIST(PriceList(days_total, Null<price_t>()), m_ref_dates);
+      PRICELIST(PriceList(days_total, Null<price_t>()), ref_dates_);
 
   bool fill_null = getParam<bool>("fill_null");
 
-  all_stk_inds = m_factorset.getValues(m_stks, m_query, true, fill_null, true,
-                                       true, m_ref_dates);
+  all_stk_inds = factorset_.getValues(stks_, query_, true, fill_null, true,
+                                       true, ref_dates_);
 
   // The style factors are stored in three dimensions [style factor name][style
   // factor][stock] (vector<IndicatorList>).
@@ -604,18 +604,18 @@ vector<IndicatorList> MultiFactorBase::getAllSrcFactors() {
   //      styles[j].clone() is safe; here styles[j] is the root Indicator passed
   //      in by the user.)
   unordered_map<string, vector<IndicatorList>> use_style_inds;
-  for (const auto& [style_ind_name, style_inds] : m_special_style_inds) {
+  for (const auto& [style_ind_name, style_inds] : special_style_inds_) {
     auto& per_factor = use_style_inds[style_ind_name];
     per_factor.resize(style_inds.size());
     for (auto& v : per_factor) {
       v.resize(stk_count);
     }
   }
-  if (!m_special_style_inds.empty()) {
+  if (!special_style_inds_.empty()) {
     global_parallel_for_index_void(0, stk_count, [&](size_t si) {
-      const auto& stk = m_stks[si];
-      auto kdata = stk.getKData(m_query);
-      for (auto& [style_ind_name, styles] : m_special_style_inds) {
+      const auto& stk = stks_[si];
+      auto kdata = stk.getKData(query_);
+      for (auto& [style_ind_name, styles] : special_style_inds_) {
         auto& per_factor = use_style_inds[style_ind_name];
         for (size_t j = 0; j < styles.size(); j++) {
           if (kdata.size() == 0) {
@@ -624,7 +624,7 @@ vector<IndicatorList> MultiFactorBase::getAllSrcFactors() {
             // An independent clone per thread: calculate writes the buffer of
             // the thread copy only
             per_factor[j][si] =
-                ALIGN(styles[j].clone(), m_ref_dates, fill_null)(kdata)
+                ALIGN(styles[j].clone(), ref_dates_, fill_null)(kdata)
                     .getResult(0);
           }
           per_factor[j][si].name(style_ind_name);
@@ -634,7 +634,7 @@ vector<IndicatorList> MultiFactorBase::getAllSrcFactors() {
   }
 
   // The time cross-sectional standardization / normalization
-  if (m_norm || !m_special_category.empty() || !m_special_style_inds.empty()) {
+  if (norm_ || !special_category_.empty() || !special_style_inds_.empty()) {
     // The residual regression of the style factor neutralization has been
     // extracted as a serial kernel (StyleRegression.cpp), it no longer modifies
     // the process level Eigen::setNbThreads at runtime, avoiding the concurrent
@@ -647,7 +647,7 @@ vector<IndicatorList> MultiFactorBase::getAllSrcFactors() {
         0, days_total,
         [this, stk_count, ind_count, &all_stk_inds, &ind_dummy_dict,
          &use_style_inds](size_t di) {
-          auto sub_norm = m_norm ? m_norm->clone() : m_norm;
+          auto sub_norm = norm_ ? norm_->clone() : norm_;
           NormPtr special_norm;
           PriceList one_day(stk_count, Null<price_t>());
           PriceList new_value;
@@ -669,9 +669,9 @@ vector<IndicatorList> MultiFactorBase::getAllSrcFactors() {
             // result[j][i] strictly corresponding to factors[i], and the index
             // ii corresponds one to one with m_factorset[ii], with no risk of
             // an out of order access.
-            auto ind_name = m_factorset[ii].name();
-            auto special_norm_iter = m_special_norms.find(ind_name);
-            if (special_norm_iter != m_special_norms.end()) {
+            auto ind_name = factorset_[ii].name();
+            auto special_norm_iter = special_norms_.find(ind_name);
+            if (special_norm_iter != special_norms_.end()) {
               special_norm = special_norm_iter->second->clone();
             } else {
               special_norm.reset();
@@ -726,25 +726,25 @@ vector<IndicatorList> MultiFactorBase::getAllSrcFactors() {
 }
 
 void MultiFactorBase::_buildIndex() {
-  size_t stk_count = m_stks.size();
+  size_t stk_count = stks_.size();
   for (size_t i = 0; i < stk_count; i++) {
-    m_stk_map[m_stks[i]] = i;
+    stk_map_[stks_[i]] = i;
   }
 
-  size_t days_total = m_ref_dates.size();
-  m_stk_factor_by_date.resize(days_total);
+  size_t days_total = ref_dates_.size();
+  stk_factor_by_date_.resize(days_total);
   for (size_t i = 0; i < days_total; i++) {
-    m_date_index[m_ref_dates[i]] = i;
-    m_stk_factor_by_date[i].resize(
+    date_index_[ref_dates_[i]] = i;
+    stk_factor_by_date_[i].resize(
         stk_count);  // Pre-allocate one slot per stock for every date
   }
 
   // Traverse the stock j first and then the date i, no sorting by default
   global_parallel_for_index_void(0, stk_count, [this, days_total](size_t j) {
-    const auto& stk = m_stks[j];
-    const auto* data = m_all_factors[j].data();
+    const auto& stk = stks_[j];
+    const auto* data = all_factors_[j].data();
     for (size_t i = 0; i < days_total; i++) {
-      m_stk_factor_by_date[i][j] = ScoreRecord(stk, data[i]);
+      stk_factor_by_date_[i][j] = ScoreRecord(stk, data[i]);
     }
   });
 
@@ -791,8 +791,8 @@ void MultiFactorBase::_buildIndex() {
     global_parallel_for_index_void(
         0, days_total,
         [this, scoreDescLess](size_t i) {
-          std::sort(m_stk_factor_by_date[i].begin(),
-                    m_stk_factor_by_date[i].end(), scoreDescLess);
+          std::sort(stk_factor_by_date_[i].begin(),
+                    stk_factor_by_date_[i].end(), scoreDescLess);
         },
         100);
 
@@ -800,8 +800,8 @@ void MultiFactorBase::_buildIndex() {
     global_parallel_for_index_void(
         0, days_total,
         [this, scoreAscLess](size_t i) {
-          std::sort(m_stk_factor_by_date[i].begin(),
-                    m_stk_factor_by_date[i].end(), scoreAscLess);
+          std::sort(stk_factor_by_date_[i].begin(),
+                    stk_factor_by_date_[i].end(), scoreAscLess);
         },
         100);
   }
@@ -809,15 +809,15 @@ void MultiFactorBase::_buildIndex() {
 
 void MultiFactorBase::calculate() {
   // Fast path: check whether it is already Ready with a lock-free acquire
-  if (m_calculated.load(std::memory_order_acquire)) {
+  if (calculated_.load(std::memory_order_acquire)) {
     return;
   }
 
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard<std::mutex> lock(mutex_);
 
   // A second check inside the lock: the mutex already provides the slow path
   // synchronization, so relaxed is enough
-  if (m_calculated.load(std::memory_order_relaxed)) {
+  if (calculated_.load(std::memory_order_relaxed)) {
     return;
   }
 
@@ -831,17 +831,17 @@ void MultiFactorBase::calculate() {
     {  // Get all the aligned original factors of all the securities
       vector<IndicatorList> all_stk_inds = getAllSrcFactors();
 
-      size_t factor_count = m_factorset.size();
+      size_t factor_count = factorset_.size();
       if (factor_count == 1) {
         // Use the original factors directly
-        size_t stk_count = m_stks.size();
-        m_all_factors.resize(stk_count);
+        size_t stk_count = stks_.size();
+        all_factors_.resize(stk_count);
         for (size_t i = 0; i < stk_count; i++) {
-          m_all_factors[i] = std::move(all_stk_inds[i][0]);
+          all_factors_[i] = std::move(all_stk_inds[i][0]);
         }
       } else {
         // Calculate the adjusted composite factor of every security
-        m_all_factors = _calculate(all_stk_inds);
+        all_factors_ = _calculate(all_stk_inds);
       }
     }
 
@@ -849,8 +849,8 @@ void MultiFactorBase::calculate() {
     _buildIndex();
 
     if (!getParam<bool>("save_all_factors")) {
-      m_all_factors = {};
-      m_stk_map = {};
+      all_factors_ = {};
+      stk_map_ = {};
     }
   } catch (...) {
     // The failure cleanup: all the asynchronous subtasks have ended under the
@@ -858,13 +858,13 @@ void MultiFactorBase::calculate() {
     // is cleared, the not calculated state is kept, the original exception
     // propagates up and the next caller may retry.
     clearCalculatedData();
-    m_calculated.store(false, std::memory_order_relaxed);
+    calculated_.store(false, std::memory_order_relaxed);
     throw;
   }
 
   // Publish: release guarantees that all the previous writes are visible to the
   // subsequent acquire reads
-  m_calculated.store(true, std::memory_order_release);
+  calculated_.store(true, std::memory_order_release);
 }
 
 }  // namespace hayaku

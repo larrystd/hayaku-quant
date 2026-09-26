@@ -28,10 +28,10 @@ class HAYAKU_API MoneyManagerBase
   virtual ~MoneyManagerBase();
 
   /** Get the name */
-  const string& name() const { return m_name; }
+  const string& name() const { return name_; }
 
   /** Set the name */
-  void name(const string& name) { m_name = name; }
+  void name(const string& name) { name_ = name; }
 
   /** Reset */
   void reset();
@@ -41,20 +41,20 @@ class HAYAKU_API MoneyManagerBase
    * @param tm the given trade account
    */
   void setAccount(const internal::ExecutionAccountPortPtr& account) {
-    m_account = account;
+    account_ = account;
   }
 
   /**
    * Get the trade account
    * @return
    */
-  internal::ExecutionAccountPortPtr getAccount() const { return m_account; }
+  internal::ExecutionAccountPortPtr getAccount() const { return account_; }
 
   /** Set the query condition */
-  void setQuery(const KQuery& query) { m_query = query; }
+  void setQuery(const KQuery& query) { query_ = query; }
 
   /** Get the K-line type of the trade */
-  const KQuery& getQuery() const { return m_query; }
+  const KQuery& getQuery() const { return query_; }
 
   typedef shared_ptr<MoneyManagerBase> MoneyManagerPtr;
   /** Clone operation */
@@ -158,14 +158,14 @@ class HAYAKU_API MoneyManagerBase
   /** Interface for the subclass to clone its private variables */
   virtual MoneyManagerPtr _clone() = 0;
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  protected:
-  string m_name;
-  KQuery m_query;
-  internal::ExecutionAccountPortPtr m_account;
-  unordered_map<Stock, std::pair<size_t, size_t>> m_buy_sell_counts;
-  bool m_is_python_object{false};
+  string name_;
+  KQuery query_;
+  internal::ExecutionAccountPortPtr account_;
+  unordered_map<Stock, std::pair<size_t, size_t>> buy_sell_counts_;
+  bool is_python_object_{false};
 
 //============================================
 // Serialization support
@@ -175,19 +175,19 @@ class HAYAKU_API MoneyManagerBase
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
     // m_query and m_account are set temporarily when the strategy runs, they do
-    // not need to be serialized ar & BOOST_SERIALIZATION_NVP(m_query); ar &
-    // BOOST_SERIALIZATION_NVP(m_account);
+    // not need to be serialized ar & boost::serialization::make_nvp("m_query", query_); ar &
+    // boost::serialization::make_nvp("m_account", account_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()

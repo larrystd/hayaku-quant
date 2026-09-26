@@ -23,7 +23,7 @@ SingleSignal::SingleSignal() : SignalBase("SG_Single") {
 }
 
 SingleSignal::SingleSignal(const Indicator& ind)
-    : SignalBase("SG_Single"), m_ind(ind) {
+    : SignalBase("SG_Single"), ind_(ind) {
   setParam<int>("filter_n", 10);
   setParam<double>("filter_p", 0.1);
 }
@@ -41,7 +41,7 @@ void SingleSignal::_checkParam(const string& name) const {
 
 SignalPtr SingleSignal::_clone() {
   auto p = make_shared<SingleSignal>();
-  p->m_ind = m_ind.clone();
+  p->ind_ = ind_.clone();
   return p;
 }
 
@@ -49,7 +49,7 @@ void SingleSignal::_calculate(const KData& kdata) {
   int filter_n = getParam<int>("filter_n");
   double filter_p = getParam<double>("filter_p");
 
-  Indicator ind = m_ind(kdata);
+  Indicator ind = ind_(kdata);
   Indicator dev = STDEV(DIFF(ind), filter_n);
 
   size_t start = dev.discard();

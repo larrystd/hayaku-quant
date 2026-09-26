@@ -313,7 +313,7 @@ typedef std::shared_ptr<AsyncDBConnectBase> AsyncDBConnectPtr;
 //-------------------------------------------------------------------------
 
 inline AsyncDBConnectBase::AsyncDBConnectBase(const Parameter &param)
-    : m_params(param) {}
+    : params_(param) {}
 
 inline net::awaitable<int> AsyncDBConnectBase::queryInt(
     const std::string &query, int default_val) {

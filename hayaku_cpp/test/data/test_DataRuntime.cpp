@@ -176,7 +176,7 @@ TEST_CASE("test_DataRuntime_TempCsvStock") {
   CHECK_EQ(stk.code(), "TEST");
   CHECK_EQ(stk.market_code(), "TMPTEST");
   CHECK_EQ(stk.getCount(KQuery::DAY), 100);
-  CHECK_EQ(stk.getCount(KQuery::MIN), 578);
+  CHECK_EQ(stk.getCount(KQuery::MIN), 24000);
 
   /** @arg Read KRecord[0] (the first record) of the temporarily added Stock */
   KRecord record;
@@ -217,7 +217,7 @@ TEST_CASE("test_DataRuntime_TempCsvStock") {
   CHECK_EQ(stk.code(), "TEST");
   CHECK_EQ(stk.market_code(), "TMPTEST");
   CHECK_EQ(stk.getCount(KQuery::DAY), 100);
-  CHECK_EQ(stk.getCount(KQuery::MIN), 578);
+  CHECK_EQ(stk.getCount(KQuery::MIN), 24000);
 
   /** @arg Read KRecord[10] of the temporarily added Stock obtained with
    * getStock */

@@ -161,9 +161,9 @@ void IEma::_checkParam(const string& name) const {
 
 void IEma::_calculate(const Indicator& indicator) {
   size_t total = indicator.size();
-  m_discard = indicator.discard();
-  if (total <= m_discard) {
-    m_discard = total;
+  discard_ = indicator.discard();
+  if (total <= discard_) {
+    discard_ = total;
     return;
   }
 
@@ -245,15 +245,15 @@ void IMa::_calculate(const Indicator& indicator) {
 
   int n = getParam<int>("n");
   if (n <= 0) {
-    m_discard = indicator.discard();
-    if (m_discard >= total) {
-      m_discard = total;
+    discard_ = indicator.discard();
+    if (discard_ >= total) {
+      discard_ = total;
       return;
     }
 
     price_t sum = 0.0;
     size_t valid_count = 0;
-    for (size_t i = m_discard; i < total; i++) {
+    for (size_t i = discard_; i < total; i++) {
       if (!std::isnan(src[i])) {
         sum += src[i];
         valid_count++;
@@ -263,15 +263,15 @@ void IMa::_calculate(const Indicator& indicator) {
     return;
   }
 
-  m_discard = indicator.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = indicator.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
   if (n == 1) {
-    memcpy(dst + m_discard, src + m_discard,
-           (total - m_discard) * sizeof(value_t));
+    memcpy(dst + discard_, src + discard_,
+           (total - discard_) * sizeof(value_t));
     return;
   }
 
@@ -310,7 +310,7 @@ void IMa::_calculate(const Indicator& indicator) {
     }
     // Write no output when the window is not full or there is no valid value
     // (the buffer is already NaN)
-    if (i >= m_discard && valid_count > 0) {
+    if (i >= discard_ && valid_count > 0) {
       dst[i] = mean;
     }
   }
@@ -436,14 +436,14 @@ void ISma::_checkParam(const string& name) const {
 
 void ISma::_calculate(const Indicator& ind) {
   size_t total = ind.size();
-  m_discard = ind.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _set(ind[m_discard], m_discard);
-  _increment_calculate(ind, m_discard);
+  _set(ind[discard_], discard_);
+  _increment_calculate(ind, discard_);
 }
 
 size_t ISma::min_increment_start() const { return 1; }
@@ -457,7 +457,7 @@ void ISma::_increment_calculate(const Indicator& data, size_t start_pos) {
   auto* dst = this->data();
 
   double p = n - m;
-  for (size_t i = m_discard + 1; i < total; i++) {
+  for (size_t i = discard_ + 1; i < total; i++) {
     dst[i] = (m * src[i] + p * dst[i - 1]) / n;
   }
 }
@@ -473,11 +473,11 @@ void ISma::_dyn_one_circle(const Indicator& ind, size_t curPos, int n,
 }
 
 void ISma::_dyn_calculate(const Indicator& ind) {
-  auto iter = m_ind_params.find("n");
-  Indicator n = iter != m_ind_params.end() ? Indicator(iter->second)
+  auto iter = ind_params_.find("n");
+  Indicator n = iter != ind_params_.end() ? Indicator(iter->second)
                                            : CVAL(ind, getParam<int>("n"));
-  iter = m_ind_params.find("m");
-  Indicator m = iter != m_ind_params.end() ? Indicator(iter->second)
+  iter = ind_params_.find("m");
+  Indicator m = iter != ind_params_.end() ? Indicator(iter->second)
                                            : CVAL(ind, getParam<int>("m"));
 
   HAYAKU_CHECK(n.size() == ind.size(), "ind_param(n).size()={}, ind.size()={}!",
@@ -485,10 +485,10 @@ void ISma::_dyn_calculate(const Indicator& ind) {
   HAYAKU_CHECK(m.size() == ind.size(), "ind_param(m).size()={}, ind.size()={}!",
                m.size(), ind.size());
 
-  m_discard = std::max(ind.discard(), n.discard());
-  m_discard = std::max(m_discard, m.discard());
+  discard_ = std::max(ind.discard(), n.discard());
+  discard_ = std::max(discard_, m.discard());
   size_t total = ind.size();
-  HAYAKU_IF_RETURN(0 == total || m_discard >= total, void());
+  HAYAKU_IF_RETURN(0 == total || discard_ >= total, void());
 
   global_parallel_for_index_void(
       ind.discard(), total,
@@ -555,9 +555,9 @@ void IWma::_calculate(const Indicator& ind) {
   HAYAKU_IF_RETURN(total == 0, void());
 
   int n = getParam<int>("n");
-  m_discard = ind.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -570,17 +570,17 @@ void IWma::_calculate(const Indicator& ind) {
   }
 
   value_t subsum = 0.0, sum = 0.0;
-  for (size_t i = ind.discard(), end = m_discard + 1, count = 1; i < end;
+  for (size_t i = ind.discard(), end = discard_ + 1, count = 1; i < end;
        i++, count++) {
     subsum += src[i];
     sum += src[i] * count;
   }
 
   value_t divider = n * (n + 1) / 2.0;
-  dst[m_discard] = sum / divider;
+  dst[discard_] = sum / divider;
 
   size_t trailingIdx = ind.discard();
-  for (size_t i = m_discard + 1; i < total; i++) {
+  for (size_t i = discard_ + 1; i < total; i++) {
     value_t tmp = src[i];
     sum -= subsum;
     subsum += tmp;

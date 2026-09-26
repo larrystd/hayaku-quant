@@ -39,17 +39,17 @@
 
 namespace hayaku {
 
-map<string, BaseInfoDriverPtr>* DataDriverFactory::m_baseInfoDrivers{nullptr};
-map<string, BlockInfoDriverPtr>* DataDriverFactory::m_blockDrivers{nullptr};
-map<string, KDataDriverPtr>* DataDriverFactory::m_kdataPrototypeDrivers{
+map<string, BaseInfoDriverPtr>* DataDriverFactory::base_info_drivers_{nullptr};
+map<string, BlockInfoDriverPtr>* DataDriverFactory::block_drivers_{nullptr};
+map<string, KDataDriverPtr>* DataDriverFactory::kdata_prototype_drivers_{
     nullptr};
 
-map<string, KDataDriverConnectPoolPtr>* DataDriverFactory::m_kdataDriverPools{
+map<string, KDataDriverConnectPoolPtr>* DataDriverFactory::kdata_driver_pools_{
     nullptr};
 
 void DataDriverFactory::init() {
-  m_baseInfoDrivers = new map<string, BaseInfoDriverPtr>();
-  m_blockDrivers = new map<string, BlockInfoDriverPtr>();
+  base_info_drivers_ = new map<string, BaseInfoDriverPtr>();
+  block_drivers_ = new map<string, BlockInfoDriverPtr>();
   DataDriverFactory::regBlockDriver(make_shared<QLBlockInfoDriver>());
 
 #if HAYAKU_ENABLE_SQLITE_KDATA || HAYAKU_ENABLE_HDF5_KDATA
@@ -62,8 +62,8 @@ void DataDriverFactory::init() {
   DataDriverFactory::regBlockDriver(make_shared<MySQLBlockInfoDriver>());
 #endif
 
-  m_kdataPrototypeDrivers = new map<string, KDataDriverPtr>();
-  m_kdataDriverPools = new map<string, KDataDriverConnectPoolPtr>();
+  kdata_prototype_drivers_ = new map<string, KDataDriverPtr>();
+  kdata_driver_pools_ = new map<string, KDataDriverConnectPoolPtr>();
 
   DataDriverFactory::regKDataDriver(make_shared<DoNothingKDataDriver>());
   DataDriverFactory::regKDataDriver(make_shared<KDataTempCsvDriver>());
@@ -86,28 +86,28 @@ void DataDriverFactory::init() {
 }
 
 void DataDriverFactory::release() {
-  if (m_baseInfoDrivers) {
-    m_baseInfoDrivers->clear();
-    delete m_baseInfoDrivers;
-    m_baseInfoDrivers = nullptr;
+  if (base_info_drivers_) {
+    base_info_drivers_->clear();
+    delete base_info_drivers_;
+    base_info_drivers_ = nullptr;
   }
 
-  if (m_blockDrivers) {
-    m_blockDrivers->clear();
-    delete m_blockDrivers;
-    m_blockDrivers = nullptr;
+  if (block_drivers_) {
+    block_drivers_->clear();
+    delete block_drivers_;
+    block_drivers_ = nullptr;
   }
 
-  if (m_kdataPrototypeDrivers) {
-    m_kdataPrototypeDrivers->clear();
-    delete m_kdataPrototypeDrivers;
-    m_kdataPrototypeDrivers = nullptr;
+  if (kdata_prototype_drivers_) {
+    kdata_prototype_drivers_->clear();
+    delete kdata_prototype_drivers_;
+    kdata_prototype_drivers_ = nullptr;
   }
 
-  if (m_kdataDriverPools) {
-    m_kdataDriverPools->clear();
-    delete m_kdataDriverPools;
-    m_kdataDriverPools = nullptr;
+  if (kdata_driver_pools_) {
+    kdata_driver_pools_->clear();
+    delete kdata_driver_pools_;
+    kdata_driver_pools_ = nullptr;
   }
 }
 
@@ -115,13 +115,13 @@ void DataDriverFactory::regBaseInfoDriver(const BaseInfoDriverPtr& driver) {
   HAYAKU_CHECK(driver, "driver is nullptr!");
   string new_type(driver->name());
   to_upper(new_type);
-  (*m_baseInfoDrivers)[new_type] = driver;
+  (*base_info_drivers_)[new_type] = driver;
 }
 
 void DataDriverFactory::removeBaseInfoDriver(const string& name) {
   string new_type(name);
   to_upper(new_type);
-  m_baseInfoDrivers->erase(new_type);
+  base_info_drivers_->erase(new_type);
 }
 
 BaseInfoDriverPtr DataDriverFactory ::getBaseInfoDriver(
@@ -129,9 +129,9 @@ BaseInfoDriverPtr DataDriverFactory ::getBaseInfoDriver(
   map<string, BaseInfoDriverPtr>::const_iterator iter;
   string type = params.get<string>("type");
   to_upper(type);
-  iter = m_baseInfoDrivers->find(type);
+  iter = base_info_drivers_->find(type);
   BaseInfoDriverPtr result;
-  if (iter != m_baseInfoDrivers->end()) {
+  if (iter != base_info_drivers_->end()) {
     result = iter->second;
     result->init(params);
   }
@@ -142,13 +142,13 @@ void DataDriverFactory::regBlockDriver(const BlockInfoDriverPtr& driver) {
   HAYAKU_CHECK(driver, "driver is nullptr!");
   string name(driver->name());
   to_upper(name);
-  (*m_blockDrivers)[name] = driver;
+  (*block_drivers_)[name] = driver;
 }
 
 void DataDriverFactory::removeBlockDriver(const string& name) {
   string new_name(name);
   to_upper(new_name);
-  m_blockDrivers->erase(new_name);
+  block_drivers_->erase(new_name);
 }
 
 BlockInfoDriverPtr DataDriverFactory::getBlockDriver(const Parameter& params) {
@@ -156,8 +156,8 @@ BlockInfoDriverPtr DataDriverFactory::getBlockDriver(const Parameter& params) {
   map<string, BlockInfoDriverPtr>::const_iterator iter;
   string name = params.get<string>("type");
   to_upper(name);
-  iter = m_blockDrivers->find(name);
-  if (iter != m_blockDrivers->end()) {
+  iter = block_drivers_->find(name);
+  if (iter != block_drivers_->end()) {
     result = iter->second;
     result->init(params);
   }
@@ -168,9 +168,9 @@ BlockInfoDriverPtr DataDriverFactory::getBlockDriver(const Parameter& params) {
 void DataDriverFactory::regKDataDriver(const KDataDriverPtr& driver) {
   string new_type(driver->name());
   to_upper(new_type);
-  HAYAKU_CHECK(m_kdataDriverPools->find(new_type) == m_kdataDriverPools->end(),
+  HAYAKU_CHECK(kdata_driver_pools_->find(new_type) == kdata_driver_pools_->end(),
                "Repeat regKDataDriver!");
-  (*m_kdataPrototypeDrivers)[new_type] = driver;
+  (*kdata_prototype_drivers_)[new_type] = driver;
   // The connection pool is not created here
   //(*m_kdataDriverPools)[new_type] = make_shared<KDataDriverPool>();
 }
@@ -178,10 +178,10 @@ void DataDriverFactory::regKDataDriver(const KDataDriverPtr& driver) {
 void DataDriverFactory::removeKDataDriver(const string& name) {
   string new_name(name);
   to_upper(new_name);
-  m_kdataPrototypeDrivers->erase(new_name);
-  auto iter = m_kdataDriverPools->find(new_name);
-  if (iter != m_kdataDriverPools->end()) {
-    m_kdataDriverPools->erase(iter);
+  kdata_prototype_drivers_->erase(new_name);
+  auto iter = kdata_driver_pools_->find(new_name);
+  if (iter != kdata_driver_pools_->end()) {
+    kdata_driver_pools_->erase(iter);
   }
 }
 
@@ -190,19 +190,19 @@ KDataDriverConnectPoolPtr DataDriverFactory::getKDataDriverPool(
   KDataDriverConnectPoolPtr result;
   string name = params.get<string>("type");
   to_upper(name);
-  auto iter = m_kdataDriverPools->find(name);
-  if (iter != m_kdataDriverPools->end()) {
+  auto iter = kdata_driver_pools_->find(name);
+  if (iter != kdata_driver_pools_->end()) {
     result = iter->second;
   } else {
-    auto prototype_iter = m_kdataPrototypeDrivers->find(name);
-    HAYAKU_CHECK(prototype_iter != m_kdataPrototypeDrivers->end(),
+    auto prototype_iter = kdata_prototype_drivers_->find(name);
+    HAYAKU_CHECK(prototype_iter != kdata_prototype_drivers_->end(),
                  "Unregistered driver: {}", name);
     HAYAKU_CHECK(prototype_iter->second->init(params), "Failed init driver: {}",
                  name);
-    (*m_kdataDriverPools)[name] = make_shared<KDataDriverConnectPool>(
+    (*kdata_driver_pools_)[name] = make_shared<KDataDriverConnectPool>(
         prototype_iter->second,
         std::min<size_t>(std::thread::hardware_concurrency() * 3, 100));
-    result = (*m_kdataDriverPools)[name];
+    result = (*kdata_driver_pools_)[name];
   }
   return result;
 }

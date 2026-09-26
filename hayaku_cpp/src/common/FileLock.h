@@ -104,26 +104,26 @@ class HAYAKU_UTILS_API FileLock {
   void unlock() noexcept;
 
   /** Whether the lock is currently held */
-  bool isLocked() const noexcept { return m_locked; }
+  bool isLocked() const noexcept { return locked_; }
 
   /** Get the lock file name */
-  const std::string& filename() const noexcept { return m_filename; }
+  const std::string& filename() const noexcept { return filename_; }
 
  private:
   bool lockFile() noexcept;
   void unlockFile() noexcept;
 
  private:
-  std::string m_filename;
-  bool m_locked{false};
+  std::string filename_;
+  bool locked_{false};
   std::unique_lock<std::mutex>
-      m_localLock;  // Guarantees the in-process mutual exclusion
+      local_lock_;  // Guarantees the in-process mutual exclusion
 
 #if HAYAKU_OS_WINDOWS
-  void* m_handle{nullptr};  // Only a valid handle is stored,
+  void* handle_{nullptr};  // Only a valid handle is stored,
                             // INVALID_HANDLE_VALUE is not recorded
 #else
-  int m_handle{-1};
+  int handle_{-1};
 #endif
 };
 

@@ -45,7 +45,7 @@ DBConnectPtr SQLiteBlockInfoDriver::getConnect() {
   string dbname = tryGetParam<string>("db", "");
   HAYAKU_CHECK(!dbname.empty(), "Can't get Sqlite3 filename!");
   HAYAKU_TRACE("SQLITE3: {}", dbname);
-  return std::make_shared<SQLiteConnect>(m_params);
+  return std::make_shared<SQLiteConnect>(params_);
 }
 
 void SQLiteBlockInfoDriver::load() {
@@ -57,13 +57,13 @@ void SQLiteBlockInfoDriver::load() {
       "index_code from block a left "
       "join BlockIndex b on a.category=b.category and a.name = b.name");
 
-  std::unique_lock<std::shared_mutex> lock(m_buffer_mutex);
+  std::unique_lock<std::shared_mutex> lock(buffer_mutex_);
   for (auto& record : records) {
-    auto category_iter = m_buffer.find(record.category);
-    if (category_iter == m_buffer.end()) {
-      m_buffer[record.category] = {};
+    auto category_iter = buffer_.find(record.category);
+    if (category_iter == buffer_.end()) {
+      buffer_[record.category] = {};
     }
-    auto& name_dict = m_buffer[record.category];
+    auto& name_dict = buffer_[record.category];
     auto name_iter = name_dict.find(record.name);
     if (name_iter == name_dict.end()) {
       name_dict[record.name] = {
@@ -75,9 +75,9 @@ void SQLiteBlockInfoDriver::load() {
 
 StringList SQLiteBlockInfoDriver::getAllCategory() {
   StringList ret;
-  std::shared_lock<std::shared_mutex> lock(m_buffer_mutex);
-  ret.reserve(m_buffer.size());
-  for (auto& category_iter : m_buffer) {
+  std::shared_lock<std::shared_mutex> lock(buffer_mutex_);
+  ret.reserve(buffer_.size());
+  for (auto& category_iter : buffer_) {
     ret.push_back(category_iter.first);
   }
   return ret;
@@ -86,9 +86,9 @@ StringList SQLiteBlockInfoDriver::getAllCategory() {
 Block SQLiteBlockInfoDriver::getBlock(const string& category,
                                       const string& name) {
   Block ret;
-  std::shared_lock<std::shared_mutex> lock(m_buffer_mutex);
-  auto category_iter = m_buffer.find(category);
-  HAYAKU_IF_RETURN(category_iter == m_buffer.end(), ret);
+  std::shared_lock<std::shared_mutex> lock(buffer_mutex_);
+  auto category_iter = buffer_.find(category);
+  HAYAKU_IF_RETURN(category_iter == buffer_.end(), ret);
 
   auto block_iter = category_iter->second.find(name);
   HAYAKU_IF_RETURN(block_iter == category_iter->second.end(), ret);
@@ -99,9 +99,9 @@ Block SQLiteBlockInfoDriver::getBlock(const string& category,
 
 BlockList SQLiteBlockInfoDriver::getBlockList(const string& category) {
   BlockList ret;
-  std::shared_lock<std::shared_mutex> lock(m_buffer_mutex);
-  auto category_iter = m_buffer.find(category);
-  HAYAKU_IF_RETURN(category_iter == m_buffer.end(), ret);
+  std::shared_lock<std::shared_mutex> lock(buffer_mutex_);
+  auto category_iter = buffer_.find(category);
+  HAYAKU_IF_RETURN(category_iter == buffer_.end(), ret);
 
   const auto& category_blocks = category_iter->second;
   for (auto iter = category_blocks.begin(); iter != category_blocks.end();
@@ -114,8 +114,8 @@ BlockList SQLiteBlockInfoDriver::getBlockList(const string& category) {
 
 BlockList SQLiteBlockInfoDriver::getBlockList() {
   BlockList ret;
-  std::shared_lock<std::shared_mutex> lock(m_buffer_mutex);
-  for (auto category_iter = m_buffer.begin(); category_iter != m_buffer.end();
+  std::shared_lock<std::shared_mutex> lock(buffer_mutex_);
+  for (auto category_iter = buffer_.begin(); category_iter != buffer_.end();
        ++category_iter) {
     const auto& category_blocks = category_iter->second;
     for (auto iter = category_blocks.begin(); iter != category_blocks.end();
@@ -127,10 +127,10 @@ BlockList SQLiteBlockInfoDriver::getBlockList() {
 }
 
 void SQLiteBlockInfoDriver::save(const Block& block) {
-  std::unique_lock<std::shared_mutex> lock(m_buffer_mutex);
-  auto category_iter = m_buffer.find(block.category());
-  if (category_iter == m_buffer.end()) {
-    m_buffer.emplace(block.category(),
+  std::unique_lock<std::shared_mutex> lock(buffer_mutex_);
+  auto category_iter = buffer_.find(block.category());
+  if (category_iter == buffer_.end()) {
+    buffer_.emplace(block.category(),
                      unordered_map<string, Block>{{block.name(), block}});
   } else {
     category_iter->second.emplace(block.name(), block);
@@ -169,15 +169,15 @@ void SQLiteBlockInfoDriver::remove(const string& category, const string& name) {
     connect->remove(SQLiteBlockIndexTable::getTableName(), condition, false);
   }
 
-  std::unique_lock<std::shared_mutex> lock(m_buffer_mutex);
-  auto category_iter = m_buffer.find(category);
-  HAYAKU_IF_RETURN(category_iter == m_buffer.end(), void());
+  std::unique_lock<std::shared_mutex> lock(buffer_mutex_);
+  auto category_iter = buffer_.find(category);
+  HAYAKU_IF_RETURN(category_iter == buffer_.end(), void());
 
   auto block_iter = category_iter->second.find(name);
   HAYAKU_IF_RETURN(block_iter == category_iter->second.end(), void());
 
   category_iter->second.erase(block_iter);
-  m_buffer.erase(category_iter);
+  buffer_.erase(category_iter);
 }
 
 }  // namespace hayaku

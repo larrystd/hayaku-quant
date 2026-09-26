@@ -44,12 +44,12 @@ SQLiteKDataDriver::SQLiteKDataDriver() : KDataDriver("sqlite3") {}
 SQLiteKDataDriver::~SQLiteKDataDriver() {}
 
 bool SQLiteKDataDriver::_init() {
-  HAYAKU_CHECK(m_sqlite_connection_map.empty(), "Maybe repeat initialization!");
+  HAYAKU_CHECK(sqlite_connection_map_.empty(), "Maybe repeat initialization!");
   // read param from config
-  StringList keys = m_params.getNameList();
+  StringList keys = params_.getNameList();
   string db_filename;
-  m_ifConvert = tryGetParam<bool>("convert", false);
-  HAYAKU_DEBUG("SQLiteKDataDriver: m_ifConvert set to {}", m_ifConvert);
+  if_convert_ = tryGetParam<bool>("convert", false);
+  HAYAKU_DEBUG("SQLiteKDataDriver: m_ifConvert set to {}", if_convert_);
 
   for (auto iter = keys.begin(); iter != keys.end(); ++iter) {
     size_t pos = iter->find("_");
@@ -67,23 +67,23 @@ bool SQLiteKDataDriver::_init() {
       SQLiteConnectPtr conn(new SQLiteConnect(connect_param));
 
       if (ktype == KQuery::getKTypeName(KQuery::DAY)) {
-        m_sqlite_connection_map[exchange + "_DAY"] = conn;
-        if (m_ifConvert) {
-          m_sqlite_connection_map[exchange + "_WEEK"] = conn;
-          m_sqlite_connection_map[exchange + "_MONTH"] = conn;
-          m_sqlite_connection_map[exchange + "_QUARTER"] = conn;
-          m_sqlite_connection_map[exchange + "_HALFYEAR"] = conn;
-          m_sqlite_connection_map[exchange + "_YEAR"] = conn;
+        sqlite_connection_map_[exchange + "_DAY"] = conn;
+        if (if_convert_) {
+          sqlite_connection_map_[exchange + "_WEEK"] = conn;
+          sqlite_connection_map_[exchange + "_MONTH"] = conn;
+          sqlite_connection_map_[exchange + "_QUARTER"] = conn;
+          sqlite_connection_map_[exchange + "_HALFYEAR"] = conn;
+          sqlite_connection_map_[exchange + "_YEAR"] = conn;
         }
       } else if (ktype == KQuery::getKTypeName(KQuery::MIN)) {
-        m_sqlite_connection_map[exchange + "_MIN"] = conn;
+        sqlite_connection_map_[exchange + "_MIN"] = conn;
       } else if (ktype == KQuery::getKTypeName(KQuery::MIN5)) {
-        m_sqlite_connection_map[exchange + "_MIN5"] = conn;
-        if (m_ifConvert) {
-          m_sqlite_connection_map[exchange + "_MIN15"] = conn;
-          m_sqlite_connection_map[exchange + "_MIN30"] = conn;
-          m_sqlite_connection_map[exchange + "_MIN60"] = conn;
-          m_sqlite_connection_map[exchange + "_HOUR2"] = conn;
+        sqlite_connection_map_[exchange + "_MIN5"] = conn;
+        if (if_convert_) {
+          sqlite_connection_map_[exchange + "_MIN15"] = conn;
+          sqlite_connection_map_[exchange + "_MIN30"] = conn;
+          sqlite_connection_map_[exchange + "_MIN60"] = conn;
+          sqlite_connection_map_[exchange + "_HOUR2"] = conn;
         }
       }
     } catch (...) {
@@ -127,7 +127,7 @@ KRecordList SQLiteKDataDriver::getKRecordList(const string& market,
                              query.endDatetime());
   }
   if (isBaseKType(ktype)) return result;
-  HAYAKU_ERROR_IF_RETURN(!m_ifConvert, KRecordList(),
+  HAYAKU_ERROR_IF_RETURN(!if_convert_, KRecordList(),
                          "KData: unsupported ktype {}", ktype);
   KQuery::KType base_ktype = getBaseKType(ktype);
   return convertToNewInterval(result, base_ktype, ktype);
@@ -140,7 +140,7 @@ KRecordList SQLiteKDataDriver::_getKRecordList(const string& market,
   KRecordList result;
   HAYAKU_IF_RETURN(start_ix >= end_ix, result);
   string key(format("{}_{}", market, kType));
-  SQLiteConnectPtr connection = m_sqlite_connection_map[key];
+  SQLiteConnectPtr connection = sqlite_connection_map_[key];
   HAYAKU_IF_RETURN(!connection, result);
 
   try {
@@ -182,7 +182,7 @@ KRecordList SQLiteKDataDriver::_getKRecordList(const string& market,
   HAYAKU_IF_RETURN(start_date >= end_date, result);
 
   string key(format("{}_{}", market, kType));
-  SQLiteConnectPtr connection = m_sqlite_connection_map[key];
+  SQLiteConnectPtr connection = sqlite_connection_map_[key];
   HAYAKU_IF_RETURN(!connection, result);
 
   try {
@@ -218,7 +218,7 @@ KRecordList SQLiteKDataDriver::_getKRecordList(const string& market,
 size_t SQLiteKDataDriver::getCount(const string& market, const string& code,
                                    const KQuery::KType& kType) {
   string key(format("{}_{}", market, kType));
-  SQLiteConnectPtr connection = m_sqlite_connection_map[key];
+  SQLiteConnectPtr connection = sqlite_connection_map_[key];
   HAYAKU_IF_RETURN(!connection, 0);
 
   size_t result = 0;
@@ -227,7 +227,7 @@ size_t SQLiteKDataDriver::getCount(const string& market, const string& code,
                                 0);
 
   if (isBaseKType(kType)) return result;
-  HAYAKU_ERROR_IF_RETURN(!m_ifConvert, 0, "KData: unsupported ktype {}", kType);
+  HAYAKU_ERROR_IF_RETURN(!if_convert_, 0, "KData: unsupported ktype {}", kType);
   auto old_intervals_per_new_candle =
       KQuery::getKTypeInMin(kType) / KQuery::getKTypeInMin(getBaseKType(kType));
   return result / old_intervals_per_new_candle;
@@ -246,7 +246,7 @@ bool SQLiteKDataDriver::getIndexRangeByDate(const string& market,
                        query.startDatetime() > (Datetime::max)(),
                    false);
   string key(format("{}_{}", market, query.kType()));
-  SQLiteConnectPtr connection = m_sqlite_connection_map[key];
+  SQLiteConnectPtr connection = sqlite_connection_map_[key];
   HAYAKU_IF_RETURN(!connection, false);
 
   string tablename = _getTableName(market, code, query.kType());

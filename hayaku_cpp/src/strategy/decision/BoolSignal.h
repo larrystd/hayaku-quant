@@ -22,8 +22,8 @@ class BoolSignal : public SignalBase {
   virtual void _calculate(const KData& kdata) override;
 
  private:
-  Indicator m_bool_buy;
-  Indicator m_bool_sell;
+  Indicator bool_buy_;
+  Indicator bool_sell_;
 
 //============================================
 // Serialization support
@@ -33,8 +33,8 @@ class BoolSignal : public SignalBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SignalBase);
-    ar& BOOST_SERIALIZATION_NVP(m_bool_buy);
-    ar& BOOST_SERIALIZATION_NVP(m_bool_sell);
+    ar& boost::serialization::make_nvp("m_bool_buy", bool_buy_);
+    ar& boost::serialization::make_nvp("m_bool_sell", bool_sell_);
   }
 #endif
 };

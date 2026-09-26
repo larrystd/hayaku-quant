@@ -37,11 +37,11 @@ class TimerManager {
    * timer tasks
    */
   explicit TimerManager(size_t work_num = 1)
-      : m_stop(true),
-        m_current_timer_id(-1),
-        m_work_num(work_num),
-        m_tg(nullptr),
-        m_use_extend_tg(false) {
+      : stop_(true),
+        current_timer_id_(-1),
+        work_num_(work_num),
+        tg_(nullptr),
+        use_extend_tg_(false) {
     HAYAKU_ASSERT(work_num >= 1);
     start();
   }
@@ -54,19 +54,19 @@ class TimerManager {
    * @param tg the given task group thread pool
    */
   explicit TimerManager(ThreadPool* tg)
-      : m_stop(true),
-        m_current_timer_id(-1),
-        m_work_num(1),
-        m_tg(tg),
-        m_use_extend_tg(true) {
-    HAYAKU_ASSERT(m_tg);
+      : stop_(true),
+        current_timer_id_(-1),
+        work_num_(1),
+        tg_(tg),
+        use_extend_tg_(true) {
+    HAYAKU_ASSERT(tg_);
     start();
   }
 
   /** Destructor */
   ~TimerManager() {
     stop();
-    for (auto iter = m_timers.begin(); iter != m_timers.end(); ++iter) {
+    for (auto iter = timers_.begin(); iter != timers_.end(); ++iter) {
       delete iter->second;
     }
   }
@@ -74,17 +74,17 @@ class TimerManager {
   /** Start the scheduling, it can be restarted after a stop */
   void start() {
     // It is already in the executing state, return directly
-    HAYAKU_IF_RETURN(!m_stop, void());
+    HAYAKU_IF_RETURN(!stop_, void());
 
     // Set the executing state
-    m_stop = false;
+    stop_ = false;
 
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(mutex_);
 
     std::priority_queue<IntervalS> new_queue;
-    m_queue.swap(new_queue);
-    if (!m_tg) {
-      m_tg = new ThreadPool(m_work_num);
+    queue_.swap(new_queue);
+    if (!tg_) {
+      tg_ = new ThreadPool(work_num_);
     }
 
     /*
@@ -93,60 +93,60 @@ class TimerManager {
      */
 
     std::forward_list<int> invalid_timers;  // Records the invalid timers
-    for (auto iter = m_timers.begin(); iter != m_timers.end(); ++iter) {
+    for (auto iter = timers_.begin(); iter != timers_.end(); ++iter) {
       int time_id = iter->first;
       const Timer* timer = iter->second;
       Datetime now = Datetime::now();
 
       // Record the invalid timer id
-      if (timer->m_repeat_num <= 0 ||
-          (timer->m_end_date != Datetime::max() &&
-           timer->m_end_date + timer->m_end_time < now)) {
+      if (timer->repeat_num_ <= 0 ||
+          (timer->end_date_ != Datetime::max() &&
+           timer->end_date_ + timer->end_time_ < now)) {
         invalid_timers.push_front(time_id);
         continue;
       }
 
       IntervalS s;
-      s.m_timer_id = time_id;
-      if (timer->m_start_time < TimeDelta()) {
-        Datetime first_start_time = timer->m_start_date + timer->m_end_time;
+      s.timer_id_ = time_id;
+      if (timer->start_time_ < TimeDelta()) {
+        Datetime first_start_time = timer->start_date_ + timer->end_time_;
         if (first_start_time >= now) {
-          s.m_time_point = first_start_time;
+          s.time_point_ = first_start_time;
         } else {
-          if (timer->m_repeat_num <= 1) {
+          if (timer->repeat_num_ <= 1) {
             invalid_timers.push_front(time_id);
             continue;
           }
-          s.m_time_point = now.startOfDay() + timer->m_end_time;
-          if (s.m_time_point < now) {
-            s.m_time_point = s.m_time_point + TimeDelta(1);
+          s.time_point_ = now.startOfDay() + timer->end_time_;
+          if (s.time_point_ < now) {
+            s.time_point_ = s.time_point_ + TimeDelta(1);
           }
         }
 
       } else {
-        s.m_time_point =
-            timer->m_start_date >= now.startOfDay()
-                ? timer->m_start_date + timer->m_start_time + timer->m_duration
-                : now + timer->m_duration;
-        if (timer->m_start_time != timer->m_end_time) {
-          Datetime point_date = s.m_time_point.startOfDay();
-          TimeDelta point = s.m_time_point - point_date;
-          if (point < timer->m_start_time) {
-            s.m_time_point = point_date + timer->m_start_time;
-          } else if (point > timer->m_end_time) {
-            s.m_time_point = point_date + timer->m_start_time + TimeDelta(1);
+        s.time_point_ =
+            timer->start_date_ >= now.startOfDay()
+                ? timer->start_date_ + timer->start_time_ + timer->duration_
+                : now + timer->duration_;
+        if (timer->start_time_ != timer->end_time_) {
+          Datetime point_date = s.time_point_.startOfDay();
+          TimeDelta point = s.time_point_ - point_date;
+          if (point < timer->start_time_) {
+            s.time_point_ = point_date + timer->start_time_;
+          } else if (point > timer->end_time_) {
+            s.time_point_ = point_date + timer->start_time_ + TimeDelta(1);
           } else {
-            TimeDelta gap = point - timer->m_start_time;
-            if (gap % timer->m_duration != TimeDelta()) {
-              int x = int(gap / timer->m_duration) + 1;
-              s.m_time_point = point_date + timer->m_start_time +
-                               timer->m_duration * double(x);
+            TimeDelta gap = point - timer->start_time_;
+            if (gap % timer->duration_ != TimeDelta()) {
+              int x = int(gap / timer->duration_) + 1;
+              s.time_point_ = point_date + timer->start_time_ +
+                               timer->duration_ * double(x);
             }
           }
         }
       }
 
-      m_queue.push(s);
+      queue_.push(s);
     }
 
     // Clear the invalid timers
@@ -155,44 +155,44 @@ class TimerManager {
     }
 
     lock.unlock();
-    m_cond.notify_all();
+    cond_.notify_all();
 
-    m_detect_thread = std::thread([this]() { detectThread(); });
+    detect_thread_ = std::thread([this]() { detectThread(); });
   }
 
   /** Terminate the scheduling */
   void stop() {
-    if (!m_stop) {
-      std::unique_lock<std::mutex> lock(m_mutex);
+    if (!stop_) {
+      std::unique_lock<std::mutex> lock(mutex_);
       std::priority_queue<IntervalS> queue;
-      m_queue.swap(queue);
-      m_stop = true;
+      queue_.swap(queue);
+      stop_ = true;
       lock.unlock();
-      m_cond.notify_all();
+      cond_.notify_all();
     }
 
-    if (m_detect_thread.joinable()) {
-      m_detect_thread.join();
+    if (detect_thread_.joinable()) {
+      detect_thread_.join();
     }
 
-    if (!m_use_extend_tg && m_tg) {
-      m_tg->stop();
-      delete m_tg;
-      m_tg = nullptr;
+    if (!use_extend_tg_ && tg_) {
+      tg_->stop();
+      delete tg_;
+      tg_ = nullptr;
     }
   }
 
   /** Get the current number of the timer tasks */
   size_t size() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_timers.size();
+    std::lock_guard<std::mutex> lock(mutex_);
+    return timers_.size();
   }
 
   /** Whether it is currently empty */
   bool empty() { return size() == 0; }
 
   /** Return the current stop state */
-  bool stopped() const { return m_stop; }
+  bool stopped() const { return stop_; }
 
   /**
    * Add a scheduled task; an exception is thrown when the addition fails
@@ -350,154 +350,154 @@ class TimerManager {
    * @param timerid timer id
    */
   void removeTimer(int timerid) {
-    std::unique_lock<std::mutex> lock(m_mutex);
-    auto iter = m_timers.find(timerid);
-    if (iter != m_timers.end()) {
-      iter->second->m_repeat_num = 0;
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto iter = timers_.find(timerid);
+    if (iter != timers_.end()) {
+      iter->second->repeat_num_ = 0;
     }
   }
 
  private:
   void _removeTimer(int id) {
-    delete m_timers[id];
-    m_timers.erase(id);
+    delete timers_[id];
+    timers_.erase(id);
   }
 
   void detectThread() {
-    while (!m_stop) {
+    while (!stop_) {
       Datetime now = Datetime::now();
-      std::unique_lock<std::mutex> lock(m_mutex);
-      if (m_queue.empty()) {
-        m_cond.wait(lock);
+      std::unique_lock<std::mutex> lock(mutex_);
+      if (queue_.empty()) {
+        cond_.wait(lock);
         continue;
       }
 
-      IntervalS s = m_queue.top();
-      if (s.m_time_point == Datetime::min()) {
+      IntervalS s = queue_.top();
+      if (s.time_point_ == Datetime::min()) {
         break;  // End the detection thread so that the dll can exit safely,
                 // because the atomic may be invalid when the dll exits
       }
 
-      TimeDelta diff = s.m_time_point - now;
+      TimeDelta diff = s.time_point_ - now;
       if (diff > TimeDelta()) {
-        m_cond.wait_for(
+        cond_.wait_for(
             lock, std::chrono::duration<int64_t, std::micro>(diff.ticks()));
         continue;
       }
 
-      m_queue.pop();
+      queue_.pop();
 
       // Get the current time again
       now = Datetime::now();
 
-      auto timer_iter = m_timers.find(s.m_timer_id);
-      if (timer_iter == m_timers.end()) {
+      auto timer_iter = timers_.find(s.timer_id_);
+      if (timer_iter == timers_.end()) {
         continue;
       }
 
       auto timer = timer_iter->second;
-      m_tg->submit(timer->m_func);
+      tg_->submit(timer->func_);
 
-      if (timer->m_repeat_num != std::numeric_limits<int>::max()) {
-        timer->m_repeat_num--;
+      if (timer->repeat_num_ != std::numeric_limits<int>::max()) {
+        timer->repeat_num_--;
       }
 
-      if (timer->m_repeat_num <= 0) {
-        _removeTimer(s.m_timer_id);
+      if (timer->repeat_num_ <= 0) {
+        _removeTimer(s.timer_id_);
         continue;
       }
 
       // Calculate the time point of the next execution
       Datetime today = now.startOfDay();
-      if (timer->m_start_time >= TimeDelta()) {
+      if (timer->start_time_ >= TimeDelta()) {
         // The timer not executed at the given moment
-        s.m_time_point = s.m_time_point + timer->m_duration;
-        if (s.m_time_point < now) {
+        s.time_point_ = s.time_point_ + timer->duration_;
+        if (s.time_point_ < now) {
           // The system time is adjusted forward
-          s.m_time_point = now;
+          s.time_point_ = now;
         }
 
         // If the executable time range of the day is limited and the next
         // execution moment exceeds the limit of the day
-        if (timer->m_start_time != timer->m_end_time &&
-            s.m_time_point > today + timer->m_end_time) {
-          s.m_time_point = today + timer->m_start_time + TimeDelta(1);
+        if (timer->start_time_ != timer->end_time_ &&
+            s.time_point_ > today + timer->end_time_) {
+          s.time_point_ = today + timer->start_time_ + TimeDelta(1);
         }
 
       } else {
         // The timer with the given daily running time
-        s.m_time_point = s.m_time_point +
-                         (today - s.m_time_point.startOfDay() + TimeDelta(1));
+        s.time_point_ = s.time_point_ +
+                         (today - s.time_point_.startOfDay() + TimeDelta(1));
       }
 
-      if (timer->m_end_date != Datetime::max() &&
-          s.m_time_point > timer->m_end_date + timer->m_end_time) {
-        _removeTimer(s.m_timer_id);
+      if (timer->end_date_ != Datetime::max() &&
+          s.time_point_ > timer->end_date_ + timer->end_time_) {
+        _removeTimer(s.timer_id_);
         continue;
       }
 
       // Push the next running time into the queue
-      m_queue.push(s);
+      queue_.push(s);
     }
   }
 
   // Allocate the timer_id
   int getNewTimerId() {
     int max_int = std::numeric_limits<int>::max();
-    HAYAKU_WARN_IF_RETURN(m_timers.size() >= size_t(max_int), -1,
+    HAYAKU_WARN_IF_RETURN(timers_.size() >= size_t(max_int), -1,
                           "Timer queue is full!");
 
-    if (m_current_timer_id >= max_int) {
-      m_current_timer_id = 0;
+    if (current_timer_id_ >= max_int) {
+      current_timer_id_ = 0;
     } else {
-      m_current_timer_id++;
+      current_timer_id_++;
     }
 
     while (true) {
-      if (m_timers.find(m_current_timer_id) != m_timers.end()) {
-        if (m_current_timer_id >= max_int) {
-          m_current_timer_id = 0;
+      if (timers_.find(current_timer_id_) != timers_.end()) {
+        if (current_timer_id_ >= max_int) {
+          current_timer_id_ = 0;
         } else {
-          m_current_timer_id++;
+          current_timer_id_++;
         }
       } else {
         break;
       }
     }
-    return m_current_timer_id;
+    return current_timer_id_;
   }
 
  private:
   class Timer {
    public:
-    void operator()() { m_func(); }
+    void operator()() { func_(); }
 
-    Datetime m_start_date =
+    Datetime start_date_ =
         Datetime::min().startOfDay();  // The start date allowed to be
                                        // executed (inclusive)
-    Datetime m_end_date =
+    Datetime end_date_ =
         Datetime::max().startOfDay();  // The end date allowed to be executed
                                        // (inclusive)
     /*
      * Note: if m_start_time < TimeDelta(0), m_end_time represents the given
      * daily running time, and m_duration
      */
-    TimeDelta m_start_time;  // The start time of the day allowed to be executed
+    TimeDelta start_time_;  // The start time of the day allowed to be executed
                              // (inclusive)
-    TimeDelta m_end_time;    // The end time of the day allowed to be executed
+    TimeDelta end_time_;    // The end time of the day allowed to be executed
                              // (inclusive)
-    TimeDelta m_duration;    // The delay or the interval
-    int m_repeat_num =
+    TimeDelta duration_;    // The delay or the interval
+    int repeat_num_ =
         1;  // The number of the repetitions, max means an infinite loop
-    std::function<void()> m_func;
+    std::function<void()> func_;
   };
 
   struct IntervalS {
-    Datetime m_time_point;  // The exact time point of the execution
-    int m_timer_id =
+    Datetime time_point_;  // The exact time point of the execution
+    int timer_id_ =
         -1;  // The corresponding Timer, a negative value is invalid
     bool operator<(const IntervalS& other) const {
-      return m_time_point > other.m_time_point;
+      return time_point_ > other.time_point_;
     }
   };
 
@@ -516,51 +516,51 @@ class TimerManager {
     }
 
     Timer* timer = new Timer;
-    timer->m_start_date = start_date;
-    timer->m_end_date = end_date;
-    timer->m_start_time = start_time;
-    timer->m_end_time = end_time;
-    timer->m_repeat_num = repeat_num;
-    timer->m_duration = duration;
-    timer->m_func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
+    timer->start_date_ = start_date;
+    timer->end_date_ = end_date;
+    timer->start_time_ = start_time;
+    timer->end_time_ = end_time;
+    timer->repeat_num_ = repeat_num;
+    timer->duration_ = duration;
+    timer->func_ = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
 
     IntervalS s;
     if (start_time < TimeDelta()) {
       Datetime first_start_time = start_date + end_time;
       if (first_start_time >= now) {
-        s.m_time_point = first_start_time;
+        s.time_point_ = first_start_time;
       } else {
         HAYAKU_CHECK(repeat_num > 1,
                      "The time has expired! expect time {}, but now is {}",
                      first_start_time, now);
-        s.m_time_point = today + end_time;
-        if (s.m_time_point < now) {
-          s.m_time_point = s.m_time_point + TimeDelta(1);
+        s.time_point_ = today + end_time;
+        if (s.time_point_ < now) {
+          s.time_point_ = s.time_point_ + TimeDelta(1);
         }
       }
 
     } else {
-      s.m_time_point = start_date >= today ? start_date + start_time + duration
+      s.time_point_ = start_date >= today ? start_date + start_time + duration
                                            : now + duration;
-      if (timer->m_start_time != timer->m_end_time) {
-        Datetime point_date = s.m_time_point.startOfDay();
-        TimeDelta point = s.m_time_point - point_date;
-        if (point < timer->m_start_time) {
-          s.m_time_point = point_date + timer->m_start_time;
-        } else if (point > timer->m_end_time) {
-          s.m_time_point = point_date + timer->m_start_time + TimeDelta(1);
+      if (timer->start_time_ != timer->end_time_) {
+        Datetime point_date = s.time_point_.startOfDay();
+        TimeDelta point = s.time_point_ - point_date;
+        if (point < timer->start_time_) {
+          s.time_point_ = point_date + timer->start_time_;
+        } else if (point > timer->end_time_) {
+          s.time_point_ = point_date + timer->start_time_ + TimeDelta(1);
         } else {
-          TimeDelta gap = point - timer->m_start_time;
-          if (gap % timer->m_duration != TimeDelta()) {
-            int x = int(gap / timer->m_duration) + 1;
-            s.m_time_point = point_date + timer->m_start_time +
-                             timer->m_duration * double(x);
+          TimeDelta gap = point - timer->start_time_;
+          if (gap % timer->duration_ != TimeDelta()) {
+            int x = int(gap / timer->duration_) + 1;
+            s.time_point_ = point_date + timer->start_time_ +
+                             timer->duration_ * double(x);
           }
         }
       }
     }
 
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(mutex_);
     int id = getNewTimerId();
     if (id < 0) {
       delete timer;
@@ -568,28 +568,28 @@ class TimerManager {
       HAYAKU_THROW("Failed to get new id, maybe too timers!");
     }
 
-    m_timers[id] = timer;
-    s.m_timer_id = id;
+    timers_[id] = timer;
+    s.timer_id_ = id;
     // HAYAKU_TRACE("s.m_time_point: {}", s.m_time_point.repr());
-    m_queue.push(s);
+    queue_.push(s);
     lock.unlock();
-    m_cond.notify_all();
+    cond_.notify_all();
     return id;
   }
 
  private:
-  std::priority_queue<IntervalS> m_queue;
-  std::atomic_bool m_stop;
-  std::mutex m_mutex;
-  std::condition_variable m_cond;
-  std::thread m_detect_thread;
+  std::priority_queue<IntervalS> queue_;
+  std::atomic_bool stop_;
+  std::mutex mutex_;
+  std::condition_variable cond_;
+  std::thread detect_thread_;
 
-  std::unordered_map<int, Timer*> m_timers;
-  int m_current_timer_id;
-  size_t m_work_num;  // The number of the threads in the task execution thread
+  std::unordered_map<int, Timer*> timers_;
+  int current_timer_id_;
+  size_t work_num_;  // The number of the threads in the task execution thread
                       // pool
-  ThreadPool* m_tg{nullptr};
-  bool m_use_extend_tg{false};
+  ThreadPool* tg_{nullptr};
+  bool use_extend_tg_{false};
 };
 
 }  // namespace hayaku

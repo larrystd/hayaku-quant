@@ -60,9 +60,9 @@ void IRoc::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   int n = getParam<int>("n");
 
-  m_discard = ind.discard() + n;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + n;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -70,21 +70,21 @@ void IRoc::_calculate(const Indicator& ind) {
   auto* dst = this->data();
 
   if (0 == n) {
-    price_t pre_price = src[m_discard];
+    price_t pre_price = src[discard_];
     if (pre_price != 0.0) {
-      dst[m_discard] = 0.0;
-      for (size_t i = m_discard + 1; i < total; i++) {
+      dst[discard_] = 0.0;
+      for (size_t i = discard_ + 1; i < total; i++) {
         dst[i] = (src[i] / pre_price - 1.0) * 100.0;
       }
     } else {
-      for (size_t i = m_discard; i < total; i++) {
+      for (size_t i = discard_; i < total; i++) {
         dst[i] = 0.0;
       }
     }
     return;
   }
 
-  for (size_t i = m_discard; i < total; i++) {
+  for (size_t i = discard_; i < total; i++) {
     price_t pre_price = src[i - n];
     dst[i] = pre_price != 0.0 ? ((src[i] / pre_price) - 1.0) * 100.0 : 0.0;
   }
@@ -190,9 +190,9 @@ void IRocp::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   int n = getParam<int>("n");
 
-  m_discard = ind.discard() + n;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + n;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -200,21 +200,21 @@ void IRocp::_calculate(const Indicator& ind) {
   auto* dst = this->data();
 
   if (0 == n) {
-    price_t pre_price = src[m_discard];
+    price_t pre_price = src[discard_];
     if (pre_price != 0.0) {
-      dst[m_discard] = 0.0;
-      for (size_t i = m_discard + 1; i < total; i++) {
+      dst[discard_] = 0.0;
+      for (size_t i = discard_ + 1; i < total; i++) {
         dst[i] = (src[i] - pre_price) / pre_price;
       }
     } else {
-      for (size_t i = m_discard; i < total; i++) {
+      for (size_t i = discard_; i < total; i++) {
         dst[i] = 0.0;
       }
     }
     return;
   }
 
-  for (size_t i = m_discard; i < total; i++) {
+  for (size_t i = discard_; i < total; i++) {
     price_t pre_price = src[i - n];
     dst[i] = (pre_price != 0.0) ? (src[i] - pre_price) / pre_price : 0.0;
   }
@@ -321,9 +321,9 @@ void IRocr::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   int n = getParam<int>("n");
 
-  m_discard = ind.discard() + n;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + n;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -331,21 +331,21 @@ void IRocr::_calculate(const Indicator& ind) {
   auto* dst = this->data();
 
   if (0 == n) {
-    price_t pre_price = src[m_discard];
+    price_t pre_price = src[discard_];
     if (pre_price != 0.0) {
-      dst[m_discard] = 1.0;
-      for (size_t i = m_discard + 1; i < total; i++) {
+      dst[discard_] = 1.0;
+      for (size_t i = discard_ + 1; i < total; i++) {
         dst[i] = src[i] / pre_price;
       }
     } else {
-      for (size_t i = m_discard; i < total; i++) {
+      for (size_t i = discard_; i < total; i++) {
         dst[i] = 0.0;
       }
     }
     return;
   }
 
-  for (size_t i = m_discard; i < total; i++) {
+  for (size_t i = discard_; i < total; i++) {
     price_t pre_price = src[i - n];
     dst[i] = (pre_price != 0.0) ? src[i] / pre_price : 0.0;
   }
@@ -451,9 +451,9 @@ void IRocr100::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   int n = getParam<int>("n");
 
-  m_discard = ind.discard() + n;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + n;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -461,21 +461,21 @@ void IRocr100::_calculate(const Indicator& ind) {
   auto* dst = this->data();
 
   if (0 == n) {
-    price_t pre_price = src[m_discard];
+    price_t pre_price = src[discard_];
     if (pre_price != 0.0) {
-      dst[m_discard] = 100.0;
-      for (size_t i = m_discard + 1; i < total; i++) {
+      dst[discard_] = 100.0;
+      for (size_t i = discard_ + 1; i < total; i++) {
         dst[i] = src[i] / pre_price * 100.0;
       }
     } else {
-      for (size_t i = m_discard; i < total; i++) {
+      for (size_t i = discard_; i < total; i++) {
         dst[i] = 0.0;
       }
     }
     return;
   }
 
-  for (size_t i = m_discard; i < total; i++) {
+  for (size_t i = discard_; i < total; i++) {
     price_t pre_price = src[i - n];
     dst[i] = (pre_price != 0.0) ? (src[i] / pre_price) * 100.0 : 0.0;
   }
@@ -609,7 +609,7 @@ BOOST_CLASS_EXPORT(hayaku::IVigor)
 namespace hayaku {
 
 IVigor::IVigor() : IndicatorImp("VIGOR", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<int>("n", 2);
 }
 
@@ -624,7 +624,7 @@ void IVigor::_checkParam(const string& name) const {
 void IVigor::_calculate(const Indicator& ind) {
   HAYAKU_WARN_IF(!isLeaf() && !ind.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& kdata = getContext();
   size_t total = kdata.size();
@@ -632,7 +632,7 @@ void IVigor::_calculate(const Indicator& ind) {
 
   int n = getParam<int>("n");
 
-  m_discard = 1;
+  discard_ = 1;
   if (0 == total) {
     return;
   }

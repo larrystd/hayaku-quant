@@ -99,66 +99,66 @@ std::string HAYAKU_UTILS_API normalizeLockKey(std::string_view filename) {
 }
 
 FileLock::FileLock(std::string filename)
-    : m_filename(std::move(filename)),
-      m_localLock(localMutex(normalizeLockKey(m_filename)), std::defer_lock) {}
+    : filename_(std::move(filename)),
+      local_lock_(localMutex(normalizeLockKey(filename_)), std::defer_lock) {}
 
 FileLock::~FileLock() { unlock(); }
 
 FileLock::FileLock(FileLock&& other) noexcept
-    : m_filename(std::move(other.m_filename)),
-      m_locked(other.m_locked),
-      m_localLock(std::move(other.m_localLock)),
-      m_handle(other.m_handle) {
-  other.m_locked = false;
+    : filename_(std::move(other.filename_)),
+      locked_(other.locked_),
+      local_lock_(std::move(other.local_lock_)),
+      handle_(other.handle_) {
+  other.locked_ = false;
 #if HAYAKU_OS_WINDOWS
-  other.m_handle = nullptr;
+  other.handle_ = nullptr;
 #else
-  other.m_handle = -1;
+  other.handle_ = -1;
 #endif
 }
 
 FileLock& FileLock::operator=(FileLock&& other) noexcept {
   if (this != &other) {
     unlock();
-    m_filename = std::move(other.m_filename);
-    m_locked = other.m_locked;
-    m_localLock = std::move(other.m_localLock);
-    m_handle = other.m_handle;
-    other.m_locked = false;
+    filename_ = std::move(other.filename_);
+    locked_ = other.locked_;
+    local_lock_ = std::move(other.local_lock_);
+    handle_ = other.handle_;
+    other.locked_ = false;
 #if HAYAKU_OS_WINDOWS
-    other.m_handle = nullptr;
+    other.handle_ = nullptr;
 #else
-    other.m_handle = -1;
+    other.handle_ = -1;
 #endif
   }
   return *this;
 }
 
 bool FileLock::tryLock() noexcept {
-  if (m_locked) {
+  if (locked_) {
     return true;
   }
 
   // After being moved, m_filename is empty and m_localLock has no associated
   // mutex, so no more locking is possible
-  if (m_filename.empty()) {
+  if (filename_.empty()) {
     return false;
   }
 
   // Take the in-process mutex first: a POSIX record lock cannot intercept a
   // repeated lock inside the same process
-  if (!m_localLock.owns_lock()) {
-    if (!m_localLock.try_lock()) {
+  if (!local_lock_.owns_lock()) {
+    if (!local_lock_.try_lock()) {
       return false;
     }
   }
 
   if (!lockFile()) {
-    m_localLock.unlock();
+    local_lock_.unlock();
     return false;
   }
 
-  m_locked = true;
+  locked_ = true;
   return true;
 }
 
@@ -176,26 +176,26 @@ bool FileLock::waitLock(int maxAttempts, int waitTimeMs) noexcept {
 }
 
 void FileLock::unlock() noexcept {
-  if (m_locked) {
+  if (locked_) {
     unlockFile();
-    m_locked = false;
+    locked_ = false;
   }
-  if (m_localLock.owns_lock()) {
-    m_localLock.unlock();
+  if (local_lock_.owns_lock()) {
+    local_lock_.unlock();
   }
 }
 
 #if HAYAKU_OS_WINDOWS
 
 bool FileLock::lockFile() noexcept {
-  createParentDir(m_filename);
+  createParentDir(filename_);
 
-  std::string path = HAYAKU_PATH(m_filename);
+  std::string path = HAYAKU_PATH(filename_);
   HANDLE handle = ::CreateFileA(path.c_str(), GENERIC_READ | GENERIC_WRITE,
                                 FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
                                 OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
   if (handle == INVALID_HANDLE_VALUE) {
-    HAYAKU_ERROR("Failed to open lock file: {} ({})", m_filename,
+    HAYAKU_ERROR("Failed to open lock file: {} ({})", filename_,
                  ::GetLastError());
     return false;
   }
@@ -207,41 +207,41 @@ bool FileLock::lockFile() noexcept {
                     0, MAXDWORD, MAXDWORD, &overlapped)) {
     DWORD err = ::GetLastError();
     if (err != ERROR_LOCK_VIOLATION) {
-      HAYAKU_ERROR("Failed to lock file: {} ({})", m_filename, err);
+      HAYAKU_ERROR("Failed to lock file: {} ({})", filename_, err);
     }
     ::CloseHandle(handle);
     return false;
   }
 
-  m_handle = handle;
+  handle_ = handle;
   return true;
 }
 
 void FileLock::unlockFile() noexcept {
-  if (m_handle == nullptr || m_handle == INVALID_HANDLE_VALUE) {
+  if (handle_ == nullptr || handle_ == INVALID_HANDLE_VALUE) {
     return;
   }
 
-  HANDLE handle = static_cast<HANDLE>(m_handle);
+  HANDLE handle = static_cast<HANDLE>(handle_);
   OVERLAPPED overlapped;
   std::memset(&overlapped, 0, sizeof(overlapped));
   if (!::UnlockFileEx(handle, 0, MAXDWORD, MAXDWORD, &overlapped)) {
-    HAYAKU_WARN("Failed to unlock file: {} ({})", m_filename, ::GetLastError());
+    HAYAKU_WARN("Failed to unlock file: {} ({})", filename_, ::GetLastError());
   }
   ::CloseHandle(handle);
-  m_handle = nullptr;
+  handle_ = nullptr;
 }
 
 #else
 
 bool FileLock::lockFile() noexcept {
-  createParentDir(m_filename);
+  createParentDir(filename_);
 
   // O_CREAT: the lock file is created automatically when it does not exist;
   // O_EXCL is not used and the existing content is not truncated
-  int fd = ::open(m_filename.c_str(), O_CREAT | O_RDWR, 0666);
+  int fd = ::open(filename_.c_str(), O_CREAT | O_RDWR, 0666);
   if (fd < 0) {
-    HAYAKU_ERROR("Failed to open lock file: {} ({})", m_filename,
+    HAYAKU_ERROR("Failed to open lock file: {} ({})", filename_,
                  std::strerror(errno));
     return false;
   }
@@ -262,19 +262,19 @@ bool FileLock::lockFile() noexcept {
     // EACCES/EAGAIN means it is held by another process, which is a normal
     // contention and not recorded as an error
     if (errno != EACCES && errno != EAGAIN) {
-      HAYAKU_ERROR("Failed to lock file: {} ({})", m_filename,
+      HAYAKU_ERROR("Failed to lock file: {} ({})", filename_,
                    std::strerror(errno));
     }
     ::close(fd);
     return false;
   }
 
-  m_handle = fd;
+  handle_ = fd;
   return true;
 }
 
 void FileLock::unlockFile() noexcept {
-  if (m_handle < 0) {
+  if (handle_ < 0) {
     return;
   }
 
@@ -284,12 +284,12 @@ void FileLock::unlockFile() noexcept {
   fl.l_whence = SEEK_SET;
   fl.l_start = 0;
   fl.l_len = 0;
-  if (::fcntl(m_handle, F_SETLK, &fl) == -1) {
-    HAYAKU_WARN("Failed to unlock file: {} ({})", m_filename,
+  if (::fcntl(handle_, F_SETLK, &fl) == -1) {
+    HAYAKU_WARN("Failed to unlock file: {} ({})", filename_,
                 std::strerror(errno));
   }
-  ::close(m_handle);
-  m_handle = -1;
+  ::close(handle_);
+  handle_ = -1;
 }
 
 #endif

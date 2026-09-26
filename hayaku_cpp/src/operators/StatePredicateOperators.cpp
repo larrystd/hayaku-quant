@@ -151,13 +151,13 @@ IIsInf::~IIsInf() {}
 
 void IIsInf::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IIsInf::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -192,13 +192,13 @@ IIsInfa::~IIsInfa() {}
 
 void IIsInfa::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IIsInfa::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -245,16 +245,16 @@ void IIsLastBar::_calculate(const Indicator& data) {
     return;
   }
 
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  size_t len = total - m_discard;
+  size_t len = total - discard_;
   HAYAKU_IF_RETURN(len == 0, void());
 
-  auto* dst = this->data() + m_discard;
+  auto* dst = this->data() + discard_;
   memset(dst, 0, sizeof(value_t) * len);
   dst[total - 1] = 1.;
 }
@@ -287,7 +287,7 @@ BOOST_CLASS_EXPORT(hayaku::IIsLimitDown)
 namespace hayaku {
 
 IIsLimitDown::IIsLimitDown() : IndicatorImp("ISLIMITDOWN", 1) {
-  m_need_context = true;
+  need_context_ = true;
 }
 
 IIsLimitDown::~IIsLimitDown() {}
@@ -301,7 +301,7 @@ void IIsLimitDown::_calculate(const Indicator& ind) {
   HAYAKU_IF_RETURN(total == 0, void());
 
   _readyBuffer(total, 1);
-  m_discard =
+  discard_ =
       1;  // No previous K-line, so the limit down cannot be judged; discard it
   _increment_calculate(ind, 0);
 }
@@ -365,7 +365,7 @@ BOOST_CLASS_EXPORT(hayaku::IIsLimitUp)
 namespace hayaku {
 
 IIsLimitUp::IIsLimitUp() : IndicatorImp("ISLIMITUP", 1) {
-  m_need_context = true;
+  need_context_ = true;
 }
 
 IIsLimitUp::~IIsLimitUp() {}
@@ -379,7 +379,7 @@ void IIsLimitUp::_calculate(const Indicator& ind) {
   HAYAKU_IF_RETURN(total == 0, void());
 
   _readyBuffer(total, 1);
-  m_discard =
+  discard_ =
       1;  // No previous K-line, so the limit up cannot be judged; discard it
   _increment_calculate(ind, 0);
 }
@@ -448,13 +448,13 @@ IIsNa::~IIsNa() {}
 
 void IIsNa::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = getParam<bool>("ignore_discard") ? 0 : data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = getParam<bool>("ignore_discard") ? 0 : data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IIsNa::_increment_calculate(const Indicator& data, size_t start_pos) {

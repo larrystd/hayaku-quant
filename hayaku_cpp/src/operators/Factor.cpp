@@ -9,6 +9,7 @@
 
 #include "FactorStore.h"
 #include "data/DataRuntime.h"
+#include "data/storage/DataDriverFactory.h"
 #include "operators/SeriesOperators.h"
 
 namespace hayaku {
@@ -33,12 +34,12 @@ string Factor::str() const {
   return os.str();
 }
 
-Factor::Factor() : m_data(make_shared<Factor::Data>()) {}
+Factor::Factor() : data_(make_shared<Factor::Data>()) {}
 
 Factor::Factor(const string& name, const KQuery::KType& ktype)
-    : m_data(make_shared<Data>(name, Indicator(), ktype, "", "", false,
-                               Datetime::min(), Block(),
-                               KQuery::RecoverType::NO_RECOVER)) {
+    : data_(make_shared<Data>(name, Indicator(), ktype, "", "", false,
+                              Datetime::min(), Block(),
+                              KQuery::RecoverType::NO_RECOVER)) {
   try {
     load_from_db();
   } catch (const std::exception& e) {
@@ -51,9 +52,9 @@ Factor::Factor(const string& name, const Indicator& formula,
                const string& details, bool need_save_value,
                const Datetime& start_date, const Block& block,
                KQuery::RecoverType recover_type)
-    : m_data(make_shared<Data>(name, formula, ktype, brief, details,
-                               need_save_value, start_date, block,
-                               recover_type)) {
+    : data_(make_shared<Data>(name, formula, ktype, brief, details,
+                              need_save_value, start_date, block,
+                              recover_type)) {
   // When the saved factor values are used the factor name must consist of
   // English letters, digits and _ and must not start with a digit
   if (need_save_value && !name.empty()) {
@@ -66,43 +67,43 @@ Factor::Factor(const string& name, const Indicator& formula,
 }
 
 void Factor::name(const string& name) {
-  if (m_data->need_save_value && !name.empty()) {
+  if (data_->need_save_value && !name.empty()) {
     HAYAKU_CHECK(
         isValidFactorName(name), "{}",
         htr("When saving factor values, factor names must consist of English "
             "letters, "
             "numbers and underscores, and cannot start with a number!"));
   }
-  m_data->name = utf8_to_upper(name);
-  m_data->formula.name(m_data->name);
+  data_->name = utf8_to_upper(name);
+  data_->formula.name(data_->name);
 }
 
 void Factor::needSaveValue(bool flag) {
-  if (flag && !m_data->name.empty()) {
+  if (flag && !data_->name.empty()) {
     // When the factor values are saved the factor name must consist of English
     // letters, digits and _ and must not start with a digit
     HAYAKU_CHECK(
-        isValidFactorName(m_data->name), "{}",
+        isValidFactorName(data_->name), "{}",
         htr("When saving factor values, factor names must consist of English "
             "letters, "
             "numbers and underscores, and cannot start with a number!"));
   }
-  m_data->need_save_value = flag;
+  data_->need_save_value = flag;
 }
 
-Factor::Factor(const Factor& other) noexcept : m_data(other.m_data) {}
+Factor::Factor(const Factor& other) noexcept : data_(other.data_) {}
 
-Factor::Factor(Factor&& other) noexcept : m_data(std::move(other.m_data)) {}
+Factor::Factor(Factor&& other) noexcept : data_(std::move(other.data_)) {}
 
 Factor& Factor::operator=(const Factor& other) noexcept {
   HAYAKU_IF_RETURN(this == &other, *this);
-  m_data = other.m_data;
+  data_ = other.data_;
   return *this;
 }
 
 Factor& Factor::operator=(Factor&& other) noexcept {
   HAYAKU_IF_RETURN(this == &other, *this);
-  m_data = std::move(other.m_data);
+  data_ = std::move(other.data_);
   return *this;
 }
 
@@ -136,6 +137,13 @@ IndicatorList Factor::getValues(const StockList& stocks, const KQuery& query,
     return ret;
   }
 
+  // Factor evaluation reads KData for each stock. A backend such as the
+  // default HDF5 build cannot safely service those reads on several threads.
+  auto driver = DataDriverFactory::getKDataDriverPool(
+      getDataRuntime().getKDataDriverParameter());
+  const size_t parallel_threshold =
+      driver->getPrototype()->canParallelLoad() ? 2 : stocks.size() + 1;
+
   if (align) {
     DatetimeList dates = align_dates.empty()
                              ? getDataRuntime().getTradingCalendar(query)
@@ -143,20 +151,24 @@ IndicatorList Factor::getValues(const StockList& stocks, const KQuery& query,
     HAYAKU_IF_RETURN(dates.empty(), ret);
     auto null_ind = PRICELIST(PriceList(dates.size(), Null<price_t>()), dates);
     ret = global_parallel_for_index(
-        0, stocks.size(), [&, tovalue, this](size_t i) {
+        0, stocks.size(),
+        [&, tovalue, this](size_t i) {
           Indicator cur_ind;
           auto k = stocks[i].getKData(query);
           HAYAKU_IF_RETURN(k.empty(), null_ind);
           return tovalue ? ALIGN(formula(), dates, fill_null)(k).getResult(0)
                          : ALIGN(formula(), dates, fill_null)(k);
-        });
+        },
+        parallel_threshold);
 
   } else {
     ret = global_parallel_for_index(
-        0, stocks.size(), [&, tovalue, this](size_t i) {
+        0, stocks.size(),
+        [&, tovalue, this](size_t i) {
           auto k = stocks[i].getKData(query);
           return tovalue ? formula()(k).getResult(0) : formula()(k);
-        });
+        },
+        parallel_threshold);
   }
   return ret;
 }
@@ -190,7 +202,7 @@ void Factor::remove_from_db() { removeFactor(name(), ktype()); }
 
 void Factor::load_from_db() {
   Factor tmp = getFactor(name(), ktype());
-  m_data = std::move(tmp.m_data);
+  data_ = std::move(tmp.data_);
 }
 
 }  // namespace hayaku

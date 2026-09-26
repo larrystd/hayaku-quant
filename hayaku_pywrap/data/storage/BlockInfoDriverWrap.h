@@ -18,11 +18,11 @@ namespace py = pybind11;
 class PyBlockInfoDriver : public BlockInfoDriver {
  public:
   PyBlockInfoDriver() : BlockInfoDriver("PyBlockInfoDriver") {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PyBlockInfoDriver(const string& name) : BlockInfoDriver(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   py::function get_py_override(const char* name) const {

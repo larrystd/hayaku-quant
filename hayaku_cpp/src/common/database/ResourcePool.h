@@ -71,26 +71,26 @@ class ResourcePool {
    */
   explicit ResourcePool(const Parameter &param, size_t maxPoolSize = 0,
                         size_t maxIdleNum = 100)
-      : m_maxPoolSize(maxPoolSize),
-        m_maxIdelSize(maxIdleNum),
-        m_count(0),
-        m_param(param) {}
+      : max_pool_size_(maxPoolSize),
+        max_idel_size_(maxIdleNum),
+        count_(0),
+        param_(param) {}
 
   /**
    * Destructor, it releases all the cached resources
    */
   virtual ~ResourcePool() {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(mutex_);
 
     // Unbind the closer of all the allocated resources from the pool
-    for (auto iter = m_closer_set.begin(); iter != m_closer_set.end(); ++iter) {
+    for (auto iter = closer_set_.begin(); iter != closer_set_.end(); ++iter) {
       (*iter)->unbind();
     }
 
     // Delete all the idle resources
-    while (!m_resourceList.empty()) {
-      ResourceType *p = m_resourceList.front();
-      m_resourceList.pop();
+    while (!resource_list_.empty()) {
+      ResourceType *p = resource_list_.front();
+      resource_list_.pop();
       if (p) {
         delete p;
       }
@@ -98,21 +98,21 @@ class ResourcePool {
   }
 
   /** Get the current maximum number of the resources allowed */
-  size_t maxPoolSize() const { return m_maxIdelSize; }
+  size_t maxPoolSize() const { return max_idel_size_; }
 
   /** Get the current maximum number of the idle resources allowed */
-  size_t maxIdleSize() const { return m_maxIdelSize; }
+  size_t maxIdleSize() const { return max_idel_size_; }
 
   /** Set the maximum number of the resources */
   void maxPoolSize(size_t num) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_maxPoolSize = num;
+    std::lock_guard<std::mutex> lock(mutex_);
+    max_pool_size_ = num;
   }
 
   /** Set the maximum number of the idle resources allowed */
   void maxIdleSize(size_t num) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_maxIdelSize = num;
+    std::lock_guard<std::mutex> lock(mutex_);
+    max_idel_size_ = num;
   }
 
   /** Resource instance pointer type */
@@ -125,15 +125,15 @@ class ResourcePool {
    * exception
    */
   ResourcePtr get() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(mutex_);
     ResourcePtr result;
     ResourceType *p = nullptr;
-    if (m_resourceList.empty()) {
-      if (m_maxPoolSize > 0 && m_count >= m_maxPoolSize) {
+    if (resource_list_.empty()) {
+      if (max_pool_size_ > 0 && count_ >= max_pool_size_) {
         return result;
       }
       try {
-        p = new ResourceType(m_param);
+        p = new ResourceType(param_);
       } catch (const std::exception &e) {
         HAYAKU_THROW_EXCEPTION(CreateResourceException,
                                "Failed create a new Resource! {}", e.what());
@@ -141,15 +141,15 @@ class ResourcePool {
         HAYAKU_THROW_EXCEPTION(CreateResourceException,
                                "Failed create a new Resource! Unknown error!");
       }
-      m_count++;
+      count_++;
       result = ResourcePtr(p, ResourceCloser(this));
-      m_closer_set.insert(std::get_deleter<ResourceCloser>(result));
+      closer_set_.insert(std::get_deleter<ResourceCloser>(result));
       return result;
     }
-    p = m_resourceList.front();
-    m_resourceList.pop();
+    p = resource_list_.front();
+    resource_list_.pop();
     result = ResourcePtr(p, ResourceCloser(this));
-    m_closer_set.insert(std::get_deleter<ResourceCloser>(result));
+    closer_set_.insert(std::get_deleter<ResourceCloser>(result));
     return result;
   }
 
@@ -159,18 +159,18 @@ class ResourcePool {
    * @exception GetResourceTimeoutException, CreateResourceException
    */
   ResourcePtr getWaitFor(uint64_t ms_timeout) {  // NOSONAR
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(mutex_);
     ResourcePtr result;
     ResourceType *p = nullptr;
-    if (m_resourceList.empty()) {
-      if (m_maxPoolSize > 0 && m_count >= m_maxPoolSize) {
+    if (resource_list_.empty()) {
+      if (max_pool_size_ > 0 && count_ >= max_pool_size_) {
         // HAYAKU_TRACE("The maximum number of the resources is exceeded,
         // waiting for an idle resource");
         if (ms_timeout > 0) {
-          if (m_cond.wait_for(
+          if (cond_.wait_for(
                   lock, std::chrono::duration<uint64_t, std::milli>(ms_timeout),
-                  [&] { return !m_resourceList.empty(); })) {
-            HAYAKU_CHECK_THROW(!m_resourceList.empty(),
+                  [&] { return !resource_list_.empty(); })) {
+            HAYAKU_CHECK_THROW(!resource_list_.empty(),
                                GetResourceTimeoutException,
                                "Failed get resource!");
           } else {
@@ -178,11 +178,11 @@ class ResourcePool {
                                    "Failed get resource!");
           }
         } else {
-          m_cond.wait(lock, [this] { return !m_resourceList.empty(); });
+          cond_.wait(lock, [this] { return !resource_list_.empty(); });
         }
       } else {
         try {
-          p = new ResourceType(m_param);
+          p = new ResourceType(param_);
         } catch (const std::exception &e) {
           HAYAKU_THROW_EXCEPTION(CreateResourceException,
                                  "Failed create a new Resource! {}", e.what());
@@ -191,16 +191,16 @@ class ResourcePool {
               CreateResourceException,
               "Failed create a new Resource! Unknown error!");
         }
-        m_count++;
+        count_++;
         result = ResourcePtr(p, ResourceCloser(this));
-        m_closer_set.insert(std::get_deleter<ResourceCloser>(result));
+        closer_set_.insert(std::get_deleter<ResourceCloser>(result));
         return result;
       }
     }
-    p = m_resourceList.front();
-    m_resourceList.pop();
+    p = resource_list_.front();
+    resource_list_.pop();
     result = ResourcePtr(p, ResourceCloser(this));
-    m_closer_set.insert(std::get_deleter<ResourceCloser>(result));
+    closer_set_.insert(std::get_deleter<ResourceCloser>(result));
     return result;
   }
 
@@ -214,23 +214,23 @@ class ResourcePool {
 
   /** The number of the currently active resources, i.e. all the resources
    * (including the idle and the used ones) */
-  size_t count() const { return m_count; }
+  size_t count() const { return count_; }
 
   /** The current number of the idle resources */
-  size_t idleCount() const { return m_resourceList.size(); }
+  size_t idleCount() const { return resource_list_.size(); }
 
   /** Release all the currently idle resources */
   void releaseIdleResource() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(mutex_);
     _releaseIdleResourceNoLock();
   }
 
  private:
   void _releaseIdleResourceNoLock() {
-    while (!m_resourceList.empty()) {
-      ResourceType *p = m_resourceList.front();
-      m_resourceList.pop();
-      m_count--;
+    while (!resource_list_.empty()) {
+      ResourceType *p = resource_list_.front();
+      resource_list_.pop();
+      count_--;
       if (p) {
         delete p;
       }
@@ -238,26 +238,26 @@ class ResourcePool {
   }
 
  private:
-  size_t m_maxPoolSize;  // The maximum number of the shared resources allowed
-  size_t m_maxIdelSize;  // The maximum number of the idle resources allowed
-  size_t m_count;        // The number of the currently active resources
-  Parameter m_param;
-  std::mutex m_mutex;
-  std::condition_variable m_cond;
-  std::queue<ResourceType *> m_resourceList;
+  size_t max_pool_size_;  // The maximum number of the shared resources allowed
+  size_t max_idel_size_;  // The maximum number of the idle resources allowed
+  size_t count_;        // The number of the currently active resources
+  Parameter param_;
+  std::mutex mutex_;
+  std::condition_variable cond_;
+  std::queue<ResourceType *> resource_list_;
 
   class ResourceCloser {
    public:
-    explicit ResourceCloser(ResourcePool *pool) : m_pool(pool) {  // NOSONAR
+    explicit ResourceCloser(ResourcePool *pool) : pool_(pool) {  // NOSONAR
     }
 
     void operator()(ResourceType *conn) {  // NOSONAR
       if (conn) {
         // If the pool is bound, the resource is returned; otherwise it is
         // deleted
-        if (m_pool) {
+        if (pool_) {
           // HAYAKU_DEBUG("retuan to pool");
-          m_pool->returnResource(conn, this);
+          pool_->returnResource(conn, this);
         } else {
           // HAYAKU_DEBUG("delete resource not in pool");
           delete conn;
@@ -266,34 +266,34 @@ class ResourcePool {
     }
 
     // Unbind the resource pool
-    void unbind() { m_pool = nullptr; }
+    void unbind() { pool_ = nullptr; }
 
    private:
-    ResourcePool *m_pool;
+    ResourcePool *pool_;
   };
 
   /** Return it to the resource pool */
   void returnResource(ResourceType *p, ResourceCloser *closer) {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(mutex_);
     if (p) {
-      if (m_resourceList.size() < m_maxIdelSize) {
-        m_resourceList.push(p);
-        m_cond.notify_all();
+      if (resource_list_.size() < max_idel_size_) {
+        resource_list_.push(p);
+        cond_.notify_all();
       } else {
         delete p;
-        m_count--;
+        count_--;
       }
     } else {
-      m_count--;
+      count_--;
       // HAYAKU_WARN("Trying to return an empty pointer!");
     }
     if (closer) {
-      m_closer_set.erase(closer);  // Remove this closer
+      closer_set_.erase(closer);  // Remove this closer
     }
   }
 
   std::unordered_set<ResourceCloser *>
-      m_closer_set;  // The closers occupying the resources
+      closer_set_;  // The closers occupying the resources
 };
 
 /**
@@ -334,27 +334,27 @@ class ResourceVersionPool {
    */
   explicit ResourceVersionPool(const Parameter &param, size_t maxPoolSize = 0,
                                size_t maxIdleNum = 100)
-      : m_maxPoolSize(maxPoolSize),
-        m_maxIdelSize(maxIdleNum),
-        m_count(0),
-        m_param(param),
-        m_version(0) {}
+      : max_pool_size_(maxPoolSize),
+        max_idel_size_(maxIdleNum),
+        count_(0),
+        param_(param),
+        version_(0) {}
 
   /**
    * Destructor, it releases all the cached resources
    */
   virtual ~ResourceVersionPool() {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(mutex_);
 
     // Unbind the closer of all the allocated resources from the pool
-    for (auto iter = m_closer_set.begin(); iter != m_closer_set.end(); ++iter) {
+    for (auto iter = closer_set_.begin(); iter != closer_set_.end(); ++iter) {
       (*iter)->unbind();
     }
 
     // Delete all the idle resources
-    while (!m_resourceList.empty()) {
-      ResourceType *p = m_resourceList.front();
-      m_resourceList.pop();
+    while (!resource_list_.empty()) {
+      ResourceType *p = resource_list_.front();
+      resource_list_.pop();
       if (p) {
         delete p;
       }
@@ -362,35 +362,35 @@ class ResourceVersionPool {
   }
 
   /** Get the current maximum number of the resources allowed */
-  size_t maxPoolSize() const { return m_maxIdelSize; }
+  size_t maxPoolSize() const { return max_idel_size_; }
 
   /** Get the current maximum number of the idle resources allowed */
-  size_t maxIdleSize() const { return m_maxIdelSize; }
+  size_t maxIdleSize() const { return max_idel_size_; }
 
   /** Set the maximum number of the resources */
   void maxPoolSize(size_t num) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_maxPoolSize = num;
+    std::lock_guard<std::mutex> lock(mutex_);
+    max_pool_size_ = num;
   }
 
   /** Set the maximum number of the idle resources allowed */
   void maxIdleSize(size_t num) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_maxIdelSize = num;
+    std::lock_guard<std::mutex> lock(mutex_);
+    max_idel_size_ = num;
   }
 
   /** Whether the given parameter exists */
   bool haveParam(const std::string &name) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_param.have(name);
+    std::lock_guard<std::mutex> lock(mutex_);
+    return param_.have(name);
   }
 
   /** Get the value of the given parameter; an exception is thrown when the
    * parameter does not exist or the type does not match */
   template <typename ValueType>
   ValueType getParam(const std::string &name) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_param.get<ValueType>(name);
+    std::lock_guard<std::mutex> lock(mutex_);
+    return param_.get<ValueType>(name);
   }
 
   /**
@@ -405,12 +405,12 @@ class ResourceVersionPool {
    */
   template <typename ValueType>
   void setParam(const std::string &name, const ValueType &value) {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(mutex_);
     // If the parameter has not actually changed, return directly
     HAYAKU_IF_RETURN(
-        m_param.have(name) && value == m_param.get<ValueType>(name), void());
-    m_param.set<ValueType>(name, value);
-    m_version++;
+        param_.have(name) && value == param_.get<ValueType>(name), void());
+    param_.set<ValueType>(name, value);
+    version_++;
     _releaseIdleResourceNoLock();  // Release the current idle resources so that
                                    // the new parameter values take effect
   }
@@ -421,9 +421,9 @@ class ResourceVersionPool {
    * @param param the parameter object
    */
   void setParameter(const Parameter &param) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_param = param;
-    m_version++;
+    std::lock_guard<std::mutex> lock(mutex_);
+    param_ = param;
+    version_++;
     _releaseIdleResourceNoLock();  // Release the current idle resources so that
                                    // the new parameter values take effect
   }
@@ -434,24 +434,24 @@ class ResourceVersionPool {
    * @param param the parameter object
    */
   void setParameter(Parameter &&param) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_param = std::move(param);
-    m_version++;
+    std::lock_guard<std::mutex> lock(mutex_);
+    param_ = std::move(param);
+    version_++;
     _releaseIdleResourceNoLock();  // Release the current idle resources so that
                                    // the new parameter values take effect
   }
 
   /** Get the current version of the resource pool */
   int getVersion() {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    return m_version;
+    std::lock_guard<std::mutex> lock(mutex_);
+    return version_;
   }
 
   /** Increase the current version of the resource pool, equivalent to notifying
    * the resource pool that the resource version has changed */
   void incVersion(int version) {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_version++;
+    std::lock_guard<std::mutex> lock(mutex_);
+    version_++;
   }
 
   /** Resource instance pointer type */
@@ -464,16 +464,16 @@ class ResourceVersionPool {
    * exception
    */
   ResourcePtr get() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(mutex_);
     ResourcePtr result;
     ResourceType *p = nullptr;
-    if (m_resourceList.empty()) {
-      if (m_maxPoolSize > 0 && m_count >= m_maxPoolSize) {
+    if (resource_list_.empty()) {
+      if (max_pool_size_ > 0 && count_ >= max_pool_size_) {
         return result;
       }
       try {
-        p = new ResourceType(m_param);
-        p->setVersion(m_version);
+        p = new ResourceType(param_);
+        p->setVersion(version_);
       } catch (const std::exception &e) {
         HAYAKU_THROW_EXCEPTION(CreateResourceException,
                                "Failed create a new Resource! {}", e.what());
@@ -481,15 +481,15 @@ class ResourceVersionPool {
         HAYAKU_THROW_EXCEPTION(CreateResourceException,
                                "Failed create a new Resource! Unknown error!");
       }
-      m_count++;
+      count_++;
       result = ResourcePtr(p, ResourceCloser(this));
-      m_closer_set.insert(std::get_deleter<ResourceCloser>(result));
+      closer_set_.insert(std::get_deleter<ResourceCloser>(result));
       return result;
     }
-    p = m_resourceList.front();
-    m_resourceList.pop();
+    p = resource_list_.front();
+    resource_list_.pop();
     result = ResourcePtr(p, ResourceCloser(this));
-    m_closer_set.insert(std::get_deleter<ResourceCloser>(result));
+    closer_set_.insert(std::get_deleter<ResourceCloser>(result));
     return result;
   }
 
@@ -499,18 +499,18 @@ class ResourceVersionPool {
    * @exception GetResourceTimeoutException, CreateResourceException
    */
   ResourcePtr getWaitFor(uint64_t ms_timeout) {  // NOSONAR
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(mutex_);
     ResourcePtr result;
     ResourceType *p = nullptr;
-    if (m_resourceList.empty()) {
-      if (m_maxPoolSize > 0 && m_count >= m_maxPoolSize) {
+    if (resource_list_.empty()) {
+      if (max_pool_size_ > 0 && count_ >= max_pool_size_) {
         // HAYAKU_TRACE("The maximum number of the resources is exceeded,
         // waiting for an idle resource");
         if (ms_timeout > 0) {
-          if (m_cond.wait_for(
+          if (cond_.wait_for(
                   lock, std::chrono::duration<uint64_t, std::milli>(ms_timeout),
-                  [&] { return !m_resourceList.empty(); })) {
-            HAYAKU_CHECK_THROW(!m_resourceList.empty(),
+                  [&] { return !resource_list_.empty(); })) {
+            HAYAKU_CHECK_THROW(!resource_list_.empty(),
                                GetResourceTimeoutException,
                                "Failed get resource!");
           } else {
@@ -518,12 +518,12 @@ class ResourceVersionPool {
                                    "Failed get resource!");
           }
         } else {
-          m_cond.wait(lock, [this] { return !m_resourceList.empty(); });
+          cond_.wait(lock, [this] { return !resource_list_.empty(); });
         }
       } else {
         try {
-          p = new ResourceType(m_param);
-          p->setVersion(m_version);
+          p = new ResourceType(param_);
+          p->setVersion(version_);
         } catch (const std::exception &e) {
           HAYAKU_THROW_EXCEPTION(CreateResourceException,
                                  "Failed create a new Resource! {}", e.what());
@@ -532,16 +532,16 @@ class ResourceVersionPool {
               CreateResourceException,
               "Failed create a new Resource! Unknown error!");
         }
-        m_count++;
+        count_++;
         result = ResourcePtr(p, ResourceCloser(this));
-        m_closer_set.insert(std::get_deleter<ResourceCloser>(result));
+        closer_set_.insert(std::get_deleter<ResourceCloser>(result));
         return result;
       }
     }
-    p = m_resourceList.front();
-    m_resourceList.pop();
+    p = resource_list_.front();
+    resource_list_.pop();
     result = ResourcePtr(p, ResourceCloser(this));
-    m_closer_set.insert(std::get_deleter<ResourceCloser>(result));
+    closer_set_.insert(std::get_deleter<ResourceCloser>(result));
     return result;
   }
 
@@ -555,23 +555,23 @@ class ResourceVersionPool {
 
   /** The number of the currently active resources, i.e. all the resources
    * (including the idle and the used ones) */
-  size_t count() const { return m_count; }
+  size_t count() const { return count_; }
 
   /** The current number of the idle resources */
-  size_t idleCount() const { return m_resourceList.size(); }
+  size_t idleCount() const { return resource_list_.size(); }
 
   /** Release all the currently idle resources */
   void releaseIdleResource() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(mutex_);
     _releaseIdleResourceNoLock();
   }
 
  private:
   void _releaseIdleResourceNoLock() {
-    while (!m_resourceList.empty()) {
-      ResourceType *p = m_resourceList.front();
-      m_resourceList.pop();
-      m_count--;
+    while (!resource_list_.empty()) {
+      ResourceType *p = resource_list_.front();
+      resource_list_.pop();
+      count_--;
       if (p) {
         delete p;
       }
@@ -579,28 +579,28 @@ class ResourceVersionPool {
   }
 
  private:
-  size_t m_maxPoolSize;  // The maximum number of the shared resources allowed
-  size_t m_maxIdelSize;  // The maximum number of the idle resources allowed
-  size_t m_count;        // The number of the currently active resources
-  Parameter m_param;
-  std::mutex m_mutex;
-  std::condition_variable m_cond;
-  std::queue<ResourceType *> m_resourceList;
-  int m_version;
+  size_t max_pool_size_;  // The maximum number of the shared resources allowed
+  size_t max_idel_size_;  // The maximum number of the idle resources allowed
+  size_t count_;        // The number of the currently active resources
+  Parameter param_;
+  std::mutex mutex_;
+  std::condition_variable cond_;
+  std::queue<ResourceType *> resource_list_;
+  int version_;
 
   class ResourceCloser {
    public:
     explicit ResourceCloser(ResourceVersionPool *pool)
-        : m_pool(pool) {  // NOSONAR
+        : pool_(pool) {  // NOSONAR
     }
 
     void operator()(ResourceType *conn) {  // NOSONAR
       if (conn) {
         // If the pool is bound, the resource is returned; otherwise it is
         // deleted
-        if (m_pool) {
+        if (pool_) {
           // HAYAKU_DEBUG("retuan to pool");
-          m_pool->returnResource(conn, this);
+          pool_->returnResource(conn, this);
         } else {
           // HAYAKU_DEBUG("delete resource not in pool");
           delete conn;
@@ -609,38 +609,38 @@ class ResourceVersionPool {
     }
 
     // Unbind the resource pool
-    void unbind() { m_pool = nullptr; }
+    void unbind() { pool_ = nullptr; }
 
    private:
-    ResourceVersionPool *m_pool;
+    ResourceVersionPool *pool_;
   };
 
   /** Return it to the resource pool */
   void returnResource(ResourceType *p, ResourceCloser *closer) {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(mutex_);
     if (p) {
       // When the version of the currently returned resource equals the resource
       // pool version and the idle resource list is less than the maximum number
       // of the idle resources, the returned resource is accepted
-      if (p->getVersion() == m_version &&
-          m_resourceList.size() < m_maxIdelSize) {
-        m_resourceList.push(p);
-        m_cond.notify_all();
+      if (p->getVersion() == version_ &&
+          resource_list_.size() < max_idel_size_) {
+        resource_list_.push(p);
+        cond_.notify_all();
       } else {
         delete p;
-        m_count--;
+        count_--;
       }
     } else {
-      m_count--;
+      count_--;
       // HAYAKU_WARN("Trying to return an empty pointer!");
     }
     if (closer) {
-      m_closer_set.erase(closer);  // Remove this closer
+      closer_set_.erase(closer);  // Remove this closer
     }
   }
 
   std::unordered_set<ResourceCloser *>
-      m_closer_set;  // The closers occupying the resources
+      closer_set_;  // The closers occupying the resources
 };
 
 }  // namespace hayaku

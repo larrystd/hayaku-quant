@@ -27,8 +27,8 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-BaseInfoDriver::BaseInfoDriver(const string& name) : m_name(name) {
-  to_upper(m_name);
+BaseInfoDriver::BaseInfoDriver(const string& name) : name_(name) {
+  to_upper(name_);
 }
 
 bool BaseInfoDriver::checkType() {
@@ -36,11 +36,11 @@ bool BaseInfoDriver::checkType() {
   try {
     string type = getParam<string>("type");
     to_upper(type);
-    if (type == m_name) {
+    if (type == name_) {
       result = true;
     } else {
       result = false;
-      HAYAKU_WARN("Type of driver mismatch! ({} != {})", type, m_name);
+      HAYAKU_WARN("Type of driver mismatch! ({} != {})", type, name_);
     }
 
   } catch (...) {
@@ -52,8 +52,8 @@ bool BaseInfoDriver::checkType() {
 }
 
 bool BaseInfoDriver::init(const Parameter& params) {
-  HAYAKU_IF_RETURN(m_params == params, true);
-  m_params = params;
+  HAYAKU_IF_RETURN(params_ == params, true);
+  params_ = params;
   HAYAKU_IF_RETURN(!checkType(), false);
   HAYAKU_INFO("Using {} BaseInfoDriver", name());
   return _init();
@@ -64,7 +64,7 @@ Parameter BaseInfoDriver::getFinanceInfo(const string& market,
   HAYAKU_INFO(
       "The getFinanceInfo method has not been implemented! (BaseInfoDriver: "
       "{})",
-      m_name);
+      name_);
   return Parameter();
 }
 
@@ -75,7 +75,7 @@ StockWeightList BaseInfoDriver::getStockWeightList(const string& market,
   HAYAKU_INFO(
       "The getStockWeightList method has not been implemented! "
       "(BaseInfoDriver: {})",
-      m_name);
+      name_);
   return StockWeightList();
 }
 

@@ -24,8 +24,8 @@ class IndicatorStoploss : public StoplossBase {
   virtual void _calculate() override;
 
  private:
-  Indicator m_ind;
-  map<Datetime, price_t> m_result;
+  Indicator ind_;
+  map<Datetime, price_t> result_;
 
 //========================================
 // Serialization support
@@ -36,9 +36,9 @@ class IndicatorStoploss : public StoplossBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(StoplossBase);
-    ar& BOOST_SERIALIZATION_NVP(m_ind);
+    ar& boost::serialization::make_nvp("m_ind", ind_);
     // m_result needs to be recalculated every time the system runs, it is not
-    // saved ar & BOOST_SERIALIZATION_NVP(m_result);
+    // saved ar & boost::serialization::make_nvp("m_result", result_);
   }
 #endif /* HAYAKU_SUPPORT_SERIALIZATION */
 };

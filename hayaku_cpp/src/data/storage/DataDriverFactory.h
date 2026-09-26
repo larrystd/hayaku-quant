@@ -47,12 +47,12 @@ class HAYAKU_API DataDriverFactory {
   static KDataDriverConnectPoolPtr getKDataDriverPool(const Parameter &);
 
  private:
-  static map<string, BaseInfoDriverPtr> *m_baseInfoDrivers;
-  static map<string, BlockInfoDriverPtr> *m_blockDrivers;
+  static map<string, BaseInfoDriverPtr> *base_info_drivers_;
+  static map<string, BlockInfoDriverPtr> *block_drivers_;
   static map<string, KDataDriverPtr>
-      *m_kdataPrototypeDrivers;  // K-line driver prototype
+      *kdata_prototype_drivers_;  // K-line driver prototype
   static map<string, KDataDriverConnectPoolPtr>
-      *m_kdataDriverPools;  // K-line driver pool
+      *kdata_driver_pools_;  // K-line driver pool
 };
 
 } /* namespace hayaku */

@@ -21,14 +21,14 @@ class PyConditionBase : public ConditionBase {
   PY_CLONE(PyConditionBase, ConditionBase)
 
  public:
-  PyConditionBase() : ConditionBase() { m_is_python_object = true; }
+  PyConditionBase() : ConditionBase() { is_python_object_ = true; }
 
   PyConditionBase(const string& name) : ConditionBase(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PyConditionBase(const ConditionBase& base) : ConditionBase(base) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   void _calculate() override {
@@ -198,14 +198,14 @@ class PyEnvironmentBase : public EnvironmentBase {
   PY_CLONE(PyEnvironmentBase, EnvironmentBase)
 
  public:
-  PyEnvironmentBase() : EnvironmentBase() { m_is_python_object = true; }
+  PyEnvironmentBase() : EnvironmentBase() { is_python_object_ = true; }
 
   PyEnvironmentBase(const string& name) : EnvironmentBase(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PyEnvironmentBase(const EnvironmentBase& base) : EnvironmentBase(base) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   void _calculate() override {
@@ -349,14 +349,14 @@ class PyMoneyManagerBase : public MoneyManagerBase {
   PY_CLONE(PyMoneyManagerBase, MoneyManagerBase)
 
  public:
-  PyMoneyManagerBase() : MoneyManagerBase() { m_is_python_object = true; }
+  PyMoneyManagerBase() : MoneyManagerBase() { is_python_object_ = true; }
 
   PyMoneyManagerBase(const string& name) : MoneyManagerBase(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PyMoneyManagerBase(const MoneyManagerBase& base) : MoneyManagerBase(base) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   void _reset() override {
@@ -651,14 +651,14 @@ class HIDDEN PyMultiFactor : public MultiFactorBase {
   PY_CLONE(PyMultiFactor, MultiFactorBase)
 
  public:
-  PyMultiFactor() : MultiFactorBase() { m_is_python_object = true; }
+  PyMultiFactor() : MultiFactorBase() { is_python_object_ = true; }
 
   PyMultiFactor(const string& name) : MultiFactorBase(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PyMultiFactor(const MultiFactorBase& base) : MultiFactorBase(base) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   virtual ~PyMultiFactor() override {}
@@ -1247,14 +1247,14 @@ class PyNormalizeBase : public NormalizeBase {
   PY_CLONE(PyNormalizeBase, NormalizeBase)
 
  public:
-  PyNormalizeBase() : NormalizeBase() { m_is_python_object = true; }
+  PyNormalizeBase() : NormalizeBase() { is_python_object_ = true; }
 
   PyNormalizeBase(const string& name) : NormalizeBase(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PyNormalizeBase(const NormalizeBase& base) : NormalizeBase(base) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PriceList normalize(const PriceList& data) override {
@@ -1357,14 +1357,14 @@ class PyProfitGoalBase : public ProfitGoalBase {
   PY_CLONE(PyProfitGoalBase, ProfitGoalBase)
 
  public:
-  PyProfitGoalBase() : ProfitGoalBase() { m_is_python_object = true; }
+  PyProfitGoalBase() : ProfitGoalBase() { is_python_object_ = true; }
 
   PyProfitGoalBase(const string& name) : ProfitGoalBase(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PyProfitGoalBase(const ProfitGoalBase& base) : ProfitGoalBase(base) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   void buyNotify(const TradeRecord& tr) override {
@@ -1524,14 +1524,14 @@ class PyScoresFilterBase : public ScoresFilterBase {
   PY_CLONE(PyScoresFilterBase, ScoresFilterBase)
 
  public:
-  PyScoresFilterBase() : ScoresFilterBase() { m_is_python_object = true; }
+  PyScoresFilterBase() : ScoresFilterBase() { is_python_object_ = true; }
 
   PyScoresFilterBase(const string& name) : ScoresFilterBase(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PyScoresFilterBase(const ScoresFilterBase& base) : ScoresFilterBase(base) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   virtual ScoreRecordList _filter(const ScoreRecordList& scores,
@@ -1675,14 +1675,14 @@ class PySignalBase : public SignalBase {
   PY_CLONE(PySignalBase, SignalBase)
 
  public:
-  PySignalBase() : SignalBase() { m_is_python_object = true; }
+  PySignalBase() : SignalBase() { is_python_object_ = true; }
 
   PySignalBase(const string& name) : SignalBase(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PySignalBase(const SignalBase& base) : SignalBase(base) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   void _calculate(const KData& kdata) override {
@@ -2114,14 +2114,14 @@ class PySlippageBase : public SlippageBase {
   PY_CLONE(PySlippageBase, SlippageBase)
 
  public:
-  PySlippageBase() : SlippageBase() { m_is_python_object = true; }
+  PySlippageBase() : SlippageBase() { is_python_object_ = true; }
 
   PySlippageBase(const string& name) : SlippageBase(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PySlippageBase(const SlippageBase& base) : SlippageBase(base) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   void _calculate() override {
@@ -2305,14 +2305,14 @@ class PyStoplossBase : public StoplossBase {
   PY_CLONE(PyStoplossBase, StoplossBase)
 
  public:
-  PyStoplossBase() : StoplossBase() { m_is_python_object = true; }
+  PyStoplossBase() : StoplossBase() { is_python_object_ = true; }
 
   PyStoplossBase(const string& name) : StoplossBase(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   PyStoplossBase(const StoplossBase& base) : StoplossBase(base) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   void _calculate() override {
@@ -2554,4 +2554,6 @@ void export_strategy_main(py::module& m) {
   export_StrategyEngine(m);
 }
 
-void bindStrategy(py::module_& m) { export_strategy_main(m); }
+void bindStrategy(py::module_& m) {
+  export_strategy_main(m);
+}

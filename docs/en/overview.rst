@@ -28,11 +28,12 @@ Repositories:
 
 Project home page: `https://github.com/larrystd/hayaku-quant <https://github.com/larrystd/hayaku-quant>`_
 
-Getting started: :ref:`quickstart`.
-
-Tutorial notebooks: `English notebook series <https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True>`_.
+Getting started: `https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True <https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True>`_
 
 Upstream strategy part library: `https://gitee.com/fasiondog/hikyuu_hub <https://gitee.com/fasiondog/hikyuu_hub>`_
+
+Thanks to a community member who provided an Ubuntu virtual machine image with Hayaku preinstalled;
+download it from Baidu Netdisk (extraction code: ht8j): `download <https://pan.baidu.com/s/1CAiUWDdgV0c0VhPpe4AgVw?pwd=ht8j>`_
 
 Example code:
 
@@ -54,7 +55,7 @@ Example code:
 .. figure:: _static/10000-overview.png
         :width: 600px
 
-The current session flow is described in :ref:`quickstart`.
+The complete example is available in the `Getting Started Notebook <https://nbviewer.jupyter.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/en/000-Index.ipynb?flush_cache=True>`_
 
 
 Why Hayaku?
@@ -90,7 +91,7 @@ The project consists of three parts: a high-performance C++ core library, a Pyth
   integrated; converts seamlessly to and from numpy and pandas, so it plugs into the mainstream
   Python data analysis ecosystem.
 
-* **hayaku.interactive exploration tool:** built-in visualization of candlesticks, indicators and
+* **hayaku.application.interactive exploration tool:** built-in visualization of candlesticks, indicators and
   signals, suitable for rapid strategy validation and backtest analysis.
 
 **Concise syntax: explore strategies faster and more freely**
@@ -98,11 +99,21 @@ The project consists of three parts: a high-performance C++ core library, a Pyth
 Both object-oriented and command-line styles are supported. Especially during strategy exploration,
 the command-line style is minimal and expressive, letting you validate ideas and iterate faster.
 
+**Self-controlled: build your own cloud quant platform**
+
+Combining Python + Jupyter with a cloud server gives you a fully self-controlled cloud quant
+platform. Once deployed, access it anywhere (phone, tablet or computer) and turn new ideas into
+practice quickly. It also integrates with mature AI and data analysis tools such as numpy, scipy,
+pandas and TensorFlow for building intelligent quantitative systems. You can customize the interface
+or deploy it as a service as needed.
+
 **Modular and extensible data storage**
 
-The core supports local HDF5 and SQLite data sources. MySQL and ClickHouse are
-optional adapters. Prepare data with the optional ingest capability before
-opening a research session.
+Four storage backends are supported: local HDF5, MySQL, ClickHouse and SQLite. HDF5 is the default
+(small files, fast reads and writes, easy backups). As of April 21, 2017, the Shanghai market daily
+data file was only 149 MB and the Shenzhen market 184 MB, while the complete 5-minute bar data was
+under 2 GB. A plugin extends storage to ClickHouse, which reads and writes faster than HDF5 and uses
+far less space than MySQL, making it a better fit for minute-level and higher-frequency data.
 
 
 
@@ -125,8 +136,8 @@ Thanks to all the open-source authors for their contributions.
     </thead>
     <tbody>
     <tr>
-    <td>xmake</td>
-    <td><a href="https://github.com/xmake-io/xmake">https://github.com/xmake-io/xmake</a></td>
+    <td>Bazel</td>
+    <td><a href="https://github.com/bazelbuild/bazel">https://github.com/bazelbuild/bazel</a></td>
     <td>Apache 2.0</td>
     </tr>
     <tr>

@@ -32,7 +32,7 @@ double FixedPercentMoneyManager ::_getBuyNumber(const Datetime& datetime,
                                                 price_t price, price_t risk,
                                                 OrderOrigin origin) {
   double p = getParam<double>("p");
-  return m_account->cash(datetime, m_query.kType()) * p / risk;
+  return account_->cash(datetime, query_.kType()) * p / risk;
 }
 
 MoneyManagerPtr HAYAKU_API MM_FixedPercent(double p) {

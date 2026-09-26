@@ -238,7 +238,7 @@ class HAYAKU_API BaseInfoDriver {
   bool checkType();
 
  protected:
-  string m_name;
+  string name_;
 };
 
 typedef shared_ptr<BaseInfoDriver> BaseInfoDriverPtr;
@@ -246,6 +246,6 @@ typedef shared_ptr<BaseInfoDriver> BaseInfoDriverPtr;
 HAYAKU_API std::ostream& operator<<(std::ostream&, const BaseInfoDriver&);
 HAYAKU_API std::ostream& operator<<(std::ostream&, const BaseInfoDriverPtr&);
 
-inline const string& BaseInfoDriver::name() const { return m_name; }
+inline const string& BaseInfoDriver::name() const { return name_; }
 
 } /* namespace hayaku */

@@ -14,18 +14,18 @@ BOOST_CLASS_EXPORT(hayaku::AndSignal)
 namespace hayaku {
 
 void AndSignal::_calculate(const KData& kdata) {
-  HAYAKU_IF_RETURN(!m_sg1 || !m_sg2, void());
+  HAYAKU_IF_RETURN(!sg1_ || !sg2_, void());
 
   auto const* ks = kdata.data();
   size_t total = kdata.size();
 
-  sub_sg_calculate(m_sg1, kdata);
-  sub_sg_calculate(m_sg2, kdata);
+  sub_sg_calculate(sg1_, kdata);
+  sub_sg_calculate(sg2_, kdata);
   for (size_t i = 0; i < total; ++i) {
     double buy_value =
-        m_sg1->getBuyValue(ks[i].datetime) * m_sg2->getBuyValue(ks[i].datetime);
-    double sell_value = 0.0 - m_sg1->getSellValue(ks[i].datetime) *
-                                  m_sg2->getSellValue(ks[i].datetime);
+        sg1_->getBuyValue(ks[i].datetime) * sg2_->getBuyValue(ks[i].datetime);
+    double sell_value = 0.0 - sg1_->getSellValue(ks[i].datetime) *
+                                  sg2_->getSellValue(ks[i].datetime);
     auto value = buy_value + sell_value;
     if (value > 0.0) {
       _addBuySignal(ks[i].datetime);
@@ -55,15 +55,15 @@ BOOST_CLASS_EXPORT(hayaku::OrSignal)
 namespace hayaku {
 
 void OrSignal::_calculate(const KData& kdata) {
-  HAYAKU_IF_RETURN(!m_sg1 && !m_sg2, void());
+  HAYAKU_IF_RETURN(!sg1_ && !sg2_, void());
 
   auto const* ks = kdata.data();
   size_t total = kdata.size();
 
-  if (m_sg1 && !m_sg2) {
-    sub_sg_calculate(m_sg1, kdata);
+  if (sg1_ && !sg2_) {
+    sub_sg_calculate(sg1_, kdata);
     for (size_t i = 0; i < total; ++i) {
-      auto value = m_sg1->getValue(ks[i].datetime);
+      auto value = sg1_->getValue(ks[i].datetime);
       if (value > 0.0) {
         _addBuySignal(ks[i].datetime);
       } else if (value < 0.0) {
@@ -73,10 +73,10 @@ void OrSignal::_calculate(const KData& kdata) {
     return;
   }
 
-  if (!m_sg1 && m_sg2) {
-    sub_sg_calculate(m_sg2, kdata);
+  if (!sg1_ && sg2_) {
+    sub_sg_calculate(sg2_, kdata);
     for (size_t i = 0; i < total; i++) {
-      auto value = m_sg2->getValue(ks[i].datetime);
+      auto value = sg2_->getValue(ks[i].datetime);
       if (value > 0.0) {
         _addBuySignal(ks[i].datetime);
       } else if (value < 0.0) {
@@ -86,11 +86,11 @@ void OrSignal::_calculate(const KData& kdata) {
     return;
   }
 
-  sub_sg_calculate(m_sg1, kdata);
-  sub_sg_calculate(m_sg2, kdata);
+  sub_sg_calculate(sg1_, kdata);
+  sub_sg_calculate(sg2_, kdata);
   for (size_t i = 0; i < total; ++i) {
     double value =
-        m_sg1->getValue(ks[i].datetime) + m_sg2->getValue(ks[i].datetime);
+        sg1_->getValue(ks[i].datetime) + sg2_->getValue(ks[i].datetime);
     if (value > 0.0) {
       _addBuySignal(ks[i].datetime);
     } else if (value < 0.0) {

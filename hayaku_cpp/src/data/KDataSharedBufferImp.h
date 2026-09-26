@@ -17,37 +17,37 @@ class HAYAKU_API KDataSharedBufferImp : public KDataImp {
   KDataSharedBufferImp(const Stock& stock, const KQuery& query);
   virtual ~KDataSharedBufferImp() override;
 
-  virtual bool empty() const noexcept override { return m_size == 0; }
+  virtual bool empty() const noexcept override { return size_ == 0; }
 
-  virtual size_t size() const noexcept override { return m_size; }
+  virtual size_t size() const noexcept override { return size_; }
 
-  virtual size_t startPos() const override { return m_start; }
+  virtual size_t startPos() const override { return start_; }
 
-  virtual size_t endPos() const override { return m_end; }
+  virtual size_t endPos() const override { return end_; }
 
-  virtual size_t lastPos() const override { return m_end == 0 ? 0 : m_end - 1; }
+  virtual size_t lastPos() const override { return end_ == 0 ? 0 : end_ - 1; }
 
   virtual size_t getPos(const Datetime& datetime) const noexcept override;
 
   virtual const KRecord& getKRecord(size_t pos) const noexcept override;
 
-  virtual const KRecord& front() const override { return m_data[0]; }
+  virtual const KRecord& front() const override { return data_[0]; }
 
-  virtual const KRecord& back() const override { return m_data[m_size - 1]; }
+  virtual const KRecord& back() const override { return data_[size_ - 1]; }
 
-  virtual const KRecord* data() const noexcept override { return m_data; }
+  virtual const KRecord* data() const noexcept override { return data_; }
 
-  virtual KRecord* data() noexcept override { return m_data; }
+  virtual KRecord* data() noexcept override { return data_; }
 
   virtual DatetimeList getDatetimeList() const override;
 
   virtual KDataImpPtr getOtherFromSelf(const KQuery& query) const override;
 
  private:
-  size_t m_start{0};
-  size_t m_end{0};
-  size_t m_size{0};
-  KRecord* m_data{nullptr};
+  size_t start_{0};
+  size_t end_{0};
+  size_t size_{0};
+  KRecord* data_{nullptr};
 };
 
 } /* namespace hayaku */

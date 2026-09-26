@@ -26,7 +26,7 @@ class ComponentContext {
   void bind(const KData& kdata);
 
  private:
-  StrategyRuntime& m_runtime;
+  StrategyRuntime& runtime_;
 };
 
 }  // namespace internal

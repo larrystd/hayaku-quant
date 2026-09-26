@@ -1,0 +1,8 @@
+cc_library(
+    name = "utf8proc",
+    srcs = ["utf8proc.c"],
+    textual_hdrs = ["utf8proc_data.c"],
+    hdrs = ["utf8proc.h"],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)

@@ -45,15 +45,15 @@ string KData::toString() const {
   return os.str();
 }
 
-KData::KData() : m_imp(get_null_kdata_imp()) {}
+KData::KData() : imp_(get_null_kdata_imp()) {}
 
-KData::KData(KDataImpPtr imp) : m_imp(imp ? imp : get_null_kdata_imp()) {}
+KData::KData(KDataImpPtr imp) : imp_(imp ? imp : get_null_kdata_imp()) {}
 
 KData::KData(const Stock& stock, const KQuery& query) {
   // On a reload or setKDateList an existing KData risks having invalid data
   // (but there is no memory access problem)
   if (stock.isNull()) {
-    m_imp = get_null_kdata_imp();
+    imp_ = get_null_kdata_imp();
     return;
   }
 
@@ -66,7 +66,7 @@ KData::KData(const Stock& stock, const KQuery& query) {
       stock.isBuffer(query.kType())) {
     // When the Stock has already cached the K-line data of that type and no
     // adjustment is applied
-    m_imp = make_shared<KDataSharedBufferImp>(stock, query);
+    imp_ = make_shared<KDataSharedBufferImp>(stock, query);
     return;
   }
 
@@ -77,16 +77,16 @@ KData::KData(const Stock& stock, const KQuery& query) {
   // the private copy path below
   if (query.recoverType() == KQuery::NO_RECOVER) {
     if (auto view_imp = KDataShmBufferImp::create(stock, query)) {
-      m_imp = std::move(view_imp);
+      imp_ = std::move(view_imp);
       return;
     }
   }
 
-  m_imp = getKDataImp(stock, query);
+  imp_ = getKDataImp(stock, query);
 }
 
 bool KData::operator==(const KData& thr) const noexcept {
-  return this == &thr || m_imp == thr.m_imp ||
+  return this == &thr || imp_ == thr.imp_ ||
          (getStock() == thr.getStock() && getQuery() == thr.getQuery() &&
           size() == thr.size()) ||
          (getStock().isNull() && thr.getStock().isNull());
@@ -148,12 +148,12 @@ KData KData::getKData(const KQuery& query) const {
   }
 
   if (query == self_query) {
-    ret.m_imp = m_imp;
+    ret.imp_ = imp_;
     return ret;
   }
 
-  auto imp = m_imp->getOtherFromSelf(query);
-  ret.m_imp = std::move(imp);
+  auto imp = imp_->getOtherFromSelf(query);
+  ret.imp_ = std::move(imp);
   return ret;
 }
 
@@ -237,7 +237,7 @@ KData KData::getKData(const KQuery::KType& ktype) const {
   const Stock& stk = getStock();
   HAYAKU_IF_RETURN(stk.isNull(), ret);
   if (ktype == getQuery().kType()) {
-    return KData(m_imp);
+    return KData(imp_);
   }
   ret = stk.getKData(
       getOtherQueryByDate(front().datetime, back().datetime, ktype));

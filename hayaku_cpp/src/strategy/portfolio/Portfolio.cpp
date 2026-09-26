@@ -48,21 +48,21 @@ string Portfolio::str() const {
 }
 
 Portfolio::Portfolio()
-    : m_name("Portfolio"), m_query(Null<KQuery>()), m_need_calculate(true) {
+    : name_("Portfolio"), query_(Null<KQuery>()), need_calculate_(true) {
   initParam();
 }
 
-Portfolio::Portfolio(const string& name) : m_name(name) { initParam(); }
+Portfolio::Portfolio(const string& name) : name_(name) { initParam(); }
 
 Portfolio::Portfolio(const string& name,
                      const internal::PortfolioAccountPortPtr& account,
                      const SelectorPtr& se, const AFPtr& af)
-    : m_name(name),
-      m_account(account),
-      m_se(se),
-      m_af(af),
-      m_query(Null<KQuery>()),
-      m_need_calculate(true) {
+    : name_(name),
+      account_(account),
+      se_(se),
+      af_(af),
+      query_(Null<KQuery>()),
+      need_calculate_(true) {
   initParam();
 }
 
@@ -114,51 +114,51 @@ void Portfolio::baseCheckParam(const string& name) const {
   }
 }
 
-void Portfolio::paramChanged() { m_need_calculate = true; }
+void Portfolio::paramChanged() { need_calculate_ = true; }
 
 void Portfolio::reset() {
-  if (m_account) m_account->reset();
-  if (m_cashAccount) m_cashAccount->reset();
-  if (m_se) m_se->reset();
-  if (m_af) m_af->reset();
-  m_need_calculate = true;
-  m_real_sys_list.clear();
-  m_running_sys_set.clear();
-  m_dates.clear();
-  m_adjust_flags.clear();
-  m_cycle_end_dates.clear();
-  m_adjust_turnover.clear();
+  if (account_) account_->reset();
+  if (cash_account_) cash_account_->reset();
+  if (se_) se_->reset();
+  if (af_) af_->reset();
+  need_calculate_ = true;
+  real_sys_list_.clear();
+  running_sys_set_.clear();
+  dates_.clear();
+  adjust_flags_.clear();
+  cycle_end_dates_.clear();
+  adjust_turnover_.clear();
   _reset();
 }
 
 PortfolioPtr Portfolio::clone() {
   PortfolioPtr p = _clone();
-  p->m_params = m_params;
-  p->m_name = m_name;
-  p->m_is_python_object = m_is_python_object;
-  p->m_query = m_query;
-  p->m_need_calculate = true;
-  if (m_se) p->m_se = m_se->clone();
-  if (m_af) p->m_af = m_af->clone();
-  if (m_account) p->m_account = m_account->cloneAccount();
-  if (m_cashAccount) p->m_cashAccount = m_cashAccount->cloneAccount();
+  p->params_ = params_;
+  p->name_ = name_;
+  p->is_python_object_ = is_python_object_;
+  p->query_ = query_;
+  p->need_calculate_ = true;
+  if (se_) p->se_ = se_->clone();
+  if (af_) p->af_ = af_->clone();
+  if (account_) p->account_ = account_->cloneAccount();
+  if (cash_account_) p->cash_account_ = cash_account_->cloneAccount();
   return p;
 }
 
 void Portfolio::readyForRun() {
-  HAYAKU_CHECK(m_se, "m_se is null!");
-  HAYAKU_CHECK(m_account, "m_account is null!");
+  HAYAKU_CHECK(se_, "m_se is null!");
+  HAYAKU_CHECK(account_, "m_account is null!");
   reset();
   _calculateAdjustDate();
-  m_se->setPF(shared_from_this());
+  se_->setPF(shared_from_this());
   _readyForRun();
 }
 
 DatetimeList Portfolio::getAdjustDates() const {
   DatetimeList ret;
-  for (size_t i = 0, total = m_dates.size(); i < total; i++) {
-    if (m_adjust_flags[i]) {
-      ret.push_back(m_dates[i]);
+  for (size_t i = 0, total = dates_.size(); i < total; i++) {
+    if (adjust_flags_[i]) {
+      ret.push_back(dates_[i]);
     }
   }
   return ret;
@@ -166,9 +166,9 @@ DatetimeList Portfolio::getAdjustDates() const {
 
 DatetimeList Portfolio::getCycleEndDates() const {
   DatetimeList ret;
-  for (size_t i = 0, total = m_dates.size(); i < total; i++) {
-    if (m_adjust_flags[i]) {
-      ret.push_back(m_cycle_end_dates[i]);
+  for (size_t i = 0, total = dates_.size(); i < total; i++) {
+    if (adjust_flags_[i]) {
+      ret.push_back(cycle_end_dates_[i]);
     }
   }
   return ret;
@@ -180,22 +180,22 @@ void Portfolio::_calculateAdjustDate() {
   bool delay_to_trading_day = getParam<bool>("delay_to_trading_day");
   to_lower(mode);
 
-  m_dates = getDataRuntime().getTradingCalendar(m_query);
-  HAYAKU_IF_RETURN(m_dates.empty(), void());
+  dates_ = getDataRuntime().getTradingCalendar(query_);
+  HAYAKU_IF_RETURN(dates_.empty(), void());
 
-  m_adjust_flags.resize(m_dates.size(), 0);
-  m_cycle_end_dates.resize(m_dates.size(), Null<Datetime>());
+  adjust_flags_.resize(dates_.size(), 0);
+  cycle_end_dates_.resize(dates_.size(), Null<Datetime>());
 
   if ("query" == mode || "day" == mode) {
     size_t cur_adjust_ix = 0;
     Datetime cur_cycle_end;
-    for (size_t i = 0, total = m_dates.size(); i < total; i++) {
+    for (size_t i = 0, total = dates_.size(); i < total; i++) {
       if (i == cur_adjust_ix) {
         cur_adjust_ix += adjust_cycle;
-        cur_cycle_end = cur_adjust_ix < total ? m_dates[cur_adjust_ix]
-                                              : m_dates.back() + Minutes(1);
-        m_adjust_flags[i] = 1;
-        m_cycle_end_dates[i] = cur_cycle_end;
+        cur_cycle_end = cur_adjust_ix < total ? dates_[cur_adjust_ix]
+                                              : dates_.back() + Minutes(1);
+        adjust_flags_[i] = 1;
+        cycle_end_dates_[i] = cur_cycle_end;
       }
     }
 
@@ -209,61 +209,61 @@ void Portfolio::_calculateAdjustDate() {
 void Portfolio::_calculateAdjustDateOnMode(int adjust_cycle,
                                            const string& mode) {
   if ("week" == mode) {
-    Datetime cur_cycle_end = m_dates.front().nextWeek();
-    for (size_t i = 0, total = m_dates.size(); i < total; i++) {
-      const auto& date = m_dates[i];
+    Datetime cur_cycle_end = dates_.front().nextWeek();
+    for (size_t i = 0, total = dates_.size(); i < total; i++) {
+      const auto& date = dates_[i];
       bool adjust = (date.dayOfWeek() == adjust_cycle);
       if (adjust) {
         cur_cycle_end = date.nextWeek();
-        if (cur_cycle_end >= m_dates.back()) {
-          cur_cycle_end = m_dates.back() + Minutes(1);
+        if (cur_cycle_end >= dates_.back()) {
+          cur_cycle_end = dates_.back() + Minutes(1);
         }
-        m_adjust_flags[i] = 1;
-        m_cycle_end_dates[i] = cur_cycle_end;
+        adjust_flags_[i] = 1;
+        cycle_end_dates_[i] = cur_cycle_end;
       }
     }
 
   } else if ("month" == mode) {
-    Datetime cur_cycle_end = m_dates.front().nextMonth();
-    for (size_t i = 0, total = m_dates.size(); i < total; i++) {
-      const auto& date = m_dates[i];
+    Datetime cur_cycle_end = dates_.front().nextMonth();
+    for (size_t i = 0, total = dates_.size(); i < total; i++) {
+      const auto& date = dates_[i];
       bool adjust = (date.day() == adjust_cycle);
       if (adjust) {
         cur_cycle_end = date.nextMonth();
-        if (cur_cycle_end >= m_dates.back()) {
-          cur_cycle_end = m_dates.back() + Minutes(1);
+        if (cur_cycle_end >= dates_.back()) {
+          cur_cycle_end = dates_.back() + Minutes(1);
         }
-        m_adjust_flags[i] = 1;
-        m_cycle_end_dates[i] = cur_cycle_end;
+        adjust_flags_[i] = 1;
+        cycle_end_dates_[i] = cur_cycle_end;
       }
     }
 
   } else if ("quarter" == mode) {
-    Datetime cur_cycle_end = m_dates.front().nextQuarter();
-    for (size_t i = 0, total = m_dates.size(); i < total; i++) {
-      const auto& date = m_dates[i];
+    Datetime cur_cycle_end = dates_.front().nextQuarter();
+    for (size_t i = 0, total = dates_.size(); i < total; i++) {
+      const auto& date = dates_[i];
       bool adjust = (date.day() == adjust_cycle);
       if (adjust) {
         cur_cycle_end = date.nextQuarter();
-        if (cur_cycle_end >= m_dates.back()) {
-          cur_cycle_end = m_dates.back() + Minutes(1);
+        if (cur_cycle_end >= dates_.back()) {
+          cur_cycle_end = dates_.back() + Minutes(1);
         }
-        m_adjust_flags[i] = 1;
-        m_cycle_end_dates[i] = cur_cycle_end;
+        adjust_flags_[i] = 1;
+        cycle_end_dates_[i] = cur_cycle_end;
       }
     }
   } else if ("year" == mode) {
-    Datetime cur_cycle_end = m_dates.front().nextYear();
-    for (size_t i = 0, total = m_dates.size(); i < total; i++) {
-      const auto& date = m_dates[i];
+    Datetime cur_cycle_end = dates_.front().nextYear();
+    for (size_t i = 0, total = dates_.size(); i < total; i++) {
+      const auto& date = dates_[i];
       bool adjust = (date.dayOfYear() == adjust_cycle);
       if (adjust) {
         cur_cycle_end = date.nextYear();
-        if (cur_cycle_end >= m_dates.back()) {
-          cur_cycle_end = m_dates.back() + Minutes(1);
+        if (cur_cycle_end >= dates_.back()) {
+          cur_cycle_end = dates_.back() + Minutes(1);
         }
-        m_adjust_flags[i] = 1;
-        m_cycle_end_dates[i] = cur_cycle_end;
+        adjust_flags_[i] = 1;
+        cycle_end_dates_[i] = cur_cycle_end;
       }
     }
   }
@@ -273,9 +273,9 @@ void Portfolio::_calculateAdjustDateOnModeDelayToTradingDay(
     int adjust_cycle, const string& mode) {
   std::set<Datetime> adjust_date_set;
   if ("week" == mode) {
-    Datetime cur_cycle_end = m_dates.front().nextWeek();
-    for (size_t i = 0, total = m_dates.size(); i < total; i++) {
-      const auto& date = m_dates[i];
+    Datetime cur_cycle_end = dates_.front().nextWeek();
+    for (size_t i = 0, total = dates_.size(); i < total; i++) {
+      const auto& date = dates_[i];
       Datetime adjust_date = date.startOfWeek() + Days(adjust_cycle - 1);
       bool adjust = false;
       if (date == adjust_date) {
@@ -289,18 +289,18 @@ void Portfolio::_calculateAdjustDateOnModeDelayToTradingDay(
 
       if (adjust) {
         cur_cycle_end = date.nextWeek();
-        if (cur_cycle_end >= m_dates.back()) {
-          cur_cycle_end = m_dates.back() + Minutes(1);
+        if (cur_cycle_end >= dates_.back()) {
+          cur_cycle_end = dates_.back() + Minutes(1);
         }
-        m_adjust_flags[i] = 1;
-        m_cycle_end_dates[i] = cur_cycle_end;
+        adjust_flags_[i] = 1;
+        cycle_end_dates_[i] = cur_cycle_end;
       }
     }
 
   } else if ("month" == mode) {
-    Datetime cur_cycle_end = m_dates.front().nextMonth();
-    for (size_t i = 0, total = m_dates.size(); i < total; i++) {
-      const auto& date = m_dates[i];
+    Datetime cur_cycle_end = dates_.front().nextMonth();
+    for (size_t i = 0, total = dates_.size(); i < total; i++) {
+      const auto& date = dates_[i];
       Datetime adjust_date = date.startOfMonth() + Days(adjust_cycle - 1);
       bool adjust = false;
       if (date == adjust_date) {
@@ -314,18 +314,18 @@ void Portfolio::_calculateAdjustDateOnModeDelayToTradingDay(
 
       if (adjust) {
         cur_cycle_end = date.nextMonth();
-        if (cur_cycle_end >= m_dates.back()) {
-          cur_cycle_end = m_dates.back() + Minutes(1);
+        if (cur_cycle_end >= dates_.back()) {
+          cur_cycle_end = dates_.back() + Minutes(1);
         }
-        m_adjust_flags[i] = 1;
-        m_cycle_end_dates[i] = cur_cycle_end;
+        adjust_flags_[i] = 1;
+        cycle_end_dates_[i] = cur_cycle_end;
       }
     }
 
   } else if ("quarter" == mode) {
-    Datetime cur_cycle_end = m_dates.front().nextQuarter();
-    for (size_t i = 0, total = m_dates.size(); i < total; i++) {
-      const auto& date = m_dates[i];
+    Datetime cur_cycle_end = dates_.front().nextQuarter();
+    for (size_t i = 0, total = dates_.size(); i < total; i++) {
+      const auto& date = dates_[i];
       Datetime adjust_date = date.startOfQuarter() + Days(adjust_cycle - 1);
       bool adjust = false;
       if (date == adjust_date) {
@@ -339,18 +339,18 @@ void Portfolio::_calculateAdjustDateOnModeDelayToTradingDay(
 
       if (adjust) {
         cur_cycle_end = date.nextQuarter();
-        if (cur_cycle_end >= m_dates.back()) {
-          cur_cycle_end = m_dates.back() + Minutes(1);
+        if (cur_cycle_end >= dates_.back()) {
+          cur_cycle_end = dates_.back() + Minutes(1);
         }
-        m_adjust_flags[i] = 1;
-        m_cycle_end_dates[i] = cur_cycle_end;
+        adjust_flags_[i] = 1;
+        cycle_end_dates_[i] = cur_cycle_end;
       }
     }
 
   } else if ("year" == mode) {
-    Datetime cur_cycle_end = m_dates.front().nextYear();
-    for (size_t i = 0, total = m_dates.size(); i < total; i++) {
-      const auto& date = m_dates[i];
+    Datetime cur_cycle_end = dates_.front().nextYear();
+    for (size_t i = 0, total = dates_.size(); i < total; i++) {
+      const auto& date = dates_[i];
       Datetime adjust_date = date.startOfYear() + Days(adjust_cycle - 1);
       bool adjust = false;
       if (date == adjust_date) {
@@ -364,11 +364,11 @@ void Portfolio::_calculateAdjustDateOnModeDelayToTradingDay(
 
       if (adjust) {
         cur_cycle_end = date.nextYear();
-        if (cur_cycle_end >= m_dates.back()) {
-          cur_cycle_end = m_dates.back() + Minutes(1);
+        if (cur_cycle_end >= dates_.back()) {
+          cur_cycle_end = dates_.back() + Minutes(1);
         }
-        m_adjust_flags[i] = 1;
-        m_cycle_end_dates[i] = cur_cycle_end;
+        adjust_flags_[i] = 1;
+        cycle_end_dates_[i] = cur_cycle_end;
       }
     }
   }
@@ -378,7 +378,7 @@ void Portfolio::runMoment(const Datetime& date, const Datetime& nextCycle,
                           bool adjust) {
   // The current date is earlier than the account creation date, ignore it
   // directly
-  HAYAKU_IF_RETURN(date < m_account->initDatetime(), void());
+  HAYAKU_IF_RETURN(date < account_->initDatetime(), void());
 
   bool trace = getParam<bool>("trace");
   if (trace) {
@@ -392,11 +392,11 @@ void Portfolio::runMoment(const Datetime& date, const Datetime& nextCycle,
       HAYAKU_INFO("****************************************************");
     }
     HAYAKU_INFO("{}: {}", htr("[PF] current running system size"),
-                m_running_sys_set.size());
+                running_sys_set_.size());
   }
 
   // Adjust the ex-rights/ex-dividend data of the account before the open
-  m_account->updateWithWeight(date);
+  account_->updateWithWeight(date);
 
   _runMomentOnOpen(date, nextCycle, adjust);
   traceMomentTMAfterRunAtOpen(date);
@@ -406,7 +406,7 @@ void Portfolio::runMoment(const Datetime& date, const Datetime& nextCycle,
 
   // Print the current account assets for the trace
   if (trace) {
-    FundsRecord funds = m_account->getFunds(date, m_query.kType());
+    FundsRecord funds = account_->getFunds(date, query_.kType());
     HAYAKU_INFO("[PF] {}: {:.2f}, {}: {:<.2f}, {}: {:<.2f}", htr("total asset"),
                 funds.total_assets(), htr("current cash"), funds.cash,
                 htr("market value"), funds.market_value);
@@ -427,27 +427,27 @@ void Portfolio::run(const KQuery& query, bool force) {
   setQuery(query);
 
   if (force) {
-    m_need_calculate = true;
+    need_calculate_ = true;
   }
-  HAYAKU_IF_RETURN(!m_need_calculate, void());
+  HAYAKU_IF_RETURN(!need_calculate_, void());
 
   readyForRun();
 
-  if (m_real_sys_list.empty()) {
+  if (real_sys_list_.empty()) {
     HAYAKU_WARN(htr("There is no system in portfolio!"));
-    m_need_calculate = true;
+    need_calculate_ = true;
     return;
   }
 
-  for (size_t i = 0; i < m_dates.size(); i++) {
-    runMoment(m_dates[i], m_cycle_end_dates[i], m_adjust_flags[i]);
+  for (size_t i = 0; i < dates_.size(); i++) {
+    runMoment(dates_[i], cycle_end_dates_[i], adjust_flags_[i]);
   }
 
-  m_need_calculate = false;
+  need_calculate_ = false;
 }
 
 void Portfolio::traceMomentTMAfterRunAtOpen(const Datetime& date) {
-  HAYAKU_IF_RETURN(!getParam<bool>("trace") || m_running_sys_set.empty(),
+  HAYAKU_IF_RETURN(!getParam<bool>("trace") || running_sys_set_.empty(),
                    void());
 
   //----------------------------------------------------------------------
@@ -460,10 +460,10 @@ void Portfolio::traceMomentTMAfterRunAtOpen(const Datetime& date) {
   // clang-format on
 
   size_t count = 0;
-  for (const auto& sys : m_running_sys_set) {
+  for (const auto& sys : running_sys_set_) {
     Stock stk = sys->getStock();
     size_t position = sys->getAccount()->getHoldNumber(date, stk);
-    KRecord krecord = stk.getKRecord(date, m_query.kType());
+    KRecord krecord = stk.getKRecord(date, query_.kType());
     auto stk_name = stk.name();
     HAYAKU_INFO("| {:<11}| {:<11}| {:<11}| {:<13.2f}| {:<12.2f}|",
                 stk.market_code(), stk_name, position,
@@ -473,7 +473,7 @@ void Portfolio::traceMomentTMAfterRunAtOpen(const Datetime& date) {
         count++;
         int trace_max_num = getParam<int>("trace_max_num");
         if (count >= trace_max_num) {
-            if (m_running_sys_set.size() > trace_max_num) {
+            if (running_sys_set_.size() > trace_max_num) {
                 HAYAKU_INFO("+ ... ... more                                                        +");
                 HAYAKU_INFO("+------------+------------+------------+--------------+--------------++");
             }
@@ -484,7 +484,7 @@ void Portfolio::traceMomentTMAfterRunAtOpen(const Datetime& date) {
 }
 
 void Portfolio::traceMomentTMAfterRunAtClose(const Datetime& date) {
-  HAYAKU_IF_RETURN(!getParam<bool>("trace") || m_running_sys_set.empty(),
+  HAYAKU_IF_RETURN(!getParam<bool>("trace") || running_sys_set_.empty(),
                    void());
 
   //----------------------------------------------------------------------
@@ -497,11 +497,11 @@ void Portfolio::traceMomentTMAfterRunAtClose(const Datetime& date) {
   // clang-format on
 
   size_t count = 0;
-  for (const auto& sys : m_running_sys_set) {
+  for (const auto& sys : running_sys_set_) {
     Stock stk = sys->getStock();
-    auto funds = sys->getAccount()->getFunds(date, m_query.kType());
+    auto funds = sys->getAccount()->getFunds(date, query_.kType());
     size_t position = sys->getAccount()->getHoldNumber(date, stk);
-    KRecord krecord = stk.getKRecord(date, m_query.kType());
+    KRecord krecord = stk.getKRecord(date, query_.kType());
     auto stk_name = stk.name();
     HAYAKU_INFO(
         "| {:<11}| {:<11}| {:<11}| {:<13.2f}| {:<13.2f}| {:<12.2f}| {:<12.2f}|",
@@ -512,7 +512,7 @@ void Portfolio::traceMomentTMAfterRunAtClose(const Datetime& date) {
         count++;
         int trace_max_num = getParam<int>("trace_max_num");
         if (count >= trace_max_num) {
-            if (m_running_sys_set.size() > trace_max_num) {
+            if (running_sys_set_.size() > trace_max_num) {
                 HAYAKU_INFO("+ ... ... more                                                                                   +");
                 HAYAKU_INFO("+------------+------------+------------+--------------+--------------+-------------+-------------+");
             }
@@ -524,7 +524,7 @@ void Portfolio::traceMomentTMAfterRunAtClose(const Datetime& date) {
 
 json Portfolio::lastSuggestion() const {
   json sys_json_list = json::array();
-  for (const auto& sys : m_running_sys_set) {
+  for (const auto& sys : running_sys_set_) {
     sys_json_list.emplace_back(sys->lastSuggestion());
   }
 

@@ -45,5 +45,5 @@ the session. This enables its native execution engine.
         print(session.execution.snapshot())
 
 See :doc:`strategy` for assembling and running a strategy. The optional
-``hayaku.interactive`` module provides a broader exploratory interface and
+``hayaku.application.interactive`` module provides a broader exploratory interface and
 loads additional plotting dependencies only when explicitly imported.

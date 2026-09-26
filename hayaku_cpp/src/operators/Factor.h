@@ -237,7 +237,7 @@ class HAYAKU_API Factor final {
       }
     }
   };
-  shared_ptr<Data> m_data;
+  shared_ptr<Data> data_;
 
 #if HAYAKU_SUPPORT_SERIALIZATION
  private:
@@ -292,7 +292,7 @@ class HAYAKU_API Factor final {
     ar& BOOST_SERIALIZATION_NVP(tmp_details);
     ar& BOOST_SERIALIZATION_NVP(tmp_needSaveValue);
     ar& BOOST_SERIALIZATION_NVP(tmp_recover_type);
-    m_data = make_shared<Data>(tmp_name, tmp_formula, tmp_ktype, tmp_brief,
+    data_ = make_shared<Data>(tmp_name, tmp_formula, tmp_ktype, tmp_brief,
                                tmp_details, tmp_needSaveValue, tmp_startDate,
                                tmp_block, tmp_recover_type);
     createAt(tmp_createAt);
@@ -307,78 +307,78 @@ class HAYAKU_API Factor final {
 // inline impl
 ///////////////////////////////////////////////////////////////////////////////
 
-inline const string& Factor::name() const noexcept { return m_data->name; }
+inline const string& Factor::name() const noexcept { return data_->name; }
 
-inline const string& Factor::ktype() const noexcept { return m_data->ktype; }
+inline const string& Factor::ktype() const noexcept { return data_->ktype; }
 
-inline void Factor::ktype(const string& ktype) { m_data->ktype = ktype; }
+inline void Factor::ktype(const string& ktype) { data_->ktype = ktype; }
 
 inline KQuery::RecoverType Factor::recoverType() const noexcept {
-  return m_data->recover_type;
+  return data_->recover_type;
 }
 
 inline void Factor::recoverType(KQuery::RecoverType recover_type) {
-  m_data->recover_type = recover_type;
+  data_->recover_type = recover_type;
 }
 
 inline const Indicator& Factor::formula() const noexcept {
-  return m_data->formula;
+  return data_->formula;
 }
 
 inline void Factor::formula(const Indicator& formula) {
-  m_data->formula = formula;
-  m_data->formula.name(m_data->name);
+  data_->formula = formula;
+  data_->formula.name(data_->name);
 }
 
 inline const Datetime& Factor::startDate() const noexcept {
-  return m_data->start_date;
+  return data_->start_date;
 }
 
 inline void Factor::startDate(const Datetime& datetime) {
-  m_data->start_date =
+  data_->start_date =
       datetime == Null<Datetime>() ? Datetime::min() : datetime;
 }
 
-inline const Block& Factor::block() const noexcept { return m_data->block; }
+inline const Block& Factor::block() const noexcept { return data_->block; }
 
-inline void Factor::block(const Block& block) { m_data->block = block; }
+inline void Factor::block(const Block& block) { data_->block = block; }
 
 inline const Datetime& Factor::createAt() const noexcept {
-  return m_data->create_at;
+  return data_->create_at;
 }
 
 inline void Factor::createAt(const Datetime& datetime) {
-  m_data->create_at = datetime;
+  data_->create_at = datetime;
 }
 
 inline const Datetime& Factor::updateAt() const noexcept {
-  return m_data->update_at;
+  return data_->update_at;
 }
 
 inline void Factor::updateAt(const Datetime& datetime) {
-  m_data->update_at = datetime;
+  data_->update_at = datetime;
 }
 
-inline const string& Factor::brief() const noexcept { return m_data->brief; }
+inline const string& Factor::brief() const noexcept { return data_->brief; }
 
-inline void Factor::brief(const string& brief) { m_data->brief = brief; }
+inline void Factor::brief(const string& brief) { data_->brief = brief; }
 
 inline const string& Factor::details() const noexcept {
-  return m_data->details;
+  return data_->details;
 }
 
 inline bool Factor::needSaveValue() const noexcept {
-  return m_data->need_save_value;
+  return data_->need_save_value;
 }
 
 inline void Factor::details(const string& details) {
-  m_data->details = details;
+  data_->details = details;
 }
 
-inline uint64_t Factor::hash() const noexcept { return (uint64_t)m_data.get(); }
+inline uint64_t Factor::hash() const noexcept { return (uint64_t)data_.get(); }
 
 inline bool Factor::isNull() const noexcept {
-  return !m_data || m_data->name.empty() || m_data->ktype.empty();
+  return !data_ || data_->name.empty() || data_->ktype.empty();
 }
 
 typedef vector<Factor> FactorList;

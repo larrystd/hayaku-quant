@@ -150,10 +150,10 @@ void IEvery::_calculate(const Indicator& ind) {
   if (0 == n) {
     auto const* src = ind.data();
     auto* dst = this->data();
-    m_discard = ind.discard();
-    for (size_t i = m_discard; i < total; i++) {
+    discard_ = ind.discard();
+    for (size_t i = discard_; i < total; i++) {
       price_t every = 1.0;
-      for (size_t j = m_discard; j <= i; j++) {
+      for (size_t j = discard_; j <= i; j++) {
         if (src[j] == 0.0) {
           every = 0.0;
           break;
@@ -164,13 +164,13 @@ void IEvery::_calculate(const Indicator& ind) {
     return;
   }
 
-  m_discard = ind.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(ind, m_discard);
+  _increment_calculate(ind, discard_);
 }
 
 bool IEvery::supportIncrementCalculate() const {
@@ -286,10 +286,10 @@ void IExist::_calculate(const Indicator& ind) {
   if (n == 0) {
     auto const* src = ind.data();
     auto* dst = this->data();
-    m_discard = ind.discard();
-    for (size_t i = m_discard; i < total; i++) {
+    discard_ = ind.discard();
+    for (size_t i = discard_; i < total; i++) {
       price_t exist = 0.0;
-      for (size_t j = m_discard; j <= i; j++) {
+      for (size_t j = discard_; j <= i; j++) {
         if (src[j] != 0.0) {
           exist = 1.0;
           break;
@@ -300,13 +300,13 @@ void IExist::_calculate(const Indicator& ind) {
     return;
   }
 
-  m_discard = ind.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(ind, m_discard);
+  _increment_calculate(ind, discard_);
 }
 
 bool IExist::supportIncrementCalculate() const {
@@ -323,7 +323,7 @@ void IExist::_increment_calculate(const Indicator& ind, size_t start_pos) {
 
   price_t exist = 0;
   size_t pre_pos = start_pos + n - 1;
-  for (size_t i = start_pos + 1 - n; i <= m_discard; i++) {
+  for (size_t i = start_pos + 1 - n; i <= discard_; i++) {
     if (src[i] != 0) {
       pre_pos = i;
       exist = 1.0;
@@ -406,7 +406,7 @@ BOOST_CLASS_EXPORT(hayaku::IFilter)
 namespace hayaku {
 
 IFilter::IFilter() : IndicatorImp("FILTER", 1) {
-  m_is_serial = true;
+  is_serial_ = true;
   setParam<int>("n", 5);
 }
 
@@ -420,9 +420,9 @@ void IFilter::_checkParam(const string& name) const {
 
 void IFilter::_calculate(const Indicator& ind) {
   size_t total = ind.size();
-  m_discard = ind.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -431,13 +431,13 @@ void IFilter::_calculate(const Indicator& ind) {
 
   int n = getParam<int>("n");
   if (0 == n) {
-    for (size_t i = m_discard; i < total; i++) {
+    for (size_t i = discard_; i < total; i++) {
       dst[i] = src[i] != 0.0 ? 1.0 : 0.0;
     }
     return;
   }
 
-  _increment_calculate(ind, m_discard);
+  _increment_calculate(ind, discard_);
 }
 
 bool IFilter::supportIncrementCalculate() const {
@@ -520,13 +520,13 @@ INot::~INot() {}
 
 void INot::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void INot::_increment_calculate(const Indicator& data, size_t start_pos) {

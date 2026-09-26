@@ -41,57 +41,57 @@ class HAYAKU_API StrategyDefinition {
   [[nodiscard]] bool operator!=(const StrategyDefinition& other) const;
 
  private:
-  MoneyManagerPtr m_moneyManager;
-  SignalPtr m_signal;
-  string m_name;
-  EnvironmentPtr m_environment;
-  ConditionPtr m_condition;
-  StoplossPtr m_stoploss;
-  StoplossPtr m_takeProfit;
-  ProfitGoalPtr m_profitGoal;
-  SlippagePtr m_slippage;
-  Parameter m_parameters;
+  MoneyManagerPtr money_manager_;
+  SignalPtr signal_;
+  string name_;
+  EnvironmentPtr environment_;
+  ConditionPtr condition_;
+  StoplossPtr stoploss_;
+  StoplossPtr take_profit_;
+  ProfitGoalPtr profit_goal_;
+  SlippagePtr slippage_;
+  Parameter parameters_;
 };
 
 inline const string& StrategyDefinition::name() const noexcept {
-  return m_name;
+  return name_;
 }
 
 inline const MoneyManagerPtr& StrategyDefinition::moneyManager()
     const noexcept {
-  return m_moneyManager;
+  return money_manager_;
 }
 
 inline const SignalPtr& StrategyDefinition::signal() const noexcept {
-  return m_signal;
+  return signal_;
 }
 
 inline const EnvironmentPtr& StrategyDefinition::environment() const noexcept {
-  return m_environment;
+  return environment_;
 }
 
 inline const ConditionPtr& StrategyDefinition::condition() const noexcept {
-  return m_condition;
+  return condition_;
 }
 
 inline const StoplossPtr& StrategyDefinition::stoploss() const noexcept {
-  return m_stoploss;
+  return stoploss_;
 }
 
 inline const StoplossPtr& StrategyDefinition::takeProfit() const noexcept {
-  return m_takeProfit;
+  return take_profit_;
 }
 
 inline const ProfitGoalPtr& StrategyDefinition::profitGoal() const noexcept {
-  return m_profitGoal;
+  return profit_goal_;
 }
 
 inline const SlippagePtr& StrategyDefinition::slippage() const noexcept {
-  return m_slippage;
+  return slippage_;
 }
 
 inline const Parameter& StrategyDefinition::parameters() const noexcept {
-  return m_parameters;
+  return parameters_;
 }
 
 inline bool StrategyDefinition::operator!=(

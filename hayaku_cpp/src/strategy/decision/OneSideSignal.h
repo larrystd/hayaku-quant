@@ -26,7 +26,7 @@ class OneSideSignal : public SignalBase {
   virtual void _checkParam(const string& name) const override;
 
  private:
-  Indicator m_ind;
+  Indicator ind_;
 
 //============================================
 // Serialization support
@@ -36,7 +36,7 @@ class OneSideSignal : public SignalBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SignalBase);
-    ar& BOOST_SERIALIZATION_NVP(m_ind);
+    ar& boost::serialization::make_nvp("m_ind", ind_);
   }
 #endif
 };

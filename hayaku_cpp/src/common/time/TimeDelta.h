@@ -76,10 +76,10 @@ class HAYAKU_UTILS_API TimeDelta {
     auto microseconds =
         std::chrono::duration_cast<std::chrono::microseconds>(dur);
     int64_t total = microseconds.count();
-    if (total < m_min_micro_seconds || total > m_max_micro_seconds) {
+    if (total < min_micro_seconds_ || total > max_micro_seconds_) {
       throw std::out_of_range("TimeDelta value out of range");
     }
-    m_duration = bt::time_duration(0, 0, 0, total);
+    duration_ = bt::time_duration(0, 0, 0, total);
   }
 
   /** Construct from a string, the format: -1 days, hh:mm:ss.000000) */
@@ -91,7 +91,7 @@ class HAYAKU_UTILS_API TimeDelta {
   /** Copy assignment function */
   TimeDelta &operator=(const TimeDelta &other) {
     if (this != &other) {
-      m_duration = other.m_duration;
+      duration_ = other.duration_;
     }
     return *this;
   }
@@ -116,7 +116,7 @@ class HAYAKU_UTILS_API TimeDelta {
 
   /** Get the number of the ticks, i.e. the total microseconds after the
    * conversion */
-  int64_t ticks() const { return m_duration.ticks(); }
+  int64_t ticks() const { return duration_.ticks(); }
 
   /** Return the total days with a fraction */
   double total_days() const { return double(ticks()) / 86400000000.0; }
@@ -134,13 +134,13 @@ class HAYAKU_UTILS_API TimeDelta {
   double total_milliseconds() const { return double(ticks()) / 1000.0; }
 
   /** Whether it is a negative duration */
-  bool isNegative() const { return m_duration.is_negative(); }
+  bool isNegative() const { return duration_.is_negative(); }
 
   /** Calculate the absolute value */
   TimeDelta abs() const { return TimeDelta::fromTicks(std::abs(ticks())); }
 
   /** Convert to boost::posix_time::time_duration */
-  bt::time_duration time_duration() const { return m_duration; }
+  bt::time_duration time_duration() const { return duration_; }
 
   /**
    * Convert to std::chrono::duration
@@ -150,7 +150,7 @@ class HAYAKU_UTILS_API TimeDelta {
   template <typename Duration = std::chrono::microseconds>
   Duration duration() const {
     return std::chrono::duration_cast<Duration>(
-        std::chrono::microseconds(m_duration.ticks()));
+        std::chrono::microseconds(duration_.ticks()));
   }
 
   /** Convert to a string, the format: -1 days hh:mm:ss.000000) */
@@ -181,12 +181,12 @@ class HAYAKU_UTILS_API TimeDelta {
 
   /** Add two durations */
   TimeDelta operator+(TimeDelta td) const {
-    return TimeDelta(td.m_duration + m_duration);
+    return TimeDelta(td.duration_ + duration_);
   }
 
   /** Subtract two durations */
   TimeDelta operator-(TimeDelta td) const {
-    return TimeDelta(m_duration - td.m_duration);
+    return TimeDelta(duration_ - td.duration_);
   }
 
   /** The + operator, it returns the same value */
@@ -217,17 +217,17 @@ class HAYAKU_UTILS_API TimeDelta {
    * thrown when it is divided by a zero duration. */
   TimeDelta operator%(TimeDelta td) const;
 
-  bool operator==(TimeDelta td) const { return m_duration == td.m_duration; }
+  bool operator==(TimeDelta td) const { return duration_ == td.duration_; }
 
-  bool operator!=(TimeDelta td) const { return m_duration != td.m_duration; }
+  bool operator!=(TimeDelta td) const { return duration_ != td.duration_; }
 
-  bool operator>(TimeDelta td) const { return m_duration > td.m_duration; }
+  bool operator>(TimeDelta td) const { return duration_ > td.duration_; }
 
-  bool operator<(TimeDelta td) const { return m_duration < td.m_duration; }
+  bool operator<(TimeDelta td) const { return duration_ < td.duration_; }
 
-  bool operator>=(TimeDelta td) const { return m_duration >= td.m_duration; }
+  bool operator>=(TimeDelta td) const { return duration_ >= td.duration_; }
 
-  bool operator<=(TimeDelta td) const { return m_duration <= td.m_duration; }
+  bool operator<=(TimeDelta td) const { return duration_ <= td.duration_; }
 
   /**
    * Add a chrono duration to the duration
@@ -355,10 +355,10 @@ class HAYAKU_UTILS_API TimeDelta {
   static TimeDelta max() { return TimeDelta(99999999, 23, 59, 59, 999, 999); }
 
   /** The maximum number of the ticks supported */
-  static int64_t maxTicks() { return m_max_micro_seconds; }
+  static int64_t maxTicks() { return max_micro_seconds_; }
 
   /** The minimum number of the ticks supported */
-  static int64_t minTicks() { return m_min_micro_seconds; }
+  static int64_t minTicks() { return min_micro_seconds_; }
 
   /** Get the expression precision 1 microsecond, TimeDelta(0, 0, 0, 0, 0, 1) */
   static TimeDelta resolution() { return TimeDelta(0, 0, 0, 0, 0, 1); }
@@ -367,13 +367,13 @@ class HAYAKU_UTILS_API TimeDelta {
   static TimeDelta fromTicks(int64_t ticks);
 
  private:
-  bt::time_duration m_duration;
+  bt::time_duration duration_;
 
-  static constexpr const int64_t m_max_micro_seconds =
+  static constexpr const int64_t max_micro_seconds_ =
       100000000LL * 24 * 60 * 60 * 1000000 - 1;
-  static constexpr const int64_t m_min_micro_seconds =
+  static constexpr const int64_t min_micro_seconds_ =
       -99999999LL * 24 * 60 * 60 * 1000000;
-  static constexpr const int64_t m_one_day_ticks = 24 * 60 * 60 * 1000000LL;
+  static constexpr const int64_t one_day_ticks_ = 24 * 60 * 60 * 1000000LL;
 };
 
 std::ostream &operator<<(std::ostream &out, TimeDelta td);

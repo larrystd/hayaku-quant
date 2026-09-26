@@ -26,7 +26,7 @@ BOOST_CLASS_EXPORT(hayaku::IAdx)
 namespace hayaku {
 
 IAdx::IAdx() : IndicatorImp("ADX", 3) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<int>("n", 14);
 }
 
@@ -41,7 +41,7 @@ void IAdx::_checkParam(const string& name) const {
 void IAdx::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -62,7 +62,7 @@ void IAdx::_calculate(const Indicator& data) {
   size_t adx_start = period + period - 1;
 
   if (total <= adx_start) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -173,7 +173,7 @@ void IAdx::_calculate(const Indicator& data) {
     }
   }
 
-  m_discard = adx_start;
+  discard_ = adx_start;
 
   if (adx_start < total) {
     value_t dx_sum = 0.0;
@@ -233,7 +233,7 @@ BOOST_CLASS_EXPORT(hayaku::IAdx2)
 namespace hayaku {
 
 IAdx2::IAdx2() : IndicatorImp("ADX2", 3) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<int>("n", 14);
 }
 
@@ -248,7 +248,7 @@ void IAdx2::_checkParam(const string& name) const {
 void IAdx2::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -269,7 +269,7 @@ void IAdx2::_calculate(const Indicator& data) {
   size_t adx_start = period + period - 1;
 
   if (total <= adx_start) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -380,7 +380,7 @@ void IAdx2::_calculate(const Indicator& data) {
     }
   }
 
-  m_discard = adx_start;
+  discard_ = adx_start;
 
   value_t dx_sum = 0.0;
   for (size_t i = period; i < adx_start; i++) {
@@ -452,7 +452,7 @@ BOOST_CLASS_EXPORT(hayaku::IAtr)
 namespace hayaku {
 
 IAtr::IAtr() : IndicatorImp("ATR", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<int>("n", 14);
 }
 
@@ -467,7 +467,7 @@ void IAtr::_checkParam(const string& name) const {
 void IAtr::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& kdata = getContext();
   size_t total = kdata.size();
@@ -479,9 +479,9 @@ void IAtr::_calculate(const Indicator& data) {
 
   // Use n+1 instead of n, to avoid the inconsistency between the first values
   // of MA(TR) and ATR
-  m_discard = n + 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = n + 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -601,13 +601,13 @@ void IDiff::_calculate(const Indicator& data) {
   size_t total = data.size();
   int n = getParam<int>("n");
 
-  m_discard = data.discard() + n;
-  if (total <= m_discard) {
-    m_discard = total;
+  discard_ = data.discard() + n;
+  if (total <= discard_) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IDiff::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -716,13 +716,13 @@ void IMacd::_calculate(const Indicator& data) {
 
   _readyBuffer(total, 3);
 
-  m_discard = data.discard();
-  if (total <= m_discard) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (total <= discard_) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard + 1);
+  _increment_calculate(data, discard_ + 1);
 }
 
 size_t IMacd::min_increment_start() const { return 1; }
@@ -776,14 +776,14 @@ void IMacd::_dyn_one_circle(const Indicator& ind, size_t curPos, int n1, int n2,
 }
 
 void IMacd::_dyn_calculate(const Indicator& ind) {
-  auto iter = m_ind_params.find("n1");
-  Indicator n1 = iter != m_ind_params.end() ? Indicator(iter->second)
+  auto iter = ind_params_.find("n1");
+  Indicator n1 = iter != ind_params_.end() ? Indicator(iter->second)
                                             : CVAL(ind, getParam<int>("n1"));
-  iter = m_ind_params.find("n2");
-  Indicator n2 = iter != m_ind_params.end() ? Indicator(iter->second)
+  iter = ind_params_.find("n2");
+  Indicator n2 = iter != ind_params_.end() ? Indicator(iter->second)
                                             : CVAL(ind, getParam<int>("n2"));
-  iter = m_ind_params.find("n3");
-  Indicator n3 = iter != m_ind_params.end() ? Indicator(iter->second)
+  iter = ind_params_.find("n3");
+  Indicator n3 = iter != ind_params_.end() ? Indicator(iter->second)
                                             : CVAL(ind, getParam<int>("n3"));
 
   HAYAKU_CHECK(n1.size() == ind.size(),
@@ -796,11 +796,11 @@ void IMacd::_dyn_calculate(const Indicator& ind) {
                "ind_param(n3).size()={}, ind.size()={}!", n3.size(),
                ind.size());
 
-  m_discard = std::max(ind.discard(), n2.discard());
-  m_discard = std::max(m_discard, n3.discard());
-  m_discard = std::max(m_discard, n1.discard());
+  discard_ = std::max(ind.discard(), n2.discard());
+  discard_ = std::max(discard_, n3.discard());
+  discard_ = std::max(discard_, n1.discard());
   size_t total = ind.size();
-  HAYAKU_IF_RETURN(0 == total || m_discard >= total, void());
+  HAYAKU_IF_RETURN(0 == total || discard_ >= total, void());
 
   global_parallel_for_index_void(ind.discard(), total, [&](size_t i) {
     _dyn_one_circle(ind, i, n1[i], n2[i], n3[i]);
@@ -871,21 +871,21 @@ BOOST_CLASS_EXPORT(hayaku::ITr)
 
 namespace hayaku {
 
-ITr::ITr() : IndicatorImp("TR", 1) { m_need_context = true; }
+ITr::ITr() : IndicatorImp("TR", 1) { need_context_ = true; }
 
 ITr::~ITr() {}
 
 void ITr::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& kdata = getContext();
   size_t total = kdata.size();
   HAYAKU_IF_RETURN(total == 0, void());
 
   _readyBuffer(total, 1);
-  m_discard = 1;
+  discard_ = 1;
 
   _increment_calculate(data, 0);
 }

@@ -102,20 +102,20 @@ class HAYAKU_API ConditionBase : public enable_shared_from_this<ConditionBase> {
 
  public:
   typedef vector<price_t>::const_iterator const_iterator;
-  const_iterator cbegin() const { return m_values.cbegin(); }
+  const_iterator cbegin() const { return values_.cbegin(); }
 
-  const_iterator cend() const { return m_values.cend(); }
+  const_iterator cend() const { return values_.cend(); }
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  protected:
-  string m_name;
-  KData m_kdata;
-  internal::ExecutionAccountPortPtr m_account;
-  SGPtr m_sg;
-  map<Datetime, size_t> m_date_index;
-  vector<price_t> m_values;
-  bool m_is_python_object{false};
+  string name_;
+  KData kdata_;
+  internal::ExecutionAccountPortPtr account_;
+  SGPtr sg_;
+  map<Datetime, size_t> date_index_;
+  vector<price_t> values_;
+  bool is_python_object_{false};
 
 //============================================
 // Serialization support
@@ -125,22 +125,22 @@ class HAYAKU_API ConditionBase : public enable_shared_from_this<ConditionBase> {
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_date_index);
-    ar& BOOST_SERIALIZATION_NVP(m_values);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_date_index", date_index_);
+    ar& boost::serialization::make_nvp("m_values", values_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
     // m_kdata/m_account/m_sg are set temporarily when the strategy runs and are
     // not serialized serialized
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_date_index);
-    ar& BOOST_SERIALIZATION_NVP(m_values);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_date_index", date_index_);
+    ar& boost::serialization::make_nvp("m_values", values_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
     // m_kdata/m_account/m_sg are set temporarily when the strategy runs and are
     // not serialized serialized
   }
@@ -196,29 +196,29 @@ typedef shared_ptr<ConditionBase> CNPtr;
 HAYAKU_API std::ostream& operator<<(std::ostream&, const ConditionPtr&);
 HAYAKU_API std::ostream& operator<<(std::ostream&, const ConditionBase&);
 
-inline const string& ConditionBase::name() const { return m_name; }
+inline const string& ConditionBase::name() const { return name_; }
 
-inline void ConditionBase::name(const string& name) { m_name = name; }
+inline void ConditionBase::name(const string& name) { name_ = name; }
 
-inline size_t ConditionBase::size() const { return m_values.size(); }
+inline size_t ConditionBase::size() const { return values_.size(); }
 
-inline price_t const* ConditionBase::data() const { return m_values.data(); }
+inline price_t const* ConditionBase::data() const { return values_.data(); }
 
-inline price_t ConditionBase::at(size_t pos) const { return m_values.at(pos); }
+inline price_t ConditionBase::at(size_t pos) const { return values_.at(pos); }
 
-inline KData ConditionBase::getTO() const { return m_kdata; }
+inline KData ConditionBase::getTO() const { return kdata_; }
 
 inline void ConditionBase::setAccount(
     const internal::ExecutionAccountPortPtr& account) {
-  m_account = account;
+  account_ = account;
 }
 
-inline SGPtr ConditionBase::getSG() const { return m_sg; }
+inline SGPtr ConditionBase::getSG() const { return sg_; }
 
-inline void ConditionBase::setSG(const SGPtr& sg) { m_sg = sg; }
+inline void ConditionBase::setSG(const SGPtr& sg) { sg_ = sg; }
 
 inline internal::ExecutionAccountPortPtr ConditionBase::getAccount() const {
-  return m_account;
+  return account_;
 }
 
 } /* namespace hayaku */

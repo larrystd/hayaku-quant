@@ -22,8 +22,8 @@ class HAYAKU_API AddCondition : public ConditionBase {
   virtual ConditionPtr _clone() override;
 
  private:
-  ConditionPtr m_cond1;
-  ConditionPtr m_cond2;
+  ConditionPtr cond1_;
+  ConditionPtr cond2_;
 
 //============================================
 // Serialization support
@@ -33,8 +33,8 @@ class HAYAKU_API AddCondition : public ConditionBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConditionBase);
-    ar& BOOST_SERIALIZATION_NVP(m_cond1);
-    ar& BOOST_SERIALIZATION_NVP(m_cond2);
+    ar& boost::serialization::make_nvp("m_cond1", cond1_);
+    ar& boost::serialization::make_nvp("m_cond2", cond2_);
   }
 #endif
 };
@@ -61,8 +61,8 @@ class HAYAKU_API AndCondition : public ConditionBase {
   virtual ConditionPtr _clone() override;
 
  private:
-  ConditionPtr m_cond1;
-  ConditionPtr m_cond2;
+  ConditionPtr cond1_;
+  ConditionPtr cond2_;
 
 //============================================
 // Serialization support
@@ -72,8 +72,8 @@ class HAYAKU_API AndCondition : public ConditionBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConditionBase);
-    ar& BOOST_SERIALIZATION_NVP(m_cond1);
-    ar& BOOST_SERIALIZATION_NVP(m_cond2);
+    ar& boost::serialization::make_nvp("m_cond1", cond1_);
+    ar& boost::serialization::make_nvp("m_cond2", cond2_);
   }
 #endif
 };
@@ -100,8 +100,8 @@ class HAYAKU_API DivCondition : public ConditionBase {
   virtual ConditionPtr _clone() override;
 
  private:
-  ConditionPtr m_cond1;
-  ConditionPtr m_cond2;
+  ConditionPtr cond1_;
+  ConditionPtr cond2_;
 
 //============================================
 // Serialization support
@@ -111,8 +111,8 @@ class HAYAKU_API DivCondition : public ConditionBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConditionBase);
-    ar& BOOST_SERIALIZATION_NVP(m_cond1);
-    ar& BOOST_SERIALIZATION_NVP(m_cond2);
+    ar& boost::serialization::make_nvp("m_cond1", cond1_);
+    ar& boost::serialization::make_nvp("m_cond2", cond2_);
   }
 #endif
 };
@@ -139,8 +139,8 @@ class HAYAKU_API MultiCondition : public ConditionBase {
   virtual ConditionPtr _clone() override;
 
  private:
-  ConditionPtr m_cond1;
-  ConditionPtr m_cond2;
+  ConditionPtr cond1_;
+  ConditionPtr cond2_;
 
 //============================================
 // Serialization support
@@ -150,8 +150,8 @@ class HAYAKU_API MultiCondition : public ConditionBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConditionBase);
-    ar& BOOST_SERIALIZATION_NVP(m_cond1);
-    ar& BOOST_SERIALIZATION_NVP(m_cond2);
+    ar& boost::serialization::make_nvp("m_cond1", cond1_);
+    ar& boost::serialization::make_nvp("m_cond2", cond2_);
   }
 #endif
 };
@@ -178,8 +178,8 @@ class HAYAKU_API OrCondition : public ConditionBase {
   virtual ConditionPtr _clone() override;
 
  private:
-  ConditionPtr m_cond1;
-  ConditionPtr m_cond2;
+  ConditionPtr cond1_;
+  ConditionPtr cond2_;
 
 //============================================
 // Serialization support
@@ -189,8 +189,8 @@ class HAYAKU_API OrCondition : public ConditionBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConditionBase);
-    ar& BOOST_SERIALIZATION_NVP(m_cond1);
-    ar& BOOST_SERIALIZATION_NVP(m_cond2);
+    ar& boost::serialization::make_nvp("m_cond1", cond1_);
+    ar& boost::serialization::make_nvp("m_cond2", cond2_);
   }
 #endif
 };
@@ -217,8 +217,8 @@ class HAYAKU_API SubCondition : public ConditionBase {
   virtual ConditionPtr _clone() override;
 
  private:
-  ConditionPtr m_cond1;
-  ConditionPtr m_cond2;
+  ConditionPtr cond1_;
+  ConditionPtr cond2_;
 
 //============================================
 // Serialization support
@@ -228,8 +228,8 @@ class HAYAKU_API SubCondition : public ConditionBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConditionBase);
-    ar& BOOST_SERIALIZATION_NVP(m_cond1);
-    ar& BOOST_SERIALIZATION_NVP(m_cond2);
+    ar& boost::serialization::make_nvp("m_cond1", cond1_);
+    ar& boost::serialization::make_nvp("m_cond2", cond2_);
   }
 #endif
 };

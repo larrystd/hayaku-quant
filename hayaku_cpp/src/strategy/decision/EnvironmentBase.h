@@ -35,10 +35,10 @@ class HAYAKU_API EnvironmentBase
   EnvironmentBase(const EnvironmentBase&);
 
   /** Get the name */
-  const string& name() const { return m_name; }
+  const string& name() const { return name_; }
 
   /** Set the name */
-  void name(const string& name) { m_name = name; }
+  void name(const string& name) { name_ = name; }
 
   /** Reset */
   void reset();
@@ -47,7 +47,7 @@ class HAYAKU_API EnvironmentBase
   void setQuery(const KQuery& query);
 
   /** Get the query condition */
-  const KQuery& getQuery() const { return m_query; }
+  const KQuery& getQuery() const { return query_; }
 
   typedef shared_ptr<EnvironmentBase> EnvironmentPtr;
   /**
@@ -92,16 +92,16 @@ class HAYAKU_API EnvironmentBase
   /** Subclass clone interface */
   virtual EnvironmentPtr _clone() = 0;
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  protected:
-  string m_name;
-  KQuery m_query;
-  map<Datetime, size_t> m_date_index;
-  vector<price_t> m_values;
-  mutable std::shared_mutex m_mutex;
+  string name_;
+  KQuery query_;
+  map<Datetime, size_t> date_index_;
+  vector<price_t> values_;
+  mutable std::shared_mutex mutex_;
 
-  bool m_is_python_object{false};
+  bool is_python_object_{false};
 
 //============================================
 // Serialization support
@@ -111,24 +111,24 @@ class HAYAKU_API EnvironmentBase
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
     // ev may be shared by multiple systems; m_query is kept and may be used for
     // the troubleshooting
-    ar& BOOST_SERIALIZATION_NVP(m_query);
-    ar& BOOST_SERIALIZATION_NVP(m_date_index);
-    ar& BOOST_SERIALIZATION_NVP(m_values);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
+    ar& boost::serialization::make_nvp("m_query", query_);
+    ar& boost::serialization::make_nvp("m_date_index", date_index_);
+    ar& boost::serialization::make_nvp("m_values", values_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_query);
-    ar& BOOST_SERIALIZATION_NVP(m_date_index);
-    ar& BOOST_SERIALIZATION_NVP(m_values);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_query", query_);
+    ar& boost::serialization::make_nvp("m_date_index", date_index_);
+    ar& boost::serialization::make_nvp("m_values", values_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()

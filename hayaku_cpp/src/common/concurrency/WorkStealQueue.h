@@ -22,8 +22,8 @@ namespace hayaku {
 class WorkStealQueue {
  private:
   typedef FuncWrapper data_type;
-  std::deque<data_type> m_queue;
-  mutable std::shared_mutex m_mutex;
+  std::deque<data_type> queue_;
+  mutable std::shared_mutex mutex_;
 
  public:
   /** Constructor */
@@ -35,32 +35,32 @@ class WorkStealQueue {
 
   /** Insert the data into the head of the queue */
   void push_front(data_type&& data) {
-    std::unique_lock<std::shared_mutex> lock(m_mutex);
-    m_queue.push_front(std::move(data));
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    queue_.push_front(std::move(data));
   }
 
   /** Insert the data into the tail of the queue */
   void push_back(data_type&& data) {
-    std::unique_lock<std::shared_mutex> lock(m_mutex);
-    m_queue.push_back(std::move(data));
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    queue_.push_back(std::move(data));
   }
 
   /** Whether the queue is empty */
   bool empty() const {
-    std::shared_lock<std::shared_mutex> lock(m_mutex);
-    return m_queue.empty();
+    std::shared_lock<std::shared_mutex> lock(mutex_);
+    return queue_.empty();
   }
 
   /** Queue size */
   size_t size() const {
-    std::shared_lock<std::shared_mutex> lock(m_mutex);
-    return m_queue.size();
+    std::shared_lock<std::shared_mutex> lock(mutex_);
+    return queue_.size();
   }
 
   void clear() {
-    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(mutex_);
     auto tmp = std::deque<data_type>();
-    m_queue.swap(tmp);
+    queue_.swap(tmp);
   }
 
   /**
@@ -69,13 +69,13 @@ class WorkStealQueue {
    * @return false is returned if the queue was originally empty, otherwise true
    */
   bool try_pop(data_type& res) {
-    std::unique_lock<std::shared_mutex> lock(m_mutex);
-    if (m_queue.empty()) {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    if (queue_.empty()) {
       return false;
     }
 
-    res = std::move(m_queue.front());
-    m_queue.pop_front();
+    res = std::move(queue_.front());
+    queue_.pop_front();
     return true;
   }
 
@@ -85,17 +85,17 @@ class WorkStealQueue {
    * @return false is returned if the queue was originally empty, otherwise true
    */
   bool try_steal(data_type& res) {
-    std::unique_lock<std::shared_mutex> lock(m_mutex);
-    if (m_queue.empty()) {
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    if (queue_.empty()) {
       return false;
     }
 
-    if (m_queue.back().isNullTask()) {
+    if (queue_.back().isNullTask()) {
       return false;
     }
 
-    res = std::move(m_queue.back());
-    m_queue.pop_back();
+    res = std::move(queue_.back());
+    queue_.pop_back();
     return true;
   }
 };

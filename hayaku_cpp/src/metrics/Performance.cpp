@@ -128,7 +128,7 @@ bool isEnglishKey(const string& key) {
 }  // namespace
 
 Performance::Performance()
-    : m_keys({"Account Initial Capital",
+    : keys_({"Account Initial Capital",
               "Total Invested Principal",
               "Total Invested Assets",
               "Total Borrowed Cash",
@@ -181,15 +181,15 @@ Performance::Performance()
               "Max Single Loss R-Multiple",
               "Max Consecutive Win R-Multiple",
               "Max Consecutive Loss R-Multiple"}) {
-  for (const auto& key : m_keys) {
-    m_result[key] = 0.0;
+  for (const auto& key : keys_) {
+    result_[key] = 0.0;
   }
 }
 
 Performance::~Performance() {}
 
 bool Performance::exist(const string& key) {
-  if (m_result.count(key) != 0) {
+  if (result_.count(key) != 0) {
     return true;
   }
   // Backward compatibility with the legacy Chinese key (deprecated)
@@ -198,21 +198,21 @@ bool Performance::exist(const string& key) {
 
 Performance& Performance::operator=(const Performance& other) noexcept {
   HAYAKU_IF_RETURN(this == &other, *this);
-  m_result = other.m_result;
-  m_keys = other.m_keys;
+  result_ = other.result_;
+  keys_ = other.keys_;
   return *this;
 }
 
 Performance& Performance::operator=(Performance&& other) noexcept {
   HAYAKU_IF_RETURN(this == &other, *this);
-  m_result = std::move(other.m_result);
-  m_keys = std::move(other.m_keys);
+  result_ = std::move(other.result_);
+  keys_ = std::move(other.keys_);
   return *this;
 }
 
 void Performance::reset() {
-  map_type::iterator iter = m_result.begin();
-  for (; iter != m_result.end(); ++iter) {
+  map_type::iterator iter = result_.begin();
+  for (; iter != result_.end(); ++iter) {
     if (!std::isnan(iter->second)) {
       iter->second = 0.0;
     }
@@ -220,8 +220,8 @@ void Performance::reset() {
 }
 
 double Performance::get(const string& name) const {
-  auto iter = m_result.find(name);
-  if (iter != m_result.end()) {
+  auto iter = result_.find(name);
+  if (iter != result_.end()) {
     return iter->second;
   }
   // Backward compatibility with the legacy Chinese key (deprecated)
@@ -232,17 +232,17 @@ double Performance::get(const string& name) const {
         "use "
         "\"{}\" instead!",
         name, new_key);
-    return m_result.at(new_key);
+    return result_.at(new_key);
   }
   HAYAKU_WARN("Performance - key({}) not exist!", name);
   return Null<double>();
 }
 
 PriceList Performance::values() const {
-  PriceList result(m_result.size());
+  PriceList result(result_.size());
   size_t i = 0;
-  for (const auto& key : m_keys) {
-    result[i++] = m_result.at(key);
+  for (const auto& key : keys_) {
+    result[i++] = result_.at(key);
   }
   return result;
 }
@@ -255,8 +255,8 @@ void Performance::addKey(const string& key, const string& chinese) {
   if (!chinese.empty()) {
     chineseNameMap()[key] = chinese;
   }
-  m_keys.push_back(key);
-  m_result[key] = 0.0;
+  keys_.push_back(key);
+  result_[key] = 0.0;
 }
 
 void Performance::setValue(const string& key, double value) {
@@ -264,7 +264,7 @@ void Performance::setValue(const string& key, double value) {
                          "Performance - setValue: only the English key is "
                          "supported, but got \"{}\"!",
                          key);
-  m_result[key] = value;
+  result_[key] = value;
 }
 
 string Performance::report() {
@@ -276,12 +276,12 @@ string Performance::report() {
   buf.setf(std::ios_base::fixed);
   buf.precision(2);
   bool zh_lang = (getSystemLanguage() == "zh_cn");
-  for (const auto& key : m_keys) {
+  for (const auto& key : keys_) {
     const string& chinese = lookupChineseName(key);
     if (zh_lang && !chinese.empty()) {
-      buf << chinese << ": " << m_result.at(key) << std::endl;
+      buf << chinese << ": " << result_.at(key) << std::endl;
     } else {
-      buf << htr(key.c_str()) << ": " << m_result.at(key) << std::endl;
+      buf << htr(key.c_str()) << ": " << result_.at(key) << std::endl;
     }
   }
 
@@ -300,15 +300,15 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
                          void(), "datetime must >= tm->lastDatetime !");
 
   int precision = tm->precision();
-  m_result["Account Initial Capital"] = tm->initCash();
+  result_["Account Initial Capital"] = tm->initCash();
   FundsRecord funds = tm->getFunds(datetime, KQuery::DAY);
-  m_result["Cash Balance"] = funds.cash;
-  m_result["Total Invested Principal"] = funds.base_cash;
-  m_result["Total Invested Assets"] = funds.base_asset;
-  m_result["Total Borrowed Cash"] = funds.borrow_cash;
-  m_result["Total Borrowed Assets"] = funds.borrow_asset;
-  m_result["Open Position Net Value"] = funds.market_value;
-  m_result["Current Total Assets"] =
+  result_["Cash Balance"] = funds.cash;
+  result_["Total Invested Principal"] = funds.base_cash;
+  result_["Total Invested Assets"] = funds.base_asset;
+  result_["Total Borrowed Cash"] = funds.borrow_cash;
+  result_["Total Borrowed Assets"] = funds.borrow_asset;
+  result_["Open Position Net Value"] = funds.market_value;
+  result_["Current Total Assets"] =
       funds.cash + funds.market_value - funds.borrow_cash - funds.borrow_asset;
   price_t total_money = funds.base_cash + funds.base_asset;
 
@@ -316,7 +316,7 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
   TradeRecordList::const_iterator trade_iter = trade_list.begin();
   for (; trade_iter != trade_list.end(); ++trade_iter) {
     if (trade_iter->business == BUSINESS_BONUS) {
-      m_result["Total Dividends"] += trade_iter->realPrice;
+      result_["Total Dividends"] += trade_iter->realPrice;
     }
   }
 
@@ -345,16 +345,16 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
   bool pre_earn = true;
   const PositionRecordList& his_position = tm->getHistoryPositionList();
   price_t total_r = 0.0;
-  m_result["Total Closed Trades"] = (double)his_position.size();
+  result_["Total Closed Trades"] = (double)his_position.size();
   PositionRecordList::const_iterator his_iter = his_position.begin();
   for (; his_iter != his_position.end(); ++his_iter) {
     const PositionRecord& pos = *his_iter;
-    m_result["Total Cost of Closed Trades"] += pos.totalCost;
+    result_["Total Cost of Closed Trades"] += pos.totalCost;
 
     price_t profit =
         roundEx(pos.sellMoney - pos.totalCost - pos.buyMoney, precision);
-    m_result["Total Net Profit of Closed Trades"] = roundEx(
-        m_result["Total Net Profit of Closed Trades"] + profit, precision);
+    result_["Total Net Profit of Closed Trades"] = roundEx(
+        result_["Total Net Profit of Closed Trades"] + profit, precision);
 
     price_t profit_percent = profit / (pos.buyMoney + pos.totalCost) * 100.;
 
@@ -362,27 +362,27 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
     total_r += r;
 
     if (profit > 0.0) {
-      m_result["Number of Winning Trades"]++;
-      m_result["Total Profit of Winning Trades"] = roundEx(
-          profit + m_result["Total Profit of Winning Trades"], precision);
-      if (profit > m_result["Largest Single Win"]) {
-        m_result["Largest Single Win"] = profit;
+      result_["Number of Winning Trades"]++;
+      result_["Total Profit of Winning Trades"] = roundEx(
+          profit + result_["Total Profit of Winning Trades"], precision);
+      if (profit > result_["Largest Single Win"]) {
+        result_["Largest Single Win"] = profit;
       }
 
-      if (profit_percent > m_result["Largest Single Win %"]) {
-        m_result["Largest Single Win %"] = profit_percent;
+      if (profit_percent > result_["Largest Single Win %"]) {
+        result_["Largest Single Win %"] = profit_percent;
       }
 
       int duration =
           (pos.cleanDatetime.date() - pos.takeDatetime.date()).days();
       earn.total_duration += duration;
-      if (duration > m_result["Max Holding Period of Winning Trades"]) {
-        m_result["Max Holding Period of Winning Trades"] = duration;
+      if (duration > result_["Max Holding Period of Winning Trades"]) {
+        result_["Max Holding Period of Winning Trades"] = duration;
       }
 
       earn.total_r += r;
-      if (r > m_result["Max Single Win R-Multiple"]) {
-        m_result["Max Single Win R-Multiple"] = r;
+      if (r > result_["Max Single Win R-Multiple"]) {
+        result_["Max Single Win R-Multiple"] = r;
       }
 
       // The last trade was a profitable trade
@@ -411,27 +411,27 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
 
     } else {
       // The one that made no money is recorded as a losing trade
-      m_result["Number of Losing Trades"]++;
-      m_result["Total Loss of Losing Trades"] =
-          roundEx(profit + m_result["Total Loss of Losing Trades"], precision);
-      if (profit < m_result["Largest Single Loss"]) {
-        m_result["Largest Single Loss"] = profit;
+      result_["Number of Losing Trades"]++;
+      result_["Total Loss of Losing Trades"] =
+          roundEx(profit + result_["Total Loss of Losing Trades"], precision);
+      if (profit < result_["Largest Single Loss"]) {
+        result_["Largest Single Loss"] = profit;
       }
 
-      if (profit_percent < m_result["Largest Single Loss %"]) {
-        m_result["Largest Single Loss %"] = profit_percent;
+      if (profit_percent < result_["Largest Single Loss %"]) {
+        result_["Largest Single Loss %"] = profit_percent;
       }
 
       int duration =
           (pos.cleanDatetime.date() - pos.takeDatetime.date()).days();
       loss.total_duration += duration;
-      if (duration > m_result["Max Holding Period of Losing Trades"]) {
-        m_result["Max Holding Period of Losing Trades"] = duration;
+      if (duration > result_["Max Holding Period of Losing Trades"]) {
+        result_["Max Holding Period of Losing Trades"] = duration;
       }
 
       loss.total_r += r;
-      if (r < m_result["Max Single Loss R-Multiple"]) {
-        m_result["Max Single Loss R-Multiple"] = r;
+      if (r < result_["Max Single Loss R-Multiple"]) {
+        result_["Max Single Loss R-Multiple"] = r;
       }
 
       // The last one was a losing trade
@@ -461,77 +461,77 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
     }
   }
 
-  m_result["Max Consecutive Wins"] = earn.max_continues;
-  m_result["Max Consecutive Win Amount"] = earn.max_continues_money;
-  m_result["Max Consecutive Losses"] = loss.max_continues;
-  m_result["Max Consecutive Loss Amount"] = loss.max_continues_money;
+  result_["Max Consecutive Wins"] = earn.max_continues;
+  result_["Max Consecutive Win Amount"] = earn.max_continues_money;
+  result_["Max Consecutive Losses"] = loss.max_continues;
+  result_["Max Consecutive Loss Amount"] = loss.max_continues_money;
 
-  if (m_result["Max Consecutive Wins"] != 0.0) {
-    m_result["Max Consecutive Win R-Multiple"] = roundEx(
-        earn.max_continues_r / m_result["Max Consecutive Wins"], precision);
+  if (result_["Max Consecutive Wins"] != 0.0) {
+    result_["Max Consecutive Win R-Multiple"] = roundEx(
+        earn.max_continues_r / result_["Max Consecutive Wins"], precision);
   }
 
-  if (m_result["Max Consecutive Losses"] != 0.0) {
-    m_result["Max Consecutive Loss R-Multiple"] = roundEx(
-        loss.max_continues_r / m_result["Max Consecutive Losses"], precision);
+  if (result_["Max Consecutive Losses"] != 0.0) {
+    result_["Max Consecutive Loss R-Multiple"] = roundEx(
+        loss.max_continues_r / result_["Max Consecutive Losses"], precision);
   }
 
-  if (m_result["Total Invested Principal"] != 0.0) {
-    m_result["Open Position Account Return %"] =
-        100. * (m_result["Current Total Assets"] /
-                    m_result["Total Invested Principal"] -
+  if (result_["Total Invested Principal"] != 0.0) {
+    result_["Open Position Account Return %"] =
+        100. * (result_["Current Total Assets"] /
+                    result_["Total Invested Principal"] -
                 1.);
-    m_result["Closed Trade Account Return %"] =
-        100. * m_result["Total Net Profit of Closed Trades"] /
-        m_result["Total Invested Principal"];
+    result_["Closed Trade Account Return %"] =
+        100. * result_["Total Net Profit of Closed Trades"] /
+        result_["Total Invested Principal"];
   }
 
-  if (m_result["Number of Winning Trades"] != 0.0) {
-    m_result["Avg Profit per Winning Trade"] =
-        roundEx(m_result["Total Profit of Winning Trades"] /
-                    m_result["Number of Winning Trades"],
+  if (result_["Number of Winning Trades"] != 0.0) {
+    result_["Avg Profit per Winning Trade"] =
+        roundEx(result_["Total Profit of Winning Trades"] /
+                    result_["Number of Winning Trades"],
                 precision);
-    m_result["Avg Holding Period of Winning Trades"] =
-        earn.total_duration / m_result["Number of Winning Trades"];
-    m_result["Avg R-Multiple of Winning Trades"] =
-        roundEx(earn.total_r / m_result["Number of Winning Trades"], precision);
+    result_["Avg Holding Period of Winning Trades"] =
+        earn.total_duration / result_["Number of Winning Trades"];
+    result_["Avg R-Multiple of Winning Trades"] =
+        roundEx(earn.total_r / result_["Number of Winning Trades"], precision);
   }
 
-  if (m_result["Number of Losing Trades"] != 0.0) {
-    m_result["Avg Loss per Losing Trade"] =
-        roundEx(m_result["Total Loss of Losing Trades"] /
-                    m_result["Number of Losing Trades"],
+  if (result_["Number of Losing Trades"] != 0.0) {
+    result_["Avg Loss per Losing Trade"] =
+        roundEx(result_["Total Loss of Losing Trades"] /
+                    result_["Number of Losing Trades"],
                 precision);
-    m_result["Avg Holding Period of Losing Trades"] =
-        loss.total_duration / m_result["Number of Losing Trades"];
-    m_result["Avg R-Multiple of Losing Trades"] =
-        roundEx(loss.total_r / m_result["Number of Losing Trades"], precision);
+    result_["Avg Holding Period of Losing Trades"] =
+        loss.total_duration / result_["Number of Losing Trades"];
+    result_["Avg R-Multiple of Losing Trades"] =
+        roundEx(loss.total_r / result_["Number of Losing Trades"], precision);
   }
 
-  if (m_result["Avg Loss per Losing Trade"] != 0.0) {
-    m_result["Avg Win / Avg Loss Ratio"] =
-        roundEx(m_result["Avg Profit per Winning Trade"] /
-                    std::fabs(m_result["Avg Loss per Losing Trade"]),
+  if (result_["Avg Loss per Losing Trade"] != 0.0) {
+    result_["Avg Win / Avg Loss Ratio"] =
+        roundEx(result_["Avg Profit per Winning Trade"] /
+                    std::fabs(result_["Avg Loss per Losing Trade"]),
                 precision);
   }
 
-  if (m_result["Total Closed Trades"] != 0.0) {
-    m_result["Win Rate %"] = 100 * m_result["Number of Winning Trades"] /
-                             m_result["Total Closed Trades"];
-    m_result["R-Multiple Expectancy"] =
-        roundEx(total_r / m_result["Total Closed Trades"], precision);
+  if (result_["Total Closed Trades"] != 0.0) {
+    result_["Win Rate %"] = 100 * result_["Number of Winning Trades"] /
+                             result_["Total Closed Trades"];
+    result_["R-Multiple Expectancy"] =
+        roundEx(total_r / result_["Total Closed Trades"], precision);
   }
 
-  if (m_result["Total Loss of Losing Trades"] != 0.0) {
-    m_result["Profit Factor"] =
-        m_result["Total Profit of Winning Trades"] /
-        std::fabs(m_result["Total Loss of Losing Trades"]);
+  if (result_["Total Loss of Losing Trades"] != 0.0) {
+    result_["Profit Factor"] =
+        result_["Total Profit of Winning Trades"] /
+        std::fabs(result_["Total Loss of Losing Trades"]);
   }
 
-  m_result["Profit Expectancy"] =
-      0.01 * m_result["Win Rate %"] * m_result["Avg Profit per Winning Trade"] +
-      (1 - 0.01 * m_result["Win Rate %"]) *
-          m_result["Avg Loss per Losing Trade"];
+  result_["Profit Expectancy"] =
+      0.01 * result_["Win Rate %"] * result_["Avg Profit per Winning Trade"] +
+      (1 - 0.01 * result_["Win Rate %"]) *
+          result_["Avg Loss per Losing Trade"];
 
   int64_t duration = 0;
   if (tm->firstDatetime() != Null<Datetime>()) {
@@ -545,21 +545,21 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
   double years = duration / 365.0;
 
   if (duration > 1) {
-    m_result["Trade Opportunities per Year"] =
-        m_result["Total Closed Trades"] / years;
-    m_result["Annual Expected R-Multiple"] =
-        roundEx(m_result["R-Multiple Expectancy"] *
-                    m_result["Trade Opportunities per Year"],
+    result_["Trade Opportunities per Year"] =
+        result_["Total Closed Trades"] / years;
+    result_["Annual Expected R-Multiple"] =
+        roundEx(result_["R-Multiple Expectancy"] *
+                    result_["Trade Opportunities per Year"],
                 precision);
   }
 
   if (total_money != 0.0 && years != 0.0) {
-    m_result["Account Avg Annual Return %"] =
-        100 * (((m_result["Current Total Assets"] / total_money) - 1) / years);
-    m_result["Account CAGR %"] =
+    result_["Account Avg Annual Return %"] =
+        100 * (((result_["Current Total Assets"] / total_money) - 1) / years);
+    result_["Account CAGR %"] =
         100 *
         ((std::pow(10,
-                   (std::log10(m_result["Current Total Assets"] / total_money) /
+                   (std::log10(result_["Current Total Assets"] / total_money) /
                     years)) -
           1));
   }
@@ -582,9 +582,9 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
     }
   }
 
-  m_result["Max Cash Usage per Trade %"] = 100 * max_percent;
+  result_["Max Cash Usage per Trade %"] = 100 * max_percent;
   if (trade_number != 0) {
-    m_result["Avg Cash Usage per Trade %"] = 100 * sum_percent / trade_number;
+    result_["Avg Cash Usage per Trade %"] = 100 * sum_percent / trade_number;
   }
 
   PositionRecordList cur_position = tm->getPositionList();
@@ -636,14 +636,14 @@ void Performance::statistics(const internal::ExecutionAccountPortPtr& tm,
       }
     }
 
-    m_result["Total Time Flat"] = total_short_days;
-    m_result["Max Time Flat"] = max_short_days;
+    result_["Total Time Flat"] = total_short_days;
+    result_["Max Time Flat"] = max_short_days;
     if (day_range.size() != 0) {
-      m_result["Time Flat / Total Time %"] =
+      result_["Time Flat / Total Time %"] =
           100 * total_short_days / day_range.size();
     }
     if (short_number != 0) {
-      m_result["Avg Time Flat"] = total_short_days / short_number;
+      result_["Avg Time Flat"] = total_short_days / short_number;
     }
   }
 }

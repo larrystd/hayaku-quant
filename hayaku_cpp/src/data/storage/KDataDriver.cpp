@@ -26,19 +26,19 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-KDataDriver::KDataDriver() : m_name("") {}
+KDataDriver::KDataDriver() : name_("") {}
 
-KDataDriver::KDataDriver(const Parameter& params) : m_params(params) {}
+KDataDriver::KDataDriver(const Parameter& params) : params_(params) {}
 
-KDataDriver::KDataDriver(const string& name) : m_name(name) {
-  to_upper(m_name);
+KDataDriver::KDataDriver(const string& name) : name_(name) {
+  to_upper(name_);
 }
 
 shared_ptr<KDataDriver> KDataDriver::clone() {
   shared_ptr<KDataDriver> ptr = _clone();
-  ptr->m_params = m_params;
-  ptr->m_name = m_name;
-  ptr->m_is_python_object = m_is_python_object;
+  ptr->params_ = params_;
+  ptr->name_ = name_;
+  ptr->is_python_object_ = is_python_object_;
   ptr->_init();
   return ptr;
 }
@@ -48,11 +48,11 @@ bool KDataDriver::checkType() {
   try {
     string type = getParam<string>("type");
     to_upper(type);
-    if (type == m_name) {
+    if (type == name_) {
       result = true;
     } else {
       result = false;
-      HAYAKU_WARN("Type of driver mismatch! ({} != {})", type, m_name);
+      HAYAKU_WARN("Type of driver mismatch! ({} != {})", type, name_);
     }
 
   } catch (...) {
@@ -64,8 +64,8 @@ bool KDataDriver::checkType() {
 }
 
 bool KDataDriver::init(const Parameter& params) {
-  HAYAKU_IF_RETURN(m_params == params, true);
-  m_params = params;
+  HAYAKU_IF_RETURN(params_ == params, true);
+  params_ = params;
   HAYAKU_IF_RETURN(!checkType(), false);
   return _init();
 }
@@ -73,7 +73,7 @@ bool KDataDriver::init(const Parameter& params) {
 size_t KDataDriver::getCount(const string& market, const string& code,
                              const KQuery::KType& kType) {
   HAYAKU_INFO("The getCount method has not been implemented! (KDataDriver: {})",
-              m_name);
+              name_);
   return 0;
 }
 
@@ -83,7 +83,7 @@ bool KDataDriver::getIndexRangeByDate(const string& market, const string& code,
   HAYAKU_INFO(
       "The getIndexRangeByDate method has not been implemented! (KDataDriver: "
       "{})",
-      m_name);
+      name_);
   return false;
 }
 
@@ -92,7 +92,7 @@ KRecordList KDataDriver::getKRecordList(const string& market,
                                         const KQuery& query) {
   HAYAKU_INFO(
       "The getKRecordList method has not been implemented! (KDataDriver: {})",
-      m_name);
+      name_);
   return KRecordList();
 }
 
@@ -108,7 +108,7 @@ TimeLineList KDataDriver::getTimeLineList(const string& market,
                                           const KQuery& query) {
   HAYAKU_INFO(
       "The getTimeLineList method has not been implemented! (KDataDriver: {})",
-      m_name);
+      name_);
   return TimeLineList();
 }
 
@@ -116,7 +116,7 @@ TransList KDataDriver::getTransList(const string& market, const string& code,
                                     const KQuery& query) {
   HAYAKU_INFO(
       "The getTransList method has not been implemented! (KDataDriver: {})",
-      m_name);
+      name_);
   return TransList();
 }
 
@@ -126,7 +126,7 @@ std::unordered_map<std::string, KRecordList> KDataDriver::getAllKRecordList(
   HAYAKU_INFO(
       "The getAllKRecordList method has not been implemented! (KDataDriver: "
       "{})",
-      m_name);
+      name_);
   return std::unordered_map<std::string, KRecordList>();
 }
 

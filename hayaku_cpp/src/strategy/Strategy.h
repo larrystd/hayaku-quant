@@ -54,11 +54,11 @@ class HAYAKU_API Strategy {
 
   virtual ~Strategy();
 
-  const string& name() const { return m_name; }
+  const string& name() const { return name_; }
 
-  void name(const string& name) { m_name = name; }
+  void name(const string& name) { name_ = name; }
 
-  const StrategyContext& context() const { return m_context; }
+  const StrategyContext& context() const { return context_; }
 
   bool running() const;
 
@@ -120,17 +120,17 @@ class HAYAKU_API Strategy {
   //==========================================================================
 
   internal::ExecutionAccountPortPtr getAccount() const noexcept {
-    return m_account;
+    return account_;
   }
 
   void setAccount(internal::ExecutionAccountPortPtr account) noexcept {
-    m_account = std::move(account);
+    account_ = std::move(account);
   }
 
   /** Used in the backtest state only */
-  SlippagePtr getSP() const noexcept { return m_sp; }
+  SlippagePtr getSP() const noexcept { return sp_; }
 
-  void setSP(const SlippagePtr& slippage) noexcept { m_sp = slippage; }
+  void setSP(const SlippagePtr& slippage) noexcept { sp_ = slippage; }
 
   // Get the current price; Null<price_t>() is returned when it is invalid
   price_t getCurrentPrice(const Stock& stk, const KQuery::KType& ktype) const;
@@ -200,16 +200,16 @@ class HAYAKU_API Strategy {
   virtual bool isBacktesting() const { return false; }
 
  protected:
-  string m_name;
-  string m_config_file;
-  StrategyContext m_context;
-  std::unique_ptr<HayakuSession> m_session;
-  internal::ExecutionAccountPortPtr m_account;
-  SlippagePtr m_sp;
+  string name_;
+  string config_file_;
+  StrategyContext context_;
+  std::unique_ptr<HayakuSession> session_;
+  internal::ExecutionAccountPortPtr account_;
+  SlippagePtr sp_;
 
-  std::function<void(Strategy*, const Datetime&)> m_on_recieved_spot;
+  std::function<void(Strategy*, const Datetime&)> on_recieved_spot_;
   std::function<void(Strategy*, const Stock&, const SpotRecord& spot)>
-      m_on_change;
+      on_change_;
 
   struct RunDailyAt {
     std::function<void()> func;
@@ -217,9 +217,9 @@ class HAYAKU_API Strategy {
     string market;
     bool ignoreMarket{false};
   };
-  std::forward_list<RunDailyAt> m_run_daily_at_list;
+  std::forward_list<RunDailyAt> run_daily_at_list_;
 
-  std::unordered_map<TimeDelta, std::function<void()>> m_run_daily_at_funcs;
+  std::unordered_map<TimeDelta, std::function<void()>> run_daily_at_funcs_;
 
  protected:
   static std::atomic_bool ms_keep_running;
@@ -239,7 +239,7 @@ class HAYAKU_API Strategy {
   static std::atomic<bool> ms_sig_registered;
 
   typedef FuncWrapper event_type;
-  ThreadSafeQueue<event_type> m_event_queue;  // Message queue
+  ThreadSafeQueue<event_type> event_queue_;  // Message queue
 
   /** The type of the corresponding future returned after submitting a task to
    * the message queue
@@ -258,7 +258,7 @@ class HAYAKU_API Strategy {
     typedef typename std::invoke_result<FunctionType>::type result_type;
     std::packaged_task<result_type()> task(f);
     event_handle<result_type> res(task.get_future());
-    m_event_queue.push(std::move(task));
+    event_queue_.push(std::move(task));
     return res;
   }
 

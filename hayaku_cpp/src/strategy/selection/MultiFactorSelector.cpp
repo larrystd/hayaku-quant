@@ -39,7 +39,7 @@ MultiFactorSelector::MultiFactorSelector() : SelectorBase("SE_MultiFactor") {
 MultiFactorSelector::MultiFactorSelector(const MFPtr& mf, int topn)
     : SelectorBase("SE_MultiFactor") {
   HAYAKU_CHECK(mf, "mf is null!");
-  m_mf = mf;
+  mf_ = mf;
   setParam<bool>("only_should_buy", false);
   setParam<bool>("ignore_null", true);
   setParam<bool>("ignore_le_zero", false);
@@ -76,17 +76,17 @@ void MultiFactorSelector::_checkParam(const string& name) const {
 }
 
 void MultiFactorSelector::_reset() {
-  if (m_mf) {
-    m_mf->reset();
+  if (mf_) {
+    mf_->reset();
   }
-  m_stk_sys_dict.clear();
+  stk_sys_dict_.clear();
 }
 
 SelectorPtr MultiFactorSelector::_clone() {
   auto p = make_shared<MultiFactorSelector>();
-  p->m_mf = m_mf->clone();
-  p->m_stk_sys_dict = m_stk_sys_dict;
-  p->m_factorset = m_factorset;
+  p->mf_ = mf_->clone();
+  p->stk_sys_dict_ = stk_sys_dict_;
+  p->factorset_ = factorset_;
   return p;
 }
 
@@ -98,7 +98,7 @@ ScoreRecordList MultiFactorSelector::filterOnlyShouldBuy(
   size_t i = 0, cnt = 0, total = scores.size();
   while (i < total && cnt < topn) {
     auto const& sc = scores[i];
-    auto sys = m_stk_sys_dict[sc.stock];
+    auto sys = stk_sys_dict_[sc.stock];
     if (sys->getSG()->shouldBuy(date)) {
       ret.emplace_back(sc);
       cnt++;
@@ -158,7 +158,7 @@ StrategyWeightList MultiFactorSelector::_getSelected(Datetime date) {
   bool reverse = getParam<bool>("reverse");
 
   ScoreRecordList scores =
-      m_mf->getScores(date, 0, Null<size_t>(),
+      mf_->getScores(date, 0, Null<size_t>(),
                       [ignore_null, ignore_le_zero](const ScoreRecord& sc) {
                         return !(ignore_null && std::isnan(sc.value)) &&
                                !(ignore_le_zero && sc.value <= 0.0);
@@ -167,8 +167,8 @@ StrategyWeightList MultiFactorSelector::_getSelected(Datetime date) {
   // MultiFactorSelector2 with filters is recommended; this is kept for the old
   // interface compatibility only Apply the user-defined score filters
   // (set_scores_filter / add_scores_filter are supported)
-  if (m_sc_filter) {
-    scores = m_sc_filter->filter(scores, date, m_query);
+  if (sc_filter_) {
+    scores = sc_filter_->filter(scores, date, query_);
   }
 
   int param_topn = getParam<int>("topn");
@@ -190,7 +190,7 @@ StrategyWeightList MultiFactorSelector::_getSelected(Datetime date) {
 
   StrategyWeightList ret;
   for (const auto& sc : scores) {
-    ret.emplace_back(m_stk_sys_dict[sc.stock], sc.value);
+    ret.emplace_back(stk_sys_dict_[sc.stock], sc.value);
   }
   return ret;
 }
@@ -199,11 +199,11 @@ void MultiFactorSelector::_calculate() {
   Stock ref_stk = getParam<Stock>("ref_stk");
 
   StockList stks;
-  for (const auto& sys : m_pro_sys_list) {
+  for (const auto& sys : pro_sys_list_) {
     stks.emplace_back(sys->getStock());
   }
 
-  KQuery query = m_query;
+  KQuery query = query_;
   if (getParam<int>("mf_recover_type") != KQuery::INVALID_RECOVER_TYPE) {
     query.recoverType(
         static_cast<KQuery::RecoverType>(getParam<int>("mf_recover_type")));
@@ -214,41 +214,41 @@ void MultiFactorSelector::_calculate() {
   bool spearman = getParam<bool>("use_spearman");
   auto mode = getParam<string>("mode");
 
-  if (!m_mf) {
+  if (!mf_) {
     if ("MF_ICIRWeight" == mode) {
-      m_mf = MF_ICIRWeight(m_factorset, stks, query, ref_stk, ic_n,
+      mf_ = MF_ICIRWeight(factorset_, stks, query, ref_stk, ic_n,
                            ic_rolling_n, spearman);
     } else if ("MF_ICWeight" == mode) {
-      m_mf = MF_ICWeight(m_factorset, stks, query, ref_stk, ic_n, ic_rolling_n,
+      mf_ = MF_ICWeight(factorset_, stks, query, ref_stk, ic_n, ic_rolling_n,
                          spearman);
     } else if ("MF_EqualWeight" == mode) {
-      m_mf = MF_EqualWeight(m_factorset, stks, query, ref_stk, ic_n, spearman);
+      mf_ = MF_EqualWeight(factorset_, stks, query, ref_stk, ic_n, spearman);
     } else {
       HAYAKU_THROW("Invalid mode: {}", mode);
     }
   } else {
     if (getParam<bool>("keep_mf_recover_type")) {
-      auto mf_query = m_mf->getQuery();
+      auto mf_query = mf_->getQuery();
       auto new_query = query;
       new_query.recoverType(mf_query.recoverType());
-      m_mf->setQuery(new_query);
+      mf_->setQuery(new_query);
     } else {
-      m_mf->setQuery(query);
+      mf_->setQuery(query);
     }
-    m_mf->setRefFactorSet(m_factorset);
-    m_mf->setRefStock(ref_stk);
-    m_mf->setStockList(stks);
-    m_mf->setParam<int>("ic_n", ic_n);
-    m_mf->setParam<bool>("use_spearman", spearman);
-    if (m_mf->haveParam("ic_rolling_n")) {
-      m_mf->setParam<int>("ic_rolling_n", ic_rolling_n);
+    mf_->setRefFactorSet(factorset_);
+    mf_->setRefStock(ref_stk);
+    mf_->setStockList(stks);
+    mf_->setParam<int>("ic_n", ic_n);
+    mf_->setParam<bool>("use_spearman", spearman);
+    if (mf_->haveParam("ic_rolling_n")) {
+      mf_->setParam<int>("ic_rolling_n", ic_rolling_n);
     }
   }
 
-  m_mf->calculate();
+  mf_->calculate();
 
-  for (const auto& sys : m_real_sys_list) {
-    m_stk_sys_dict.insert({sys->getStock(), sys});
+  for (const auto& sys : real_sys_list_) {
+    stk_sys_dict_.insert({sys->getStock(), sys});
   }
 }
 

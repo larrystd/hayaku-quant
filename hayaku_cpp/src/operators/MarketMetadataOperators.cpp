@@ -44,7 +44,7 @@ BOOST_CLASS_EXPORT(hayaku::IAdjFactor)
 namespace hayaku {
 
 IAdjFactor::IAdjFactor() : IndicatorImp("ADJ_FACTOR", 1) {
-  m_need_context = true;
+  need_context_ = true;
 }
 
 IAdjFactor::~IAdjFactor() {}
@@ -143,14 +143,14 @@ static vector<std::pair<Datetime, Indicator::value_t>> cum_adj_factor(
 void IAdjFactor::_calculate(const Indicator& ind) {
   HAYAKU_WARN_IF(!isLeaf() && !ind.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
   HAYAKU_IF_RETURN(total == 0, void());
 
   _readyBuffer(total, 1);
-  m_discard = 0;
+  discard_ = 0;
 
   // Reuse the incremental calculation method; start_pos = 0 means calculating
   // from the beginning
@@ -162,7 +162,7 @@ bool IAdjFactor::supportIncrementCalculate() const { return true; }
 void IAdjFactor::_increment_calculate(const Indicator& ind, size_t start_pos) {
   HAYAKU_WARN_IF(!isLeaf() && !ind.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -183,11 +183,11 @@ void IAdjFactor::_increment_calculate(const Indicator& ind, size_t start_pos) {
     // Use the factor value of the previous position as the base
     base_factor = dst[start_pos - 1];
     calc_start_date = kdata[start_pos - 1].datetime.startOfDay();
-  } else if (!m_old_context.empty()) {
+  } else if (!old_context_.empty()) {
     // The first incremental calculation with an old context: use the start date
     // of the old context
     base_factor = 1.0;  // Calculate from the beginning
-    calc_start_date = m_old_context[0].datetime.startOfDay();
+    calc_start_date = old_context_[0].datetime.startOfDay();
   } else {
     // The real first calculation, starting from the first K-line
     calc_start_date = kdata[0].datetime.startOfDay();
@@ -310,7 +310,7 @@ BOOST_CLASS_EXPORT(hayaku::ICodeLike)
 namespace hayaku {
 
 ICodeLike::ICodeLike() : IndicatorImp("CODELIKE", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<string>("pattern", "");
 }
 
@@ -406,7 +406,7 @@ BOOST_CLASS_EXPORT(hayaku::ICycle)
 namespace hayaku {
 
 ICycle::ICycle() : IndicatorImp("CYCLE", 1) {
-  m_need_context = true;
+  need_context_ = true;
   _initParams();
 }
 
@@ -611,7 +611,7 @@ static void calculate_delay(const DatetimeList& datelist, int adjust_cycle,
 void ICycle::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -710,7 +710,7 @@ BOOST_CLASS_EXPORT(hayaku::IFinance)
 namespace hayaku {
 
 IFinance::IFinance() : IndicatorImp("FINANCE", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<int>("field_ix", 0);
   setParam<string>("field_name", "");
 
@@ -727,7 +727,7 @@ IFinance::IFinance() : IndicatorImp("FINANCE", 1) {
 void IFinance::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& kdata = getContext();
   size_t total = kdata.size();
@@ -755,7 +755,7 @@ void IFinance::_increment_calculate(const Indicator& data, size_t start_pos) {
   }
 
   if (finances.empty()) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -901,7 +901,7 @@ BOOST_CLASS_EXPORT(hayaku::ILiuTongPan)
 namespace hayaku {
 
 ILiuTongPan::ILiuTongPan() : IndicatorImp("LIUTONGPAN", 1) {
-  m_need_context = true;
+  need_context_ = true;
 }
 
 ILiuTongPan::~ILiuTongPan() {}
@@ -909,7 +909,7 @@ ILiuTongPan::~ILiuTongPan() {}
 void ILiuTongPan::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -918,7 +918,7 @@ void ILiuTongPan::_calculate(const Indicator& data) {
   _readyBuffer(total, 1);
 
   // Set the discard to everything first, it is updated later
-  m_discard = total;
+  discard_ = total;
 
   Stock stock = k.getStock();
   auto* kdata = k.data();
@@ -977,7 +977,7 @@ void ILiuTongPan::_calculate(const Indicator& data) {
   // Update the discard
   for (size_t i = 0; i < total; i++) {
     if (!std::isnan(dst[i])) {
-      m_discard = i;
+      discard_ = i;
       break;
     }
   }
@@ -1032,7 +1032,7 @@ BOOST_CLASS_EXPORT(hayaku::INameLike)
 namespace hayaku {
 
 INameLike::INameLike() : IndicatorImp("NAMELIKE", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<string>("pattern", "");
 }
 
@@ -1122,7 +1122,7 @@ BOOST_CLASS_EXPORT(hayaku::IStkType)
 
 namespace hayaku {
 
-IStkType::IStkType() : IndicatorImp("STKTYPE", 1) { m_need_context = true; }
+IStkType::IStkType() : IndicatorImp("STKTYPE", 1) { need_context_ = true; }
 
 IStkType::~IStkType() {}
 
@@ -1136,7 +1136,7 @@ void IStkType::_calculate(const Indicator& ind) {
 
   _readyBuffer(total, 1);
 
-  m_discard = 0;
+  discard_ = 0;
   _increment_calculate(ind, 0);
 }
 
@@ -1331,7 +1331,7 @@ BOOST_CLASS_EXPORT(hayaku::IZongGuBen)
 namespace hayaku {
 
 IZongGuBen::IZongGuBen() : IndicatorImp("ZONGGUBEN", 1) {
-  m_need_context = true;
+  need_context_ = true;
 }
 
 IZongGuBen::~IZongGuBen() {}
@@ -1339,7 +1339,7 @@ IZongGuBen::~IZongGuBen() {}
 void IZongGuBen::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -1425,7 +1425,7 @@ class IFactor : public IndicatorImp {
   virtual bool selfAlike(const IndicatorImp& other) const noexcept override;
 
  private:
-  Factor m_factor;
+  Factor factor_;
 
 //============================================
 // Serialization support
@@ -1436,7 +1436,7 @@ class IFactor : public IndicatorImp {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(IndicatorImp);
-    ar& BOOST_SERIALIZATION_NVP(m_factor);
+    ar& boost::serialization::make_nvp("m_factor", factor_);
   }
 #endif
 };
@@ -1457,21 +1457,21 @@ BOOST_CLASS_EXPORT(hayaku::IFactor)
 namespace hayaku {
 
 IFactor::IFactor() : IndicatorImp("FACTOR", 1) {
-  m_need_context = true;
-  m_need_self_alike_compare = true;
+  need_context_ = true;
+  need_self_alike_compare_ = true;
 }
 
 IFactor::IFactor(const Factor& factor)
-    : IndicatorImp("FACTOR", 1), m_factor(factor) {
-  m_need_context = true;
-  m_need_self_alike_compare = true;
+    : IndicatorImp("FACTOR", 1), factor_(factor) {
+  need_context_ = true;
+  need_self_alike_compare_ = true;
 }
 
 IFactor::~IFactor() {}
 
-string IFactor::formula() const { return m_factor.formula().formula(); };
+string IFactor::formula() const { return factor_.formula().formula(); };
 
-IndicatorImpPtr IFactor::_clone() { return make_shared<IFactor>(m_factor); }
+IndicatorImpPtr IFactor::_clone() { return make_shared<IFactor>(factor_); }
 
 bool IFactor::selfAlike(const IndicatorImp& other) const noexcept {
   // Factor uses the "name + K-line type" as the unique identifier (see the
@@ -1486,14 +1486,14 @@ bool IFactor::selfAlike(const IndicatorImp& other) const noexcept {
   // judged equal.
   const auto* other_ctx = dynamic_cast<const IFactor*>(&other);
   HAYAKU_IF_RETURN(other_ctx == nullptr, false);
-  return m_factor.name() == other_ctx->m_factor.name() &&
-         m_factor.ktype() == other_ctx->m_factor.ktype();
+  return factor_.name() == other_ctx->factor_.name() &&
+         factor_.ktype() == other_ctx->factor_.ktype();
 }
 
 void IFactor::_calculate(const Indicator& data) {
   HAYAKU_WARN_IF(!isLeaf() && !data.empty(),
                  "The input is ignored because {} depends on the context!",
-                 m_name);
+                 name_);
 
   const KData& k = getContext();
   size_t total = k.size();
@@ -1501,9 +1501,9 @@ void IFactor::_calculate(const Indicator& data) {
 
   _readyBuffer(total, 1);
 
-  auto value = m_factor.getValue(k);
+  auto value = factor_.getValue(k);
   value.setContext(k);
-  m_discard = value.discard();
+  discard_ = value.discard();
   value.getImp()->swap(this);
 }
 

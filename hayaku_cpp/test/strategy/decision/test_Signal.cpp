@@ -16,24 +16,24 @@ using namespace hayaku;
 
 class SignalTest : public SignalBase {
  public:
-  SignalTest() : SignalBase(), m_x(0) {}
+  SignalTest() : SignalBase(), x_(0) {}
   virtual ~SignalTest() {}
 
-  void setX(int x) { m_x = x; }
-  int getX() const { return m_x; }
+  void setX(int x) { x_ = x; }
+  int getX() const { return x_; }
 
-  virtual void _reset() override { m_x = 0; }
+  virtual void _reset() override { x_ = 0; }
 
   virtual SignalPtr _clone() override {
     SignalTest *p = new SignalTest;
-    p->m_x = m_x;
+    p->x_ = x_;
     return SignalPtr(p);
   }
 
   virtual void _calculate(const KData &) override {}
 
  private:
-  int m_x;
+  int x_;
 };
 
 /**

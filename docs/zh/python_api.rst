@@ -47,7 +47,7 @@ DataFrame 等宽研究接口改为显式导入 ``hayaku.application.interactive`
 历史数据导入
 ------------
 
-导入能力不随核心导入自动加载。源码构建时可使用 ``xmake ingest`` 构建可选的 Python 扩展；
+导入能力不随核心导入自动加载。源码构建时可使用 ``./op.sh build`` 构建可选的 Python 扩展；
 未安装该扩展时，``import hayaku`` 仍可使用，调用导入功能会得到明确的缺失扩展错误。
 
 .. code-block:: python
@@ -66,7 +66,7 @@ DataFrame 等宽研究接口改为显式导入 ``hayaku.application.interactive`
 --------
 
 实时行情接收与数据服务由可选的 ``hayaku-realtime`` 提供。源码构建使用
-``xmake realtime``；仅安装核心包时，``import hayaku`` 和研究/回测不需要实时扩展。
+``./op.sh build``；仅安装核心包时，``import hayaku`` 和研究/回测不需要实时扩展。
 需要使用时，从 ``hayaku.extensions.realtime`` 显式导入 ``start_spot_agent``、
 ``stop_spot_agent`` 等运行期入口。未安装实时扩展时，调用这些入口会提示安装可选模块。
 

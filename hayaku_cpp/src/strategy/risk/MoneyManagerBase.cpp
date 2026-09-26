@@ -26,14 +26,14 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-MoneyManagerBase::MoneyManagerBase() : m_name("MoneyManagerBase") {
+MoneyManagerBase::MoneyManagerBase() : name_("MoneyManagerBase") {
   setParam<bool>("auto-checkin", false);
   setParam<int>("max-stock", 20000);
   setParam<bool>("disable_ev_force_clean_position", false);
   setParam<bool>("disable_cn_force_clean_position", false);
 }
 
-MoneyManagerBase::MoneyManagerBase(const string& name) : m_name(name) {
+MoneyManagerBase::MoneyManagerBase(const string& name) : name_(name) {
   setParam<bool>("auto-checkin", false);
   setParam<int>("max-stock", 20000);
   setParam<bool>("disable_ev_force_clean_position", false);
@@ -51,9 +51,9 @@ void MoneyManagerBase::baseCheckParam(const string& name) const {
 void MoneyManagerBase::paramChanged() {}
 
 void MoneyManagerBase::reset() {
-  m_query = Null<KQuery>();
-  m_account.reset();
-  m_buy_sell_counts.clear();
+  query_ = Null<KQuery>();
+  account_.reset();
+  buy_sell_counts_.clear();
   _reset();
 }
 
@@ -71,12 +71,12 @@ MoneyManagerPtr MoneyManagerBase::clone() {
     return shared_from_this();
   }
 
-  p->m_params = m_params;
-  p->m_name = m_name;
-  p->m_is_python_object = m_is_python_object;
-  p->m_account = m_account;
-  p->m_query = m_query;
-  p->m_buy_sell_counts = m_buy_sell_counts;
+  p->params_ = params_;
+  p->name_ = name_;
+  p->is_python_object_ = is_python_object_;
+  p->account_ = account_;
+  p->query_ = query_;
+  p->buy_sell_counts_ = buy_sell_counts_;
   return p;
 }
 
@@ -84,7 +84,7 @@ double MoneyManagerBase::getSellNumber(const Datetime& datetime,
                                        const Stock& stock, price_t price,
                                        price_t risk, OrderOrigin origin) {
   HAYAKU_ERROR_IF_RETURN(
-      !m_account, 0.0,
+      !account_, 0.0,
       "m_account is null! Datetime({}) Stock({}) price({:<.4f}) risk({:<.2f})",
       datetime, stock.market_code(), price, risk);
 
@@ -109,7 +109,7 @@ double MoneyManagerBase::getBuyNumber(const Datetime& datetime,
                                       const Stock& stock, price_t price,
                                       price_t risk, OrderOrigin origin) {
   HAYAKU_ERROR_IF_RETURN(
-      !m_account, 0.0,
+      !account_, 0.0,
       "m_account is null! Datetime({}) Stock({}) price({:<.3f}) risk({:<.2f})",
       datetime, stock.market_code(), price, risk);
   HAYAKU_ERROR_IF_RETURN(stock.isNull(), 0.0, "stock is Null!");
@@ -122,7 +122,7 @@ double MoneyManagerBase::getBuyNumber(const Datetime& datetime,
       getOrderOriginName(origin));
 
   HAYAKU_TRACE_IF_RETURN(
-      m_account->getStockNumber() >= getParam<int>("max-stock"), 0.0,
+      account_->getStockNumber() >= getParam<int>("max-stock"), 0.0,
       "Ignore! execution account reached max-stock number!");
 
   double n = _getBuyNumber(datetime, stock, price, risk, origin);
@@ -142,20 +142,20 @@ double MoneyManagerBase::getBuyNumber(const Datetime& datetime,
 
   // Automatically deposit more cash when the cash is not enough
   if (getParam<bool>("auto-checkin")) {
-    price_t cash = m_account->cash(datetime, m_query.kType());
-    CostRecord cost = m_account->getBuyCost(datetime, stock, price, n);
-    int precision = m_account->precision();
+    price_t cash = account_->cash(datetime, query_.kType());
+    CostRecord cost = account_->getBuyCost(datetime, stock, price, n);
+    int precision = account_->precision();
     price_t money = roundUp(price * n * stock.unit() + cost.total, precision);
     if (money > cash) {
-      m_account->checkin(datetime, roundUp(money - cash, precision));
+      account_->checkin(datetime, roundUp(money - cash, precision));
     }
   } else {
-    CostRecord cost = m_account->getBuyCost(datetime, stock, price, n);
+    CostRecord cost = account_->getBuyCost(datetime, stock, price, n);
     price_t need_cash = n * price + cost.total;
-    price_t current_cash = m_account->cash(datetime, m_query.kType());
+    price_t current_cash = account_->cash(datetime, query_.kType());
     while (n > min_trade && need_cash > current_cash) {
       n = n - min_trade;
-      cost = m_account->getBuyCost(datetime, stock, price, n);
+      cost = account_->getBuyCost(datetime, stock, price, n);
       need_cash = n * price + cost.total;
     }
     if (need_cash > current_cash) {
@@ -170,7 +170,7 @@ double MoneyManagerBase::getSellShortNumber(const Datetime& datetime,
                                             const Stock& stock, price_t price,
                                             price_t risk, OrderOrigin origin) {
   HAYAKU_ERROR_IF_RETURN(
-      !m_account, 0.0,
+      !account_, 0.0,
       "m_account is null! Datetime({}) Stock({}) price({:<.3f}) risk({:<.2f})",
       datetime, stock.market_code(), price, risk);
   HAYAKU_ERROR_IF_RETURN(
@@ -184,7 +184,7 @@ double MoneyManagerBase ::getBuyShortNumber(const Datetime& datetime,
                                             const Stock& stock, price_t price,
                                             price_t risk, OrderOrigin origin) {
   HAYAKU_ERROR_IF_RETURN(
-      !m_account, 0.0,
+      !account_, 0.0,
       "m_account is null! Datetime({}) Stock({}) price({:<.3f}) risk({:<.2f})",
       datetime, stock.market_code(), price, risk);
   HAYAKU_ERROR_IF_RETURN(
@@ -215,19 +215,19 @@ double MoneyManagerBase::_getBuyShortNumber(const Datetime& datetime,
 }
 
 size_t MoneyManagerBase::currentBuyCount(const Stock& stk) const {
-  const auto iter = m_buy_sell_counts.find(stk);
-  return iter == m_buy_sell_counts.cend() ? 0 : iter->second.first;
+  const auto iter = buy_sell_counts_.find(stk);
+  return iter == buy_sell_counts_.cend() ? 0 : iter->second.first;
 }
 
 size_t MoneyManagerBase::currentSellCount(const Stock& stk) const {
-  const auto iter = m_buy_sell_counts.find(stk);
-  return iter == m_buy_sell_counts.cend() ? 0 : iter->second.second;
+  const auto iter = buy_sell_counts_.find(stk);
+  return iter == buy_sell_counts_.cend() ? 0 : iter->second.second;
 }
 
 void MoneyManagerBase::buyNotify(const TradeRecord& tr) {
-  auto iter = m_buy_sell_counts.find(tr.stock);
-  if (iter == m_buy_sell_counts.end()) {
-    m_buy_sell_counts[tr.stock] = std::make_pair<size_t, size_t>(1, 0);
+  auto iter = buy_sell_counts_.find(tr.stock);
+  if (iter == buy_sell_counts_.end()) {
+    buy_sell_counts_[tr.stock] = std::make_pair<size_t, size_t>(1, 0);
   } else {
     iter->second.first++;
     iter->second.second = 0;
@@ -236,9 +236,9 @@ void MoneyManagerBase::buyNotify(const TradeRecord& tr) {
 }
 
 void MoneyManagerBase::sellNotify(const TradeRecord& tr) {
-  auto iter = m_buy_sell_counts.find(tr.stock);
-  if (iter == m_buy_sell_counts.end()) {
-    m_buy_sell_counts[tr.stock] = std::make_pair<size_t, size_t>(0, 1);
+  auto iter = buy_sell_counts_.find(tr.stock);
+  if (iter == buy_sell_counts_.end()) {
+    buy_sell_counts_[tr.stock] = std::make_pair<size_t, size_t>(0, 1);
   } else {
     iter->second.first = 0;
     iter->second.second++;

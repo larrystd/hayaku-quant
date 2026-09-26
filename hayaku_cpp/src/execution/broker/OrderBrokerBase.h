@@ -161,7 +161,7 @@ class HAYAKU_API OrderBrokerBase {
   virtual string _getAssetInfo() { return string(); }
 
  protected:
-  string m_name;
+  string name_;
 
 //============================================
 // Serialization support
@@ -171,14 +171,14 @@ class HAYAKU_API OrderBrokerBase {
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -201,9 +201,9 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const OrderBrokerBase&);
 /** @ingroup OrderBroker */
 HAYAKU_API std::ostream& operator<<(std::ostream& os, const OrderBrokerPtr&);
 
-inline const string& OrderBrokerBase::name() const { return m_name; }
+inline const string& OrderBrokerBase::name() const { return name_; }
 
-inline void OrderBrokerBase::name(const string& name) { m_name = name; }
+inline void OrderBrokerBase::name(const string& name) { name_ = name; }
 
 } /* namespace hayaku */
 

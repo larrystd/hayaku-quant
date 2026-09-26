@@ -19,18 +19,18 @@ class HAYAKU_API NormalizeBase {
 
  public:
   NormalizeBase() = default;
-  NormalizeBase(const string& name) : m_name(name) {}
+  NormalizeBase(const string& name) : name_(name) {}
 
   NormalizeBase(const NormalizeBase& other)
-      : m_params(other.m_params), m_name(other.m_name) {}
+      : params_(other.params_), name_(other.name_) {}
 
   virtual ~NormalizeBase() = default;
 
   /** Get the name */
-  const string& name() const { return m_name; }
+  const string& name() const { return name_; }
 
   /** Set the name */
-  void name(const string& name) { m_name = name; }
+  void name(const string& name) { name_ = name; }
 
   typedef std::shared_ptr<NormalizeBase> NormPtr;
   NormPtr clone();
@@ -39,11 +39,11 @@ class HAYAKU_API NormalizeBase {
 
   virtual PriceList normalize(const PriceList& data) = 0;
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  protected:
-  string m_name;
-  bool m_is_python_object{false};
+  string name_;
+  bool is_python_object_{false};
 
 //============================================
 // Serialization support
@@ -53,16 +53,16 @@ class HAYAKU_API NormalizeBase {
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_params", params_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_params", params_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()

@@ -59,10 +59,10 @@ struct AsyncMySQLStatement::Impl {
 
 AsyncMySQLStatement::AsyncMySQLStatement(AsyncMySQLConnect* connect,
                                          const std::string& sql)
-    : AsyncSQLStatementBase(connect, sql), m_impl(std::make_unique<Impl>()) {
-  m_impl->connect = connect;
+    : AsyncSQLStatementBase(connect, sql), impl_(std::make_unique<Impl>()) {
+  impl_->connect = connect;
   SQL_CHECK(
-      m_impl->connect, -1,
+      impl_->connect, -1,
       "Failed create statement: {}! Failed dynamic_cast<AsyncMySQLConnect*>!",
       sql);
 }
@@ -73,19 +73,19 @@ AsyncMySQLStatement::~AsyncMySQLStatement() {
 
 net::awaitable<void> AsyncMySQLStatement::sub_exec() {
   // Prepare the statement when there is no prepared statement yet
-  if (!m_impl->stmt) {
+  if (!impl_->stmt) {
     boost::mysql::error_code ec;
     boost::mysql::diagnostics diag;
 
     // An asynchronous connection cannot connect actively at the construction,
     // so the connection must be established first here
-    if (!m_impl->connect->m_impl->initialized) {
-      co_await m_impl->connect->connect();
+    if (!impl_->connect->impl_->initialized) {
+      co_await impl_->connect->connect();
     }
 
-    m_impl->stmt =
-        co_await m_impl->connect->m_impl->get_statement(m_sql_string, ec, diag);
-    m_impl->needs_reset = true;
+    impl_->stmt =
+        co_await impl_->connect->impl_->get_statement(sql_string_, ec, diag);
+    impl_->needs_reset = true;
 
     if (ec) {
       // Judge whether it is a connection layer error
@@ -104,80 +104,80 @@ net::awaitable<void> AsyncMySQLStatement::sub_exec() {
         }
       }
 
-      if (!is_connection_error || !co_await m_impl->connect->tryConnect()) {
+      if (!is_connection_error || !co_await impl_->connect->tryConnect()) {
         HAYAKU_ERROR(
             "Failed prepare statement! Error code: {}|{}, Server message: {}, "
             "Client "
             "message: {}",
             ec.value(), ec.message(), diag.server_message(),
             diag.client_message());
-        SQL_THROW(ec.value(), "Failed prepare statement! {}", m_sql_string);
+        SQL_THROW(ec.value(), "Failed prepare statement! {}", sql_string_);
       }
 
       // Prepare it again after the reconnection
-      m_impl->stmt = co_await m_impl->connect->m_impl->get_statement(
-          m_sql_string, ec, diag);
+      impl_->stmt = co_await impl_->connect->impl_->get_statement(
+          sql_string_, ec, diag);
       if (ec) {
         HAYAKU_ERROR(
             "Failed prepare statement after reconnect! Error code: {}, Server "
             "message: {}, "
             "Client message: {}",
             ec.value(), diag.server_message(), diag.client_message());
-        SQL_THROW(ec.value(), "Failed prepare statement! {}", m_sql_string);
+        SQL_THROW(ec.value(), "Failed prepare statement! {}", sql_string_);
       }
     }
   } else {
     // Reuse the existing prepared statement and reset the execution state only
-    m_impl->results = {};           // Reset results
-    m_impl->exec_state = {};        // Reset the execution state
-    m_impl->current_batch.clear();  // Clear the current batch
+    impl_->results = {};           // Reset results
+    impl_->exec_state = {};        // Reset the execution state
+    impl_->current_batch.clear();  // Clear the current batch
     // Note: do not clear params here, because bind has already been called
     // before exec m_impl->params.clear();
-    m_impl->current_row = 0;
-    m_impl->total_rows_read = 0;
-    m_impl->has_result = false;
-    m_impl->is_streaming = false;
+    impl_->current_row = 0;
+    impl_->total_rows_read = 0;
+    impl_->has_result = false;
+    impl_->is_streaming = false;
   }
 
   auto* conn = static_cast<boost::mysql::tcp_connection*>(
-      m_impl->connect->getRawConnection());
+      impl_->connect->getRawConnection());
 
   try {
     boost::mysql::diagnostics diag;
-    if (m_impl->params.empty()) {
+    if (impl_->params.empty()) {
       // Without parameters, use the streaming execution
-      co_await conn->async_start_execution(m_sql_string, m_impl->exec_state,
+      co_await conn->async_start_execution(sql_string_, impl_->exec_state,
                                            diag, boost::asio::use_awaitable);
     } else {
       // With parameters, use the prepared statement execution
       std::vector<boost::mysql::field_view> param_views;
-      param_views.reserve(m_impl->params.size());
-      for (const auto& f : m_impl->params) {
+      param_views.reserve(impl_->params.size());
+      for (const auto& f : impl_->params) {
         param_views.push_back(boost::mysql::field_view(f));
       }
 
       // Bind the parameters
-      auto bound = m_impl->stmt->bind(param_views.begin(), param_views.end());
+      auto bound = impl_->stmt->bind(param_views.begin(), param_views.end());
 
       // Use the streaming execution, consistent with the case without
       // parameters
-      co_await conn->async_start_execution(bound, m_impl->exec_state, diag,
+      co_await conn->async_start_execution(bound, impl_->exec_state, diag,
                                            boost::asio::use_awaitable);
     }
 
-    m_impl->is_streaming = true;
-    m_impl->current_row = 0;
-    m_impl->total_rows_read = 0;
+    impl_->is_streaming = true;
+    impl_->current_row = 0;
+    impl_->total_rows_read = 0;
 
     // Read the first batch of data when the result set needs to be read
-    if (m_impl->exec_state.should_read_rows()) {
+    if (impl_->exec_state.should_read_rows()) {
       boost::mysql::diagnostics read_diag;
       boost::mysql::rows_view batch_view = co_await conn->async_read_some_rows(
-          m_impl->exec_state, read_diag, boost::asio::use_awaitable);
+          impl_->exec_state, read_diag, boost::asio::use_awaitable);
 
       // Convert rows_view into vector<row> to own the data
-      m_impl->current_batch.assign(batch_view.begin(), batch_view.end());
-      m_impl->total_rows_read += m_impl->current_batch.size();
+      impl_->current_batch.assign(batch_view.begin(), batch_view.end());
+      impl_->total_rows_read += impl_->current_batch.size();
     }
   } catch (const boost::mysql::error_with_diagnostics& e) {
     HAYAKU_ERROR(
@@ -185,54 +185,54 @@ net::awaitable<void> AsyncMySQLStatement::sub_exec() {
         "{}",
         e.code().value(), e.get_diagnostics().server_message(),
         e.get_diagnostics().client_message());
-    SQL_THROW(e.code().value(), "Failed execute sql: {}! {}", m_sql_string,
+    SQL_THROW(e.code().value(), "Failed execute sql: {}! {}", sql_string_,
               e.code().message());
   } catch (const boost::system::system_error& e) {
     HAYAKU_ERROR("Execute failed! Error code: {}, Message: {}",
                  e.code().value(), e.code().message());
-    SQL_THROW(e.code().value(), "Failed execute sql: {}! {}", m_sql_string,
+    SQL_THROW(e.code().value(), "Failed execute sql: {}! {}", sql_string_,
               e.code().message());
   }
 
-  m_impl->has_result = true;
-  m_impl->needs_reset = true;
+  impl_->has_result = true;
+  impl_->needs_reset = true;
 
   // Clear the parameters so that the index starts from 0 at the next bind
-  m_impl->params.clear();
+  impl_->params.clear();
 }
 
 net::awaitable<bool> AsyncMySQLStatement::sub_moveNext() {
-  if (!m_impl->has_result) {
+  if (!impl_->has_result) {
     _reset();
     co_return false;
   }
 
   auto* conn = static_cast<boost::mysql::tcp_connection*>(
-      m_impl->connect->getRawConnection());
+      impl_->connect->getRawConnection());
 
-  if (m_impl->is_streaming) {
+  if (impl_->is_streaming) {
     // The streaming mode
-    m_impl->current_row++;
+    impl_->current_row++;
 
     // If the current batch still has data, return directly
-    if (m_impl->current_row <= m_impl->current_batch.size()) {
+    if (impl_->current_row <= impl_->current_batch.size()) {
       co_return true;
     }
 
     // The current batch has been read, try to read the next batch
-    if (m_impl->exec_state.should_read_rows()) {
+    if (impl_->exec_state.should_read_rows()) {
       try {
         boost::mysql::diagnostics diag;
         boost::mysql::rows_view batch_view =
-            co_await conn->async_read_some_rows(m_impl->exec_state, diag,
+            co_await conn->async_read_some_rows(impl_->exec_state, diag,
                                                 boost::asio::use_awaitable);
 
         // Convert rows_view into vector<row>
-        m_impl->current_batch.assign(batch_view.begin(), batch_view.end());
-        m_impl->total_rows_read += m_impl->current_batch.size();
-        m_impl->current_row = 1;  // Reset to the first row of the first batch
+        impl_->current_batch.assign(batch_view.begin(), batch_view.end());
+        impl_->total_rows_read += impl_->current_batch.size();
+        impl_->current_row = 1;  // Reset to the first row of the first batch
 
-        co_return !m_impl->current_batch.empty();
+        co_return !impl_->current_batch.empty();
       } catch (...) {
         // The reading failed, end the iteration
         _reset();
@@ -245,65 +245,65 @@ net::awaitable<bool> AsyncMySQLStatement::sub_moveNext() {
     }
   } else {
     // The non-streaming mode
-    const auto& rows = m_impl->results.rows();
-    if (m_impl->current_row >= rows.size()) {
+    const auto& rows = impl_->results.rows();
+    if (impl_->current_row >= rows.size()) {
       _reset();
       co_return false;
     }
 
-    m_impl->current_row++;
+    impl_->current_row++;
     co_return true;
   }
 }
 
 uint64_t AsyncMySQLStatement::sub_getLastRowid() {
-  if (m_impl->is_streaming) {
+  if (impl_->is_streaming) {
     // The streaming mode: get it from execution_state
-    return m_impl->exec_state.last_insert_id();
+    return impl_->exec_state.last_insert_id();
   } else {
     // The non-streaming mode: get it from results
-    return m_impl->results.last_insert_id();
+    return impl_->results.last_insert_id();
   }
 }
 
 void AsyncMySQLStatement::_reset() {
-  if (m_impl->needs_reset) {
-    m_impl->results = {};           // Reset results
-    m_impl->exec_state = {};        // Reset the execution state
-    m_impl->current_batch.clear();  // Clear the current batch
-    m_impl->params.clear();
-    m_impl->params.shrink_to_fit();
-    m_impl->current_row = 0;
-    m_impl->total_rows_read = 0;
-    m_impl->has_result = false;
-    m_impl->is_streaming = false;
+  if (impl_->needs_reset) {
+    impl_->results = {};           // Reset results
+    impl_->exec_state = {};        // Reset the execution state
+    impl_->current_batch.clear();  // Clear the current batch
+    impl_->params.clear();
+    impl_->params.shrink_to_fit();
+    impl_->current_row = 0;
+    impl_->total_rows_read = 0;
+    impl_->has_result = false;
+    impl_->is_streaming = false;
   }
 }
 
 void AsyncMySQLStatement::sub_bindNull(int idx) {
   SQL_CHECK(
-      idx == static_cast<int>(m_impl->params.size()), -1,
+      idx == static_cast<int>(impl_->params.size()), -1,
       "Parameter index must be sequential! Expected index: {}, but got: {}",
-      m_impl->params.size(), idx);
-  m_impl->params.push_back(
+      impl_->params.size(), idx);
+  impl_->params.push_back(
       boost::mysql::field());  // Constructed as NULL by default
 }
 
 void AsyncMySQLStatement::sub_bindInt(int idx, int64_t value) {
   SQL_CHECK(
-      idx == static_cast<int>(m_impl->params.size()), -1,
+      idx == static_cast<int>(impl_->params.size()), -1,
       "Parameter index must be sequential! Expected index: {}, but got: {}",
-      m_impl->params.size(), idx);
-  m_impl->params.push_back(
+      impl_->params.size(), idx);
+  impl_->params.push_back(
       boost::mysql::field(static_cast<std::int64_t>(value)));
 }
 
 void AsyncMySQLStatement::sub_bindDouble(int idx, double item) {
   SQL_CHECK(
-      idx == static_cast<int>(m_impl->params.size()), -1,
+      idx == static_cast<int>(impl_->params.size()), -1,
       "Parameter index must be sequential! Expected index: {}, but got: {}",
-      m_impl->params.size(), idx);
-  m_impl->params.push_back(boost::mysql::field(item));
+      impl_->params.size(), idx);
+  impl_->params.push_back(boost::mysql::field(item));
 }
 
 void AsyncMySQLStatement::sub_bindDatetime(int idx, const Datetime& item) {
@@ -313,9 +313,9 @@ void AsyncMySQLStatement::sub_bindDatetime(int idx, const Datetime& item) {
   }
 
   SQL_CHECK(
-      idx == static_cast<int>(m_impl->params.size()), -1,
+      idx == static_cast<int>(impl_->params.size()), -1,
       "Parameter index must be sequential! Expected index: {}, but got: {}",
-      m_impl->params.size(), idx);
+      impl_->params.size(), idx);
 
   // Use the native datetime type of boost.mysql
   boost::mysql::datetime dt(
@@ -327,65 +327,65 @@ void AsyncMySQLStatement::sub_bindDatetime(int idx, const Datetime& item) {
       static_cast<std::uint8_t>(item.second()),
       static_cast<std::uint32_t>(item.millisecond() * 1000 +
                                  item.microsecond()));
-  m_impl->params.push_back(boost::mysql::field(dt));
+  impl_->params.push_back(boost::mysql::field(dt));
 }
 
 void AsyncMySQLStatement::sub_bindText(int idx, const std::string& item) {
   SQL_CHECK(
-      idx == static_cast<int>(m_impl->params.size()), -1,
+      idx == static_cast<int>(impl_->params.size()), -1,
       "Parameter index must be sequential! Expected index: {}, but got: {}",
-      m_impl->params.size(), idx);
-  m_impl->params.push_back(boost::mysql::field(item));
+      impl_->params.size(), idx);
+  impl_->params.push_back(boost::mysql::field(item));
 }
 
 void AsyncMySQLStatement::sub_bindText(int idx, const char* item, size_t len) {
   SQL_CHECK(
-      idx == static_cast<int>(m_impl->params.size()), -1,
+      idx == static_cast<int>(impl_->params.size()), -1,
       "Parameter index must be sequential! Expected index: {}, but got: {}",
-      m_impl->params.size(), idx);
+      impl_->params.size(), idx);
   std::string str(item, len);
-  m_impl->params.push_back(boost::mysql::field(str));
+  impl_->params.push_back(boost::mysql::field(str));
 }
 
 void AsyncMySQLStatement::sub_bindBlob(int idx, const std::string& item) {
   SQL_CHECK(
-      idx == static_cast<int>(m_impl->params.size()), -1,
+      idx == static_cast<int>(impl_->params.size()), -1,
       "Parameter index must be sequential! Expected index: {}, but got: {}",
-      m_impl->params.size(), idx);
+      impl_->params.size(), idx);
   std::vector<unsigned char> blob(item.begin(), item.end());
-  m_impl->params.push_back(boost::mysql::field(blob));
+  impl_->params.push_back(boost::mysql::field(blob));
 }
 
 void AsyncMySQLStatement::sub_bindBlob(int idx, const std::vector<char>& item) {
   SQL_CHECK(
-      idx == static_cast<int>(m_impl->params.size()), -1,
+      idx == static_cast<int>(impl_->params.size()), -1,
       "Parameter index must be sequential! Expected index: {}, but got: {}",
-      m_impl->params.size(), idx);
+      impl_->params.size(), idx);
   std::vector<unsigned char> blob(item.begin(), item.end());
-  m_impl->params.push_back(boost::mysql::field(blob));
+  impl_->params.push_back(boost::mysql::field(blob));
 }
 
 int AsyncMySQLStatement::sub_getNumColumns() const {
-  HAYAKU_IF_RETURN(!m_impl->has_result, 0);
+  HAYAKU_IF_RETURN(!impl_->has_result, 0);
 
-  if (m_impl->is_streaming) {
+  if (impl_->is_streaming) {
     // The streaming mode: get the metadata from the current batch
-    if (m_impl->current_batch.empty()) {
+    if (impl_->current_batch.empty()) {
       return 0;
     }
-    return static_cast<int>(m_impl->current_batch[0].size());
+    return static_cast<int>(impl_->current_batch[0].size());
   } else {
     // The non-streaming mode: get it from results
-    const auto& metadata = m_impl->results.meta();
+    const auto& metadata = impl_->results.meta();
     HAYAKU_IF_RETURN(metadata.empty(), 0);
     return static_cast<int>(metadata.size());
   }
 }
 
 void AsyncMySQLStatement::sub_getColumnAsInt64(int idx, int64_t& item) {
-  SQL_CHECK(m_impl->has_result, -1, "No result available!");
+  SQL_CHECK(impl_->has_result, -1, "No result available!");
 
-  const auto& value = m_impl->getField(idx);
+  const auto& value = impl_->getField(idx);
   if (value.is_null()) {
     item = 0;
     return;
@@ -410,9 +410,9 @@ void AsyncMySQLStatement::sub_getColumnAsInt64(int idx, int64_t& item) {
 }
 
 void AsyncMySQLStatement::sub_getColumnAsDouble(int idx, double& item) {
-  SQL_CHECK(m_impl->has_result, -1, "No result available!");
+  SQL_CHECK(impl_->has_result, -1, "No result available!");
 
-  const auto& value = m_impl->getField(idx);
+  const auto& value = impl_->getField(idx);
   if (value.is_null()) {
     item = 0.0;
     return;
@@ -437,9 +437,9 @@ void AsyncMySQLStatement::sub_getColumnAsDouble(int idx, double& item) {
 }
 
 void AsyncMySQLStatement::sub_getColumnAsDatetime(int idx, Datetime& item) {
-  SQL_CHECK(m_impl->has_result, -1, "No result available!");
+  SQL_CHECK(impl_->has_result, -1, "No result available!");
 
-  const auto& value = m_impl->getField(idx);
+  const auto& value = impl_->getField(idx);
   if (value.is_null()) {
     item = Null<Datetime>();
     return;
@@ -466,9 +466,9 @@ void AsyncMySQLStatement::sub_getColumnAsDatetime(int idx, Datetime& item) {
 }
 
 void AsyncMySQLStatement::sub_getColumnAsText(int idx, std::string& item) {
-  SQL_CHECK(m_impl->has_result, -1, "No result available!");
+  SQL_CHECK(impl_->has_result, -1, "No result available!");
 
-  const auto& value = m_impl->getField(idx);
+  const auto& value = impl_->getField(idx);
   if (value.is_null()) {
     item.clear();
     return;
@@ -491,9 +491,9 @@ void AsyncMySQLStatement::sub_getColumnAsText(int idx, std::string& item) {
 }
 
 void AsyncMySQLStatement::sub_getColumnAsBlob(int idx, std::string& item) {
-  SQL_CHECK(m_impl->has_result, -1, "No result available!");
+  SQL_CHECK(impl_->has_result, -1, "No result available!");
 
-  const auto& value = m_impl->getField(idx);
+  const auto& value = impl_->getField(idx);
   if (value.is_null()) {
     item.clear();
     return;
@@ -509,9 +509,9 @@ void AsyncMySQLStatement::sub_getColumnAsBlob(int idx, std::string& item) {
 
 void AsyncMySQLStatement::sub_getColumnAsBlob(int idx,
                                               std::vector<char>& item) {
-  SQL_CHECK(m_impl->has_result, -1, "No result available!");
+  SQL_CHECK(impl_->has_result, -1, "No result available!");
 
-  const auto& value = m_impl->getField(idx);
+  const auto& value = impl_->getField(idx);
   if (value.is_null()) {
     item.clear();
     return;

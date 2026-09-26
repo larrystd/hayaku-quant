@@ -139,24 +139,24 @@ bool KQuery::isExtraKType(const string& ktype) {
 
 KQuery::KQuery(Datetime start, Datetime end, const KType& ktype,
                RecoverType recoverType)
-    : m_start(start.ymdhms()),
-      m_end(end.ymdhms()),
-      m_queryType(KQuery::DATE),
-      m_dataType(ktype),
-      m_recoverType(recoverType) {
-  to_upper(m_dataType);
+    : start_(start.ymdhms()),
+      end_(end.ymdhms()),
+      query_type_(KQuery::DATE),
+      data_type_(ktype),
+      recover_type_(recoverType) {
+  to_upper(data_type_);
 }
 
 Datetime KQuery::startDatetime() const {
-  HAYAKU_IF_RETURN(m_queryType != DATE || (uint64_t)m_start == Null<uint64_t>(),
+  HAYAKU_IF_RETURN(query_type_ != DATE || (uint64_t)start_ == Null<uint64_t>(),
                    Null<Datetime>());
-  return Datetime(m_start);
+  return Datetime(start_);
 }
 
 Datetime KQuery::endDatetime() const {
-  HAYAKU_IF_RETURN(m_queryType != DATE || (uint64_t)m_end == Null<uint64_t>(),
+  HAYAKU_IF_RETURN(query_type_ != DATE || (uint64_t)end_ == Null<uint64_t>(),
                    Null<Datetime>());
-  return Datetime(m_end);
+  return Datetime(end_);
 }
 
 uint64_t KQuery::hash() const {
@@ -165,11 +165,11 @@ uint64_t KQuery::hash() const {
 
   uint64_t seed = 0;
   XXH64_reset(state, seed);
-  XXH64_update(state, &m_start, sizeof(m_start));
-  XXH64_update(state, &m_end, sizeof(m_end));
-  XXH64_update(state, &m_queryType, sizeof(m_queryType));
-  XXH64_update(state, &m_recoverType, sizeof(m_recoverType));
-  XXH64_update(state, m_dataType.data(), m_dataType.size());
+  XXH64_update(state, &start_, sizeof(start_));
+  XXH64_update(state, &end_, sizeof(end_));
+  XXH64_update(state, &query_type_, sizeof(query_type_));
+  XXH64_update(state, &recover_type_, sizeof(recover_type_));
+  XXH64_update(state, data_type_.data(), data_type_.size());
 
   // Get the final hash value
   uint64_t result = XXH64_digest(state);

@@ -33,46 +33,46 @@ IndicatorImpPtr CompiledFactorPlan::cloneNode(const IndicatorImpPtr& src,
   IndicatorImpPtr dst = src->_clone();
   clones.emplace(src.get(), dst);
 
-  dst->m_params = src->m_params;
-  dst->m_name = src->m_name;
-  dst->m_origin_id =
-      src->m_origin_id;  // Copy the origin id, as in IndicatorImp::clone()
-  dst->m_is_python_object = src->m_is_python_object;
-  dst->m_need_self_alike_compare = src->m_need_self_alike_compare;
-  dst->m_is_serial = src->m_is_serial;
-  dst->m_discard = src->m_discard;
-  dst->m_result_num = src->m_result_num;
-  dst->m_context = src->m_context;
-  dst->m_old_context = src->m_old_context;
-  dst->m_need_calculate = src->m_need_calculate;
-  dst->m_param_changed = src->m_param_changed;
-  dst->m_optype = src->m_optype;
-  dst->m_parent = nullptr;
+  dst->params_ = src->params_;
+  dst->name_ = src->name_;
+  dst->origin_id_ =
+      src->origin_id_;  // Copy the origin id, as in IndicatorImp::clone()
+  dst->is_python_object_ = src->is_python_object_;
+  dst->need_self_alike_compare_ = src->need_self_alike_compare_;
+  dst->is_serial_ = src->is_serial_;
+  dst->discard_ = src->discard_;
+  dst->result_num_ = src->result_num_;
+  dst->context_ = src->context_;
+  dst->old_context_ = src->old_context_;
+  dst->need_calculate_ = src->need_calculate_;
+  dst->param_changed_ = src->param_changed_;
+  dst->optype_ = src->optype_;
+  dst->parent_ = nullptr;
 
-  dst->_readyBuffer(src->size(), src->m_result_num);
-  for (size_t i = 0; i < src->m_result_num; ++i) {
-    if (src->m_pBuffer[i]) {
-      std::copy(src->m_pBuffer[i]->begin(), src->m_pBuffer[i]->end(),
-                dst->m_pBuffer[i]->begin());
+  dst->_readyBuffer(src->size(), src->result_num_);
+  for (size_t i = 0; i < src->result_num_; ++i) {
+    if (src->p_buffer_[i]) {
+      std::copy(src->p_buffer_[i]->begin(), src->p_buffer_[i]->end(),
+                dst->p_buffer_[i]->begin());
     }
   }
 
-  dst->m_left = cloneNode(src->m_left, clones);
-  dst->m_right = cloneNode(src->m_right, clones);
-  dst->m_three = cloneNode(src->m_three, clones);
-  if (dst->m_left) {
-    dst->m_left->m_parent = dst.get();
+  dst->left_ = cloneNode(src->left_, clones);
+  dst->right_ = cloneNode(src->right_, clones);
+  dst->three_ = cloneNode(src->three_, clones);
+  if (dst->left_) {
+    dst->left_->parent_ = dst.get();
   }
-  if (dst->m_right) {
-    dst->m_right->m_parent = dst.get();
+  if (dst->right_) {
+    dst->right_->parent_ = dst.get();
   }
-  if (dst->m_three) {
-    dst->m_three->m_parent = dst.get();
+  if (dst->three_) {
+    dst->three_->parent_ = dst.get();
   }
 
-  dst->m_ind_params.clear();
-  for (const auto& [name, value] : src->m_ind_params) {
-    dst->m_ind_params[name] = cloneNode(value, clones);
+  dst->ind_params_.clear();
+  for (const auto& [name, value] : src->ind_params_) {
+    dst->ind_params_[name] = cloneNode(value, clones);
   }
 
   return dst;
@@ -90,10 +90,10 @@ IndicatorImpPtr CompiledFactorPlan::canonicalizeNode(
     return iter->second;
   }
 
-  node->m_left = canonicalizeNode(node->m_left, canonical, unique_nodes);
-  node->m_right = canonicalizeNode(node->m_right, canonical, unique_nodes);
-  node->m_three = canonicalizeNode(node->m_three, canonical, unique_nodes);
-  for (auto& [_, value] : node->m_ind_params) {
+  node->left_ = canonicalizeNode(node->left_, canonical, unique_nodes);
+  node->right_ = canonicalizeNode(node->right_, canonical, unique_nodes);
+  node->three_ = canonicalizeNode(node->three_, canonical, unique_nodes);
+  for (auto& [_, value] : node->ind_params_) {
     value = canonicalizeNode(value, canonical, unique_nodes);
   }
 
@@ -117,10 +117,10 @@ void CompiledFactorPlan::prepareNode(
   }
 
   node->onlySetContext(kdata);
-  node->m_old_context = KData();
-  node->m_need_calculate = true;
-  node->m_param_changed = true;
-  node->m_discard = 0;
+  node->old_context_ = KData();
+  node->need_calculate_ = true;
+  node->param_changed_ = true;
+  node->discard_ = 0;
 
   // CONTEXT owns a deliberately independent input context. Its implementation
   // is responsible for rebinding that private subgraph when the outer context
@@ -129,10 +129,10 @@ void CompiledFactorPlan::prepareNode(
     return;
   }
 
-  prepareNode(node->m_left, kdata, visited);
-  prepareNode(node->m_right, kdata, visited);
-  prepareNode(node->m_three, kdata, visited);
-  for (const auto& [_, value] : node->m_ind_params) {
+  prepareNode(node->left_, kdata, visited);
+  prepareNode(node->right_, kdata, visited);
+  prepareNode(node->three_, kdata, visited);
+  for (const auto& [_, value] : node->ind_params_) {
     prepareNode(value, kdata, visited);
     value->calculate();
   }
@@ -158,12 +158,12 @@ bool CompiledFactorPlan::isEligibleNode(
     return false;
   }
 
-  if (!isEligibleNode(node->m_left, visited) ||
-      !isEligibleNode(node->m_right, visited) ||
-      !isEligibleNode(node->m_three, visited)) {
+  if (!isEligibleNode(node->left_, visited) ||
+      !isEligibleNode(node->right_, visited) ||
+      !isEligibleNode(node->three_, visited)) {
     return false;
   }
-  for (const auto& [_, value] : node->m_ind_params) {
+  for (const auto& [_, value] : node->ind_params_) {
     if (!isEligibleNode(value, visited)) {
       return false;
     }
@@ -185,19 +185,19 @@ void CompiledFactorPlan::scrubTemplateNode(
     return;
   }
 
-  node->m_context = KData();
-  node->m_old_context = KData();
-  node->m_need_calculate = true;
-  node->m_param_changed = true;
+  node->context_ = KData();
+  node->old_context_ = KData();
+  node->need_calculate_ = true;
+  node->param_changed_ = true;
   if (!node->isLeaf() || node->isNeedContext()) {
     node->_clearBuffer();
-    node->m_discard = 0;
+    node->discard_ = 0;
   }
 
-  scrubTemplateNode(node->m_left, visited);
-  scrubTemplateNode(node->m_right, visited);
-  scrubTemplateNode(node->m_three, visited);
-  for (const auto& [_, value] : node->m_ind_params) {
+  scrubTemplateNode(node->left_, visited);
+  scrubTemplateNode(node->right_, visited);
+  scrubTemplateNode(node->three_, visited);
+  for (const auto& [_, value] : node->ind_params_) {
     scrubTemplateNode(value, visited);
   }
 
@@ -221,7 +221,7 @@ void CompiledFactorPlan::normalizeParents(const IndicatorList& roots) {
       if (!inserted) {
         ++iter->second.first;
       }
-      root.getImp()->m_parent = nullptr;
+      root.getImp()->parent_ = nullptr;
       stack.emplace_back(root.getImp());
     }
   }
@@ -244,16 +244,16 @@ void CompiledFactorPlan::normalizeParents(const IndicatorList& roots) {
       }
       stack.emplace_back(child);
     };
-    record_child(node->m_left);
-    record_child(node->m_right);
-    record_child(node->m_three);
-    for (const auto& [_, value] : node->m_ind_params) {
+    record_child(node->left_);
+    record_child(node->right_);
+    record_child(node->three_);
+    for (const auto& [_, value] : node->ind_params_) {
       record_child(value);
     }
   }
 
   for (const auto& [node, info] : parents) {
-    node->m_parent = info.first == 1 ? info.second : nullptr;
+    node->parent_ = info.first == 1 ? info.second : nullptr;
   }
 }
 
@@ -261,47 +261,47 @@ CompiledFactorPlan::CompiledFactorPlan(const IndicatorList& formulas) {
   std::unordered_set<const IndicatorImp*> visited;
   for (const auto& formula : formulas) {
     if (!isEligibleNode(formula.getImp(), visited)) {
-      m_reusable = false;
+      reusable_ = false;
       return;
     }
   }
 
-  m_roots.reserve(formulas.size());
+  roots_.reserve(formulas.size());
   CloneMap clones;
   for (const auto& formula : formulas) {
-    m_roots.emplace_back(cloneNode(formula.getImp(), clones));
+    roots_.emplace_back(cloneNode(formula.getImp(), clones));
   }
-  normalizeParents(m_roots);
+  normalizeParents(roots_);
 
   std::unordered_set<IndicatorImp*> scrubbed;
-  for (const auto& root : m_roots) {
+  for (const auto& root : roots_) {
     scrubTemplateNode(root.getImp(), scrubbed);
   }
 
   CanonicalMap canonical;
   vector<IndicatorImpPtr> unique_nodes;
-  for (auto& root : m_roots) {
+  for (auto& root : roots_) {
     root = Indicator(canonicalizeNode(root.getImp(), canonical, unique_nodes));
   }
-  normalizeParents(m_roots);
+  normalizeParents(roots_);
 
   // Private derived-class graphs are intentionally left to the existing
   // indicator hook. They remain correct but cannot participate in plan-wide CSE
   // until their ownership is exposed.
-  for (const auto& root : m_roots) {
+  for (const auto& root : roots_) {
     if (root.getImp()) {
       root.getImp()->repeatSeparateKTypeLeafALikeNodes();
     }
   }
-  normalizeParents(m_roots);
+  normalizeParents(roots_);
 }
 
 IndicatorList CompiledFactorPlan::cloneRoots() const {
   IndicatorList roots;
-  roots.reserve(m_roots.size());
+  roots.reserve(roots_.size());
 
   CloneMap clones;
-  for (const auto& root : m_roots) {
+  for (const auto& root : roots_) {
     roots.emplace_back(cloneNode(root.getImp(), clones));
   }
 
@@ -316,24 +316,24 @@ FactorPlanExecutor CompiledFactorPlan::createExecutor() const {
 
 IndicatorList FactorPlanExecutor::executeValues(const KData& kdata) {
   if (kdata.empty()) {
-    return IndicatorList(m_roots.size());
+    return IndicatorList(roots_.size());
   }
 
   std::unordered_set<IndicatorImp*> visited;
-  for (const auto& root : m_roots) {
+  for (const auto& root : roots_) {
     CompiledFactorPlan::prepareNode(root.getImp(), kdata, visited);
   }
 
   std::unordered_set<IndicatorImp*> executed_roots;
-  for (auto& root : m_roots) {
+  for (auto& root : roots_) {
     if (root.getImp() && executed_roots.emplace(root.getImp().get()).second) {
       root.getImp()->calculate();
     }
   }
 
   IndicatorList result;
-  result.reserve(m_roots.size());
-  for (const auto& root : m_roots) {
+  result.reserve(roots_.size());
+  for (const auto& root : roots_) {
     result.emplace_back(root.getResult(0));
   }
   return result;

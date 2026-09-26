@@ -79,11 +79,11 @@ class HAYAKU_API H5KDataDriver : public KDataDriver {
                           const Datetime& start, const Datetime& end);
 
  private:
-  H5::CompType m_h5DataType;
-  H5::CompType m_h5IndexType;
-  H5::CompType m_h5TimeLineType;
-  H5::CompType m_h5TransType;
-  unordered_map<string, H5FilePtr> m_h5file_map;  // key: market+code
+  H5::CompType h5_data_type_;
+  H5::CompType h5_index_type_;
+  H5::CompType h5_time_line_type_;
+  H5::CompType h5_trans_type_;
+  unordered_map<string, H5FilePtr> h5file_map_;  // key: market+code
 };
 
 } /* namespace hayaku */

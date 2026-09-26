@@ -18,20 +18,20 @@ namespace hayaku {
 CrossGoldSignal::CrossGoldSignal() : SignalBase("SG_CrossGold") {}
 
 CrossGoldSignal::CrossGoldSignal(const Indicator& fast, const Indicator& slow)
-    : SignalBase("SG_CrossGold"), m_fast(fast), m_slow(slow) {}
+    : SignalBase("SG_CrossGold"), fast_(fast), slow_(slow) {}
 
 CrossGoldSignal::~CrossGoldSignal() {}
 
 SignalPtr CrossGoldSignal::_clone() {
   auto p = make_shared<CrossGoldSignal>();
-  p->m_fast = m_fast.clone();
-  p->m_slow = m_slow.clone();
+  p->fast_ = fast_.clone();
+  p->slow_ = slow_.clone();
   return p;
 }
 
 void CrossGoldSignal::_calculate(const KData& kdata) {
-  Indicator fast = m_fast(kdata);
-  Indicator slow = m_slow(kdata);
+  Indicator fast = fast_(kdata);
+  Indicator slow = slow_(kdata);
   HAYAKU_ERROR_IF_RETURN(fast.size() != slow.size(), void(),
                          "fast.size() != slow.size()");
 

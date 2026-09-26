@@ -7,7 +7,7 @@
  *      Author: fasiondog
  */
 
-#include "../config.h"
+#include "config.h"
 #include "data/MarketTypes.h"
 
 namespace hayaku {

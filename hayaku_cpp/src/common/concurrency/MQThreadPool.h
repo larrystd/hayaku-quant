@@ -56,21 +56,21 @@ class HAYAKU_UTILS_API MQThreadPool {
    * empty
    */
   explicit MQThreadPool(size_t n, bool until_empty = true)
-      : m_done(false), m_worker_num(n), m_runnging_until_empty(until_empty) {
+      : done_(false), worker_num_(n), runnging_until_empty_(until_empty) {
     try {
-      m_thread_need_stop.resize(m_worker_num);
-      for (int i = 0; i < m_worker_num; i++) {
+      thread_need_stop_.resize(worker_num_);
+      for (int i = 0; i < worker_num_; i++) {
         // Create the worker threads and their task queues
-        m_queues.push_back(std::unique_ptr<ThreadSafeQueue<task_type>>(
+        queues_.push_back(std::unique_ptr<ThreadSafeQueue<task_type>>(
             new ThreadSafeQueue<task_type>));
       }
       // The threads are started after all the thread resources have been
       // initialized
-      for (int i = 0; i < m_worker_num; i++) {
-        m_threads.push_back(std::thread(&MQThreadPool::worker_thread, this, i));
+      for (int i = 0; i < worker_num_; i++) {
+        threads_.push_back(std::thread(&MQThreadPool::worker_thread, this, i));
       }
     } catch (...) {
-      m_done = true;
+      done_ = true;
       throw;
     }
   }
@@ -80,20 +80,20 @@ class HAYAKU_UTILS_API MQThreadPool {
    * finished
    */
   ~MQThreadPool() {
-    if (!m_done) {
+    if (!done_) {
       join();
     }
-    m_threads.clear();
+    threads_.clear();
   }
 
   /** Get the number of the worker threads */
-  size_t worker_num() const { return m_worker_num; }
+  size_t worker_num() const { return worker_num_; }
 
   /** Number of the remaining tasks */
   size_t remain_task_count() const {
     size_t total = 0;
-    for (size_t i = 0; i < m_worker_num; i++) {
-      total += m_queues[i]->size();
+    for (size_t i = 0; i < worker_num_; i++) {
+      total += queues_[i]->size();
     }
     return total;
   }
@@ -111,7 +111,7 @@ class HAYAKU_UTILS_API MQThreadPool {
   /** Submit a task to the thread pool */
   template <typename FunctionType>
   auto submit(FunctionType &&f) {
-    if (m_done) {
+    if (done_) {
       throw std::logic_error(
           "You can't submit a task to the stopped MQThreadPool!");
     }
@@ -124,9 +124,9 @@ class HAYAKU_UTILS_API MQThreadPool {
     // the tasks
     size_t min_count = std::numeric_limits<size_t>::max();
     int index = 0;
-    for (int i = 0; i < m_worker_num; ++i) {
-      if (!m_thread_need_stop[i].isSet()) {
-        size_t cur_count = m_queues[i]->size();
+    for (int i = 0; i < worker_num_; ++i) {
+      if (!thread_need_stop_[i].isSet()) {
+        size_t cur_count = queues_[i]->size();
         if (cur_count == 0) {
           index = i;
           break;
@@ -139,7 +139,7 @@ class HAYAKU_UTILS_API MQThreadPool {
       }
     }
 
-    m_queues[index]->push(std::move(task));
+    queues_[index]->push(std::move(task));
     return res;
   }
 
@@ -148,33 +148,33 @@ class HAYAKU_UTILS_API MQThreadPool {
 #endif
 
   /** Return the end state of the thread pool */
-  bool done() const { return m_done; }
+  bool done() const { return done_; }
 
   /**
    * It waits for every thread to finish the currently executed task and then
    * exits immediately
    */
   void stop() {
-    if (m_done.exchange(true, std::memory_order_relaxed)) {
+    if (done_.exchange(true, std::memory_order_relaxed)) {
       return;
     }
 
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_thread_need_stop[i].set();
-      m_queues[i]->push(FuncWrapper());
+    for (size_t i = 0; i < worker_num_; i++) {
+      thread_need_stop_[i].set();
+      queues_[i]->push(FuncWrapper());
     }
 
     {
-      std::lock_guard<std::mutex> lock(m_mutex_join);
-      for (size_t i = 0; i < m_worker_num; i++) {
-        if (m_threads[i].joinable()) {
-          m_threads[i].join();
+      std::lock_guard<std::mutex> lock(mutex_join_);
+      for (size_t i = 0; i < worker_num_; i++) {
+        if (threads_[i].joinable()) {
+          threads_[i].join();
         }
       }
     }
 
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_queues[i]->clear();
+    for (size_t i = 0; i < worker_num_; i++) {
+      queues_[i]->clear();
     }
   }
 
@@ -184,33 +184,33 @@ class HAYAKU_UTILS_API MQThreadPool {
    * are ended
    */
   void join() {
-    if (m_done) {
+    if (done_) {
       return;
     }
 
     // It instructs every worker thread to stop running when no work task is got
-    if (!m_runnging_until_empty) {
-      m_done = true;
-      for (size_t i = 0; i < m_worker_num; i++) {
-        m_thread_need_stop[i].set();
+    if (!runnging_until_empty_) {
+      done_ = true;
+      for (size_t i = 0; i < worker_num_; i++) {
+        thread_need_stop_[i].set();
       }
     }
 
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_queues[i]->push(FuncWrapper());
-      m_queues[i]->notify_all();
+    for (size_t i = 0; i < worker_num_; i++) {
+      queues_[i]->push(FuncWrapper());
+      queues_[i]->notify_all();
     }
 
     {  // Wait for the threads to be finished
-      std::lock_guard<std::mutex> lock(m_mutex_join);
-      for (size_t i = 0; i < m_worker_num; i++) {
-        if (m_threads[i].joinable()) {
-          m_threads[i].join();
+      std::lock_guard<std::mutex> lock(mutex_join_);
+      for (size_t i = 0; i < worker_num_; i++) {
+        if (threads_[i].joinable()) {
+          threads_[i].join();
         }
       }
     }
 
-    m_done = true;
+    done_ = true;
   }
 
   struct ExecutorWrapper {
@@ -227,21 +227,21 @@ class HAYAKU_UTILS_API MQThreadPool {
  private:
   typedef FuncWrapper task_type;
   std::atomic_bool
-      m_done;           // The global termination indication of the thread pool
-  size_t m_worker_num;  // Number of the worker threads
-  bool m_runnging_until_empty;  // It runs until the queue is empty and then
+      done_;           // The global termination indication of the thread pool
+  size_t worker_num_;  // Number of the worker threads
+  bool runnging_until_empty_;  // It runs until the queue is empty and then
                                 // stops
 
   std::vector<std::unique_ptr<ThreadSafeQueue<task_type>>>
-      m_queues;                                   // Thread task queues
-  std::vector<InterruptFlag> m_thread_need_stop;  // Thread termination flags
-  std::vector<std::thread> m_threads;             // Worker threads
-  std::mutex m_mutex_join;                        // Used to protect joinable
+      queues_;                                   // Thread task queues
+  std::vector<InterruptFlag> thread_need_stop_;  // Thread termination flags
+  std::vector<std::thread> threads_;             // Worker threads
+  std::mutex mutex_join_;                        // Used to protect joinable
 
   void worker_thread(int index) {
-    auto *local_queue = m_queues[index].get();
-    auto *local_stop_flag = &m_thread_need_stop[index];
-    while (!local_stop_flag->isSet() || !m_done) {
+    auto *local_queue = queues_[index].get();
+    auto *local_stop_flag = &thread_need_stop_[index];
+    while (!local_stop_flag->isSet() || !done_) {
       task_type task;
       local_queue->wait_and_pop(task);
       if (task.isNullTask()) {

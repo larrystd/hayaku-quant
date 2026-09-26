@@ -51,92 +51,92 @@ OperatorSelector::OperatorSelector(const string& name) : SelectorBase(name) {}
 
 OperatorSelector::OperatorSelector(const string& name, const SelectorPtr& se1,
                                    const SelectorPtr& se2)
-    : SelectorBase(name), m_se1(se1), m_se2(se2) {
+    : SelectorBase(name), se1_(se1), se2_(se2) {
   build();
 }
 
 OperatorSelector::~OperatorSelector() {}
 
 void OperatorSelector::build() {
-  auto inter = findIntersection(m_se1, m_se2);
-  if (m_se1 && m_se2) {
+  auto inter = findIntersection(se1_, se2_);
+  if (se1_ && se2_) {
     std::map<internal::StrategyRuntime*, internal::StrategyRuntimePtr> tmpdict;
-    const auto& raw_sys_list1 = m_se1->getProtoSystemList();
+    const auto& raw_sys_list1 = se1_->getProtoSystemList();
     for (const auto& sys : raw_sys_list1) {
-      m_pro_sys_list.emplace_back(sys);
-      m_se1_set.insert(sys);
+      pro_sys_list_.emplace_back(sys);
+      se1_set_.insert(sys);
       if (inter.find(sys.get()) != inter.end()) {
         tmpdict[sys.get()] = sys;
       }
     }
 
-    const auto& raw_sys_list2 = m_se2->getProtoSystemList();
+    const auto& raw_sys_list2 = se2_->getProtoSystemList();
     for (size_t i = 0, total = raw_sys_list2.size(); i < total; i++) {
       const auto& sys = raw_sys_list2[i];
       auto iter = inter.find(sys.get());
       if (iter == inter.end()) {
-        m_pro_sys_list.emplace_back(sys);
-        m_se2_set.insert(sys);
+        pro_sys_list_.emplace_back(sys);
+        se2_set_.insert(sys);
       } else {
-        m_se2_set.insert(tmpdict[*iter]);
+        se2_set_.insert(tmpdict[*iter]);
       }
     }
 
-  } else if (m_se1) {
+  } else if (se1_) {
     // m_se1 = se1->clone();
-    auto sys_list = m_se1->getProtoSystemList();
+    auto sys_list = se1_->getProtoSystemList();
     for (auto& sys : sys_list) {
-      m_se1_set.insert(sys);
+      se1_set_.insert(sys);
     }
-    m_pro_sys_list = std::move(sys_list);
+    pro_sys_list_ = std::move(sys_list);
 
-  } else if (m_se2) {
+  } else if (se2_) {
     // m_se2 = se2->clone();
-    auto sys_list = m_se2->getProtoSystemList();
+    auto sys_list = se2_->getProtoSystemList();
     for (auto& sys : sys_list) {
-      m_se2_set.insert(sys);
-      m_pro_sys_list.emplace_back(std::move(sys));
+      se2_set_.insert(sys);
+      pro_sys_list_.emplace_back(std::move(sys));
     }
   }
 }
 
 void OperatorSelector::_reset() {
-  if (m_se1) {
-    m_se1->reset();
-    m_se1_set.clear();
-    auto sys_list = m_se1->getProtoSystemList();
+  if (se1_) {
+    se1_->reset();
+    se1_set_.clear();
+    auto sys_list = se1_->getProtoSystemList();
     for (auto& sys : sys_list) {
-      m_se1_set.insert(sys);
+      se1_set_.insert(sys);
     }
   }
-  if (m_se2) {
-    m_se2->reset();
-    m_se2_set.clear();
-    auto sys_list = m_se2->getProtoSystemList();
+  if (se2_) {
+    se2_->reset();
+    se2_set_.clear();
+    auto sys_list = se2_->getProtoSystemList();
     for (auto& sys : sys_list) {
-      m_se2_set.insert(sys);
+      se2_set_.insert(sys);
     }
   }
-  m_real_to_proto.clear();
+  real_to_proto_.clear();
 }
 
 bool OperatorSelector::isMatchAF(const AFPtr& af) { return true; }
 
 void OperatorSelector::_addSystem(const internal::StrategyRuntimePtr& sys) {
-  if (m_se1) {
-    m_se1->addSystem(sys);
-    m_se1_set.insert(sys);
+  if (se1_) {
+    se1_->addSystem(sys);
+    se1_set_.insert(sys);
   }
-  if (m_se2) {
-    m_se2->addSystem(sys);
-    m_se2_set.insert(sys);
+  if (se2_) {
+    se2_->addSystem(sys);
+    se2_set_.insert(sys);
   }
 }
 
 void OperatorSelector::_removeAll() {
-  m_se1_set.clear();
-  m_se2_set.clear();
-  m_real_to_proto.clear();
+  se1_set_.clear();
+  se2_set_.clear();
+  real_to_proto_.clear();
 }
 
 SelectorPtr OperatorSelector::_clone() {
@@ -147,7 +147,7 @@ SelectorPtr OperatorSelector::_clone() {
     // it would need to find the most underlying system strategy instance and, after creating the
     // clone object, the original system instance would also have to use that clone
     auto p = make_shared<OperatorSelector>();
-    p->cloneRebuild(m_se1, m_se2);
+    p->cloneRebuild(se1_, se2_);
     return p;
 #endif
 }
@@ -156,18 +156,18 @@ void OperatorSelector::cloneRebuild(const SelectorPtr& se1,
                                     const SelectorPtr& se2) {
   auto inter = findIntersection(se1, se2);
   if (se1 && se2) {
-    m_se1 = se1->clone();
-    m_se1->removeAll();
-    m_se2 = se2->clone();
-    m_se2->removeAll();
+    se1_ = se1->clone();
+    se1_->removeAll();
+    se2_ = se2->clone();
+    se2_->removeAll();
 
     std::map<internal::StrategyRuntime*, internal::StrategyRuntimePtr> tmpdict;
     const auto& raw_sys_list1 = se1->getProtoSystemList();
     for (const auto& sys : raw_sys_list1) {
       auto tmpsys = sys->clone();
-      m_pro_sys_list.emplace_back(tmpsys);
-      m_se1->addSystem(tmpsys);
-      m_se1_set.insert(tmpsys);
+      pro_sys_list_.emplace_back(tmpsys);
+      se1_->addSystem(tmpsys);
+      se1_set_.insert(tmpsys);
       if (inter.find(sys.get()) != inter.end()) {
         tmpdict[sys.get()] = tmpsys;
       }
@@ -179,48 +179,48 @@ void OperatorSelector::cloneRebuild(const SelectorPtr& se1,
       auto tmpsys = sys->clone();
       auto iter = inter.find(sys.get());
       if (iter == inter.end()) {
-        m_pro_sys_list.emplace_back(tmpsys);
-        m_se2_set.insert(tmpsys);
+        pro_sys_list_.emplace_back(tmpsys);
+        se2_set_.insert(tmpsys);
       } else {
-        m_se2_set.insert(tmpdict[*iter]);
+        se2_set_.insert(tmpdict[*iter]);
       }
-      m_se2->addSystem(tmpsys);
+      se2_->addSystem(tmpsys);
     }
 
   } else if (se1) {
-    m_se1 = se1->clone();
-    auto sys_list = m_se1->getProtoSystemList();
+    se1_ = se1->clone();
+    auto sys_list = se1_->getProtoSystemList();
     for (auto& sys : sys_list) {
-      m_se1_set.insert(sys);
+      se1_set_.insert(sys);
     }
-    m_pro_sys_list = std::move(sys_list);
+    pro_sys_list_ = std::move(sys_list);
 
   } else if (se2) {
-    m_se2 = se2->clone();
-    auto sys_list = m_se2->getProtoSystemList();
+    se2_ = se2->clone();
+    auto sys_list = se2_->getProtoSystemList();
     for (auto& sys : sys_list) {
-      m_se2_set.insert(sys);
-      m_pro_sys_list.emplace_back(std::move(sys));
+      se2_set_.insert(sys);
+      pro_sys_list_.emplace_back(std::move(sys));
     }
   }
 }
 
 void OperatorSelector::_calculate() {
   internal::StrategyRuntimeList se1_list, se2_list;
-  for (const auto& sys : m_real_sys_list) {
-    const auto& protoSys = m_real_to_proto[sys];
-    if (m_se1_set.find(protoSys) != m_se1_set.end()) {
+  for (const auto& sys : real_sys_list_) {
+    const auto& protoSys = real_to_proto_[sys];
+    if (se1_set_.find(protoSys) != se1_set_.end()) {
       se1_list.emplace_back(sys);
     }
-    if (m_se2_set.find(protoSys) != m_se2_set.end()) {
+    if (se2_set_.find(protoSys) != se2_set_.end()) {
       se2_list.emplace_back(sys);
     }
   }
-  if (m_se1) {
-    m_se1->calculate(se1_list, m_query);
+  if (se1_) {
+    se1_->calculate(se1_list, query_);
   }
-  if (m_se2) {
-    m_se2->calculate(se2_list, m_query);
+  if (se2_) {
+    se2_->calculate(se2_list, query_);
   }
 }
 
@@ -228,11 +228,11 @@ StrategyWeightList OperatorSelector::getUnionSelected(
     Datetime date, const std::function<double(double, double)>&& func) {
   StrategyWeightList ret;
   StrategyWeightList sws1, sws2;
-  if (m_se1) {
-    sws1 = m_se1->getSelected(date);
+  if (se1_) {
+    sws1 = se1_->getSelected(date);
   }
-  if (m_se2) {
-    sws2 = m_se2->getSelected(date);
+  if (se2_) {
+    sws2 = se2_->getSelected(date);
   }
 
   if (sws1.empty()) {
@@ -283,10 +283,10 @@ StrategyWeightList OperatorSelector::getUnionSelected(
 StrategyWeightList OperatorSelector::getIntersectionSelected(
     Datetime date, const std::function<double(double, double)>&& func) {
   StrategyWeightList ret;
-  HAYAKU_IF_RETURN(!m_se1 || !m_se2, ret);
+  HAYAKU_IF_RETURN(!se1_ || !se2_, ret);
 
-  StrategyWeightList sws1 = m_se1->getSelected(date);
-  StrategyWeightList sws2 = m_se2->getSelected(date);
+  StrategyWeightList sws1 = se1_->getSelected(date);
+  StrategyWeightList sws2 = se2_->getSelected(date);
 
   HAYAKU_IF_RETURN(sws1.empty() || sws2.empty(), ret);
 

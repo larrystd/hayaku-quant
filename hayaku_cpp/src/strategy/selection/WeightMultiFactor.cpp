@@ -25,13 +25,13 @@ WeightMultiFactor::WeightMultiFactor(const PriceList& weights,
                                      bool save_all_factors)
     : MultiFactorBase(stks, query, ref_stk, "MF_Weight", ic_n, spearman, mode,
                       save_all_factors),
-      m_weights(weights) {}
+      weights_(weights) {}
 
 vector<Indicator> WeightMultiFactor::_calculate(
     const vector<IndicatorList>& all_stk_inds) {
-  size_t days_total = m_ref_dates.size();
-  size_t stk_count = m_stks.size();
-  size_t ind_count = m_factorset.size();
+  size_t days_total = ref_dates_.size();
+  size_t stk_count = stks_.size();
+  size_t ind_count = factorset_.size();
 
   return global_parallel_for_index(0, stk_count, [&](size_t si) {
     vector<price_t> sumByDate(days_total, 0.0);
@@ -42,7 +42,7 @@ vector<Indicator> WeightMultiFactor::_calculate(
       for (size_t di = 0; di < days_total; di++) {
         auto value = ind_data[di];
         if (!std::isnan(value)) {
-          sumByDate[di] += value * m_weights[ii];
+          sumByDate[di] += value * weights_[ii];
         }
       }
     }

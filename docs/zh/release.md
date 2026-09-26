@@ -5,7 +5,7 @@
 `Performance.names()` 返回英文统计项 key。旧中文 key 暂可使用，但已废弃并会输出告警。
 中文环境下，`Performance.report()` 仍通过 `i18n/zh_CN.po` 输出中文。
 `SE_PerformanceOptimal` 的默认 key 改为 `Account Avg Annual Return %`，
-`hayaku.analysis` 和 `hayaku.draw` 的默认 key 已同步。
+`hayaku.metrics` 和 `hayaku.extensions.visualization` 的默认 key 已同步。
 
 | 旧中文 key | 新英文 key |
 | --- | --- |

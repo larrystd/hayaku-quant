@@ -25,41 +25,41 @@ class StockMapIterator {
   StockMapIterator() {}
 
   // cppcheck-suppress noExplicitConstructor
-  StockMapIterator(const stock_map_t::const_iterator& iter) : m_iter(iter) {}
+  StockMapIterator(const stock_map_t::const_iterator& iter) : iter_(iter) {}
 
-  StockMapIterator(const StockMapIterator& iter) : m_iter(iter.m_iter) {}
+  StockMapIterator(const StockMapIterator& iter) : iter_(iter.iter_) {}
 
   StockMapIterator& operator=(const StockMapIterator& iter) {
     HAYAKU_IF_RETURN(this == &iter, *this);
-    m_iter = iter.m_iter;
+    iter_ = iter.iter_;
     return *this;
   }
 
   StockMapIterator& operator++() {
-    ++m_iter;
+    ++iter_;
     return *this;
   }
 
   const StockMapIterator operator++(int) {
-    auto old_iter = m_iter;
-    ++m_iter;
+    auto old_iter = iter_;
+    ++iter_;
     return StockMapIterator(old_iter);
   }
 
   bool operator==(const StockMapIterator& iter) const {
-    return m_iter == iter.m_iter;
+    return iter_ == iter.iter_;
   }
 
   bool operator!=(const StockMapIterator& iter) const {
-    return m_iter != iter.m_iter;
+    return iter_ != iter.iter_;
   }
 
-  const Stock& operator*() const { return m_iter->second; }
+  const Stock& operator*() const { return iter_->second; }
 
-  const Stock* const operator->() const { return &(m_iter->second); }
+  const Stock* const operator->() const { return &(iter_->second); }
 
  private:
-  stock_map_t::const_iterator m_iter;
+  stock_map_t::const_iterator iter_;
 };
 
 } /* namespace hayaku */

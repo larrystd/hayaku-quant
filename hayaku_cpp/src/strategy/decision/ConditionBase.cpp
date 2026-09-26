@@ -25,9 +25,9 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const ConditionPtr& cn) {
   return os;
 }
 
-ConditionBase::ConditionBase() : m_name("ConditionBase") {}
+ConditionBase::ConditionBase() : name_("ConditionBase") {}
 
-ConditionBase::ConditionBase(const string& name) : m_name(name) {}
+ConditionBase::ConditionBase(const string& name) : name_(name) {}
 
 ConditionBase::~ConditionBase() {}
 
@@ -35,11 +35,11 @@ void ConditionBase::baseCheckParam(const string& name) const {}
 void ConditionBase::paramChanged() {}
 
 void ConditionBase::reset() {
-  m_kdata = Null<KData>();
-  m_account.reset();
-  m_sg.reset();
-  m_date_index.clear();
-  m_values.clear();
+  kdata_ = Null<KData>();
+  account_.reset();
+  sg_.reset();
+  date_index_.clear();
+  values_.clear();
   _reset();
 }
 
@@ -57,12 +57,12 @@ ConditionPtr ConditionBase::clone() {
     return shared_from_this();
   }
 
-  p->m_params = m_params;
-  p->m_name = m_name;
-  p->m_is_python_object = m_is_python_object;
-  p->m_kdata = m_kdata;
-  p->m_date_index = m_date_index;
-  p->m_values = m_values;
+  p->params_ = params_;
+  p->name_ = name_;
+  p->is_python_object_ = is_python_object_;
+  p->kdata_ = kdata_;
+  p->date_index_ = date_index_;
+  p->values_ = values_;
 
   // tm and sg are set by the system at runtime, they are not cloned
   // The account is injected by StrategyRuntime for each run.
@@ -71,37 +71,37 @@ ConditionPtr ConditionBase::clone() {
 }
 
 void ConditionBase::setTO(const KData& kdata) {
-  HAYAKU_IF_RETURN(kdata == m_kdata, void());
-  m_kdata = kdata;
+  HAYAKU_IF_RETURN(kdata == kdata_, void());
+  kdata_ = kdata;
   if (!kdata.empty()) {
-    m_date_index.clear();
+    date_index_.clear();
     size_t total = kdata.size();
-    m_values.resize(total);
-    auto const* ks = m_kdata.data();
+    values_.resize(total);
+    auto const* ks = kdata_.data();
     for (size_t i = 0; i < total; i++) {
-      m_values[i] = 0.0;
-      m_date_index[ks[i].datetime] = i;
+      values_[i] = 0.0;
+      date_index_[ks[i].datetime] = i;
     }
     _calculate();
   }
 }
 
 void ConditionBase::_addValid(const Datetime& datetime, price_t value) {
-  auto iter = m_date_index.find(datetime);
-  HAYAKU_IF_RETURN(iter == m_date_index.end(), void());
-  m_values[iter->second] += value;
+  auto iter = date_index_.find(datetime);
+  HAYAKU_IF_RETURN(iter == date_index_.end(), void());
+  values_[iter->second] += value;
 }
 
 bool ConditionBase::isValid(const Datetime& datetime) {
-  auto iter = m_date_index.find(datetime);
-  HAYAKU_IF_RETURN(iter == m_date_index.end(), false);
-  return m_values[iter->second] > 0.;
+  auto iter = date_index_.find(datetime);
+  HAYAKU_IF_RETURN(iter == date_index_.end(), false);
+  return values_[iter->second] > 0.;
 }
 
 DatetimeList ConditionBase::getDatetimeList() const {
   DatetimeList result;
-  for (const auto& d : m_date_index) {
-    if (m_values[d.second] > 0.0) {
+  for (const auto& d : date_index_) {
+    if (values_[d.second] > 0.0) {
       result.emplace_back(d.first);
     }
   }
@@ -111,13 +111,13 @@ DatetimeList ConditionBase::getDatetimeList() const {
 Indicator ConditionBase::getValues() const {
   DatetimeList dates;
   PriceList values;
-  for (const auto& d : m_date_index) {
+  for (const auto& d : date_index_) {
     dates.push_back(d.first);
   }
 
   values.reserve(dates.size());
   for (const auto& d : dates) {
-    values.push_back(m_values[m_date_index.at(d)]);
+    values.push_back(values_[date_index_.at(d)]);
   }
 
   return PRICELIST(values, dates);

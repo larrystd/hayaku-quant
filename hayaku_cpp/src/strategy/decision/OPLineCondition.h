@@ -22,7 +22,7 @@ class OPLineCondition : public ConditionBase {
   virtual ConditionPtr _clone() override;
 
  private:
-  Indicator m_op;
+  Indicator op_;
 
 //============================================
 // Serialization support
@@ -32,7 +32,7 @@ class OPLineCondition : public ConditionBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConditionBase);
-    ar& BOOST_SERIALIZATION_NVP(m_op);
+    ar& boost::serialization::make_nvp("m_op", op_);
   }
 #endif
 };

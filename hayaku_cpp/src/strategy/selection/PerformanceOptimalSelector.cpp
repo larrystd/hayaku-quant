@@ -34,8 +34,8 @@ void PerformanceOptimalSelector::_checkParam(const string& name) const {
 
 StrategyWeightList PerformanceOptimalSelector::_getSelected(Datetime date) {
   StrategyWeightList ret;
-  auto iter = this->m_sys_dict.find(date);
-  if (iter != this->m_sys_dict.end()) {
+  auto iter = this->sys_dict_.find(date);
+  if (iter != this->sys_dict_.end()) {
     ret.emplace_back(StrategyWeight(iter->second, 1.0));
   }
   return ret;
@@ -47,25 +47,25 @@ SelectorPtr PerformanceOptimalSelector::_clone() {
 
 void PerformanceOptimalSelector::_reset() {
   OptimalSelectorBase::_reset();
-  m_sys_dict.clear();
+  sys_dict_.clear();
 }
 
 void PerformanceOptimalSelector::calculate(
     const internal::StrategyRuntimeList& pf_realSysList, const KQuery& query) {
   // SPEND_TIME(OptimalSelector_calculate);
-  HAYAKU_IF_RETURN(m_calculated && m_query == query, void());
+  HAYAKU_IF_RETURN(calculated_ && query_ == query, void());
 
-  m_query = query;
-  m_real_sys_list = pf_realSysList;
+  query_ = query;
+  real_sys_list_ = pf_realSysList;
 
   bool trace = getParam<bool>("trace");
-  CLS_INFO_IF(trace, "candidate sys list size: {}", m_pro_sys_list.size());
-  CLS_WARN_IF_RETURN(m_pro_sys_list.empty(), void(),
+  CLS_INFO_IF(trace, "candidate sys list size: {}", pro_sys_list_.size());
+  CLS_WARN_IF_RETURN(pro_sys_list_.empty(), void(),
                      "candidate sys list is empty!");
 
   // The check is done at runtime rather than in addSystem, so that
   // WalkForwardSystem can add the system list without a given security directly
-  for (const auto& sys : m_pro_sys_list) {
+  for (const auto& sys : pro_sys_list_) {
     CLS_ERROR_IF_RETURN(sys->getStock().isNull(), void(),
                         "The candidate sys ({}) was specified stock!",
                         sys->name());
@@ -98,7 +98,7 @@ void PerformanceOptimalSelector::calculate(
 
   _calculate_parallel(train_ranges, dates, key, mode, test_len, trace);
 
-  m_calculated = true;
+  calculated_ = true;
 }
 
 void PerformanceOptimalSelector::_calculate_parallel(
@@ -108,7 +108,7 @@ void PerformanceOptimalSelector::_calculate_parallel(
   // SPEND_TIME(OptimalSelector_calculate_parallel);
   auto sys_list = global_parallel_for_index(
       0, train_ranges.size(),
-      [this, &train_ranges, &dates, query = m_query, trace, key,
+      [this, &train_ranges, &dates, query = query_, trace, key,
        mode](size_t i) {
         Datetime start_date = dates[train_ranges[i].first];
         Datetime end_date = dates[train_ranges[i].second];
@@ -119,11 +119,11 @@ void PerformanceOptimalSelector::_calculate_parallel(
 
         Performance per;
         internal::StrategyRuntimePtr selected_sys;
-        if (m_pro_sys_list.size() == 1) {
-          selected_sys = m_pro_sys_list.back()->clone();
+        if (pro_sys_list_.size() == 1) {
+          selected_sys = pro_sys_list_.back()->clone();
         } else if (0 == mode) {
           double max_value = std::numeric_limits<double>::lowest();
-          for (const auto& sys : m_pro_sys_list) {
+          for (const auto& sys : pro_sys_list_) {
             // Cut off all the shared parts to avoid a parallel conflict
             auto new_sys = sys->clone();
             new_sys->run(q, true);
@@ -137,7 +137,7 @@ void PerformanceOptimalSelector::_calculate_parallel(
           }
         } else if (1 == mode) {
           double min_value = std::numeric_limits<double>::max();
-          for (const auto& sys : m_pro_sys_list) {
+          for (const auto& sys : pro_sys_list_) {
             auto new_sys = sys->clone();
             new_sys->run(q, true);
             per.statistics(new_sys->getAccount(), end_date);
@@ -167,14 +167,14 @@ void PerformanceOptimalSelector::_calculate_parallel(
       }
 
       for (size_t pos = test_start; pos < test_end; pos++) {
-        m_sys_dict[dates[pos]] = selected_sys;
+        sys_dict_[dates[pos]] = selected_sys;
       }
 
       if (test_end < dates_len) {
-        m_run_ranges.emplace_back(
+        run_ranges_.emplace_back(
             RunRanges(dates[train_start], dates[test_start], dates[test_end]));
       } else {
-        m_run_ranges.emplace_back(RunRanges(dates[train_start],
+        run_ranges_.emplace_back(RunRanges(dates[train_start],
                                             dates[test_start],
                                             dates[test_end - 1] + Minutes(1)));
       }

@@ -9,9 +9,7 @@
 
 #include <config.h>
 #include <data/DataEngine.h>
-#include <data/MarketTypes.h>
 #include <data/Stock.h>
-#include <pybind11/iostream.h>
 #include <pybind11/numpy.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -21,6 +19,8 @@
 #include <vector>
 
 #include "AnyConversion.h"
+#include <data/MarketTypes.h>
+#include <pybind11/iostream.h>
 
 namespace hayaku {
 
@@ -32,7 +32,7 @@ class OStreamToPython final {
   friend void close_ostream_to_python();
 
  public:
-  explicit OStreamToPython(bool open) : m_old_opened(open) {
+  explicit OStreamToPython(bool open) : old_opened_(open) {
     if (open && !ms_opened) {
       ms_io_redirect.enter();
     } else if (!open && ms_opened) {
@@ -41,15 +41,15 @@ class OStreamToPython final {
   }
 
   ~OStreamToPython() {
-    if (m_old_opened && !ms_opened) {
+    if (old_opened_ && !ms_opened) {
       ms_io_redirect.enter();
-    } else if (!m_old_opened && ms_opened) {
+    } else if (!old_opened_ && ms_opened) {
       ms_io_redirect.exit();
     }
   }
 
  private:
-  bool m_old_opened;
+  bool old_opened_;
 
  private:
   static pybind11::detail::OstreamRedirect ms_io_redirect;

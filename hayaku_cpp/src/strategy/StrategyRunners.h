@@ -27,13 +27,13 @@ class HAYAKU_API RunSystemInStrategy {
   void runMomentOnClose(const Stock& stock);
 
  private:
-  internal::StrategyRuntimePtr m_strategy;
-  internal::ExecutionBrokerPortPtr m_broker_port;
-  OrderBrokerPtr m_broker;
-  KQuery m_query;
+  internal::StrategyRuntimePtr strategy_;
+  internal::ExecutionBrokerPortPtr broker_port_;
+  OrderBrokerPtr broker_;
+  KQuery query_;
 
-  internal::PendingOrder m_buyRequest;
-  internal::PendingOrder m_sellRequest;
+  internal::PendingOrder buy_request_;
+  internal::PendingOrder sell_request_;
 };
 
 StrategyPtr HAYAKU_API crtSysStrategy(
@@ -67,11 +67,11 @@ class HAYAKU_API RunPortfolioInStrategy {
   void run();
 
  private:
-  PFPtr m_pf;
-  internal::ExecutionBrokerPortPtr m_broker_port;
-  OrderBrokerPtr m_broker;
-  KQuery m_query;
-  std::unordered_set<Stock> m_stocks;
+  PFPtr pf_;
+  internal::ExecutionBrokerPortPtr broker_port_;
+  OrderBrokerPtr broker_;
+  KQuery query_;
+  std::unordered_set<Stock> stocks_;
 };
 
 StrategyPtr HAYAKU_API crtPFStrategy(

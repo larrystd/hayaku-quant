@@ -48,15 +48,15 @@ class AsyncAutoTransAction final {
   }
 
   /** Get the database connection */
-  const AsyncDBConnectPtr& connect() const { return m_driver; }
+  const AsyncDBConnectPtr& connect() const { return driver_; }
 
   /** Destructor: it rolls back automatically if it has not been committed */
   ~AsyncAutoTransAction() {
-    if (!m_committed && m_driver && m_io_context) {
+    if (!committed_ && driver_ && io_context_) {
       // Start a detached coroutine to roll back (fire and forget)
       net::asio::co_spawn(
-          *m_io_context,
-          [driver = m_driver]() -> net::awaitable<void> {
+          *io_context_,
+          [driver = driver_]() -> net::awaitable<void> {
             try {
               co_await driver->commit();
               co_return;
@@ -80,24 +80,24 @@ class AsyncAutoTransAction final {
  private:
   /* Private constructor */
   explicit AsyncAutoTransAction(const AsyncDBConnectPtr& driver)
-      : m_driver(driver), m_io_context(nullptr), m_committed(false) {
-    HAYAKU_CHECK(m_driver, "Null AsyncDBConnectPtr!");
+      : driver_(driver), io_context_(nullptr), committed_(false) {
+    HAYAKU_CHECK(driver_, "Null AsyncDBConnectPtr!");
   }
 
   /* Internal method: start the transaction */
   net::awaitable<void> startTransaction() {
     // Get the io_context of the current coroutine environment
     auto exec = co_await net::this_coro::executor;
-    m_io_context = &static_cast<boost::asio::io_context&>(exec.context());
+    io_context_ = &static_cast<boost::asio::io_context&>(exec.context());
 
     // Start the transaction
-    co_await m_driver->transaction();
+    co_await driver_->transaction();
   }
 
  private:
-  AsyncDBConnectPtr m_driver;
-  boost::asio::io_context* m_io_context = nullptr;
-  bool m_committed = false;
+  AsyncDBConnectPtr driver_;
+  boost::asio::io_context* io_context_ = nullptr;
+  bool committed_ = false;
 };
 
 /**
@@ -133,22 +133,22 @@ class AsyncTransAction final {
   }
 
   /** Get the database connection */
-  const AsyncDBConnectPtr& connect() const { return m_driver; }
+  const AsyncDBConnectPtr& connect() const { return driver_; }
 
   /**
    * Start the transaction (the nesting is supported)
    * @note It is not started repeatedly if it has already been started
    */
   net::awaitable<void> begin() {
-    if (!m_started) {
+    if (!started_) {
       // Get the io_context of the current coroutine environment
       auto exec = co_await net::this_coro::executor;
-      m_io_context = &static_cast<boost::asio::io_context&>(exec.context());
+      io_context_ = &static_cast<boost::asio::io_context&>(exec.context());
 
       // Start the transaction
-      co_await m_driver->transaction();
-      m_started = true;
-      m_committed = false;
+      co_await driver_->transaction();
+      started_ = true;
+      committed_ = false;
     }
     co_return;
   }
@@ -158,21 +158,21 @@ class AsyncTransAction final {
    * @note begin() must be called first to start the transaction
    */
   net::awaitable<void> end() {
-    HAYAKU_CHECK(m_started, "No transaction has started!");
-    if (!m_committed) {
-      co_await m_driver->commit();
-      m_committed = true;
-      m_started = false;
+    HAYAKU_CHECK(started_, "No transaction has started!");
+    if (!committed_) {
+      co_await driver_->commit();
+      committed_ = true;
+      started_ = false;
     }
     co_return;
   }
 
   /** Roll back the transaction */
   net::awaitable<void> rollback() {
-    if (m_started && !m_committed) {
-      co_await m_driver->rollback();
-      m_started = false;
-      m_committed = false;
+    if (started_ && !committed_) {
+      co_await driver_->rollback();
+      started_ = false;
+      committed_ = false;
     }
     co_return;
   }
@@ -182,14 +182,14 @@ class AsyncTransAction final {
   ~AsyncTransAction() {
     // If the transaction has not been committed actively it is regarded as
     // needing a rollback
-    if (m_started && !m_committed && m_driver && m_io_context) {
+    if (started_ && !committed_ && driver_ && io_context_) {
       HAYAKU_WARN(
           "AsyncTransAction: The transaction is rolled back in destructor!");
 
       // Start a detached coroutine to roll back (fire and forget)
       boost::asio::co_spawn(
-          *m_io_context,
-          [driver = m_driver]() -> net::awaitable<void> {
+          *io_context_,
+          [driver = driver_]() -> net::awaitable<void> {
             try {
               co_await driver->rollback();
             } catch (const std::exception& e) {
@@ -205,18 +205,18 @@ class AsyncTransAction final {
  private:
   /** Private constructor */
   explicit AsyncTransAction(const AsyncDBConnectPtr& driver)
-      : m_driver(driver),
-        m_io_context(nullptr),
-        m_committed(false),
-        m_started(false) {
-    HAYAKU_CHECK(m_driver, "Null AsyncDBConnectPtr!");
+      : driver_(driver),
+        io_context_(nullptr),
+        committed_(false),
+        started_(false) {
+    HAYAKU_CHECK(driver_, "Null AsyncDBConnectPtr!");
   }
 
  private:
-  AsyncDBConnectPtr m_driver;
-  net::asio::io_context* m_io_context = nullptr;
-  bool m_committed = false;
-  bool m_started = false;
+  AsyncDBConnectPtr driver_;
+  net::asio::io_context* io_context_ = nullptr;
+  bool committed_ = false;
+  bool started_ = false;
 };
 
 }  // namespace hayaku

@@ -32,7 +32,7 @@ double FixedCapitalMoneyManager ::_getBuyNumber(const Datetime& datetime,
                                                 price_t price, price_t risk,
                                                 OrderOrigin origin) {
   double capital = getParam<double>("capital");
-  return m_account->cash(datetime, m_query.kType()) / capital;
+  return account_->cash(datetime, query_.kType()) / capital;
 }
 
 MoneyManagerPtr HAYAKU_API MM_FixedCapital(double capital) {

@@ -30,12 +30,12 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const AFPtr& af) {
   return os;
 }
 
-AllocateFundsBase::AllocateFundsBase() : m_name("AllocateMoneyBase") {
+AllocateFundsBase::AllocateFundsBase() : name_("AllocateMoneyBase") {
   initParam();
 }
 
 AllocateFundsBase::AllocateFundsBase(const string& name)
-    : m_name("AllocateMoneyBase") {
+    : name_("AllocateMoneyBase") {
   initParam();
 }
 
@@ -114,10 +114,10 @@ AFPtr AllocateFundsBase::clone() {
     return shared_from_this();
   }
 
-  p->m_params = m_params;
-  p->m_name = m_name;
-  p->m_is_python_object = m_is_python_object;
-  p->m_query = m_query;
+  p->params_ = params_;
+  p->name_ = name_;
+  p->is_python_object_ = is_python_object_;
+  p->query_ = query_;
 
   /* m_account and m_cashAccount are given by PF at runtime, no clone is needed
   if (m_account)
@@ -220,15 +220,15 @@ void AllocateFundsBase::_adjust_without_running(
 
   // Get the current total assets market value and calculate the remaining
   // allocatable weight and cash
-  int precision = m_account->precision();
-  FundsRecord funds = m_account->getFunds(
-      date, m_query.kType());  // The total assets come from the total account
+  int precision = account_->precision();
+  FundsRecord funds = account_->getFunds(
+      date, query_.kType());  // The total assets come from the total account
   price_t total_funds = funds.cash + funds.market_value + funds.borrow_asset -
                         funds.short_market_value;
   double reserve_percent = getParam<double>("reserve_percent");
   price_t reserve_funds = total_funds * reserve_percent;
   price_t can_allocate_cash =
-      m_cashAccount
+      cash_account_
           ->currentCash();  // The allocatable funds come from the cash account
   if (can_allocate_cash + reserve_funds > total_funds) {
     can_allocate_cash = roundDown(total_funds - reserve_funds, precision);
@@ -272,7 +272,7 @@ void AllocateFundsBase::_adjust_without_running(
     if (running_set.find(iter->strategy) != running_set.cend()) {
       internal::PortfolioAccountPortPtr subAccount =
           iter->strategy->getAccount();
-      FundsRecord sub_funds = subAccount->getFunds(date, m_query.kType());
+      FundsRecord sub_funds = subAccount->getFunds(date, query_.kType());
       sum_weight += sub_funds.total_assets() / total_funds;
       continue;
     }
@@ -304,7 +304,7 @@ void AllocateFundsBase::_adjust_without_running(
     // Try to withdraw the funds from the total account and deposit them into
     // the sub account
     internal::PortfolioAccountPortPtr subAccount = iter->strategy->getAccount();
-    if (m_cashAccount->checkout(date, need_cash)) {
+    if (cash_account_->checkout(date, need_cash)) {
       subAccount->checkin(date, need_cash);
       HAYAKU_INFO_IF(trace, "[AF] ({}, {}, weight: {:<.4f}) fetched cash: {}",
                      iter->strategy->name(),
@@ -318,7 +318,7 @@ void AllocateFundsBase::_adjust_without_running(
     } else {
       HAYAKU_DEBUG_IF(trace,
                       "[AF] {} failed to fetch cash from total account ({})!",
-                      iter->strategy->name(), m_cashAccount->currentCash());
+                      iter->strategy->name(), cash_account_->currentCash());
     }
   }
 }
@@ -342,7 +342,7 @@ StrategyWeightList AllocateFundsBase::_adjust_with_running(
       auto subAccount = sys->getAccount();
       auto sub_cash = subAccount->currentCash();
       if (sub_cash > 0.0 && subAccount->checkout(date, sub_cash)) {
-        m_cashAccount->checkin(date, sub_cash);
+        cash_account_->checkin(date, sub_cash);
         HAYAKU_INFO_IF(trace, "[AF] Recycle cash: {:<.2f} from {}", sub_cash,
                        sys->name());
       }
@@ -388,8 +388,8 @@ StrategyWeightList AllocateFundsBase::_adjust_with_running(
           auto subAccount = sys->getAccount();
           auto sub_cash = subAccount->currentCash();
           if (subAccount->checkout(date, sub_cash)) {
-            m_cashAccount->checkin(date, sub_cash);
-            m_account->addTradeRecord(
+            cash_account_->checkin(date, sub_cash);
+            account_->addTradeRecord(
                 tr);  // Add the trade record into the total account
             HAYAKU_INFO_IF(
                 trace, "[AF] Clean position sell: {}, recycle cash: {:<.2f}",
@@ -413,8 +413,8 @@ StrategyWeightList AllocateFundsBase::_adjust_with_running(
   //-----------------------------------------------------------------
   // Get the current total assets market value and calculate the assets to be
   // reserved
-  int precision = m_cashAccount->precision();
-  FundsRecord funds = m_account->getFunds(date, m_query.kType());
+  int precision = cash_account_->precision();
+  FundsRecord funds = account_->getFunds(date, query_.kType());
   price_t total_funds = funds.total_assets();
   price_t reserve_funds = roundEx(total_funds * reserve_percent, precision);
 
@@ -484,8 +484,8 @@ StrategyWeightList AllocateFundsBase::_adjust_with_running(
           if (!tr.isNull()) {
             auto sub_cash = subAccount->currentCash();
             if (subAccount->checkout(date, sub_cash)) {
-              m_cashAccount->checkin(date, sub_cash);
-              m_account->addTradeRecord(
+              cash_account_->checkin(date, sub_cash);
+              account_->addTradeRecord(
                   tr);  // Add the trade record into the total account
               HAYAKU_INFO_IF(
                   trace,
@@ -510,7 +510,7 @@ StrategyWeightList AllocateFundsBase::_adjust_with_running(
   //-----------------------------------------------------------------
   // Calculate the cash available for the allocation; return directly when it is
   // not greater than the assets to be reserved
-  price_t current_cash = m_cashAccount->currentCash();
+  price_t current_cash = cash_account_->currentCash();
   price_t can_allocate_cash =
       roundDown(current_cash - reserve_funds, precision);
 
@@ -576,7 +576,7 @@ StrategyWeightList AllocateFundsBase::_adjust_with_running(
             continue;
           }
 
-          if (m_cashAccount->checkout(date, need_cash)) {
+          if (cash_account_->checkout(date, need_cash)) {
             subAccount->checkin(date, need_cash);
             HAYAKU_INFO_IF(trace, "[AF] {} fetched cash: {}",
                            iter->strategy->name(), need_cash);
@@ -598,7 +598,7 @@ StrategyWeightList AllocateFundsBase::_adjust_with_running(
       // the sub account
       internal::PortfolioAccountPortPtr subAccount =
           iter->strategy->getAccount();
-      if (m_cashAccount->checkout(date, need_cash)) {
+      if (cash_account_->checkout(date, need_cash)) {
         subAccount->checkin(date, need_cash);
         HAYAKU_INFO_IF(trace, "[AF] {} fetched cash: {}",
                        iter->strategy->name(), need_cash);

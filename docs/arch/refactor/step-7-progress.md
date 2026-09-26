@@ -30,7 +30,7 @@
 
 - `.clang-format` 收敛为 `BasedOnStyle: Google` 的简明配置，移除当前 4 空格、100 列等项目特例；固定并记录执行所用的 LLVM 主版本，避免本机和 CI 输出漂移。
 - 范围是仓库内手写的 C/C++ 源码、头文件和测试：`hayaku_cpp/src`、`hayaku_cpp/test`、`hayaku_cpp/demo`、`hayaku_pywrap`、`hayaku_ingest_native`、`hayaku_realtime_native`。执行前重新生成精确文件清单。
-- 不格式化 `build/`、`.xmake/`、第三方包、FlatBuffers 等生成代码和二进制产物。`*.h.in` 等模板先验证是否能被正确解析，再决定是否纳入。
+- 不格式化 `build/`、Bazel 输出目录、第三方包、FlatBuffers 等生成代码和二进制产物。`*.h.in` 等模板先验证是否能被正确解析，再决定是否纳入。
 - 先只读预览文件数、差异规模和包含顺序变化，再执行一次性格式化。旧代码不因当前工作树脏而被跳过，但结构迁移与机械排版须分开审查。
 
 Google 默认包含头文件排序。若排序后编译失败，应补足文件自身所需的直接 `#include` 并单独记录，
@@ -45,17 +45,17 @@ Google 默认包含头文件排序。若排序后编译失败，应补足文件�
 | `fmt-check [files...]` | 只读检查指定文件；无参数时按明确清单检查全部手写 C/C++ 文件 |
 | `fmt <files...>` | 只格式化显式指定的文件 |
 | `fmt-all` | 明确触发一次性全范围改写，不作为 `build` 或 `test` 的副作用 |
-| `tidy <files...>` | 使用 Xmake 编译数据库检查指定编译单元，不自动应用修复 |
+| `tidy <files...>` | 使用 Bazel 编译数据库检查指定编译单元，不自动应用修复 |
 | `tidy-strict <files...>` | 对已纳入质量门禁的文件把报告的告警视为失败 |
 | `asan-test` | 在隔离的 sanitizer 配置下构建并运行指定测试矩阵 |
 
 这些命令应能发现固定版本的 LLVM 工具；`fmt-check`、`fmt` 和 `help` 不应被无关的
-Python 扩展或 Xmake 构建前置检查阻断。同步校验 `tools/cpp-style.md` 中的
+Python 扩展或 Bazel 构建前置检查阻断。同步校验 `tools/cpp-style.md` 中的
 `hayaku_cpp` 示例。
 
 ## 3. `clang-tidy`：检查而非批量改写
 
-1. 以 Xmake 生成的 `compile_commands.json` 为唯一编译参数来源；更换构建选项、目录或 target 后重新生成，并核对 `core`、`ingest`、`realtime` 的编译单元覆盖。
+1. 以 Bazel `aquery` 生成的 `compile_commands.json` 为唯一编译参数来源；更换构建选项、目录或 target 后重新生成，并核对 `core`、`ingest`、`realtime` 的编译单元覆盖。
 2. 从 `clang-analyzer`、`bugprone`、`performance` 和适用的 `google-*` 检查建立规则集。`abseil-*` 主要检查 Abseil API 用法，不因采用 Google 格式而全量启用。
 3. 只报告项目手写代码及其自有头文件的诊断，排除系统、第三方和生成文件；记录检查耗时、规则版本、告警位置和处理结论。
 4. `clang-tidy --fix` 不作为全仓自动步骤。尤其是公开方法、成员和 Python 可见名称的命名规则，只先形成清单；涉及兼容性时交由第 8 步处理。
@@ -63,7 +63,7 @@ Python 扩展或 Xmake 构建前置检查阻断。同步校验 `tools/cpp-style.
 
 ## 4. ASan 与泄漏检查
 
-仓库已有 `leak_check` Xmake 选项、core/test 的 sanitizer 策略和 `asan.sup`，但这不等于
+旧 Xmake 构建曾有 `leak_check` 选项和 core/test 的 sanitizer 策略；仓库仍有 `asan.sup`，但这不等于
 已经完成独立可重复的 ASan 验收。本步需要：
 
 1. 明确 macOS 与 Linux 可用的编译器、运行时和启动方式；使用独立的 debug/sanitizer 构建配置，避免把 sanitizer 产物混进普通 wheel 或发布库。
@@ -91,7 +91,9 @@ ASan、LeakSanitizer 和平台运行时能力分别记录，不以某个平台�
 | 根目录 `doxyfile` | `INPUT` 为空、递归扫当前目录且还生成 LaTeX，未定义现在需要交付的 C++ API 文档范围 | 默认删除这份泛化配置；若 C++ API 参考文档仍是产品交付物，则另建只覆盖公开头文件的有效配置，不保留旧文件充数 |
 | `hayaku_cpp/test/Doxyfile` 及开发文档引用 | 配置的项目名是 `test_doc`、输入是测试目录；中英文 `developer.rst` 还指向不存在的 `hayaku_cpp/Doxygen`，均不能说明当前 C++ API | 本步删除测试源码文档配置，并删除或重写失效命令；若将来确需 C++ API 参考文档，重新定义范围和配置 |
 
-本步只处理下文列出的文件；其他根目录配置（如 `cppcheck.cppcheck`）不因名称可疑而顺带删除。
+本步只处理下文列出的文件；其他根目录配置不因名称可疑而顺带删除。
+`cppcheck.cppcheck` 经复核只有已删除的源码目录和外部插件路径，当前构建、CI、文档均不调用；
+空的 `.gitmodules` 也没有对应的 Git 子模块，因此两者列入下方清理清单。
 
 ### 5.1 `i18n/`：保留本地化能力，清掉失效词条
 
@@ -152,9 +154,15 @@ CI、Read the Docs 配置和贡献规则提供替代说明；本步默认不是�
 | 文件 | 清理理由 |
 |---|---|
 | `doxyfile` | 泛化扫描仓库，未定义有效的 C++ API 文档交付物 |
+| `hayaku_cpp/Doxyfile` | `INPUT = hayaku`：从 `hayaku_cpp` 执行时目录不存在，从仓库根目录执行时指向 Python 包，均非当前 C++ 源码；现行流程也不调用它 |
+| `hayaku_cpp/header.html` | 仅供上述失效 Doxygen 配置生成 HTML 使用 |
+| `hayaku_cpp/footer.html` | 仅供上述失效 Doxygen 配置生成 HTML 使用 |
 | `hayaku_cpp/test/Doxyfile` | 只生成测试源码文档，不是当前用户或开发者需要的 API 参考 |
-| `hayaku_cpp/demo/demo2.cpp` | 使用已不存在的 `Strategy` 和旧行情回调 API，`clang-tidy` 编译检查出现类型错误；删除失效示例并移除其 Xmake target |
-| `asan.sup` | 审计时发现只有宽泛的 OpenSSL 泄漏抑制项，且构建和脚本均未引用；删除以免掩盖后续 Linux 泄漏结果 |
+| `config.h.in` | 旧构建配置模板；当前 Bazel 使用 `bazel/config/config.h` |
+| `config_utils.h.in` | 旧构建配置模板；当前 Bazel 使用 `bazel/config/common/Config.h` |
+| `version.h.in` | 旧版本头模板；当前 Bazel 使用 `bazel/config/version.h` |
+| `cppcheck.cppcheck` | 扫描路径均为已删除的旧目录或外部插件，当前流程没有调用 |
+| `.gitmodules` | 文件为空，仓库没有 Git 子模块记录 |
 | `i18n/hayaku.pot` | 旧源码路径与旧 BackTest 词条；当前 `.po` 已是译文源 |
 | `test_data/tmp/Datetime.plk` | 测试运行生成物，不是源夹具 |
 | `test_data/tmp/KData.plk` | 同上 |
@@ -201,6 +209,17 @@ CI、Read the Docs 配置和贡献规则提供替代说明；本步默认不是�
 | `docs/en/_static/dataserver_01.png` | `docs/zh/_static/dataserver_01.png` | VIP 数据服务页面插图 |
 | `docs/en/_static/dataserver_02.png` | `docs/zh/_static/dataserver_02.png` | 同上 |
 | `docs/en/_static/qun.png` | `docs/zh/_static/qun.png` | 旧社群宣传图，不属于产品使用说明 |
+| `docs/en/_static/release_269.png` | `docs/zh/_static/release_269.png` | 无来源说明的旧收益图，当前发布页不再引用 |
+| `docs/en/_static/quickstart_shell.png` | `docs/zh/_static/quickstart_shell.png` | 展示旧 Hikyuu 交互 API，与当前入门流程不符 |
+| `docs/en/_static/quickstart_jupyter.png` | `docs/zh/_static/quickstart_jupyter.png` | 旧 Jupyter 入门截图，当前页面不引用 |
+| `docs/en/_static/quickstart_jupyter2.png` | `docs/zh/_static/quickstart_jupyter2.png` | 同上 |
+| `docs/en/_static/quickstart_jupyter_config.png` | `docs/zh/_static/quickstart_jupyter_config.png` | 旧 Jupyter 配置截图，当前页面不引用 |
+| `docs/en/_static/quickstart_matplotlib_config.png` | `docs/zh/_static/quickstart_matplotlib_config.png` | 旧 Matplotlib 配置截图，当前页面不引用 |
+| `docs/en/_static/quickstart_matplotlib_config2.jpg` | `docs/zh/_static/quickstart_matplotlib_config2.jpg` | 同上 |
+| `docs/en/_static/dev-001.jpg` | `docs/zh/_static/dev-001.jpg` | 旧 Xmake 安装截图，构建工具已改为 Bazel |
+| `docs/en/_static/dev-002.jpg` | `docs/zh/_static/dev-002.jpg` | 旧 Windows 构建目录截图，当前 Bazel 不支持该流程 |
+| `docs/en/_static/portfolio.png` | `docs/zh/_static/portfolio.png` | 无标题与说明的旧示例图，当前文档不引用 |
+| `docs/en/_static/indparam.png` | `docs/zh/_static/indparam.png` | 无标题与说明的旧示例图，当前文档不引用 |
 
 **修改或缩减，但不直接删除：**
 

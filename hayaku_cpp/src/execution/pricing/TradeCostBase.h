@@ -29,7 +29,7 @@ class HAYAKU_API TradeCostBase {
   TradeCostPtr clone();
 
   /** Get the name */
-  const string& name() const { return m_name; }
+  const string& name() const { return name_; }
 
   /**
    * Calculate the buy cost
@@ -108,11 +108,11 @@ class HAYAKU_API TradeCostBase {
   virtual TradeCostPtr _clone() = 0;
 
  protected:
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  protected:
-  string m_name;
-  bool m_is_python_object{false};
+  string name_;
+  bool is_python_object_{false};
 
 //============================================
 // Serialization support
@@ -122,9 +122,9 @@ class HAYAKU_API TradeCostBase {
   friend class boost::serialization::access;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_params", params_);
   }
 #endif /* HAYAKU_SUPPORT_SERIALIZATION */
 };

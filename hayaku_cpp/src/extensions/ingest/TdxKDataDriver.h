@@ -56,7 +56,7 @@ class TdxKDataDriver : public KDataDriver {
                                size_t& out_end);
 
  private:
-  string m_dirname;
+  string dirname_;
 };
 
 } /* namespace hayaku */

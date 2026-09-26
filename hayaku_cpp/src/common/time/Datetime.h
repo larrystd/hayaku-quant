@@ -367,7 +367,7 @@ class HAYAKU_UTILS_API Datetime {
   Datetime preYear() const;
 
  private:
-  bt::ptime m_data;
+  bt::ptime data_;
 };
 
 HAYAKU_UTILS_API std::ostream &operator<<(std::ostream &, const Datetime &);
@@ -454,15 +454,15 @@ inline TimeDelta operator-(const Datetime &d1, const Datetime &d2) {
 
 inline Datetime::Datetime() {
   bd::date d(bd::pos_infin);
-  m_data = bt::ptime(d, bt::time_duration(0, 0, 0));
+  data_ = bt::ptime(d, bt::time_duration(0, 0, 0));
 }
 
-inline Datetime::Datetime(const Datetime &d) : m_data(d.m_data) {}
+inline Datetime::Datetime(const Datetime &d) : data_(d.data_) {}
 
 inline Datetime::Datetime(const bd::date &d)
-    : m_data(bt::ptime(d, bt::time_duration(0, 0, 0))) {}
+    : data_(bt::ptime(d, bt::time_duration(0, 0, 0))) {}
 
-inline Datetime::Datetime(const bt::ptime &d) : m_data(d) {}
+inline Datetime::Datetime(const bt::ptime &d) : data_(d) {}
 
 template <typename Duration>
 inline Datetime Datetime::fromLocalTime(
@@ -486,12 +486,12 @@ inline Datetime Datetime::fromTimePointUTC(
   return fromTimestampUTC(static_cast<int64_t>(duration_us.count()));
 }
 
-inline bt::ptime Datetime::ptime() const { return m_data; }
+inline bt::ptime Datetime::ptime() const { return data_; }
 
-inline bd::date Datetime::date() const { return m_data.date(); }
+inline bd::date Datetime::date() const { return data_.date(); }
 
 inline std::time_t Datetime::to_time_t() const {
-  std::tm tt = bt::to_tm(m_data);
+  std::tm tt = bt::to_tm(data_);
   return std::mktime(&tt);
 }
 
@@ -513,11 +513,11 @@ inline int Datetime::dayOfYear() const { return date().day_of_year(); }
 inline Datetime Datetime::startOfDay() const { return Datetime(date()); }
 
 inline Datetime Datetime::operator+(TimeDelta d) const {
-  return Datetime(m_data + d.time_duration());
+  return Datetime(data_ + d.time_duration());
 }
 
 inline Datetime Datetime::operator-(TimeDelta d) const {
-  return Datetime(m_data - d.time_duration());
+  return Datetime(data_ - d.time_duration());
 }
 
 template <typename Rep, typename Period>

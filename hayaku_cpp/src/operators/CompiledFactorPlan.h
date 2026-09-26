@@ -23,11 +23,11 @@ class HAYAKU_API CompiledFactorPlan {
  public:
   explicit CompiledFactorPlan(const IndicatorList& formulas);
 
-  bool isReusable() const noexcept { return m_reusable; }
+  bool isReusable() const noexcept { return reusable_; }
 
   FactorPlanExecutor createExecutor() const;
 
-  size_t size() const noexcept { return m_roots.size(); }
+  size_t size() const noexcept { return roots_.size(); }
 
  private:
   friend class FactorPlanExecutor;
@@ -49,8 +49,8 @@ class HAYAKU_API CompiledFactorPlan {
   IndicatorList cloneRoots() const;
 
  private:
-  IndicatorList m_roots;
-  bool m_reusable{true};
+  IndicatorList roots_;
+  bool reusable_{true};
 };
 
 class HAYAKU_API FactorPlanExecutor {
@@ -65,10 +65,10 @@ class HAYAKU_API FactorPlanExecutor {
  private:
   friend class CompiledFactorPlan;
   explicit FactorPlanExecutor(IndicatorList roots)
-      : m_roots(std::move(roots)) {}
+      : roots_(std::move(roots)) {}
 
  private:
-  IndicatorList m_roots;
+  IndicatorList roots_;
 };
 
 }  // namespace detail

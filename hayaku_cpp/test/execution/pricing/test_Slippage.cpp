@@ -14,32 +14,32 @@ using namespace hayaku;
 
 class SlippageTest : public SlippageBase {
  public:
-  SlippageTest() : SlippageBase("SlippageTest"), m_x(0) {}
+  SlippageTest() : SlippageBase("SlippageTest"), x_(0) {}
   virtual ~SlippageTest() {}
 
   virtual price_t getRealBuyPrice(const Datetime &datetime, price_t price) {
-    return m_x < 10 ? 0.0 : 1.0;
+    return x_ < 10 ? 0.0 : 1.0;
   }
 
   virtual price_t getRealSellPrice(const Datetime &datetime, price_t price) {
-    return m_x < 10 ? 0.0 : 1.0;
+    return x_ < 10 ? 0.0 : 1.0;
   }
 
-  virtual void _reset() { m_x = 0; }
+  virtual void _reset() { x_ = 0; }
 
   virtual SlippagePtr _clone() {
     SlippageTest *p = new SlippageTest;
-    p->m_x = m_x;
+    p->x_ = x_;
     return SlippagePtr(p);
   }
 
   virtual void _calculate() {}
 
-  int getX() const { return m_x; }
-  void setX(int x) { m_x = x; }
+  int getX() const { return x_; }
+  void setX(int x) { x_ = x; }
 
  private:
-  int m_x;
+  int x_;
 };
 
 /**

@@ -49,16 +49,16 @@ class ThreadPool {
    * and then stops running
    */
   explicit ThreadPool(size_t n, bool until_empty = true)
-      : m_done(false), m_worker_num(n), m_running_until_empty(until_empty) {
+      : done_(false), worker_num_(n), running_until_empty_(until_empty) {
     try {
       // The threads are started after all the thread resources have been
       // initialized
-      for (int i = 0; i < m_worker_num; i++) {
+      for (int i = 0; i < worker_num_; i++) {
         // Create the worker threads and their task queues
-        m_threads.emplace_back(&ThreadPool::worker_thread, this, i);
+        threads_.emplace_back(&ThreadPool::worker_thread, this, i);
       }
     } catch (...) {
-      m_done = true;
+      done_ = true;
       throw;
     }
   }
@@ -68,14 +68,14 @@ class ThreadPool {
    * finished
    */
   ~ThreadPool() {
-    if (!m_done) {
+    if (!done_) {
       join();
     }
-    m_threads.clear();
+    threads_.clear();
   }
 
   /** Get the number of the worker threads */
-  size_t worker_num() const { return m_worker_num; }
+  size_t worker_num() const { return worker_num_; }
 
   /** The type of the corresponding future returned after submitting a task to
    * the thread pool */
@@ -90,14 +90,14 @@ class ThreadPool {
   /** Submit a task to the thread pool */
   template <typename FunctionType>
   auto submit(FunctionType&& f) {
-    if (m_done) {
+    if (done_) {
       throw std::logic_error(
           "You can't submit a task to the stopped task group!");
     }
     typedef typename std::invoke_result<FunctionType>::type result_type;
     std::packaged_task<result_type()> task(std::forward<FunctionType>(f));
     task_handle<result_type> res(task.get_future());
-    m_master_work_queue.push(std::move(task));
+    master_work_queue_.push(std::move(task));
     return res;
   }
 
@@ -106,38 +106,38 @@ class ThreadPool {
 #endif
 
   /** Return the end state of the thread pool */
-  bool done() const { return m_done; }
+  bool done() const { return done_; }
 
   /** Number of the remaining tasks */
-  size_t remain_task_count() const { return m_master_work_queue.size(); }
+  size_t remain_task_count() const { return master_work_queue_.size(); }
 
   /**
    * It waits for every thread to finish the currently executed task and then
    * exits immediately
    */
   void stop() {
-    if (m_done.exchange(true, std::memory_order_relaxed)) {
+    if (done_.exchange(true, std::memory_order_relaxed)) {
       return;
     }
 
     // At the same time the end task indication is added, so that it can also be
     // terminated when the dll exits
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_master_work_queue.push(FuncWrapper());
+    for (size_t i = 0; i < worker_num_; i++) {
+      master_work_queue_.push(FuncWrapper());
     }
 
-    m_master_work_queue.notify_all();
+    master_work_queue_.notify_all();
 
     {
-      std::lock_guard<std::mutex> lock(m_mutex_join);
-      for (size_t i = 0; i < m_worker_num; i++) {
-        if (m_threads[i].joinable()) {
-          m_threads[i].join();
+      std::lock_guard<std::mutex> lock(mutex_join_);
+      for (size_t i = 0; i < worker_num_; i++) {
+        if (threads_[i].joinable()) {
+          threads_[i].join();
         }
       }
     }
 
-    m_master_work_queue.clear();
+    master_work_queue_.clear();
   }
 
   /**
@@ -146,34 +146,34 @@ class ThreadPool {
    * are ended
    */
   void join() {
-    if (m_done) {
+    if (done_) {
       return;
     }
 
     // It instructs every worker thread to stop running when no work task is got
-    if (!m_running_until_empty) {
-      m_done = true;
+    if (!running_until_empty_) {
+      done_ = true;
     }
 
     // It is still possible that some thread does not get it and thus is not
     // terminated
-    for (size_t i = 0; i < 2 * m_worker_num; i++) {
-      m_master_work_queue.push(FuncWrapper());
+    for (size_t i = 0; i < 2 * worker_num_; i++) {
+      master_work_queue_.push(FuncWrapper());
     }
 
-    m_master_work_queue.notify_all();
+    master_work_queue_.notify_all();
 
     {
-      std::lock_guard<std::mutex> lock(m_mutex_join);
-      for (size_t i = 0; i < m_worker_num; i++) {
-        if (m_threads[i].joinable()) {
-          m_threads[i].join();
+      std::lock_guard<std::mutex> lock(mutex_join_);
+      for (size_t i = 0; i < worker_num_; i++) {
+        if (threads_[i].joinable()) {
+          threads_[i].join();
         }
       }
     }
 
-    m_done = true;
-    m_master_work_queue.clear();
+    done_ = true;
+    master_work_queue_.clear();
   }
 
   struct ExecutorWrapper {
@@ -190,20 +190,20 @@ class ThreadPool {
  private:
   typedef FuncWrapper task_type;
   std::atomic_bool
-      m_done;           // The global termination indication of the thread pool
-  size_t m_worker_num;  // Number of the worker threads
-  bool m_running_until_empty;  // It stops running automatically when the task
+      done_;           // The global termination indication of the thread pool
+  size_t worker_num_;  // Number of the worker threads
+  bool running_until_empty_;  // It stops running automatically when the task
                                // queue is empty
 
   ThreadSafeQueue<task_type>
-      m_master_work_queue;             // Task queue of the master thread
-  std::vector<std::thread> m_threads;  // Worker threads
-  std::mutex m_mutex_join;             // Used to protect joinable
+      master_work_queue_;             // Task queue of the master thread
+  std::vector<std::thread> threads_;  // Worker threads
+  std::mutex mutex_join_;             // Used to protect joinable
 
   void worker_thread(int index) {
-    while (!m_done) {
+    while (!done_) {
       task_type task;
-      m_master_work_queue.wait_and_pop(task);
+      master_work_queue_.wait_and_pop(task);
       if (task.isNullTask()) {
         break;
       }

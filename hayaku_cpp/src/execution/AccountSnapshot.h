@@ -17,24 +17,24 @@ class HAYAKU_API AccountSnapshot {
  public:
   AccountSnapshot(FundsRecord funds, PositionRecordList positions,
                   PositionRecordList shortPositions)
-      : m_funds(std::move(funds)),
-        m_positions(std::move(positions)),
-        m_shortPositions(std::move(shortPositions)) {}
+      : funds_(std::move(funds)),
+        positions_(std::move(positions)),
+        short_positions_(std::move(shortPositions)) {}
 
-  [[nodiscard]] const FundsRecord& funds() const noexcept { return m_funds; }
+  [[nodiscard]] const FundsRecord& funds() const noexcept { return funds_; }
 
   [[nodiscard]] const PositionRecordList& positions() const noexcept {
-    return m_positions;
+    return positions_;
   }
 
   [[nodiscard]] const PositionRecordList& shortPositions() const noexcept {
-    return m_shortPositions;
+    return short_positions_;
   }
 
  private:
-  FundsRecord m_funds;
-  PositionRecordList m_positions;
-  PositionRecordList m_shortPositions;
+  FundsRecord funds_;
+  PositionRecordList positions_;
+  PositionRecordList short_positions_;
 };
 
 }  // namespace hayaku

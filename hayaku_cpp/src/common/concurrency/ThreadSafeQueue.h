@@ -26,74 +26,74 @@ class ThreadSafeQueue {
 
   /** Insert the element into the tail of the queue */
   void push(T&& item) {
-    std::lock_guard<std::mutex> lk(m_mutex);
-    m_queue.push(std::move(item));
-    m_cond.notify_one();
+    std::lock_guard<std::mutex> lk(mutex_);
+    queue_.push(std::move(item));
+    cond_.notify_one();
   }
 
   /** Wait until an element is taken from the head of the queue */
   void wait_and_pop(T& value) {
-    std::unique_lock<std::mutex> lk(m_mutex);
-    m_cond.wait(lk, [this] { return !m_queue.empty(); });
-    value = std::move(m_queue.front());
-    m_queue.pop();
+    std::unique_lock<std::mutex> lk(mutex_);
+    cond_.wait(lk, [this] { return !queue_.empty(); });
+    value = std::move(queue_.front());
+    queue_.pop();
   }
 
   /** Wait until an element is taken from the head of the queue */
   std::shared_ptr<T> wait_and_pop() {
-    std::unique_lock<std::mutex> lk(m_mutex);
-    m_cond.wait(lk, [this] { return !m_queue.empty(); });
-    std::shared_ptr<T> res(std::make_shared<T>(std::move(m_queue.front())));
-    m_queue.pop();
+    std::unique_lock<std::mutex> lk(mutex_);
+    cond_.wait(lk, [this] { return !queue_.empty(); });
+    std::shared_ptr<T> res(std::make_shared<T>(std::move(queue_.front())));
+    queue_.pop();
     return res;
   }
 
   /** Try to take an element from the head of the queue; true is returned on
    * success and false on failure */
   bool try_pop(T& value) {
-    std::lock_guard<std::mutex> lk(m_mutex);
-    if (m_queue.empty()) {
+    std::lock_guard<std::mutex> lk(mutex_);
+    if (queue_.empty()) {
       return false;
     }
-    value = std::move(m_queue.front());
-    m_queue.pop();
+    value = std::move(queue_.front());
+    queue_.pop();
     return true;
   }
 
   /** Try to take an element from the head of the queue; true is returned on
    * success and false on failure */
   std::shared_ptr<T> try_pop() {
-    std::lock_guard<std::mutex> lk(m_mutex);
-    if (m_queue.empty()) {
+    std::lock_guard<std::mutex> lk(mutex_);
+    if (queue_.empty()) {
       return std::shared_ptr<T>();
     }
-    std::shared_ptr<T> res(std::make_shared<T>(std::move(m_queue.front())));
-    m_queue.pop();
+    std::shared_ptr<T> res(std::make_shared<T>(std::move(queue_.front())));
+    queue_.pop();
     return res;
   }
 
   /** Whether the queue is empty */
   bool empty() const {
-    std::lock_guard<std::mutex> lk(m_mutex);
-    return m_queue.empty();
+    std::lock_guard<std::mutex> lk(mutex_);
+    return queue_.empty();
   }
 
   /** Queue size, ! it is not locked, use it with caution */
-  size_t size() const { return m_queue.size(); }
+  size_t size() const { return queue_.size(); }
 
   /** Clear the task queue */
   void clear() {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard<std::mutex> lock(mutex_);
     auto tmp = std::queue<T>();
-    m_queue.swap(tmp);
+    queue_.swap(tmp);
   }
 
-  void notify_all() { m_cond.notify_all(); }
+  void notify_all() { cond_.notify_all(); }
 
  private:
-  mutable std::mutex m_mutex;
-  std::queue<T> m_queue;
-  std::condition_variable m_cond;
+  mutable std::mutex mutex_;
+  std::queue<T> queue_;
+  std::condition_variable cond_;
 };
 
 } /* namespace hayaku */

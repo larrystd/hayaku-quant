@@ -1,0 +1,67 @@
+load("@pybind11_bazel//:build_defs.bzl", "pybind_extension", "pybind_library")
+
+package(default_visibility = ["//visibility:public"])
+
+_PYTHON_RPATH = select({
+    "@platforms//os:osx": [
+        "-Wl,-rpath,@loader_path",
+        "-Wl,-rpath,@loader_path/../hayaku/cpp",
+    ],
+    "@platforms//os:linux": [
+        "-Wl,-rpath,$ORIGIN",
+        "-Wl,-rpath,$ORIGIN/../hayaku/cpp",
+    ],
+    "//conditions:default": [],
+})
+
+cc_library(
+    name = "binding_headers",
+    hdrs = ["Bindings.h"] + glob(["common/*.h"]),
+    includes = ["."],
+)
+
+pybind_library(
+    name = "bindings",
+    srcs = glob(["**/*.cpp"], exclude = ["main.cpp", "extensions/ingest/**", "extensions/realtime/Bindings.cpp", "extensions/realtime/Module.cpp"]),
+    hdrs = glob(["**/*.h"]),
+    strip_include_prefix = ".",
+    copts = ["-std=c++20"],
+    deps = ["//hayaku_cpp/src:core"],
+    linkstatic = True,
+)
+
+pybind_extension(
+    name = "core310",
+    srcs = ["main.cpp"],
+    copts = ["-std=c++20"],
+    deps = [":bindings", "//hayaku_cpp/src:core"],
+    linkstatic = False,
+    dynamic_deps = ["//hayaku_cpp/src:core_shared"],
+    linkopts = _PYTHON_RPATH,
+)
+
+pybind_extension(
+    name = "ingest310",
+    srcs = ["extensions/ingest/Module.cpp", "extensions/ingest/Bindings.cpp"],
+    copts = ["-std=c++20"],
+    deps = [":binding_headers", "//hayaku_cpp/src:ingest"],
+    linkstatic = False,
+    dynamic_deps = [
+        "//hayaku_cpp/src:core_shared",
+        "//hayaku_cpp/src:ingest_shared",
+    ],
+    linkopts = _PYTHON_RPATH,
+)
+
+pybind_extension(
+    name = "realtime310",
+    srcs = ["extensions/realtime/Module.cpp", "extensions/realtime/Bindings.cpp"],
+    copts = ["-std=c++20"],
+    deps = [":binding_headers", "//hayaku_cpp/src:realtime"],
+    linkstatic = False,
+    dynamic_deps = [
+        "//hayaku_cpp/src:core_shared",
+        "//hayaku_cpp/src:realtime_shared",
+    ],
+    linkopts = _PYTHON_RPATH,
+)

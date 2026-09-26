@@ -186,9 +186,9 @@ void IBeta::_calculate(const Indicator& ind) {
   }
 
   size_t startPos = std::max(ind.discard(), ref.discard());
-  m_discard = startPos + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = startPos + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -336,9 +336,9 @@ void ICorr::_calculate(const Indicator& ind) {
   }
 
   size_t startPos = std::max(ind.discard(), ref.discard());
-  m_discard = startPos + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = startPos + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -502,9 +502,9 @@ void ICov::_calculate(const Indicator& ind) {
   }
 
   size_t startPos = std::max(ind.discard(), ref.discard());
-  m_discard = startPos + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = startPos + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -676,14 +676,14 @@ void ISpearman::_calculate(const Indicator& ind) {
     n = total;
   }
 
-  m_discard = std::max(ind.discard(), ref.discard());
-  m_discard += n - 1;
-  if (m_discard > total) {
-    m_discard = total;
+  discard_ = std::max(ind.discard(), ref.discard());
+  discard_ += n - 1;
+  if (discard_ > total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(ind, m_discard);
+  _increment_calculate(ind, discard_);
 }
 
 bool ISpearman::supportIncrementCalculate() const {
@@ -851,13 +851,13 @@ static Indicator::value_t quantile_trunc(Indicator::value_t const* src,
 void IQuantileTrunc::_calculate(const Indicator& data) {
   size_t total = data.size();
   int n = getParam<int>("n");
-  m_discard = data.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IQuantileTrunc::_increment_calculate(const Indicator& data,

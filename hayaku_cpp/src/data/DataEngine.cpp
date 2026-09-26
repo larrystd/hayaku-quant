@@ -9,17 +9,17 @@
 namespace hayaku {
 
 DataEngine::DataEngine(std::shared_ptr<std::atomic_bool> active)
-    : m_active(std::move(active)) {}
+    : active_(std::move(active)) {}
 
 void DataEngine::_attach(DataRuntime& backend) noexcept {
-  m_backend = &backend;
+  backend_ = &backend;
 }
 
 DataRuntime& DataEngine::_backend() const {
-  HAYAKU_CHECK(m_active && m_active->load(std::memory_order_acquire),
+  HAYAKU_CHECK(active_ && active_->load(std::memory_order_acquire),
                "DataEngine belongs to a closed HayakuSession");
-  HAYAKU_CHECK(m_backend, "DataEngine is not attached to a data runtime");
-  return *m_backend;
+  HAYAKU_CHECK(backend_, "DataEngine is not attached to a data runtime");
+  return *backend_;
 }
 
 bool DataEngine::ready() const { return _backend().dataReady(); }

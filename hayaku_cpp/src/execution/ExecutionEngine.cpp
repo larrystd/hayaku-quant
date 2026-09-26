@@ -9,11 +9,11 @@
 namespace hayaku {
 
 ExecutionEngine::ExecutionEngine(const AccountConfig& config)
-    : m_runtime(std::make_shared<ExecutionRuntime>(config)) {}
+    : runtime_(std::make_shared<ExecutionRuntime>(config)) {}
 
 ExecutionEngine::ExecutionEngine(std::shared_ptr<ExecutionRuntime> runtime)
-    : m_runtime(std::move(runtime)) {
-  HAYAKU_CHECK(m_runtime,
+    : runtime_(std::move(runtime)) {
+  HAYAKU_CHECK(runtime_,
                "ExecutionEngine requires a non-null ExecutionRuntime");
 }
 
@@ -26,13 +26,13 @@ ExecutionEngine& ExecutionEngine::operator=(ExecutionEngine&&) noexcept =
 
 void ExecutionEngine::_attachSession(
     const std::shared_ptr<std::atomic_bool>& active) noexcept {
-  m_sessionActive = active;
-  m_sessionBound = true;
+  session_active_ = active;
+  session_bound_ = true;
 }
 
 void ExecutionEngine::_ensureActive() const {
-  if (m_sessionBound) {
-    const auto active = m_sessionActive.lock();
+  if (session_bound_) {
+    const auto active = session_active_.lock();
     HAYAKU_CHECK(active && active->load(std::memory_order_acquire),
                  "ExecutionEngine belongs to a closed HayakuSession");
   }
@@ -40,41 +40,41 @@ void ExecutionEngine::_ensureActive() const {
 
 bool ExecutionEngine::_isBoundTo(
     const std::shared_ptr<ExecutionRuntime>& runtime) const noexcept {
-  return m_runtime && m_runtime == runtime;
+  return runtime_ && runtime_ == runtime;
 }
 
 std::shared_ptr<internal::ExecutionAccountPort> ExecutionEngine::_accountPort()
     const noexcept {
-  return m_runtime;
+  return runtime_;
 }
 
 ExecutionReport ExecutionEngine::submit(const OrderRequest& request) {
   _ensureActive();
-  HAYAKU_CHECK(m_runtime, "ExecutionEngine was moved from");
-  return m_runtime->submit(request);
+  HAYAKU_CHECK(runtime_, "ExecutionEngine was moved from");
+  return runtime_->submit(request);
 }
 
 AccountSnapshot ExecutionEngine::snapshot() const {
   _ensureActive();
-  HAYAKU_CHECK(m_runtime, "ExecutionEngine was moved from");
-  return AccountSnapshot(m_runtime->getFunds(), m_runtime->getPositionList(),
-                         m_runtime->getShortPositionList());
+  HAYAKU_CHECK(runtime_, "ExecutionEngine was moved from");
+  return AccountSnapshot(runtime_->getFunds(), runtime_->getPositionList(),
+                         runtime_->getShortPositionList());
 }
 
 AccountView ExecutionEngine::view() const {
   _ensureActive();
-  HAYAKU_CHECK(m_runtime, "ExecutionEngine was moved from");
-  return m_runtime->view();
+  HAYAKU_CHECK(runtime_, "ExecutionEngine was moved from");
+  return runtime_->view();
 }
 
 TradeRecordList ExecutionEngine::history() const {
   _ensureActive();
-  HAYAKU_CHECK(m_runtime, "ExecutionEngine was moved from");
-  return m_runtime->getTradeList();
+  HAYAKU_CHECK(runtime_, "ExecutionEngine was moved from");
+  return runtime_->getTradeList();
 }
 
 AccountId ExecutionEngine::accountId() const noexcept {
-  return m_runtime ? m_runtime->accountId() : AccountId{};
+  return runtime_ ? runtime_->accountId() : AccountId{};
 }
 
 }  // namespace hayaku

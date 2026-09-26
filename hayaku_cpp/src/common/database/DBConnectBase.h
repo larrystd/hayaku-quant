@@ -325,7 +325,7 @@ typedef std::shared_ptr<DBConnectBase> DBConnectPtr;
 // Implementation of the inline methods
 //-------------------------------------------------------------------------
 
-inline DBConnectBase::DBConnectBase(const Parameter &param) : m_params(param) {}
+inline DBConnectBase::DBConnectBase(const Parameter &param) : params_(param) {}
 
 inline int DBConnectBase::queryInt(const std::string &query, int default_val) {
   return queryNumber<int>(query, default_val);

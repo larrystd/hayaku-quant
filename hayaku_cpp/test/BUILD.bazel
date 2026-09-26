@@ -1,0 +1,56 @@
+package(default_visibility = ["//visibility:public"])
+
+cc_binary(
+    name = "cval_test_bin",
+    srcs = ["test_main.cpp", "operators/test_CVAL.cpp"],
+    copts = ["-std=c++20"],
+    deps = [
+        "//hayaku_cpp/src:core",
+        "@doctest//:doctest",
+    ],
+)
+
+cc_binary(
+    name = "unit_test_bin",
+    srcs = glob(
+        ["**/test_*.cpp"],
+        exclude = [
+            "application/plugin_fixtures/**",
+            "application/test_PluginLoader.cpp",
+            "data/real_data/**",
+            "test_main.cpp",
+        ],
+    ) + glob(["**/*.h"]) + [
+        "application/plugin_fixtures/plugin_valid.cpp",
+        "test_main.cpp",
+    ],
+    copts = [
+        "-std=c++20",
+        "-Wno-unused-variable",
+        "-Wno-missing-braces",
+        "-Wno-sign-compare",
+    ],
+    includes = ["."],
+    deps = [
+        "//hayaku_cpp/src:realtime",
+        "@doctest//:doctest",
+    ],
+    tags = ["manual"],
+)
+
+sh_test(
+    name = "cval_test",
+    srcs = ["bazel_test_runner.sh"],
+    args = ["hayaku_cpp/test/cval_test_bin", "--dt-test-case=test_CVAL*"],
+    data = [":cval_test_bin", "//:test_fixtures"],
+    size = "large",
+)
+
+sh_test(
+    name = "unit_test",
+    srcs = ["bazel_test_runner.sh"],
+    args = ["hayaku_cpp/test/unit_test_bin"],
+    data = [":unit_test_bin", "//:test_fixtures"],
+    size = "large",
+    tags = ["manual"],
+)

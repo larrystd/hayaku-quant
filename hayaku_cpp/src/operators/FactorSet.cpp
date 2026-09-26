@@ -26,12 +26,12 @@ string FactorSet::str() const {
                      block());
 }
 
-FactorSet::FactorSet() : m_data(make_shared<Data>()) {}
+FactorSet::FactorSet() : data_(make_shared<Data>()) {}
 
 FactorSet::FactorSet(const IndicatorList& inds, const KQuery::KType& ktype)
-    : m_data(make_shared<Data>()) {
-  m_data->name = fmt::format("FSET_{}", Datetime::now().ticks());
-  m_data->ktype = ktype;
+    : data_(make_shared<Data>()) {
+  data_->name = fmt::format("FSET_{}", Datetime::now().ticks());
+  data_->ktype = ktype;
   for (const auto& factor : inds) {
     add(factor);
   }
@@ -39,9 +39,9 @@ FactorSet::FactorSet(const IndicatorList& inds, const KQuery::KType& ktype)
 
 FactorSet::FactorSet(const std::unordered_map<string, Indicator>& inds,
                      const KQuery::KType& ktype)
-    : m_data(make_shared<Data>()) {
-  m_data->name = fmt::format("FSET_{}", Datetime::now().ticks());
-  m_data->ktype = ktype;
+    : data_(make_shared<Data>()) {
+  data_->name = fmt::format("FSET_{}", Datetime::now().ticks());
+  data_->ktype = ktype;
   for (const auto& item : inds) {
     add(item.first, item.second);
   }
@@ -49,70 +49,70 @@ FactorSet::FactorSet(const std::unordered_map<string, Indicator>& inds,
 
 FactorSet::FactorSet(const string& name, const KQuery::KType& ktype,
                      const Block& block)
-    : m_data(make_shared<Data>()) {
-  m_data->name = utf8_to_upper(name);
-  m_data->ktype = ktype;
-  m_data->block = block;
+    : data_(make_shared<Data>()) {
+  data_->name = utf8_to_upper(name);
+  data_->ktype = ktype;
+  data_->block = block;
 }
 
 FactorSet::FactorSet(const FactorList& factors, const KQuery::KType& ktype,
                      const Block& block, const string& name)
-    : m_data(make_shared<Data>()) {
-  m_data->name = utf8_to_upper(name);
-  m_data->ktype = ktype;
-  m_data->block = block;
+    : data_(make_shared<Data>()) {
+  data_->name = utf8_to_upper(name);
+  data_->ktype = ktype;
+  data_->block = block;
   add(factors);
 }
 
-FactorSet::FactorSet(const FactorSet& other) : m_data(other.m_data) {}
+FactorSet::FactorSet(const FactorSet& other) : data_(other.data_) {}
 
-FactorSet::FactorSet(FactorSet&& other) : m_data(std::move(other.m_data)) {}
+FactorSet::FactorSet(FactorSet&& other) : data_(std::move(other.data_)) {}
 
 FactorSet& FactorSet::operator=(const FactorSet& other) {
   HAYAKU_IF_RETURN(this == &other, *this);
-  m_data = other.m_data;
+  data_ = other.data_;
   return *this;
 }
 
 FactorSet& FactorSet::operator=(FactorSet&& other) {
   HAYAKU_IF_RETURN(this == &other, *this);
-  m_data = std::move(other.m_data);
+  data_ = std::move(other.data_);
   return *this;
 }
 
 void FactorSet::add(const Factor& factor) {
   HAYAKU_CHECK(!factor.isNull(), "Factor is null!");
-  HAYAKU_CHECK(factor.ktype() == m_data->ktype, "ktype not match!");
-  HAYAKU_CHECK(factor.block() == m_data->block, "block not match!");
+  HAYAKU_CHECK(factor.ktype() == data_->ktype, "ktype not match!");
+  HAYAKU_CHECK(factor.block() == data_->block, "block not match!");
 
   const string& factor_name = factor.name();
 
   // Check whether a factor with the same name exists already
-  auto it = m_data->nameIndexMap.find(factor_name);
-  if (it != m_data->nameIndexMap.end()) {
+  auto it = data_->nameIndexMap.find(factor_name);
+  if (it != data_->nameIndexMap.end()) {
     // A factor with the same name exists, overwrite it
     size_t index = it->second;
-    m_data->factors[index] = factor;
+    data_->factors[index] = factor;
     HAYAKU_WARN("Factor '{}' already exists, it will be overwritten!",
                 factor_name);
 
   } else {
     // Append the new factor to the end of the vector
-    size_t index = m_data->factors.size();
-    m_data->factors.push_back(factor);
+    size_t index = data_->factors.size();
+    data_->factors.push_back(factor);
     // Record the name to index mapping in the map
-    m_data->nameIndexMap[factor_name] = index;
+    data_->nameIndexMap[factor_name] = index;
   }
 }
 
 void FactorSet::add(const string& name, const Indicator& ind) {
-  add(Factor(name, ind, m_data->ktype, "", "", false, Datetime::min(),
-             m_data->block));
+  add(Factor(name, ind, data_->ktype, "", "", false, Datetime::min(),
+             data_->block));
 }
 
 void FactorSet::add(const Indicator& ind) {
-  auto it = m_data->nameIndexMap.find(ind.name());
-  if (it != m_data->nameIndexMap.end()) {
+  auto it = data_->nameIndexMap.find(ind.name());
+  if (it != data_->nameIndexMap.end()) {
     add(fmt::format("{}_{}", ind.name(), Datetime::now().ticks()), ind);
   } else {
     add(ind.name(), ind);
@@ -138,38 +138,38 @@ void FactorSet::add(const std::map<string, Indicator>& inds) {
 }
 
 void FactorSet::remove(const string& name) {
-  auto it = m_data->nameIndexMap.find(name);
-  if (it == m_data->nameIndexMap.end()) {
+  auto it = data_->nameIndexMap.find(name);
+  if (it == data_->nameIndexMap.end()) {
     return;  // The factor does not exist
   }
 
   size_t index_to_remove = it->second;
-  size_t last_index = m_data->factors.size() - 1;
+  size_t last_index = data_->factors.size() - 1;
 
   // When the element to delete is not the last one, the index of the following
   // element must be adjusted
   if (index_to_remove != last_index) {
     // Move the last element to the position to be deleted
-    m_data->factors[index_to_remove] = std::move(m_data->factors[last_index]);
+    data_->factors[index_to_remove] = std::move(data_->factors[last_index]);
     // Update the index of the moved element in the map
-    const string& moved_factor_name = m_data->factors[index_to_remove].name();
-    m_data->nameIndexMap[moved_factor_name] = index_to_remove;
+    const string& moved_factor_name = data_->factors[index_to_remove].name();
+    data_->nameIndexMap[moved_factor_name] = index_to_remove;
   }
 
   // Delete the last element and the map entry
-  m_data->factors.pop_back();
-  m_data->nameIndexMap.erase(it);
+  data_->factors.pop_back();
+  data_->nameIndexMap.erase(it);
 }
 
 bool FactorSet::have(const string& name) const noexcept {
-  return m_data->nameIndexMap.find(name) != m_data->nameIndexMap.end();
+  return data_->nameIndexMap.find(name) != data_->nameIndexMap.end();
 }
 
 const Factor& FactorSet::get(const string& name) const {
-  auto it = m_data->nameIndexMap.find(name);
-  HAYAKU_CHECK(it != m_data->nameIndexMap.end(), "Factor '{}' not found!",
+  auto it = data_->nameIndexMap.find(name);
+  HAYAKU_CHECK(it != data_->nameIndexMap.end(), "Factor '{}' not found!",
                name);
-  return m_data->factors[it->second];
+  return data_->factors[it->second];
 }
 
 void FactorSet::save_to_db() const { saveFactorSet(*this); }
@@ -180,7 +180,7 @@ void FactorSet::load_from_db() {
   FactorSet loaded_set = getFactorSet(name(), ktype());
   // The object returned by getFactorSet is Null, which is global
   if (!loaded_set.isNull()) {
-    m_data = std::move(loaded_set.m_data);
+    data_ = std::move(loaded_set.data_);
   }
 }
 
@@ -209,7 +209,7 @@ vector<IndicatorList> FactorSet::getValues(
   // the existing public API.
   if (tovalue) {
     const size_t stk_total = stocks.size();
-    const size_t factor_total = m_data->factors.size();
+    const size_t factor_total = data_->factors.size();
     result.resize(stk_total, IndicatorList(factor_total));
     HAYAKU_IF_RETURN(stk_total == 0 || factor_total == 0, result);
 
@@ -224,7 +224,7 @@ vector<IndicatorList> FactorSet::getValues(
 
     IndicatorList formulas;
     formulas.reserve(factor_total);
-    for (const auto& factor : m_data->factors) {
+    for (const auto& factor : data_->factors) {
       formulas.emplace_back(align ? ALIGN(factor.formula(), dates, fill_null)
                                   : factor.formula());
     }
@@ -273,13 +273,13 @@ vector<IndicatorList> FactorSet::getValues(
 
   // Create the result container, one IndicatorList per stock
   size_t stk_total = stocks.size();
-  size_t factor_total = m_data->factors.size();
+  size_t factor_total = data_->factors.size();
   result.resize(stk_total);
   for (size_t i = 0; i < stk_total; ++i) {
     result[i].resize(factor_total);
   }
 
-  const auto& factors = m_data->factors;
+  const auto& factors = data_->factors;
   global_parallel_for_index_void(0, factor_total, [&](size_t i) {
     IndicatorList factor_values = factors[i].getValues(
         stocks, query, align, fill_null, tovalue, false, align_dates);

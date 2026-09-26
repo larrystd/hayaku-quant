@@ -156,7 +156,7 @@ class PyAggFunc {
 #endif
  public:
   PyAggFunc() = default;
-  explicit PyAggFunc(py::object func) : m_func(func) {}
+  explicit PyAggFunc(py::object func) : func_(func) {}
 
   Indicator::value_t operator()(const DatetimeList& src_ds,
                                 const Indicator::value_t* src,
@@ -169,12 +169,12 @@ class PyAggFunc {
 
     std::vector<size_t> shape = {total};
     py::array_t<Indicator::value_t> arr(shape, src + group_start);
-    py::object ret = m_func(ds, arr);
+    py::object ret = func_(ds, arr);
     return ret.cast<Indicator::value_t>();
   }
 
  private:
-  py::object m_func;
+  py::object func_;
 };
 
 #define PY_GROUP_IND_DEFINE(group_func, doc)                                 \
@@ -191,7 +191,7 @@ class PyGroupFunc {
 #endif
  public:
   PyGroupFunc() = default;
-  explicit PyGroupFunc(py::object func) : m_func(func) {}
+  explicit PyGroupFunc(py::object func) : func_(func) {}
 
   void operator()(Indicator::value_t* dst, const DatetimeList& src_ds,
                   const Indicator::value_t* src, size_t group_start,
@@ -205,7 +205,7 @@ class PyGroupFunc {
 
     std::vector<size_t> shape = {total};
     py::array_t<Indicator::value_t> arr(shape, src + group_start);
-    py::array_t<Indicator::value_t> ret = m_func(ds, arr);
+    py::array_t<Indicator::value_t> ret = func_(ds, arr);
     auto dim = ret.ndim();
     HAYAKU_CHECK(dim == 1,
                  "The return value of a Python function must be a "
@@ -221,7 +221,7 @@ class PyGroupFunc {
   }
 
  private:
-  py::object m_func;
+  py::object func_;
 };
 
 void export_extend_Indicator(py::module& m) {

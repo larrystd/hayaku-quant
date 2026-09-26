@@ -41,23 +41,23 @@ class HAYAKU_REALTIME_API SpotAgent {
   void stop();
 
   /** Whether it is running */
-  bool isRunning() const noexcept { return !m_stop; }
+  bool isRunning() const noexcept { return !stop_; }
 
-  void setWorkerNum(size_t worker_num) { m_work_num = worker_num; }
+  void setWorkerNum(size_t worker_num) { work_num_ = worker_num; }
 
-  size_t getWorkerNum() const { return m_work_num; }
+  size_t getWorkerNum() const { return work_num_; }
 
   /** Set whether to print the data receiving progress; it is mainly used to
    * turn off the printing in an interactive environment */
-  void setPrintFlag(bool print) { m_print = print; }
+  void setPrintFlag(bool print) { print_ = print; }
 
-  bool getPrintFlag() const { return m_print; }
+  bool getPrintFlag() const { return print_; }
 
-  void setServerAddr(const string& addr) { m_server_addr = addr; }
+  void setServerAddr(const string& addr) { server_addr_ = addr; }
 
-  const string& getServerAddr() const { return m_server_addr; }
+  const string& getServerAddr() const { return server_addr_; }
 
-  bool isConnected() const { return m_connected; }
+  bool isConnected() const { return connected_; }
 
   /**
    * Add the handler called when Spot data is received
@@ -132,33 +132,33 @@ class HAYAKU_REALTIME_API SpotAgent {
     RECEIVING
   };  // Waiting for a new batch of data, or receiving a batch
       // of data
-  enum STATUS m_status = WAITING;  // Current internal state
-  std::mutex m_run_mutex;          // Prevents multi-threaded start / stop
-  std::atomic_bool m_stop = true;  // Flag for ending the agent work
-  std::atomic_bool m_connected =
+  enum STATUS status_ = WAITING;  // Current internal state
+  std::mutex run_mutex_;          // Prevents multi-threaded start / stop
+  std::atomic_bool stop_ = true;  // Flag for ending the agent work
+  std::atomic_bool connected_ =
       false;  // Whether the data service has been connected
-  std::atomic_bool m_cleanupPending =
+  std::atomic_bool cleanup_pending_ =
       false;  // Worker resources still require an external join
 
-  int m_revTimeout = 100;       // Timeout for connecting the data service (ms)
-  std::thread m_receiveThread;  // Data receiving thread
+  int rev_timeout_ = 100;       // Timeout for connecting the data service (ms)
+  std::thread receive_thread_;  // Data receiving thread
   std::unique_ptr<ThreadPool>
-      m_tg;               // Thread pool for the data processing tasks
-  size_t m_work_num = 1;  // Number of the threads in the data processing
+      tg_;               // Thread pool for the data processing tasks
+  size_t work_num_ = 1;  // Number of the threads in the data processing
                           // task thread pool
-  std::unique_ptr<ThreadPool> m_receive_data_tg;  // Data receiving task group
+  std::unique_ptr<ThreadPool> receive_data_tg_;  // Data receiving task group
 
-  bool m_print = true;   // Whether to print the connection information
-  string m_server_addr;  // Server address
+  bool print_ = true;   // Whether to print the connection information
+  string server_addr_;  // Server address
 
   // The following attributes need to be locked when they are modified, so that
   // strategy can be run in a multi-threaded way
-  std::mutex m_mutex;
+  std::mutex mutex_;
   list<std::function<void(const SpotRecord&)>>
-      m_processList;  // List of the registered spot
+      process_list_;  // List of the registered spot
                       // handlers
   list<std::function<void(Datetime)>>
-      m_postProcessList;  // List of the registered batch
+      post_process_list_;  // List of the registered batch
                           // post-processing functions
 };
 

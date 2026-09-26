@@ -27,7 +27,7 @@ class SQLException : public hayaku::exception {
    */
   SQLException(int errcode, const std::string& msg)
       : hayaku::exception(fmt::format("{} (errcode: {})", msg, errcode)),
-        m_errcode(errcode) {}
+        errcode_(errcode) {}
 
   /**
    * Construct a SQLite exception
@@ -36,13 +36,13 @@ class SQLException : public hayaku::exception {
    */
   SQLException(int errcode, const char* msg)
       : hayaku::exception(fmt::format("{} (errcode: {})", msg, errcode)),
-        m_errcode(errcode) {}
+        errcode_(errcode) {}
 
   /** Get the SQLite error code */
-  int errcode() const { return m_errcode; }
+  int errcode() const { return errcode_; }
 
  private:
-  int m_errcode;
+  int errcode_;
 };
 
 #define SQL_CHECK(expr, errcode, ...)                                        \

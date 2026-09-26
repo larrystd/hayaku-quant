@@ -24,33 +24,33 @@ namespace hayaku {
 OPLineCondition::OPLineCondition() : ConditionBase("CN_OPLine") {}
 
 OPLineCondition::OPLineCondition(const Indicator& op)
-    : ConditionBase("CN_OPLine"), m_op(op) {}
+    : ConditionBase("CN_OPLine"), op_(op) {}
 
 OPLineCondition::~OPLineCondition() {}
 
 ConditionPtr OPLineCondition::_clone() {
-  return make_shared<OPLineCondition>(m_op.clone());
+  return make_shared<OPLineCondition>(op_.clone());
 }
 
 void OPLineCondition::_calculate() {
-  Stock stock = m_kdata.getStock();
-  KQuery query = m_kdata.getQuery();
+  Stock stock = kdata_.getStock();
+  KQuery query = kdata_.getQuery();
   MMPtr mm = MM_FixedCount(stock.minTradeNumber());
   mm->setParam<bool>("auto-checkin", true);
   Parameter parameters;
   parameters.set<bool>("buy_delay", true);
   parameters.set<bool>("sell_delay", true);
   auto account = internal::makeExecutionAccount(
-      AccountConfig(m_kdata[0].datetime, 0.0, TC_Zero(), "CN_OPLine"));
+      AccountConfig(kdata_[0].datetime, 0.0, TC_Zero(), "CN_OPLine"));
   internal::StrategyRuntime runtime(
-      StrategyDefinition(mm, m_sg, "CN_OPLine", {}, {}, {}, {}, {}, {},
+      StrategyDefinition(mm, sg_, "CN_OPLine", {}, {}, {}, {}, {}, {},
                          parameters),
       account);
-  runtime.run(m_kdata.getStock(), m_kdata.getQuery());
+  runtime.run(kdata_.getStock(), kdata_.getQuery());
   KQuery::KType ktype = query.kType();
-  DatetimeList dates = m_kdata.getDatetimeList();
+  DatetimeList dates = kdata_.getDatetimeList();
   Indicator profit = PRICELIST(account->getProfitCurve(dates, ktype));
-  Indicator op = m_op(profit);
+  Indicator op = op_(profit);
 
   Indicator x = profit - op;
   auto const* xdata = x.data();

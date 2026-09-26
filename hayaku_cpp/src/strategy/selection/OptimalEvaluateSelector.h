@@ -25,7 +25,7 @@ class OptimalEvaluateSelector : public OptimalSelectorBase {
 
  private:
   std::function<double(const internal::StrategyRuntimePtr&, const Datetime&)>
-      m_evaluate;
+      evaluate_;
 };
 
 }  // namespace hayaku

@@ -17,9 +17,9 @@ class HAYAKU_API KDataImp : public enable_shared_from_this<KDataImp> {
   KDataImp(const Stock& stock, const KQuery& query);
   virtual ~KDataImp();
 
-  const KQuery& getQuery() const { return m_query; }
+  const KQuery& getQuery() const { return query_; }
 
-  const Stock& getStock() const { return m_stock; }
+  const Stock& getStock() const { return stock_; }
 
   virtual bool empty() const noexcept { return true; }
 
@@ -51,12 +51,12 @@ class HAYAKU_API KDataImp : public enable_shared_from_this<KDataImp> {
 
   typedef shared_ptr<KDataImp> KDataImpPtr;
   virtual KDataImpPtr getOtherFromSelf(const KQuery& query) const {
-    return std::make_shared<KDataImp>(m_stock, query);
+    return std::make_shared<KDataImp>(stock_, query);
   }
 
  protected:
-  KQuery m_query;
-  Stock m_stock;
+  KQuery query_;
+  Stock stock_;
 };
 
 typedef shared_ptr<KDataImp> KDataImpPtr;

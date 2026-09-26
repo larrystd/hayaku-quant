@@ -18,72 +18,72 @@ AddCondition::AddCondition() : ConditionBase("CN_Add") {}
 AddCondition::AddCondition(const ConditionPtr& cond1, const ConditionPtr& cond2)
     : ConditionBase("CN_Add") {
   if (cond1) {
-    m_cond1 = cond1->clone();
+    cond1_ = cond1->clone();
   }
   if (cond2) {
-    m_cond2 = cond2->clone();
+    cond2_ = cond2->clone();
   }
 }
 
 AddCondition::~AddCondition() {}
 
 void AddCondition::_calculate() {
-  HAYAKU_IF_RETURN(!m_cond1 && !m_cond2, void());
+  HAYAKU_IF_RETURN(!cond1_ && !cond2_, void());
 
-  if (m_cond1) {
-    m_cond1->setAccount(m_account);
-    m_cond1->setSG(m_sg);
-    m_cond1->setTO(m_kdata);
+  if (cond1_) {
+    cond1_->setAccount(account_);
+    cond1_->setSG(sg_);
+    cond1_->setTO(kdata_);
   }
 
-  if (m_cond2) {
-    m_cond2->setAccount(m_account);
-    m_cond2->setSG(m_sg);
-    m_cond2->setTO(m_kdata);
+  if (cond2_) {
+    cond2_->setAccount(account_);
+    cond2_->setSG(sg_);
+    cond2_->setTO(kdata_);
   }
 
-  if (m_cond1 && !m_cond2) {
-    price_t const* data = m_cond1->data();
-    for (size_t i = 0, total = m_cond1->size(); i < total; i++) {
-      m_values[i] = data[i];
+  if (cond1_ && !cond2_) {
+    price_t const* data = cond1_->data();
+    for (size_t i = 0, total = cond1_->size(); i < total; i++) {
+      values_[i] = data[i];
     }
     return;
   }
 
-  if (!m_cond1 && m_cond2) {
-    auto const* data = m_cond2->data();
-    for (size_t i = 0, total = m_cond2->size(); i < total; i++) {
-      m_values[i] = data[i];
+  if (!cond1_ && cond2_) {
+    auto const* data = cond2_->data();
+    for (size_t i = 0, total = cond2_->size(); i < total; i++) {
+      values_[i] = data[i];
     }
     return;
   }
 
-  size_t total = m_kdata.size();
-  HAYAKU_ASSERT(m_cond1->size() == total && m_cond2->size() == total);
+  size_t total = kdata_.size();
+  HAYAKU_ASSERT(cond1_->size() == total && cond2_->size() == total);
 
-  auto const* data1 = m_cond1->data();
-  auto const* data2 = m_cond2->data();
+  auto const* data1 = cond1_->data();
+  auto const* data2 = cond2_->data();
   for (size_t i = 0; i < total; i++) {
-    m_values[i] = data1[i] + data2[i];
+    values_[i] = data1[i] + data2[i];
   }
 }
 
 void AddCondition::_reset() {
-  if (m_cond1) {
-    m_cond1->reset();
+  if (cond1_) {
+    cond1_->reset();
   }
-  if (m_cond2) {
-    m_cond2->reset();
+  if (cond2_) {
+    cond2_->reset();
   }
 }
 
 ConditionPtr AddCondition::_clone() {
   auto p = make_shared<AddCondition>();
-  if (m_cond1) {
-    p->m_cond1 = m_cond1->clone();
+  if (cond1_) {
+    p->cond1_ = cond1_->clone();
   }
-  if (m_cond2) {
-    p->m_cond2 = m_cond2->clone();
+  if (cond2_) {
+    p->cond2_ = cond2_->clone();
   }
   return p;
 }
@@ -113,50 +113,50 @@ AndCondition::AndCondition() : ConditionBase("CN_And") {}
 AndCondition::AndCondition(const ConditionPtr& cond1, const ConditionPtr& cond2)
     : ConditionBase("CN_And") {
   if (cond1) {
-    m_cond1 = cond1->clone();
+    cond1_ = cond1->clone();
   }
   if (cond2) {
-    m_cond2 = cond2->clone();
+    cond2_ = cond2->clone();
   }
 }
 
 AndCondition::~AndCondition() {}
 
 void AndCondition::_calculate() {
-  HAYAKU_IF_RETURN(!m_cond1 || !m_cond2, void());
-  m_cond1->setAccount(m_account);
-  m_cond2->setAccount(m_account);
-  m_cond1->setSG(m_sg);
-  m_cond2->setSG(m_sg);
-  m_cond1->setTO(m_kdata);
-  m_cond2->setTO(m_kdata);
+  HAYAKU_IF_RETURN(!cond1_ || !cond2_, void());
+  cond1_->setAccount(account_);
+  cond2_->setAccount(account_);
+  cond1_->setSG(sg_);
+  cond2_->setSG(sg_);
+  cond1_->setTO(kdata_);
+  cond2_->setTO(kdata_);
 
-  size_t total = m_kdata.size();
-  HAYAKU_ASSERT(m_cond1->size() == total && m_cond2->size() == total);
+  size_t total = kdata_.size();
+  HAYAKU_ASSERT(cond1_->size() == total && cond2_->size() == total);
 
-  auto const* data1 = m_cond1->data();
-  auto const* data2 = m_cond2->data();
+  auto const* data1 = cond1_->data();
+  auto const* data2 = cond2_->data();
   for (size_t i = 0; i < total; i++) {
-    m_values[i] = (data1[i] > 0.0 && data2[i] > 0.0) ? 1.0 : 0.0;
+    values_[i] = (data1[i] > 0.0 && data2[i] > 0.0) ? 1.0 : 0.0;
   }
 }
 
 void AndCondition::_reset() {
-  if (m_cond1) {
-    m_cond1->reset();
+  if (cond1_) {
+    cond1_->reset();
   }
-  if (m_cond2) {
-    m_cond2->reset();
+  if (cond2_) {
+    cond2_->reset();
   }
 }
 
 ConditionPtr AndCondition::_clone() {
   auto p = make_shared<AndCondition>();
-  if (m_cond1) {
-    p->m_cond1 = m_cond1->clone();
+  if (cond1_) {
+    p->cond1_ = cond1_->clone();
   }
-  if (m_cond2) {
-    p->m_cond2 = m_cond2->clone();
+  if (cond2_) {
+    p->cond2_ = cond2_->clone();
   }
   return p;
 }
@@ -186,61 +186,61 @@ DivCondition::DivCondition() : ConditionBase("CN_Div") {}
 DivCondition::DivCondition(const ConditionPtr& cond1, const ConditionPtr& cond2)
     : ConditionBase("CN_Div") {
   if (cond1) {
-    m_cond1 = cond1->clone();
+    cond1_ = cond1->clone();
   }
   if (cond2) {
-    m_cond2 = cond2->clone();
+    cond2_ = cond2->clone();
   }
 }
 
 DivCondition::~DivCondition() {}
 
 void DivCondition::_calculate() {
-  HAYAKU_IF_RETURN(!m_cond1, void());
+  HAYAKU_IF_RETURN(!cond1_, void());
 
-  m_cond1->setAccount(m_account);
-  m_cond1->setSG(m_sg);
-  m_cond1->setTO(m_kdata);
+  cond1_->setAccount(account_);
+  cond1_->setSG(sg_);
+  cond1_->setTO(kdata_);
 
   price_t null_price = Null<price_t>();
-  if (!m_cond2) {
-    for (size_t i = 0, total = m_cond1->size(); i < total; i++) {
-      m_values[i] = null_price;
+  if (!cond2_) {
+    for (size_t i = 0, total = cond1_->size(); i < total; i++) {
+      values_[i] = null_price;
     }
     return;
   }
 
-  m_cond2->setAccount(m_account);
-  m_cond2->setSG(m_sg);
-  m_cond2->setTO(m_kdata);
+  cond2_->setAccount(account_);
+  cond2_->setSG(sg_);
+  cond2_->setTO(kdata_);
 
-  size_t total = m_kdata.size();
-  HAYAKU_ASSERT(m_cond1->size() == total && m_cond2->size() == total);
+  size_t total = kdata_.size();
+  HAYAKU_ASSERT(cond1_->size() == total && cond2_->size() == total);
 
-  auto const* data1 = m_cond1->data();
-  auto const* data2 = m_cond2->data();
+  auto const* data1 = cond1_->data();
+  auto const* data2 = cond2_->data();
   for (size_t i = 0; i < total; i++) {
-    m_values[i] = data2[i] == 0.0 || std::isnan(data2[i]) ? null_price
+    values_[i] = data2[i] == 0.0 || std::isnan(data2[i]) ? null_price
                                                           : data1[i] / data2[i];
   }
 }
 
 void DivCondition::_reset() {
-  if (m_cond1) {
-    m_cond1->reset();
+  if (cond1_) {
+    cond1_->reset();
   }
-  if (m_cond2) {
-    m_cond2->reset();
+  if (cond2_) {
+    cond2_->reset();
   }
 }
 
 ConditionPtr DivCondition::_clone() {
   auto p = make_shared<DivCondition>();
-  if (m_cond1) {
-    p->m_cond1 = m_cond1->clone();
+  if (cond1_) {
+    p->cond1_ = cond1_->clone();
   }
-  if (m_cond2) {
-    p->m_cond2 = m_cond2->clone();
+  if (cond2_) {
+    p->cond2_ = cond2_->clone();
   }
   return p;
 }
@@ -271,51 +271,51 @@ MultiCondition::MultiCondition(const ConditionPtr& cond1,
                                const ConditionPtr& cond2)
     : ConditionBase("CN_Multi") {
   if (cond1) {
-    m_cond1 = cond1->clone();
+    cond1_ = cond1->clone();
   }
   if (cond2) {
-    m_cond2 = cond2->clone();
+    cond2_ = cond2->clone();
   }
 }
 
 MultiCondition::~MultiCondition() {}
 
 void MultiCondition::_calculate() {
-  HAYAKU_IF_RETURN(!m_cond1 || !m_cond2, void());
+  HAYAKU_IF_RETURN(!cond1_ || !cond2_, void());
 
-  m_cond1->setAccount(m_account);
-  m_cond2->setAccount(m_account);
-  m_cond1->setSG(m_sg);
-  m_cond2->setSG(m_sg);
-  m_cond1->setTO(m_kdata);
-  m_cond2->setTO(m_kdata);
+  cond1_->setAccount(account_);
+  cond2_->setAccount(account_);
+  cond1_->setSG(sg_);
+  cond2_->setSG(sg_);
+  cond1_->setTO(kdata_);
+  cond2_->setTO(kdata_);
 
-  size_t total = m_kdata.size();
-  HAYAKU_ASSERT(m_cond1->size() == total && m_cond2->size() == total);
+  size_t total = kdata_.size();
+  HAYAKU_ASSERT(cond1_->size() == total && cond2_->size() == total);
 
-  auto const* data1 = m_cond1->data();
-  auto const* data2 = m_cond2->data();
+  auto const* data1 = cond1_->data();
+  auto const* data2 = cond2_->data();
   for (size_t i = 0; i < total; i++) {
-    m_values[i] = data1[i] * data2[i];
+    values_[i] = data1[i] * data2[i];
   }
 }
 
 void MultiCondition::_reset() {
-  if (m_cond1) {
-    m_cond1->reset();
+  if (cond1_) {
+    cond1_->reset();
   }
-  if (m_cond2) {
-    m_cond2->reset();
+  if (cond2_) {
+    cond2_->reset();
   }
 }
 
 ConditionPtr MultiCondition::_clone() {
   auto p = make_shared<MultiCondition>();
-  if (m_cond1) {
-    p->m_cond1 = m_cond1->clone();
+  if (cond1_) {
+    p->cond1_ = cond1_->clone();
   }
-  if (m_cond2) {
-    p->m_cond2 = m_cond2->clone();
+  if (cond2_) {
+    p->cond2_ = cond2_->clone();
   }
   return p;
 }
@@ -345,78 +345,78 @@ OrCondition::OrCondition() : ConditionBase("CN_Or") {}
 OrCondition::OrCondition(const ConditionPtr& cond1, const ConditionPtr& cond2)
     : ConditionBase("CN_Or") {
   if (cond1) {
-    m_cond1 = cond1->clone();
+    cond1_ = cond1->clone();
   }
   if (cond2) {
-    m_cond2 = cond2->clone();
+    cond2_ = cond2->clone();
   }
 }
 
 OrCondition::~OrCondition() {}
 
 void OrCondition::_calculate() {
-  HAYAKU_IF_RETURN(!m_cond1 && !m_cond2, void());
+  HAYAKU_IF_RETURN(!cond1_ && !cond2_, void());
 
-  if (m_cond1) {
-    m_cond1->setAccount(m_account);
-    m_cond1->setSG(m_sg);
-    m_cond1->setTO(m_kdata);
+  if (cond1_) {
+    cond1_->setAccount(account_);
+    cond1_->setSG(sg_);
+    cond1_->setTO(kdata_);
   }
 
-  if (m_cond2) {
-    m_cond2->setAccount(m_account);
-    m_cond2->setSG(m_sg);
-    m_cond2->setTO(m_kdata);
+  if (cond2_) {
+    cond2_->setAccount(account_);
+    cond2_->setSG(sg_);
+    cond2_->setTO(kdata_);
   }
 
-  if (m_cond1 && !m_cond2) {
-    auto const* data = m_cond1->data();
-    for (size_t i = 0, total = m_cond1->size(); i < total; i++) {
+  if (cond1_ && !cond2_) {
+    auto const* data = cond1_->data();
+    for (size_t i = 0, total = cond1_->size(); i < total; i++) {
       if (data[i] > 0.0) {
-        m_values[i] = 1.0;
+        values_[i] = 1.0;
       }
     }
     return;
   }
 
-  if (!m_cond1 && m_cond2) {
-    auto const* data = m_cond2->data();
-    for (size_t i = 0, total = m_cond2->size(); i < total; i++) {
+  if (!cond1_ && cond2_) {
+    auto const* data = cond2_->data();
+    for (size_t i = 0, total = cond2_->size(); i < total; i++) {
       if (data[i] > 0.0) {
-        m_values[i] = 1.0;
+        values_[i] = 1.0;
       }
     }
     return;
   }
 
-  size_t total = m_kdata.size();
-  HAYAKU_ASSERT(m_cond1->size() == total && m_cond2->size() == total);
+  size_t total = kdata_.size();
+  HAYAKU_ASSERT(cond1_->size() == total && cond2_->size() == total);
 
-  auto const* data1 = m_cond1->data();
-  auto const* data2 = m_cond2->data();
+  auto const* data1 = cond1_->data();
+  auto const* data2 = cond2_->data();
   for (size_t i = 0; i < total; i++) {
     if (data1[i] > 0. || data2[i] > 0.) {
-      m_values[i] = 1.0;
+      values_[i] = 1.0;
     }
   }
 }
 
 void OrCondition::_reset() {
-  if (m_cond1) {
-    m_cond1->reset();
+  if (cond1_) {
+    cond1_->reset();
   }
-  if (m_cond2) {
-    m_cond2->reset();
+  if (cond2_) {
+    cond2_->reset();
   }
 }
 
 ConditionPtr OrCondition::_clone() {
   auto p = make_shared<OrCondition>();
-  if (m_cond1) {
-    p->m_cond1 = m_cond1->clone();
+  if (cond1_) {
+    p->cond1_ = cond1_->clone();
   }
-  if (m_cond2) {
-    p->m_cond2 = m_cond2->clone();
+  if (cond2_) {
+    p->cond2_ = cond2_->clone();
   }
   return p;
 }
@@ -446,72 +446,72 @@ SubCondition::SubCondition() : ConditionBase("CN_Sub") {}
 SubCondition::SubCondition(const ConditionPtr& cond1, const ConditionPtr& cond2)
     : ConditionBase("CN_Sub") {
   if (cond1) {
-    m_cond1 = cond1->clone();
+    cond1_ = cond1->clone();
   }
   if (cond2) {
-    m_cond2 = cond2->clone();
+    cond2_ = cond2->clone();
   }
 }
 
 SubCondition::~SubCondition() {}
 
 void SubCondition::_calculate() {
-  HAYAKU_IF_RETURN(!m_cond1 && !m_cond2, void());
+  HAYAKU_IF_RETURN(!cond1_ && !cond2_, void());
 
-  if (m_cond1) {
-    m_cond1->setAccount(m_account);
-    m_cond1->setSG(m_sg);
-    m_cond1->setTO(m_kdata);
+  if (cond1_) {
+    cond1_->setAccount(account_);
+    cond1_->setSG(sg_);
+    cond1_->setTO(kdata_);
   }
 
-  if (m_cond2) {
-    m_cond2->setAccount(m_account);
-    m_cond2->setSG(m_sg);
-    m_cond2->setTO(m_kdata);
+  if (cond2_) {
+    cond2_->setAccount(account_);
+    cond2_->setSG(sg_);
+    cond2_->setTO(kdata_);
   }
 
-  if (m_cond1 && !m_cond2) {
-    auto const* data = m_cond1->data();
-    for (size_t i = 0, total = m_cond1->size(); i < total; i++) {
-      m_values[i] = data[i];
+  if (cond1_ && !cond2_) {
+    auto const* data = cond1_->data();
+    for (size_t i = 0, total = cond1_->size(); i < total; i++) {
+      values_[i] = data[i];
     }
     return;
   }
 
-  if (!m_cond1 && m_cond2) {
-    auto const* data = m_cond2->data();
-    for (size_t i = 0, total = m_cond2->size(); i < total; i++) {
-      m_values[i] = -data[i];
+  if (!cond1_ && cond2_) {
+    auto const* data = cond2_->data();
+    for (size_t i = 0, total = cond2_->size(); i < total; i++) {
+      values_[i] = -data[i];
     }
     return;
   }
 
-  size_t total = m_kdata.size();
-  HAYAKU_ASSERT(m_cond1->size() == total && m_cond2->size() == total);
+  size_t total = kdata_.size();
+  HAYAKU_ASSERT(cond1_->size() == total && cond2_->size() == total);
 
-  auto const* data1 = m_cond1->data();
-  auto const* data2 = m_cond2->data();
+  auto const* data1 = cond1_->data();
+  auto const* data2 = cond2_->data();
   for (size_t i = 0; i < total; i++) {
-    m_values[i] = data1[i] - data2[i];
+    values_[i] = data1[i] - data2[i];
   }
 }
 
 void SubCondition::_reset() {
-  if (m_cond1) {
-    m_cond1->reset();
+  if (cond1_) {
+    cond1_->reset();
   }
-  if (m_cond2) {
-    m_cond2->reset();
+  if (cond2_) {
+    cond2_->reset();
   }
 }
 
 ConditionPtr SubCondition::_clone() {
   auto p = make_shared<SubCondition>();
-  if (m_cond1) {
-    p->m_cond1 = m_cond1->clone();
+  if (cond1_) {
+    p->cond1_ = cond1_->clone();
   }
-  if (m_cond2) {
-    p->m_cond2 = m_cond2->clone();
+  if (cond2_) {
+    p->cond2_ = cond2_->clone();
   }
   return p;
 }

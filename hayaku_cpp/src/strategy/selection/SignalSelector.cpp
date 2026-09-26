@@ -26,22 +26,22 @@ bool SignalSelector::isMatchAF(const AFPtr& af) {
 }
 
 StrategyWeightList SignalSelector::_getSelected(Datetime date) {
-  auto iter = m_sys_dict.find(date);
-  return iter != m_sys_dict.end() ? iter->second : StrategyWeightList();
+  auto iter = sys_dict_.find(date);
+  return iter != sys_dict_.end() ? iter->second : StrategyWeightList();
 }
 
 void SignalSelector::_calculate() {
-  size_t total = m_real_sys_list.size();
+  size_t total = real_sys_list_.size();
   for (size_t i = 0; i < total; i++) {
-    auto& sys = m_real_sys_list[i];
+    auto& sys = real_sys_list_[i];
     auto sg = sys->getSG();
     auto dates = sg->getBuySignal();
     for (auto& date : dates) {
-      auto iter = m_sys_dict.find(date);
-      if (iter != m_sys_dict.end()) {
+      auto iter = sys_dict_.find(date);
+      if (iter != sys_dict_.end()) {
         iter->second.emplace_back(sys, 1.0);
       } else {
-        m_sys_dict[date] = {StrategyWeight(sys, 1.0)};
+        sys_dict_[date] = {StrategyWeight(sys, 1.0)};
       }
     }
   }

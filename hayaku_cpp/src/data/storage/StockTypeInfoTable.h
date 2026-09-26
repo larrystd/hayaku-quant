@@ -16,29 +16,29 @@ namespace hayaku {
 class StockTypeInfoTable {
  public:
   StockTypeInfoTable()
-      : m_id(0),
-        m_type(Null<uint32_t>()),
-        m_precision(0),
-        m_tick(0.0),
-        m_tickValue(0.0),
-        m_minTradeNumber(0),
-        m_maxTradeNumber(0) {}
+      : id_(0),
+        type_(Null<uint32_t>()),
+        precision_(0),
+        tick_(0.0),
+        tick_value_(0.0),
+        min_trade_number_(0),
+        max_trade_number_(0) {}
 
-  int64_t id() const { return m_id; }
+  int64_t id() const { return id_; }
 
-  uint32_t type() const { return m_type; }
+  uint32_t type() const { return type_; }
 
-  uint32_t precision() const { return m_precision; }
+  uint32_t precision() const { return precision_; }
 
-  double tick() const { return m_tick; }
+  double tick() const { return tick_; }
 
-  double tickValue() const { return m_tickValue; }
+  double tickValue() const { return tick_value_; }
 
-  double minTradeNumber() const { return m_minTradeNumber; }
+  double minTradeNumber() const { return min_trade_number_; }
 
-  double maxTradeNumber() const { return m_maxTradeNumber; }
+  double maxTradeNumber() const { return max_trade_number_; }
 
-  const string& description() const { return m_description; }
+  const string& description() const { return description_; }
 
  public:
   static const char* getInsertSQL() {
@@ -61,29 +61,29 @@ class StockTypeInfoTable {
   }
 
   void save(const SQLStatementPtr& st) const {
-    st->bind(0, m_id, m_type, m_precision, m_tick, m_tickValue,
-             m_minTradeNumber, m_maxTradeNumber, m_description);
+    st->bind(0, id_, type_, precision_, tick_, tick_value_,
+             min_trade_number_, max_trade_number_, description_);
   }
 
   void update(const SQLStatementPtr& st) const {
-    st->bind(0, m_type, m_precision, m_tick, m_tickValue, m_minTradeNumber,
-             m_maxTradeNumber, m_description, m_id);
+    st->bind(0, type_, precision_, tick_, tick_value_, min_trade_number_,
+             max_trade_number_, description_, id_);
   }
 
   void load(const SQLStatementPtr& st) {
-    st->getColumn(0, m_id, m_type, m_precision, m_tick, m_tickValue,
-                  m_minTradeNumber, m_maxTradeNumber, m_description);
+    st->getColumn(0, id_, type_, precision_, tick_, tick_value_,
+                  min_trade_number_, max_trade_number_, description_);
   }
 
  private:
-  int64_t m_id;
-  uint32_t m_type;          // Security type
-  uint32_t m_precision;     // Price precision
-  double m_tick;            // Minimum tick size
-  double m_tickValue;       // Price of every tick
-  double m_minTradeNumber;  // Minimum trade quantity per order
-  double m_maxTradeNumber;  // Maximum trade quantity per order
-  string m_description;     // Description
+  int64_t id_;
+  uint32_t type_;          // Security type
+  uint32_t precision_;     // Price precision
+  double tick_;            // Minimum tick size
+  double tick_value_;       // Price of every tick
+  double min_trade_number_;  // Minimum trade quantity per order
+  double max_trade_number_;  // Maximum trade quantity per order
+  string description_;     // Description
 };
 
 }  // namespace hayaku

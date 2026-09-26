@@ -143,9 +143,9 @@ void IAma::_checkParam(const string& name) const {
 
 void IAma::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -157,7 +157,7 @@ void IAma::_calculate(const Indicator& data) {
   int fast_n = getParam<int>("fast_n");
   int slow_n = getParam<int>("slow_n");
 
-  size_t start = m_discard;
+  size_t start = discard_;
 
   price_t fastest = 2.0 / (fast_n + 1);
   price_t slowest = 2.0 / (slow_n + 1);
@@ -263,16 +263,16 @@ void IAma::_dyn_one_circle(const Indicator& ind, size_t curPos, int n,
 }
 
 void IAma::_dyn_calculate(const Indicator& ind) {
-  auto iter = m_ind_params.find("fast_n");
-  Indicator fast_n = iter != m_ind_params.end()
+  auto iter = ind_params_.find("fast_n");
+  Indicator fast_n = iter != ind_params_.end()
                          ? Indicator(iter->second)
                          : CVAL(ind, getParam<int>("fast_n"));
-  iter = m_ind_params.find("slow_n");
-  Indicator slow_n = iter != m_ind_params.end()
+  iter = ind_params_.find("slow_n");
+  Indicator slow_n = iter != ind_params_.end()
                          ? Indicator(iter->second)
                          : CVAL(ind, getParam<int>("slow_n"));
-  iter = m_ind_params.find("n");
-  Indicator n = iter != m_ind_params.end() ? Indicator(iter->second)
+  iter = ind_params_.find("n");
+  Indicator n = iter != ind_params_.end() ? Indicator(iter->second)
                                            : CVAL(ind, getParam<int>("n"));
 
   HAYAKU_CHECK(fast_n.size() == ind.size(),
@@ -282,11 +282,11 @@ void IAma::_dyn_calculate(const Indicator& ind) {
                "ind_param(slow_n).size()={}, ind.size()={}!", slow_n.size(),
                ind.size());
 
-  m_discard = std::max(ind.discard(), fast_n.discard());
-  m_discard = std::max(m_discard, slow_n.discard());
-  m_discard = std::max(m_discard, n.discard());
+  discard_ = std::max(ind.discard(), fast_n.discard());
+  discard_ = std::max(discard_, slow_n.discard());
+  discard_ = std::max(discard_, n.discard());
   size_t total = ind.size();
-  HAYAKU_IF_RETURN(0 == total || m_discard >= total, void());
+  HAYAKU_IF_RETURN(0 == total || discard_ >= total, void());
 
   global_parallel_for_index_void(
       ind.discard(), total,
@@ -392,12 +392,12 @@ void IDma::_calculate(const Indicator& ind) {
 
   Indicator ref = prepare(ind);
 
-  m_discard = std::max(ind.discard(), ref.discard());
+  discard_ = std::max(ind.discard(), ref.discard());
   auto* y = this->data();
   const auto* a = ref.data();
   const auto* x = ind.data();
-  y[m_discard] = x[m_discard];
-  for (size_t i = m_discard + 1; i < total; i++) {
+  y[discard_] = x[discard_];
+  for (size_t i = discard_ + 1; i < total; i++) {
     if (std::isnan(y[i - 1])) {
       y[i] = x[i];
     } else {
@@ -454,9 +454,9 @@ IKalman::~IKalman() {}
 
 void IKalman::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -466,11 +466,11 @@ void IKalman::_calculate(const Indicator& data) {
   auto const* src = data.data();
   auto* dst = this->data();
 
-  value_t x = src[m_discard];  // State estimate
+  value_t x = src[discard_];  // State estimate
   value_t p = 1.0;             // Estimation error covariance
 
-  dst[m_discard] = x;
-  for (size_t i = m_discard + 1; i < total; ++i) {
+  dst[discard_] = x;
+  for (size_t i = discard_ + 1; i < total; ++i) {
     p = p + q;
     value_t k = p / (p + r);
     x = x + k * (src[i] - x);

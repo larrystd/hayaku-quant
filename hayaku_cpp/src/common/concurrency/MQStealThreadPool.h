@@ -53,21 +53,21 @@ class HAYAKU_UTILS_API MQStealThreadPool {
    * empty
    */
   explicit MQStealThreadPool(size_t n, bool until_empty = true)
-      : m_done(false), m_worker_num(n), m_runnging_until_empty(until_empty) {
+      : done_(false), worker_num_(n), runnging_until_empty_(until_empty) {
     try {
-      m_interrupt_flags.resize(m_worker_num);
-      for (size_t i = 0; i < m_worker_num; i++) {
+      interrupt_flags_.resize(worker_num_);
+      for (size_t i = 0; i < worker_num_; i++) {
         // Create the worker threads and their task queues
-        m_queues.emplace_back(new MQStealQueue<task_type>);
+        queues_.emplace_back(new MQStealQueue<task_type>);
       }
       // The threads are started after all the thread resources have been
       // initialized
-      for (int i = 0; i < m_worker_num; i++) {
-        m_threads.emplace_back(&MQStealThreadPool::worker_thread, this, i);
-        m_thread_index[m_threads.back().get_id()] = i;
+      for (int i = 0; i < worker_num_; i++) {
+        threads_.emplace_back(&MQStealThreadPool::worker_thread, this, i);
+        thread_index_[threads_.back().get_id()] = i;
       }
     } catch (...) {
-      m_done = true;
+      done_ = true;
       throw;
     }
   }
@@ -77,24 +77,24 @@ class HAYAKU_UTILS_API MQStealThreadPool {
    * finished
    */
   ~MQStealThreadPool() {
-    if (!m_done) {
+    if (!done_) {
       join();
     }
-    m_threads.clear();
+    threads_.clear();
   }
 
   /** Get the number of the worker threads */
-  size_t worker_num() const { return m_worker_num; }
+  size_t worker_num() const { return worker_num_; }
 
   /** Number of the remaining tasks */
   size_t remain_task_count() const {
-    if (m_done) {
+    if (done_) {
       return 0;
     }
 
     size_t total = 0;
-    for (size_t i = 0; i < m_worker_num; i++) {
-      total += m_queues[i]->size();
+    for (size_t i = 0; i < worker_num_; i++) {
+      total += queues_[i]->size();
     }
     return total;
   }
@@ -112,14 +112,14 @@ class HAYAKU_UTILS_API MQStealThreadPool {
   /** Submit a task to the thread pool */
   template <typename FunctionType>
   auto submit(FunctionType&& f) {
-    if (m_done) {
+    if (done_) {
       throw std::logic_error(
           "You can't submit a task to the stopped MQStealThreadPool!");
     }
 
     int index = -1;
-    auto iter = m_thread_index.find(std::this_thread::get_id());
-    if (iter != m_thread_index.end()) {
+    auto iter = thread_index_.find(std::this_thread::get_id());
+    if (iter != thread_index_.end()) {
       index = iter->second;
     }
 
@@ -129,17 +129,17 @@ class HAYAKU_UTILS_API MQStealThreadPool {
 
     // If it is the local thread and the thread has not been terminated, it is
     // added to its own queue
-    if (index != -1 && m_interrupt_flags[index]) {
+    if (index != -1 && interrupt_flags_[index]) {
       // The local thread tasks enter the queue from the front (recursion
       // becomes a stack)
-      m_queues[index]->push_front(std::move(task));
+      queues_[index]->push_front(std::move(task));
       return res;
     }
 
-    m_queues[m_current_index]->push(std::move(task));
-    m_current_index++;
-    if (m_current_index >= m_worker_num) {
-      m_current_index = 0;
+    queues_[current_index_]->push(std::move(task));
+    current_index_++;
+    if (current_index_ >= worker_num_) {
+      current_index_ = 0;
     }
     return res;
   }
@@ -149,35 +149,35 @@ class HAYAKU_UTILS_API MQStealThreadPool {
 #endif
 
   /** Return the end state of the thread pool */
-  bool done() const { return m_done; }
+  bool done() const { return done_; }
 
   /**
    * It waits for every thread to finish the currently executed task and then
    * exits immediately
    */
   void stop() {
-    if (m_done) {
+    if (done_) {
       return;
     }
 
     // At the same time the end task indication is added, so that it can also be
     // terminated when the dll exits
-    for (size_t i = 0; i < m_worker_num; i++) {
-      if (m_interrupt_flags[i]) {
-        m_interrupt_flags[i].set();
+    for (size_t i = 0; i < worker_num_; i++) {
+      if (interrupt_flags_[i]) {
+        interrupt_flags_[i].set();
       }
-      m_queues[i]->push(FuncWrapper());
+      queues_[i]->push(FuncWrapper());
     }
 
-    for (size_t i = 0; i < m_worker_num; i++) {
-      if (m_threads[i].joinable()) {
-        m_threads[i].join();
+    for (size_t i = 0; i < worker_num_; i++) {
+      if (threads_[i].joinable()) {
+        threads_[i].join();
       }
     }
 
-    m_done = true;
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_queues[i]->clear();
+    done_ = true;
+    for (size_t i = 0; i < worker_num_; i++) {
+      queues_[i]->clear();
     }
   }
 
@@ -187,16 +187,16 @@ class HAYAKU_UTILS_API MQStealThreadPool {
    * are ended
    */
   void join() {
-    if (m_done) {
+    if (done_) {
       return;
     }
 
     // It instructs every worker thread to stop running when no work task is got
-    if (m_runnging_until_empty) {
+    if (runnging_until_empty_) {
       while (true) {
         bool can_quit = true;
-        for (size_t i = 0; i < m_worker_num; i++) {
-          if (!m_queues[i]->empty()) {
+        for (size_t i = 0; i < worker_num_; i++) {
+          if (!queues_[i]->empty()) {
             can_quit = false;
             break;
           }
@@ -209,28 +209,28 @@ class HAYAKU_UTILS_API MQStealThreadPool {
         std::this_thread::yield();
       }
 
-      m_done = true;
-      for (size_t i = 0; i < m_worker_num; i++) {
-        if (m_interrupt_flags[i]) {
-          m_interrupt_flags[i].set();
+      done_ = true;
+      for (size_t i = 0; i < worker_num_; i++) {
+        if (interrupt_flags_[i]) {
+          interrupt_flags_[i].set();
         }
       }
     }
 
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_queues[i]->push(FuncWrapper());
+    for (size_t i = 0; i < worker_num_; i++) {
+      queues_[i]->push(FuncWrapper());
     }
 
     // Wait for the threads to be finished
-    for (size_t i = 0; i < m_worker_num; i++) {
-      if (m_threads[i].joinable()) {
-        m_threads[i].join();
+    for (size_t i = 0; i < worker_num_; i++) {
+      if (threads_[i].joinable()) {
+        threads_[i].join();
       }
     }
 
-    m_done = true;
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_queues[i]->clear();
+    done_ = true;
+    for (size_t i = 0; i < worker_num_; i++) {
+      queues_[i]->clear();
     }
   }
 
@@ -248,22 +248,22 @@ class HAYAKU_UTILS_API MQStealThreadPool {
  private:
   typedef FuncWrapper task_type;
   std::atomic_bool
-      m_done;           // The global termination indication of the thread pool
-  size_t m_worker_num;  // Number of the worker threads
-  bool m_runnging_until_empty;  // It runs until the queue is empty and then
+      done_;           // The global termination indication of the thread pool
+  size_t worker_num_;  // Number of the worker threads
+  bool runnging_until_empty_;  // It runs until the queue is empty and then
                                 // stops
 
   std::vector<std::unique_ptr<MQStealQueue<task_type>>>
-      m_queues;                                  // Thread task queues
-  std::vector<InterruptFlag> m_interrupt_flags;  // Thread termination flags
-  std::vector<std::thread> m_threads;            // Worker threads
+      queues_;                                  // Thread task queues
+  std::vector<InterruptFlag> interrupt_flags_;  // Thread termination flags
+  std::vector<std::thread> threads_;            // Worker threads
 
-  std::unordered_map<std::thread::id, int> m_thread_index;
-  int m_current_index =
+  std::unordered_map<std::thread::id, int> thread_index_;
+  int current_index_ =
       0;  // The queue index used when a new task is placed currently
 
   void worker_thread(int index) {
-    while (!m_interrupt_flags[index].isSet() && !m_done) {
+    while (!interrupt_flags_[index].isSet() && !done_) {
       run_pending_task(index);
     }
   }
@@ -271,9 +271,9 @@ class HAYAKU_UTILS_API MQStealThreadPool {
   void run_pending_task(int index) {
     task_type task;
     // Try to get a task from the local queue and execute it
-    if (m_queues[index]->try_pop(task)) {
+    if (queues_[index]->try_pop(task)) {
       if (task.isNullTask()) {
-        m_interrupt_flags[index].set();
+        interrupt_flags_[index].set();
       } else {
         task();
       }
@@ -285,9 +285,9 @@ class HAYAKU_UTILS_API MQStealThreadPool {
       // local queue and depend on each other; if a task is stolen by another
       // thread, the other thread would be blocked and wait Therefore it waits
       // for the local queue here instead of continuing to steal in a loop
-      m_queues[index]->wait_and_pop(task);
+      queues_[index]->wait_and_pop(task);
       if (task.isNullTask()) {
-        m_interrupt_flags[index].set();
+        interrupt_flags_[index].set();
       } else {
         task();
       }
@@ -295,9 +295,9 @@ class HAYAKU_UTILS_API MQStealThreadPool {
   }
 
   bool pop_task_from_other_thread_queue(task_type& task, int index) {
-    for (size_t i = 0; i < m_worker_num; ++i) {
-      size_t pos = (index + i + 1) % m_worker_num;
-      if (pos != index && m_queues[pos]->try_steal(task)) {
+    for (size_t i = 0; i < worker_num_; ++i) {
+      size_t pos = (index + i + 1) % worker_num_;
+      if (pos != index && queues_[pos]->try_steal(task)) {
         return true;
       }
     }

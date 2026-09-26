@@ -96,12 +96,12 @@ void IAdvance::_calculate(const Indicator& ind) {
 
   size_t total = dates.size();
   if (total == 0) {
-    m_discard = 0;
+    discard_ = 0;
     _readyBuffer(0, 1);
     return;
   }
 
-  m_discard = 1;
+  discard_ = 1;
   _readyBuffer(total, 1);
 
   // The Query needs to be converted into KQueryByDate
@@ -301,7 +301,7 @@ void IDecline::_calculate(const Indicator& ind) {
 
   size_t total = dates.size();
   if (total == 0) {
-    m_discard = 0;
+    discard_ = 0;
     _readyBuffer(0, 1);
     return;
   }
@@ -311,7 +311,7 @@ void IDecline::_calculate(const Indicator& ind) {
                    dates.back() + Seconds(KQuery::getKTypeInSeconds(q.kType())),
                    q.kType(), q.recoverType());
 
-  m_discard = 1;
+  discard_ = 1;
   _readyBuffer(total, 1);
   auto* dst = this->data();
   Indicator x = ALIGN(CLOSE() < REF(CLOSE(), 1), std::move(dates),
@@ -487,7 +487,7 @@ void IBlockSetNum::_calculate(const Indicator& ind) {
   }
 
   size_t total = dates.size();
-  m_discard = 0;
+  discard_ = 0;
   _readyBuffer(total, 1);
   HAYAKU_IF_RETURN(total == 0, void());
 
@@ -592,7 +592,7 @@ BOOST_CLASS_EXPORT(hayaku::IInBlock)
 namespace hayaku {
 
 IInBlock::IInBlock() : IndicatorImp("INBLOCK", 1) {
-  m_need_context = true;
+  need_context_ = true;
   setParam<string>("category", "");
   setParam<string>("name", "");
 }
@@ -916,7 +916,7 @@ void IInSum::_calculate(const Indicator& ind) {
   }
 
   size_t total = dates.size();
-  m_discard = 0;
+  discard_ = 0;
   _readyBuffer(total, 1);
   HAYAKU_IF_RETURN(total == 0, void());
 
@@ -924,7 +924,7 @@ void IInSum::_calculate(const Indicator& ind) {
   // Modes 4/5 depend on the context
   if (mode == 4 || mode == 5) {
     if (ind.size() == 0) {
-      m_discard = total;
+      discard_ = total;
       return;
     }
   }
@@ -965,11 +965,11 @@ void IInSum::_calculate(const Indicator& ind) {
     HAYAKU_ERROR("Not support mode: {}", mode);
   }
 
-  for (size_t i = m_discard; i < total; i++) {
+  for (size_t i = discard_; i < total; i++) {
     if (!std::isnan(dst[i])) {
       break;
     }
-    m_discard++;
+    discard_++;
   }
 }
 

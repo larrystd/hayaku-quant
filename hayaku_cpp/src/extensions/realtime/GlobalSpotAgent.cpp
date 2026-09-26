@@ -340,7 +340,7 @@ bool realtimePortQuiescent() noexcept {
   std::lock_guard<std::mutex> lock(g_spot_agent_mutex);
   return !g_spot_agent ||
          (!g_spot_agent->isRunning() &&
-          !g_spot_agent->m_cleanupPending.load(std::memory_order_acquire));
+          !g_spot_agent->cleanup_pending_.load(std::memory_order_acquire));
 }
 
 namespace {

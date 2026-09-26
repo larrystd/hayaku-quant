@@ -104,11 +104,11 @@ struct AsyncMySQLConnect::Impl {
 };
 
 AsyncMySQLConnect::AsyncMySQLConnect(const Parameter& param)
-    : AsyncDBConnectBase(param), m_impl(std::make_unique<Impl>()) {
+    : AsyncDBConnectBase(param), impl_(std::make_unique<Impl>()) {
   // Get the prepared statement cache size and create the cache
   int64_t cache_size = tryGetParam<int64_t>("statement_cache_size", 3);
-  m_params.set("statement_cache_size", cache_size);
-  m_impl->statement_cache = std::make_unique<
+  params_.set("statement_cache_size", cache_size);
+  impl_->statement_cache = std::make_unique<
       LruCache<std::string, std::shared_ptr<boost::mysql::statement>>>(
       cache_size);
 }
@@ -116,8 +116,8 @@ AsyncMySQLConnect::AsyncMySQLConnect(const Parameter& param)
 AsyncMySQLConnect::~AsyncMySQLConnect() { close(); }
 
 void* AsyncMySQLConnect::getRawConnection() const {
-  HAYAKU_ASSERT(m_impl->initialized);
-  return m_impl->conn.get();
+  HAYAKU_ASSERT(impl_->initialized);
+  return impl_->conn.get();
 }
 
 net::awaitable<bool> AsyncMySQLConnect::tryConnect() {
@@ -134,7 +134,7 @@ net::awaitable<bool> AsyncMySQLConnect::tryConnect() {
 net::awaitable<void> AsyncMySQLConnect::connect() {
   // Make sure it is initialized (get the io_context from the coroutine
   // environment)
-  co_await m_impl->ensure_initialized();
+  co_await impl_->ensure_initialized();
 
   std::string host = tryGetParam<std::string>("host", "127.0.0.1");
   std::string usr = tryGetParam<std::string>("usr", "root");
@@ -143,14 +143,14 @@ net::awaitable<void> AsyncMySQLConnect::connect() {
   unsigned short port =
       static_cast<unsigned short>(tryGetParam<int>("port", 3306));
 
-  m_impl->conn =
-      std::make_unique<boost::mysql::tcp_connection>(*m_impl->io_context_ptr);
+  impl_->conn =
+      std::make_unique<boost::mysql::tcp_connection>(*impl_->io_context_ptr);
   boost::mysql::handshake_params params(usr, pwd, database);
 
   boost::mysql::diagnostics diag;
 
   try {
-    co_await m_impl->conn->async_connect(
+    co_await impl_->conn->async_connect(
         boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(host),
                                        port),
         params, diag, boost::asio::use_awaitable);
@@ -169,19 +169,19 @@ net::awaitable<void> AsyncMySQLConnect::connect() {
 }
 
 void AsyncMySQLConnect::close() {
-  if (m_impl && m_impl->conn) {
-    if (m_impl->statement_cache) {
-      m_impl->statement_cache->clear();
+  if (impl_ && impl_->conn) {
+    if (impl_->statement_cache) {
+      impl_->statement_cache->clear();
     }
-    m_impl->conn->close();
-    m_impl->conn.reset();
-    m_impl->io_context_ptr = nullptr;
-    m_impl->initialized = false;
+    impl_->conn->close();
+    impl_->conn.reset();
+    impl_->io_context_ptr = nullptr;
+    impl_->initialized = false;
   }
 }
 
 net::awaitable<bool> AsyncMySQLConnect::ping() {
-  if (!m_impl || !m_impl->conn) {
+  if (!impl_ || !impl_->conn) {
     bool connected = co_await tryConnect();
     if (!connected) {
       HAYAKU_ERROR("Failed connect to mysql!");
@@ -194,7 +194,7 @@ net::awaitable<bool> AsyncMySQLConnect::ping() {
   bool need_reconnect = false;
 
   try {
-    co_await m_impl->conn->async_execute("SELECT 1", results, diag,
+    co_await impl_->conn->async_execute("SELECT 1", results, diag,
                                          boost::asio::use_awaitable);
     co_return true;
   } catch (const boost::mysql::error_with_diagnostics&) {
@@ -228,7 +228,7 @@ net::awaitable<int64_t> AsyncMySQLConnect::exec(const std::string& sql_string) {
   HAYAKU_DEBUG(sql_string);
 #endif
 
-  if (!m_impl || !m_impl->conn) {
+  if (!impl_ || !impl_->conn) {
     SQL_CHECK(co_await tryConnect(), -1, "Failed connect to mysql!");
   }
 
@@ -239,7 +239,7 @@ net::awaitable<int64_t> AsyncMySQLConnect::exec(const std::string& sql_string) {
   bool need_retry = false;
 
   try {
-    co_await m_impl->conn->async_execute(sql_string, results, diag,
+    co_await impl_->conn->async_execute(sql_string, results, diag,
                                          boost::asio::use_awaitable);
   } catch (const boost::mysql::error_with_diagnostics& e) {
     ec = e.code();
@@ -263,7 +263,7 @@ net::awaitable<int64_t> AsyncMySQLConnect::exec(const std::string& sql_string) {
 
     if (reconnected) {
       try {
-        co_await m_impl->conn->async_execute(sql_string, results, diag,
+        co_await impl_->conn->async_execute(sql_string, results, diag,
                                              boost::asio::use_awaitable);
       } catch (const boost::mysql::error_with_diagnostics& retry_e) {
         ec = retry_e.code();

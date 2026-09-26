@@ -37,7 +37,7 @@ double WilliamsFixedRiskMoneyManager::_getBuyNumber(const Datetime& datetime,
                                                     OrderOrigin origin) {
   price_t max_loss = getParam<price_t>("max_loss");
   HAYAKU_WARN_IF_RETURN(max_loss <= 0.0, 0.0, "max_loss is zero!");
-  return m_account->cash(datetime, m_query.kType()) * getParam<double>("p") /
+  return account_->cash(datetime, query_.kType()) * getParam<double>("p") /
          max_loss;
 }
 

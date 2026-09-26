@@ -61,16 +61,16 @@ class HAYAKU_API StrategyContext {
    */
   bool isAll() const noexcept;
 
-  bool empty() const noexcept { return m_stockCodeList.empty(); }
+  bool empty() const noexcept { return stock_code_list_.empty(); }
 
-  Datetime startDatetime() const noexcept { return m_startDatetime; }
+  Datetime startDatetime() const noexcept { return start_datetime_; }
 
   void setStockCodeList(const vector<string>& stockList) {
     _removeDuplicateCode(stockList);
   }
 
   const vector<string>& getStockCodeList() const noexcept {
-    return m_stockCodeList;
+    return stock_code_list_;
   }
 
   void setKTypeList(const vector<KQuery::KType>& ktypeList) {
@@ -78,13 +78,13 @@ class HAYAKU_API StrategyContext {
   }
 
   const vector<KQuery::KType>& getKTypeList() const noexcept {
-    return m_ktypeList;
+    return ktype_list_;
   }
 
   void setPreloadNum(const unordered_map<string, int64_t>& preloadNum);
 
   const unordered_map<string, int64_t>& getPreloadNum() const noexcept {
-    return m_preloadNum;
+    return preload_num_;
   }
 
   /**
@@ -94,7 +94,7 @@ class HAYAKU_API StrategyContext {
    * default value of some functions
    */
   const vector<string>& getMustLoadStockCodeList() const noexcept {
-    return m_mustLoad;
+    return must_load_;
   }
 
   /**
@@ -111,12 +111,12 @@ class HAYAKU_API StrategyContext {
   void _checkAndRemoveDuplicateKType(const vector<KQuery::KType>& ktypeList);
 
  private:
-  Datetime m_startDatetime{19901219};
-  vector<string> m_mustLoad{
+  Datetime start_datetime_{19901219};
+  vector<string> must_load_{
       "sh000001", "sh000300"};  // The stock that must be loaded by default
-  vector<string> m_stockCodeList;
-  vector<KQuery::KType> m_ktypeList;
-  unordered_map<string, int64_t> m_preloadNum;
+  vector<string> stock_code_list_;
+  vector<KQuery::KType> ktype_list_;
+  unordered_map<string, int64_t> preload_num_;
 };
 
 HAYAKU_API std::ostream& operator<<(std::ostream& os,

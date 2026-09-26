@@ -23,7 +23,7 @@ class SingleSignal2 : public SignalBase {
   virtual void _calculate(const KData& kdata) override;
 
  private:
-  Indicator m_ind;
+  Indicator ind_;
 
 //============================================
 // Serialization support
@@ -33,7 +33,7 @@ class SingleSignal2 : public SignalBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SignalBase);
-    ar& BOOST_SERIALIZATION_NVP(m_ind);
+    ar& boost::serialization::make_nvp("m_ind", ind_);
   }
 #endif
 };

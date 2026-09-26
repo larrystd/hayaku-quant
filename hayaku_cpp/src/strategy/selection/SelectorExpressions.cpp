@@ -39,11 +39,11 @@ namespace hayaku {
 
 StrategyWeightList OperatorAddValueSelector::_getSelected(Datetime date) {
   StrategyWeightList ret;
-  HAYAKU_IF_RETURN(!m_se, ret);
+  HAYAKU_IF_RETURN(!se_, ret);
 
-  ret = m_se->getSelected(date);
+  ret = se_->getSelected(date);
   for (auto& sw : ret) {
-    sw.weight += m_value;
+    sw.weight += value_;
   }
 
   return ret;
@@ -95,11 +95,11 @@ namespace hayaku {
 
 StrategyWeightList OperatorDivValueSelector::_getSelected(Datetime date) {
   StrategyWeightList ret;
-  HAYAKU_IF_RETURN(!m_se, ret);
+  HAYAKU_IF_RETURN(!se_, ret);
 
-  ret = m_se->getSelected(date);
+  ret = se_->getSelected(date);
   for (auto& sw : ret) {
-    sw.weight /= m_value;
+    sw.weight /= value_;
   }
 
   return ret;
@@ -126,11 +126,11 @@ namespace hayaku {
 
 StrategyWeightList OperatorInvertDivValueSelector::_getSelected(Datetime date) {
   StrategyWeightList ret;
-  HAYAKU_IF_RETURN(!m_se, ret);
+  HAYAKU_IF_RETURN(!se_, ret);
 
-  ret = m_se->getSelected(date);
+  ret = se_->getSelected(date);
   for (auto& sw : ret) {
-    sw.weight = m_value / sw.weight;
+    sw.weight = value_ / sw.weight;
   }
 
   return ret;
@@ -157,11 +157,11 @@ namespace hayaku {
 
 StrategyWeightList OperatorInvertSubValueSelector::_getSelected(Datetime date) {
   StrategyWeightList ret;
-  HAYAKU_IF_RETURN(!m_se, ret);
+  HAYAKU_IF_RETURN(!se_, ret);
 
-  ret = m_se->getSelected(date);
+  ret = se_->getSelected(date);
   for (auto& sw : ret) {
-    sw.weight = m_value - sw.weight;
+    sw.weight = value_ - sw.weight;
   }
 
   return ret;
@@ -213,11 +213,11 @@ namespace hayaku {
 
 StrategyWeightList OperatorMulValueSelector::_getSelected(Datetime date) {
   StrategyWeightList ret;
-  HAYAKU_IF_RETURN(!m_se, ret);
+  HAYAKU_IF_RETURN(!se_, ret);
 
-  ret = m_se->getSelected(date);
+  ret = se_->getSelected(date);
   for (auto& sw : ret) {
-    sw.weight *= m_value;
+    sw.weight *= value_;
   }
 
   return ret;
@@ -268,11 +268,11 @@ namespace hayaku {
 
 StrategyWeightList OperatorSubValueSelector::_getSelected(Datetime date) {
   StrategyWeightList ret;
-  HAYAKU_IF_RETURN(!m_se, ret);
+  HAYAKU_IF_RETURN(!se_, ret);
 
-  ret = m_se->getSelected(date);
+  ret = se_->getSelected(date);
   for (auto& sw : ret) {
-    sw.weight -= m_value;
+    sw.weight -= value_;
   }
 
   return ret;

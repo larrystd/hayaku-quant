@@ -32,7 +32,7 @@ class PluginLoader final {
   using DestroyFunction = void (*)(PluginBase*);
 
   PluginLoader() : PluginLoader(".") {}
-  explicit PluginLoader(const std::string& path) : m_path(path) {}
+  explicit PluginLoader(const std::string& path) : path_(path) {}
 
   PluginLoader(const PluginLoader&) = delete;
   PluginLoader(PluginLoader&&) = delete;
@@ -41,12 +41,12 @@ class PluginLoader final {
 
   template <typename T>
   T* instance() const noexcept {
-    HAYAKU_IF_RETURN(!m_plugin, nullptr);
-    return dynamic_cast<T*>(m_plugin.get());
+    HAYAKU_IF_RETURN(!plugin_, nullptr);
+    return dynamic_cast<T*>(plugin_.get());
   }
 
   bool supportsInterfaceVersion(uint32_t version) const noexcept {
-    return m_plugin && m_interfaceVersion == version;
+    return plugin_ && interface_version_ == version;
   }
 
   bool load(const std::string& pluginname, bool print = true,
@@ -60,16 +60,16 @@ class PluginLoader final {
                            filename);
 
 #if HAYAKU_OS_WINDOWS
-    m_handle = LoadLibrary(HAYAKU_PATH(filename).c_str());
-    if (!m_handle) {
+    handle_ = LoadLibrary(HAYAKU_PATH(filename).c_str());
+    if (!handle_) {
       HAYAKU_WARN_IF(print, "load plugin({}) failed! errcode: {}", filename,
                      GetLastError());
       return false;
     }
 
 #else
-    m_handle = dlopen(filename.c_str(), RTLD_LAZY);
-    if (!m_handle) {
+    handle_ = dlopen(filename.c_str(), RTLD_LAZY);
+    if (!handle_) {
       HAYAKU_WARN_IF(print, "load plugin({}) failed! {}", filename, dlerror());
       return false;
     }
@@ -138,10 +138,10 @@ class PluginLoader final {
       return false;
     }
 
-    m_plugin.get_deleter() =
+    plugin_.get_deleter() =
         destroyFunction ? destroyFunction : destroyLegacyPlugin;
     try {
-      m_plugin.reset(createFunction());
+      plugin_.reset(createFunction());
     } catch (const std::exception& e) {
       HAYAKU_ERROR_IF(print, "Failed to create plugin ({}): {}", filename,
                       e.what());
@@ -153,24 +153,24 @@ class PluginLoader final {
       unload();
       return false;
     }
-    if (!m_plugin) {
+    if (!plugin_) {
       HAYAKU_ERROR_IF(print, "Failed to create plugin ({})!", filename);
       unload();
       return false;
     }
 
-    m_interfaceVersion = expectedInterfaceVersion;
+    interface_version_ = expectedInterfaceVersion;
 
     return true;
   }
 
   std::string getFileName(const std::string& pluginname) const noexcept {
 #if HAYAKU_OS_WINDOWS
-    return fmt::format("{}/{}.dll", m_path, pluginname);
+    return fmt::format("{}/{}.dll", path_, pluginname);
 #elif HAYAKU_OS_LINUX
-    return fmt::format("{}/lib{}.so", m_path, pluginname);
+    return fmt::format("{}/lib{}.so", path_, pluginname);
 #elif HAYAKU_OS_OSX
-    return fmt::format("{}/lib{}.dylib", m_path, pluginname);
+    return fmt::format("{}/lib{}.dylib", path_, pluginname);
 #endif
   }
 
@@ -180,36 +180,36 @@ class PluginLoader final {
   }
 
   void unload() noexcept {
-    m_plugin.reset();
-    m_interfaceVersion = 0;
-    if (m_handle) {
+    plugin_.reset();
+    interface_version_ = 0;
+    if (handle_) {
 #if HAYAKU_OS_WINDOWS
-      FreeLibrary(m_handle);
+      FreeLibrary(handle_);
 #else
-      dlclose(m_handle);
+      dlclose(handle_);
 #endif
-      m_handle = nullptr;
+      handle_ = nullptr;
     }
   }
 
   void* getFunction(const char* symbol) noexcept {
 #if HAYAKU_OS_WINDOWS
-    void* func = (void*)GetProcAddress(m_handle, symbol);
+    void* func = (void*)GetProcAddress(handle_, symbol);
 #else
-    void* func = dlsym(m_handle, symbol);
+    void* func = dlsym(handle_, symbol);
 #endif
     return func;
   }
 
  private:
 #if HAYAKU_OS_WINDOWS
-  HMODULE m_handle{nullptr};
+  HMODULE handle_{nullptr};
 #else
-  void* m_handle{nullptr};
+  void* handle_{nullptr};
 #endif
-  std::string m_path;
-  uint32_t m_interfaceVersion{0};
-  std::unique_ptr<PluginBase, DestroyFunction> m_plugin{nullptr,
+  std::string path_;
+  uint32_t interface_version_{0};
+  std::unique_ptr<PluginBase, DestroyFunction> plugin_{nullptr,
                                                         destroyLegacyPlugin};
 };
 

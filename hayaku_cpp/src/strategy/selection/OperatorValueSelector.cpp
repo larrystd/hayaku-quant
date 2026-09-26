@@ -22,17 +22,17 @@ OperatorValueSelector::OperatorValueSelector(const string& name)
 OperatorValueSelector::OperatorValueSelector(const string& name,
                                              const SelectorPtr& se,
                                              double value)
-    : SelectorBase(name), m_se(se), m_value(value) {
-  if (m_se) {
-    m_pro_sys_list = m_se->getProtoSystemList();
+    : SelectorBase(name), se_(se), value_(value) {
+  if (se_) {
+    pro_sys_list_ = se_->getProtoSystemList();
   }
 }
 
 OperatorValueSelector::~OperatorValueSelector() {}
 
 void OperatorValueSelector::_reset() {
-  if (m_se) {
-    m_se->reset();
+  if (se_) {
+    se_->reset();
   }
 }
 
@@ -40,16 +40,16 @@ bool OperatorValueSelector::isMatchAF(const AFPtr& af) { return true; }
 
 SelectorPtr OperatorValueSelector::_clone() {
   auto p = make_shared<OperatorValueSelector>();
-  if (m_se) {
-    p->m_se = m_se->clone();
+  if (se_) {
+    p->se_ = se_->clone();
   }
-  p->m_value = m_value;
+  p->value_ = value_;
   return p;
 }
 
 void OperatorValueSelector::_calculate() {
-  if (m_se) {
-    m_se->calculate(m_real_sys_list, m_query);
+  if (se_) {
+    se_->calculate(real_sys_list_, query_);
   }
 }
 

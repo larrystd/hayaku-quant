@@ -53,29 +53,29 @@ class AsyncSQLResultSet {
    * @param sql query condition
    */
   AsyncSQLResultSet(const AsyncDBConnectPtr& connect, const std::string& sql)
-      : m_connect(connect),
-        m_where(sql),
-        m_sql_template("SELECT * FROM {} WHERE {} {} LIMIT {} OFFSET {}") {
-    trim(m_where);
-    if (m_where.empty()) {
-      m_where = "1=1";
-      m_orderby_inner = "ORDER BY id";
+      : connect_(connect),
+        where_(sql),
+        sql_template_("SELECT * FROM {} WHERE {} {} LIMIT {} OFFSET {}") {
+    trim(where_);
+    if (where_.empty()) {
+      where_ = "1=1";
+      orderby_inner_ = "ORDER BY id";
       return;
     }
 
-    std::string tmp = utf8_to_upper(m_where);
+    std::string tmp = utf8_to_upper(where_);
     size_t pos = tmp.rfind("ORDER");
     if (pos != std::string::npos) {
-      m_orderby_inner = fmt::format("{}, id ASC", m_where.substr(pos));
-      m_orderby_outer = m_orderby_inner;
-      m_where = m_where.erase(pos, std::string::npos);
+      orderby_inner_ = fmt::format("{}, id ASC", where_.substr(pos));
+      orderby_outer_ = orderby_inner_;
+      where_ = where_.erase(pos, std::string::npos);
     } else {
-      m_orderby_inner = "ORDER BY id";
+      orderby_inner_ = "ORDER BY id";
     }
   }
 
   /** Get its database connection */
-  const AsyncDBConnectPtr& getConnect() const { return m_connect; }
+  const AsyncDBConnectPtr& getConnect() const { return connect_; }
 
   using const_iterator = AsyncSQLResultSetIterator<TableT, page_size>;
   using iterator = AsyncSQLResultSetIterator<TableT, page_size>;
@@ -111,12 +111,12 @@ class AsyncSQLResultSet {
    * @return size_t the data set size
    */
   net::awaitable<size_t> size() const {
-    if (!m_connect) {
+    if (!connect_) {
       co_return 0;
     }
     std::string sql = fmt::format("select count(1) from {} where {}",
-                                  TableT::getTableName(), m_where);
-    co_return co_await m_connect->queryNumber<size_t>(sql, 0);
+                                  TableT::getTableName(), where_);
+    co_return co_await connect_->queryNumber<size_t>(sql, 0);
   }
 
   /**
@@ -149,10 +149,10 @@ class AsyncSQLResultSet {
   net::awaitable<std::vector<TableT>> getPage(size_t page) {
     std::vector<TableT> result;
     std::string sql =
-        fmt::format(fmt::runtime(m_sql_template), TableT::getTableName(),
-                    m_where, m_orderby_inner, page_size, page * page_size);
+        fmt::format(fmt::runtime(sql_template_), TableT::getTableName(),
+                    where_, orderby_inner_, page_size, page * page_size);
 
-    auto st = co_await m_connect->getStatement(sql);
+    auto st = co_await connect_->getStatement(sql);
     co_await st->exec();
 
     while (co_await st->moveNext()) {
@@ -197,45 +197,45 @@ class AsyncSQLResultSet {
     }
 
     size_t page = index / page_size;
-    if (m_connect && page != m_current_page) {
-      m_buffer.clear();
+    if (connect_ && page != current_page_) {
+      buffer_.clear();
       std::string sql =
-          fmt::format(fmt::runtime(m_sql_template), TableT::getTableName(),
-                      m_where, m_orderby_inner, page_size, page * page_size);
+          fmt::format(fmt::runtime(sql_template_), TableT::getTableName(),
+                      where_, orderby_inner_, page_size, page * page_size);
 
-      auto st = co_await m_connect->getStatement(sql);
+      auto st = co_await connect_->getStatement(sql);
       co_await st->exec();
 
       while (co_await st->moveNext()) {
         TableT tmp;
         tmp.load(st);
-        m_buffer.push_back(tmp);
+        buffer_.push_back(tmp);
       }
 
-      m_current_page = page;
+      current_page_ = page;
     }
 
-    if (m_buffer.empty()) {
+    if (buffer_.empty()) {
       co_return result;
     }
 
     size_t pos = index - page * page_size;
-    if (pos >= m_buffer.size()) {
+    if (pos >= buffer_.size()) {
       co_return result;
     }
 
-    result = m_buffer[index - page * page_size];
+    result = buffer_[index - page * page_size];
     co_return result;
   }
 
  private:
-  AsyncDBConnectPtr m_connect;
-  std::vector<TableT> m_buffer;
-  std::string m_where;
-  std::string m_sql_template;
-  std::string m_orderby_inner;
-  std::string m_orderby_outer;
-  size_t m_current_page = Null<size_t>();
+  AsyncDBConnectPtr connect_;
+  std::vector<TableT> buffer_;
+  std::string where_;
+  std::string sql_template_;
+  std::string orderby_inner_;
+  std::string orderby_outer_;
+  size_t current_page_ = Null<size_t>();
 };
 
 template <class TableT, size_t page_size>
@@ -247,7 +247,7 @@ class AsyncSQLResultSetIterator {
   ~AsyncSQLResultSetIterator() = default;
 
   explicit AsyncSQLResultSetIterator(ResultSet* result_set, size_t index)
-      : m_set(result_set), m_index(index) {
+      : set_(result_set), index_(index) {
     // Note: co_await cannot be used directly in the constructor, it needs to be
     // initialized outside
   }
@@ -258,57 +258,57 @@ class AsyncSQLResultSetIterator {
    * initialization
    */
   net::awaitable<void> init() {
-    if (m_index != Null<size_t>()) {
-      m_value = co_await m_set->get(m_index);
-      if (!m_value.valid()) {
-        m_index = Null<size_t>();
+    if (index_ != Null<size_t>()) {
+      value_ = co_await set_->get(index_);
+      if (!value_.valid()) {
+        index_ = Null<size_t>();
       }
     }
     co_return;
   }
 
   AsyncSQLResultSetIterator(const AsyncSQLResultSetIterator& other)
-      : m_set(other.m_set), m_index(other.m_index), m_value(other.m_value) {}
+      : set_(other.set_), index_(other.index_), value_(other.value_) {}
 
   AsyncSQLResultSetIterator& operator=(const AsyncSQLResultSetIterator& other) {
     if (this == &other) return *this;
-    m_index = other.m_index;
-    m_set = other.m_set;
-    m_value = other.m_value;
+    index_ = other.index_;
+    set_ = other.set_;
+    value_ = other.value_;
     return *this;
   }
 
-  const TableT& operator*() const { return m_value; }
+  const TableT& operator*() const { return value_; }
 
-  TableT& operator*() { return m_value; }
+  TableT& operator*() { return value_; }
 
-  const TableT* const operator->() const { return &m_value; }
+  const TableT* const operator->() const { return &value_; }
 
-  TableT* operator->() { return &m_value; }
+  TableT* operator->() { return &value_; }
 
   /**
    * @brief Prefix increment operator
    * @return the new iterator
    */
   net::awaitable<AsyncSQLResultSetIterator> operator_pre_increment() {
-    HAYAKU_CHECK_THROW(m_index != Null<size_t>(), std::logic_error,
+    HAYAKU_CHECK_THROW(index_ != Null<size_t>(), std::logic_error,
                        "Cannot increment an end iterator.");
-    m_index++;
-    m_value = co_await m_set->get(m_index);
-    if (!m_value.valid()) {
-      m_index = Null<size_t>();
+    index_++;
+    value_ = co_await set_->get(index_);
+    if (!value_.valid()) {
+      index_ = Null<size_t>();
     }
     co_return *this;
   }
 
   bool operator!=(const AsyncSQLResultSetIterator& iter) const {
-    return m_index != iter.m_index;
+    return index_ != iter.index_;
   }
 
  private:
-  ResultSet* m_set = nullptr;
-  size_t m_index = Null<size_t>();
-  TableT m_value;
+  ResultSet* set_ = nullptr;
+  size_t index_ = Null<size_t>();
+  TableT value_;
 };
 
 }  // namespace hayaku

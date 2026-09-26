@@ -60,15 +60,15 @@ class HAYAKU_API StrategyEngine {
   [[nodiscard]] bool _matches(const StrategyDefinition& definition) const;
 
  private:
-  StrategyDefinition m_definition;
-  internal::ExecutionAccountPortPtr m_account;
-  std::unique_ptr<internal::StrategyRuntime> m_runtime;
-  mutable std::mutex m_stateMutex;
-  std::condition_variable m_stateChanged;
-  std::atomic_bool m_running{false};
-  std::atomic_bool m_stopRequested{false};
-  std::weak_ptr<std::atomic_bool> m_sessionActive;
-  bool m_sessionBound{false};
+  StrategyDefinition definition_;
+  internal::ExecutionAccountPortPtr account_;
+  std::unique_ptr<internal::StrategyRuntime> runtime_;
+  mutable std::mutex state_mutex_;
+  std::condition_variable state_changed_;
+  std::atomic_bool running_{false};
+  std::atomic_bool stop_requested_{false};
+  std::weak_ptr<std::atomic_bool> session_active_;
+  bool session_bound_{false};
 };
 
 }  // namespace hayaku

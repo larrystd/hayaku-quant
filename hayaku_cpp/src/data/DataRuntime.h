@@ -68,7 +68,7 @@ class DataRuntime {
   /// getLastUpdateTime. Production code must not call it. The caller has to
   /// reset it when the test case ends, so that other cases in the same process
   /// are not polluted.
-  void _testingSetIpcClientMode(bool mode) { m_ipc_client_mode = mode; }
+  void _testingSetIpcClientMode(bool mode) { ipc_client_mode_ = mode; }
 
   /** Get the base info driver parameter */
   const Parameter& getBaseInfoDriverParameter() const;
@@ -305,19 +305,19 @@ class DataRuntime {
    * Get the id of the current executing thread; mainly used to tell whether a
    * Strategy runs as a separate process or as a thread
    */
-  std::thread::id thread_id() const noexcept { return m_thread_id; }
+  std::thread::id thread_id() const noexcept { return thread_id_; }
 
   /** Only used when the program exits!!! */
-  ThreadPool* getLoadTaskGroup() { return m_load_tg.get(); }
+  ThreadPool* getLoadTaskGroup() { return load_tg_.get(); }
 
   /** Set the multi-language support path (only effective before initialization)
    */
   void setLanguagePath(const std::string& path) noexcept;
 
   /** Cancel the loading, used when exiting */
-  void cancelLoad() { m_cancel_load = true; }
+  void cancelLoad() { cancel_load_ = true; }
 
-  bool hasCancelLoad() const { return m_cancel_load; }
+  bool hasCancelLoad() const { return cancel_load_; }
 
   /*
    * Wait for the background preload thread to exit (idempotent: it returns
@@ -365,16 +365,16 @@ class DataRuntime {
    * service-role flag.
    */
   void setBaseInfoCacheEvictionEnabled(bool enabled) noexcept {
-    m_baseInfoCacheEvictionEnabled.store(enabled, std::memory_order_release);
+    base_info_cache_eviction_enabled_.store(enabled, std::memory_order_release);
   }
   [[nodiscard]] bool isBaseInfoCacheEvictionEnabled() const noexcept {
-    return m_baseInfoCacheEvictionEnabled.load(std::memory_order_acquire);
+    return base_info_cache_eviction_enabled_.load(std::memory_order_acquire);
   }
 
  public:
   typedef StockMapIterator const_iterator;
-  const_iterator begin() const { return m_stockDict.begin(); }
-  const_iterator end() const { return m_stockDict.end(); }
+  const_iterator begin() const { return stock_dict_.begin(); }
+  const_iterator end() const { return stock_dict_.end(); }
 
  private:
   /* Load all the data */
@@ -442,66 +442,66 @@ class DataRuntime {
   void loadHistoryFinanceField();
 
  private:
-  std::mutex m_init_mutex;
-  bool m_initializing{false};
-  std::atomic_bool m_cancel_load{
+  std::mutex init_mutex_;
+  bool initializing_{false};
+  std::atomic_bool cancel_load_{
       false};  // Cancel the loading, used as the exit indicator
-  std::atomic_bool m_data_ready{
+  std::atomic_bool data_ready_{
       true};  // Indicates whether all the data is ready; true when it
               // has not been initialized
   std::thread::id
-      m_thread_id;  // Records the thread id, used to tell whether a Strategy
+      thread_id_;  // Records the thread id, used to tell whether a Strategy
                     // runs as a separate process or as a thread
-  string m_tmpdir;
-  string m_datadir;
-  BaseInfoDriverPtr m_baseInfoDriver;
-  BlockInfoDriverPtr m_blockDriver;
+  string tmpdir_;
+  string datadir_;
+  BaseInfoDriverPtr base_info_driver_;
+  BlockInfoDriverPtr block_driver_;
 
   // Internally generated sectors, created during initialization and not read
   // from the database
-  std::unordered_map<string, Block> m_innerBlocks;
+  std::unordered_map<string, Block> inner_blocks_;
 
-  StockMapIterator::stock_map_t m_stockDict;  // SH000001 -> stock
-  std::shared_mutex* m_stockDict_mutex;
+  StockMapIterator::stock_map_t stock_dict_;  // SH000001 -> stock
+  std::shared_mutex* stock_dict_mutex_;
 
   typedef unordered_map<string, MarketInfo> MarketInfoMap;
-  mutable MarketInfoMap m_marketInfoDict;
+  mutable MarketInfoMap market_info_dict_;
 
   typedef unordered_map<uint32_t, StockTypeInfo> StockTypeInfoMap;
-  mutable StockTypeInfoMap m_stockTypeInfo;
+  mutable StockTypeInfoMap stock_type_info_;
 
-  std::unordered_set<Datetime> m_holidays;  // Holidays
+  std::unordered_set<Datetime> holidays_;  // Holidays
 
-  ZhBond10List m_zh_bond10;  // 10-year Chinese government bond yield data
+  ZhBond10List zh_bond10_;  // 10-year Chinese government bond yield data
 
   unordered_map<string, size_t>
-      m_field_name_to_ix;  // Financial field name -> field index
+      field_name_to_ix_;  // Financial field name -> field index
   unordered_map<size_t, string>
-      m_field_ix_to_name;  // Financial field index -> field name
+      field_ix_to_name_;  // Financial field index -> field name
 
-  Parameter m_baseInfoDriverParam;
-  Parameter m_blockDriverParam;
-  Parameter m_kdataDriverParam;
-  Parameter m_preloadParam;
-  Parameter m_hayakuParam;
-  StrategyContext m_context;
+  Parameter base_info_driver_param_;
+  Parameter block_driver_param_;
+  Parameter kdata_driver_param_;
+  Parameter preload_param_;
+  Parameter hayaku_param_;
+  StrategyContext context_;
 
   std::unique_ptr<ThreadPool>
-      m_load_tg;  // Auxiliary thread group for asynchronous data loading
-  std::thread m_preload_thread;  // Background preload thread (joinable,
+      load_tg_;  // Auxiliary thread group for asynchronous data loading
+  std::thread preload_thread_;  // Background preload thread (joinable,
                                  // reclaimed by joinPreloadThread when exiting)
 
-  std::string m_i18n_path;
+  std::string i18n_path_;
 
   // Whether this process acts as a client of the shm data service (set after a
   // successful connection and the assembly of the proxy driver). The forwarding
   // callback is registered by the plugin itself after a successful connect and
   // unregistered on disconnect; the core library does not hold any plugin type
   // pointer
-  bool m_ipc_client_mode{false};
-  std::atomic_bool m_baseInfoCacheEvictionEnabled{false};
+  bool ipc_client_mode_{false};
+  std::atomic_bool base_info_cache_eviction_enabled_{false};
   KDataDriverConnectPoolPtr
-      m_ipc_kdata_pool;  // IPC K-line driver pool in client mode
+      ipc_kdata_pool_;  // IPC K-line driver pool in client mode
 };
 
 /** Return the active runtime; it never creates or re-creates one implicitly. */
@@ -528,70 +528,70 @@ HAYAKU_API size_t registerLoadEventCallback(LoadEventCallback&& cb);
  * no-op when the id does not exist */
 HAYAKU_API void unregisterLoadEventCallback(size_t id);
 
-inline size_t DataRuntime::size() const noexcept { return m_stockDict.size(); }
+inline size_t DataRuntime::size() const noexcept { return stock_dict_.size(); }
 
 inline bool DataRuntime::dataReady() const {
-  return m_data_ready.load(std::memory_order_acquire);
+  return data_ready_.load(std::memory_order_acquire);
 }
 
-inline bool DataRuntime::initializing() const { return m_initializing; }
+inline bool DataRuntime::initializing() const { return initializing_; }
 
 inline Stock DataRuntime::operator[](const string& query) const {
   return getStock(query);
 }
 
 inline const Parameter& DataRuntime::getBaseInfoDriverParameter() const {
-  return m_baseInfoDriverParam;
+  return base_info_driver_param_;
 }
 
 inline const Parameter& DataRuntime::getBlockDriverParameter() const {
-  return m_blockDriverParam;
+  return block_driver_param_;
 }
 
 inline const Parameter& DataRuntime::getKDataDriverParameter() const {
-  return m_kdataDriverParam;
+  return kdata_driver_param_;
 }
 
 inline const Parameter& DataRuntime::getPreloadParameter() const {
-  return m_preloadParam;
+  return preload_param_;
 }
 
 inline const Parameter& DataRuntime::getHayakuParameter() const {
-  return m_hayakuParam;
+  return hayaku_param_;
 }
 
 inline const StrategyContext& DataRuntime::getStrategyContext() const {
-  return m_context;
+  return context_;
 }
 
 inline BaseInfoDriverPtr DataRuntime::getBaseInfoDriver() const {
-  return m_baseInfoDriver;
+  return base_info_driver_;
 }
 
 inline const string& DataRuntime::getHistoryFinanceFieldName(size_t ix) const {
-  return m_field_ix_to_name.at(ix);
+  return field_ix_to_name_.at(ix);
 }
 
 inline size_t DataRuntime::getHistoryFinanceFieldIndex(
     const string& name) const {
-  return m_field_name_to_ix.at(name);
+  return field_name_to_ix_.at(name);
 }
 
 inline vector<HistoryFinanceInfo> DataRuntime::getHistoryFinance(
     const Stock& stk, Datetime start, Datetime end) {
-  return m_baseInfoDriver->getHistoryFinance(stk.market(), stk.code(), start,
+  return base_info_driver_->getHistoryFinance(stk.market(), stk.code(), start,
                                              end);
 }
 
 inline StockWeightList DataRuntime::getStockWeightList(const Stock& stk,
                                                        Datetime start,
                                                        Datetime end) {
-  return m_baseInfoDriver->getStockWeightList(stk.market(), stk.code(), start,
+  return base_info_driver_->getStockWeightList(stk.market(), stk.code(), start,
                                               end);
 }
 
 inline void DataRuntime::setLanguagePath(const std::string& path) noexcept {
-  m_i18n_path = path;
+  i18n_path_ = path;
 }
 
 }  // namespace hayaku

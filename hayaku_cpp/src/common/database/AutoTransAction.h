@@ -26,23 +26,23 @@ class AutoTransAction {
    * Constructor
    * @param driver the database connection pointer
    */
-  explicit AutoTransAction(const DBConnectPtr& driver) : m_driver(driver) {
-    m_driver->transaction();
+  explicit AutoTransAction(const DBConnectPtr& driver) : driver_(driver) {
+    driver_->transaction();
   }
 
   /** Destructor */
   ~AutoTransAction() {
     try {
-      m_driver->commit();
+      driver_->commit();
     } catch (...) {
       HAYAKU_ERROR("Transaction commit failed!");
-      m_driver->rollback();
-      m_driver.reset();
+      driver_->rollback();
+      driver_.reset();
     }
   }
 
   /** Get the database connection */
-  const DBConnectPtr& connect() const { return m_driver; }
+  const DBConnectPtr& connect() const { return driver_; }
 
  private:
   AutoTransAction() = delete;
@@ -50,7 +50,7 @@ class AutoTransAction {
   AutoTransAction& operator=(const AutoTransAction&) = delete;
 
  private:
-  DBConnectPtr m_driver;
+  DBConnectPtr driver_;
 };
 
 /**
@@ -73,42 +73,42 @@ class TransAction {
    * @param driver the database connection pointer
    */
   explicit TransAction(const DBConnectPtr& driver)
-      : m_driver(driver), m_committed(false), m_started(true) {
+      : driver_(driver), committed_(false), started_(true) {
     HAYAKU_CHECK(driver, "Null DBConnectPtr!");
-    m_driver->transaction();
+    driver_->transaction();
   }
 
   /** Destructor */
   ~TransAction() {
     // If the transaction has not been committed actively it is regarded as
     // needing a rollback
-    if (m_started && !m_committed) {
+    if (started_ && !committed_) {
       HAYAKU_WARN("The transaction is rolled back!");
-      m_driver->rollback();
-    } else if (!m_committed) {
+      driver_->rollback();
+    } else if (!committed_) {
       HAYAKU_WARN("Not manul begin transaction!");
     }
   }
 
   /** Get the database connection */
-  const DBConnectPtr& connect() const { return m_driver; }
+  const DBConnectPtr& connect() const { return driver_; }
 
   /** Start the transaction */
   void begin() {
-    if (!m_started) {
-      m_driver->transaction();
-      m_committed = false;
-      m_started = true;
+    if (!started_) {
+      driver_->transaction();
+      committed_ = false;
+      started_ = true;
     }
   }
 
   /** End and commit the transaction */
   void end() {
-    HAYAKU_CHECK(m_started, "No transaction has started!");
-    if (!m_committed) {
-      m_driver->commit();
-      m_committed = true;
-      m_started = false;
+    HAYAKU_CHECK(started_, "No transaction has started!");
+    if (!committed_) {
+      driver_->commit();
+      committed_ = true;
+      started_ = false;
     }
   }
 
@@ -118,9 +118,9 @@ class TransAction {
   TransAction& operator=(const AutoTransAction&) = delete;
 
  private:
-  DBConnectPtr m_driver;
-  bool m_committed;
-  bool m_started;
+  DBConnectPtr driver_;
+  bool committed_;
+  bool started_;
 };
 
 }  // namespace hayaku

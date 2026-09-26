@@ -17,19 +17,19 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-string Indicator::str() const { return m_imp ? m_imp->str() : "Indicator{}"; }
+string Indicator::str() const { return impl_ ? impl_->str() : "Indicator{}"; }
 
-Indicator::Indicator(const IndicatorImpPtr& imp) noexcept : m_imp(imp) {}
+Indicator::Indicator(const IndicatorImpPtr& imp) noexcept : impl_(imp) {}
 
 Indicator::Indicator(const Indicator& indicator) noexcept
-    : m_imp(indicator.m_imp) {}
+    : impl_(indicator.impl_) {}
 
-Indicator::Indicator(Indicator&& ind) noexcept : m_imp(std::move(ind.m_imp)) {}
+Indicator::Indicator(Indicator&& ind) noexcept : impl_(std::move(ind.impl_)) {}
 
 Indicator::~Indicator() {}
 
 string Indicator::formula() const {
-  return m_imp ? m_imp->formula() : "Indicator";
+  return impl_ ? impl_->formula() : "Indicator";
 }
 
 Indicator Indicator::operator()(const KData& k) const {
@@ -39,16 +39,16 @@ Indicator Indicator::operator()(const KData& k) const {
 }
 
 void Indicator::setContext(const Stock& stock, const KQuery& query) {
-  if (m_imp) m_imp->setContext(stock, query);
+  if (impl_) impl_->setContext(stock, query);
 }
 
 void Indicator::setContext(const KData& k) {
-  if (m_imp) m_imp->setContext(k);
+  if (impl_) impl_->setContext(k);
 }
 
 void Indicator::extend() {
-  if (m_imp) {
-    auto k = m_imp->getContext();
+  if (impl_) {
+    auto k = impl_->getContext();
     const auto& stk = k.getStock();
     HAYAKU_WARN_IF_RETURN(stk.isNull(), void(), "stock is null!");
     const auto& query = k.getQuery();
@@ -62,21 +62,21 @@ void Indicator::extend() {
       HAYAKU_WARN("query type ({}) error!",
                   static_cast<int>(query.queryType()));
     }
-    m_imp->setContext(k);
+    impl_->setContext(k);
   }
 }
 
 KData Indicator::getContext() const {
-  return m_imp ? m_imp->getContext() : KData();
+  return impl_ ? impl_->getContext() : KData();
 }
 
 bool Indicator::alike(const Indicator& other) const {
-  HAYAKU_IF_RETURN(m_imp == other.m_imp, true);
-  return m_imp->alike(*other.m_imp);
+  HAYAKU_IF_RETURN(impl_ == other.impl_, true);
+  return impl_->alike(*other.impl_);
 }
 
 bool Indicator::equal(const Indicator& other) const noexcept {
-  HAYAKU_IF_RETURN(this == &other || m_imp == other.m_imp, true);
+  HAYAKU_IF_RETURN(this == &other || impl_ == other.impl_, true);
   HAYAKU_IF_RETURN(size() != other.size() || discard() != other.discard() ||
                        getResultNumber() != other.getResultNumber(),
                    false);
@@ -98,24 +98,24 @@ bool Indicator::equal(const Indicator& other) const noexcept {
 
 Indicator& Indicator::operator=(const Indicator& indicator) noexcept {
   HAYAKU_IF_RETURN(this == &indicator, *this);
-  m_imp = indicator.m_imp;
+  impl_ = indicator.impl_;
   return *this;
 }
 
 Indicator& Indicator::operator=(Indicator&& indicator) noexcept {
   HAYAKU_IF_RETURN(this == &indicator, *this);
-  m_imp = std::move(indicator.m_imp);
+  impl_ = std::move(indicator.impl_);
   return *this;
 }
 
 PriceList Indicator::getResultAsPriceList(size_t num) const {
-  HAYAKU_WARN_IF_RETURN(!m_imp, PriceList(), "indicator imptr is null!");
-  return m_imp->getResultAsPriceList(num);
+  HAYAKU_WARN_IF_RETURN(!impl_, PriceList(), "indicator imptr is null!");
+  return impl_->getResultAsPriceList(num);
 }
 
 Indicator Indicator::getResult(size_t num) const {
-  HAYAKU_WARN_IF_RETURN(!m_imp, Indicator(), "indicator imptr is null!");
-  return Indicator(m_imp->getResult(num));
+  HAYAKU_WARN_IF_RETURN(!impl_, Indicator(), "indicator imptr is null!");
+  return Indicator(impl_->getResult(num));
 }
 
 HAYAKU_API Indicator operator+(const Indicator& ind1, const Indicator& ind2) {

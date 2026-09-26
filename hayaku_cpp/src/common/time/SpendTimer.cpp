@@ -53,23 +53,23 @@ SpendTimer::~SpendTimer() {
     return;
   }
   show();
-  size_t total = m_keep_seconds.size();
+  size_t total = keep_seconds_.size();
   if (total > 0) {
-    m_keep_seconds.push_back(std::chrono::steady_clock::now() -
-                             m_pre_keep_time);
+    keep_seconds_.push_back(std::chrono::steady_clock::now() -
+                             pre_keep_time_);
     double duration_ = 0.0;
     std::string unit;
     for (size_t i = 0; i < total; i++) {
-      std::tie(duration_, unit) = transUnit(m_keep_seconds[i]);
+      std::tie(duration_, unit) = transUnit(keep_seconds_[i]);
 #ifdef __ANDROID__
       __android_log_print(ANDROID_LOG_INFO, "HAYAKU",
                           "%6zu keep: %7.3f %s - %s\n", i, duration_,
-                          unit.c_str(), m_keep_desc[i].c_str());
+                          unit.c_str(), keep_desc_[i].c_str());
 
 #if defined(HAYAKU_ENABLE_ANDROID_SHELL_OUTPUT) && \
     HAYAKU_ENABLE_ANDROID_SHELL_OUTPUT
       printf("%6zu keep: %7.3f %s - %s\n", i, duration_, unit.c_str(),
-             m_keep_desc[i].c_str());
+             keep_desc_[i].c_str());
 #endif
 
 #else
@@ -77,7 +77,7 @@ SpendTimer::~SpendTimer() {
       // m_keep_desc[i].c_str());
       std::cout << std::setw(5) << " keep: " << i << std::setw(7)
                 << std::setprecision(3) << duration_ << " " << unit << " - "
-                << m_keep_desc[i] << std::endl;
+                << keep_desc_[i] << std::endl;
 #endif /* __ANDROID__ */
     }
   }
@@ -85,19 +85,19 @@ SpendTimer::~SpendTimer() {
 
 void SpendTimer::keep(const std::string& description) {
   auto now = std::chrono::steady_clock::now();
-  m_keep_seconds.push_back(now - m_pre_keep_time);
-  m_keep_desc.push_back(description);
-  m_pre_keep_time = now;
+  keep_seconds_.push_back(now - pre_keep_time_);
+  keep_desc_.push_back(description);
+  pre_keep_time_ = now;
 }
 
 void SpendTimer::show() const {
   std::chrono::duration<double> sec =
-      std::chrono::steady_clock::now() - m_start_time;
+      std::chrono::steady_clock::now() - start_time_;
   double duration_ = 0.0;
   char outmsg[MAX_SPEND_MSG_LEN];
   memset(outmsg, 0, MAX_SPEND_MSG_LEN);
 
-  if (m_cycle > 1) {
+  if (cycle_ > 1) {
     duration_ = sec.count() * 1000;
     snprintf(outmsg, MAX_SPEND_MSG_LEN,
              "+----------------------------------------------------------------"
@@ -110,14 +110,14 @@ void SpendTimer::show() const {
              "|   run cycle count: %d\n"
              "+----------------------------------------------------------------"
              "--------------\n",
-             m_id.c_str(), m_msg.c_str(), m_filename.c_str(), m_lineno,
-             duration_ / m_cycle, duration_, m_cycle);
+             id_.c_str(), msg_.c_str(), filename_.c_str(), lineno_,
+             duration_ / cycle_, duration_, cycle_);
   } else {
     std::string unit;
     std::tie(duration_, unit) = transUnit(sec);
     snprintf(outmsg, MAX_SPEND_MSG_LEN,
              "spend time: %7.3f %s | %s %s (%s:%d)\n", duration_, unit.c_str(),
-             m_id.c_str(), m_msg.c_str(), m_filename.c_str(), m_lineno);
+             id_.c_str(), msg_.c_str(), filename_.c_str(), lineno_);
   }
 
 #ifdef __ANDROID__
@@ -136,7 +136,7 @@ void SpendTimer::show() const {
 
 double SpendTimer::value() const {
   std::chrono::duration<double> sec =
-      std::chrono::steady_clock::now() - m_start_time;
+      std::chrono::steady_clock::now() - start_time_;
   return sec.count();
 }
 

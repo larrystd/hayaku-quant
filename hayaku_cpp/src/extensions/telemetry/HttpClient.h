@@ -90,7 +90,7 @@ class HAYAKU_UTILS_API AsioHttpResponse final {
    * @brief Get the response body content
    * @return the complete response body string
    */
-  const std::string& body() const noexcept { return m_body; }
+  const std::string& body() const noexcept { return body_; }
 
   /**
    * @brief Parse the response body into a JSON object
@@ -104,13 +104,13 @@ class HAYAKU_UTILS_API AsioHttpResponse final {
    * @brief Get the HTTP status code
    * @return the HTTP status code (such as 200, 404, 500, etc.)
    */
-  int status() const noexcept { return m_status; }
+  int status() const noexcept { return status_; }
 
   /**
    * @brief Get the HTTP status description
    * @return the status description text (such as "OK", "Not Found", etc.)
    */
-  const std::string& reason() const noexcept { return m_reason; }
+  const std::string& reason() const noexcept { return reason_; }
 
   /**
    * @brief Get the value of the given response header field
@@ -119,8 +119,8 @@ class HAYAKU_UTILS_API AsioHttpResponse final {
    * not exist
    */
   std::string getHeader(const std::string& key) const noexcept {
-    auto it = m_headers.find(key);
-    return it != m_headers.end() ? it->second : std::string();
+    auto it = headers_.find(key);
+    return it != headers_.end() ? it->second : std::string();
   }
 
   /**
@@ -129,8 +129,8 @@ class HAYAKU_UTILS_API AsioHttpResponse final {
    * the parsing fails
    */
   size_t getContentLength() const noexcept {
-    auto it = m_headers.find("Content-Length");
-    if (it != m_headers.end() && !it->second.empty()) {
+    auto it = headers_.find("Content-Length");
+    if (it != headers_.end() && !it->second.empty()) {
       try {
         return std::stoull(it->second);
       } catch (...) {
@@ -141,10 +141,10 @@ class HAYAKU_UTILS_API AsioHttpResponse final {
   }
 
  private:
-  int m_status{0};
-  std::string m_reason;
-  std::string m_body;
-  std::map<std::string, std::string> m_headers;
+  int status_{0};
+  std::string reason_;
+  std::string body_;
+  std::map<std::string, std::string> headers_;
 };
 
 /**
@@ -189,13 +189,13 @@ class HAYAKU_UTILS_API AsioHttpStreamResponse final {
    * @brief Get the HTTP status code
    * @return the HTTP status code (such as 200, 404, 500, etc.)
    */
-  int status() const noexcept { return m_status; }
+  int status() const noexcept { return status_; }
 
   /**
    * @brief Get the HTTP status description
    * @return the status description text (such as "OK", "Not Found", etc.)
    */
-  const std::string& reason() const noexcept { return m_reason; }
+  const std::string& reason() const noexcept { return reason_; }
 
   /**
    * @brief Get the value of the given response header field
@@ -204,8 +204,8 @@ class HAYAKU_UTILS_API AsioHttpStreamResponse final {
    * not exist
    */
   std::string getHeader(const std::string& key) const noexcept {
-    auto it = m_headers.find(key);
-    return it != m_headers.end() ? it->second : std::string();
+    auto it = headers_.find(key);
+    return it != headers_.end() ? it->second : std::string();
   }
 
   /**
@@ -214,8 +214,8 @@ class HAYAKU_UTILS_API AsioHttpStreamResponse final {
    * the parsing fails
    */
   size_t getContentLength() const noexcept {
-    auto it = m_headers.find("Content-Length");
-    if (it != m_headers.end() && !it->second.empty()) {
+    auto it = headers_.find("Content-Length");
+    if (it != headers_.end() && !it->second.empty()) {
       try {
         return std::stoull(it->second);
       } catch (...) {
@@ -231,8 +231,8 @@ class HAYAKU_UTILS_API AsioHttpStreamResponse final {
    * Content-Length is used
    */
   bool isChunked() const noexcept {
-    auto it = m_headers.find("Transfer-Encoding");
-    return it != m_headers.end() && it->second == "chunked";
+    auto it = headers_.find("Transfer-Encoding");
+    return it != headers_.end() && it->second == "chunked";
   }
 
   /**
@@ -240,13 +240,13 @@ class HAYAKU_UTILS_API AsioHttpStreamResponse final {
    * @return the accumulated number of the bytes read and passed to the callback
    * function
    */
-  uint64_t totalBytesRead() const noexcept { return m_total_bytes_read; }
+  uint64_t totalBytesRead() const noexcept { return total_bytes_read_; }
 
  private:
-  int m_status{0};
-  std::string m_reason;
-  std::map<std::string, std::string> m_headers;
-  uint64_t m_total_bytes_read{0};
+  int status_{0};
+  std::string reason_;
+  std::map<std::string, std::string> headers_;
+  uint64_t total_bytes_read_{0};
 };
 
 /**
@@ -296,10 +296,10 @@ class HAYAKU_UTILS_API AsioHttpStreamResponse final {
  * ## Build configuration
  * ```bash
  * # Enable the HTTP client
- * xmake f --http_client=y
+ * Enable HAYAKU_ENABLE_HTTP_CLIENT in the Bazel configuration.
  *
  * # Enable the HTTPS support (OpenSSL is required)
- * xmake f --http_client_ssl=y
+ * Enable HAYAKU_ENABLE_HTTP_CLIENT_SSL in the Bazel configuration.
  * ```
  *
  * ## Usage example
@@ -416,13 +416,13 @@ class HAYAKU_UTILS_API AsioHttpClient {
    * @return true means the URL has been set correctly and a request can be
    * initiated
    */
-  bool valid() const noexcept { return !m_url.empty(); }
+  bool valid() const noexcept { return !url_.empty(); }
 
   /**
    * @brief Get the currently set URL
    * @return the complete URL string
    */
-  const std::string& url() const noexcept { return m_url; }
+  const std::string& url() const noexcept { return url_; }
 
   /**
    * @brief Set the target URL
@@ -456,7 +456,7 @@ class HAYAKU_UTILS_API AsioHttpClient {
    * @return the timeout (ms)
    */
   int32_t getTimeout() const noexcept {
-    return static_cast<int32_t>(m_timeout.count());
+    return static_cast<int32_t>(timeout_.count());
   }
 
   /**
@@ -476,7 +476,7 @@ class HAYAKU_UTILS_API AsioHttpClient {
    * }, net::detached);
    * @endcode
    */
-  executor_type get_executor() const noexcept { return m_ctx->get_executor(); }
+  executor_type get_executor() const noexcept { return ctx_->get_executor(); }
 
   /**
    * @brief Set the default request headers (the move semantics)
@@ -484,7 +484,7 @@ class HAYAKU_UTILS_API AsioHttpClient {
    * storage
    */
   void setDefaultHeaders(std::map<std::string, std::string>&& headers) {
-    m_default_headers = std::move(headers);
+    default_headers_ = std::move(headers);
   }
 
   /**
@@ -510,7 +510,7 @@ class HAYAKU_UTILS_API AsioHttpClient {
    * storage
    */
   void setDefaultHeaders(const HttpHeaders& headers) {
-    m_default_headers = headers;
+    default_headers_ = headers;
   }
 
   // ==================== Asynchronous request methods ====================
@@ -1106,31 +1106,31 @@ class HAYAKU_UTILS_API AsioHttpClient {
 #if HAYAKU_ENABLE_HTTP_CLIENT_SSL
   struct SslContext;
   std::unique_ptr<SslContext>
-      m_ssl_ctx;  // SSL context (used when SSL is enabled only)
+      ssl_ctx_;  // SSL context (used when SSL is enabled only)
 #endif
 
-  bool m_is_valid_url{false};  // Whether the URL is valid
-  bool m_is_https{false};      // Whether the HTTPS protocol is used
-  std::string m_url;           // The complete URL
-  std::string m_base_path;     // The base path part of the URL
-  std::string m_host;          // Host name
-  std::string m_port;          // Port number
-  std::chrono::milliseconds m_timeout{DEFAULT_TIMEOUT_MS};  // Timeout
+  bool is_valid_url_{false};  // Whether the URL is valid
+  bool is_https_{false};      // Whether the HTTPS protocol is used
+  std::string url_;           // The complete URL
+  std::string base_path_;     // The base path part of the URL
+  std::string host_;          // Host name
+  std::string port_;          // Port number
+  std::chrono::milliseconds timeout_{DEFAULT_TIMEOUT_MS};  // Timeout
   std::map<std::string, std::string>
-      m_default_headers;  // Default request headers
-  std::string m_ca_file;  // Custom CA certificate file path
+      default_headers_;  // Default request headers
+  std::string ca_file_;  // Custom CA certificate file path
 
   // Connection pool related members
   std::unique_ptr<ResourceAsioVersionPool<HttpConnection, std::mutex>>
-      m_connection_pool;
+      connection_pool_;
 
   // io_context management
-  std::unique_ptr<net::io_context> m_own_ctx;  // Internal io_context
-  net::io_context* m_ctx{nullptr};             // The io_context currently used
-  std::vector<std::thread> m_worker_threads;   // The thread pool running the
-                                               // io_context in the background
+  std::unique_ptr<net::io_context> own_ctx_;  // Internal io_context
+  net::io_context* ctx_{nullptr};             // The io_context currently used
+  std::vector<std::thread> worker_threads_;   // The thread pool running the
+                                              // io_context in the background
   std::unique_ptr<net::executor_work_guard<net::io_context::executor_type>>
-      m_work_guard;  // Prevents the io_context from exiting when there is no
+      work_guard_;  // Prevents the io_context from exiting when there is no
                      // task
 };
 

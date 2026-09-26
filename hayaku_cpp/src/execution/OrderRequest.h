@@ -35,48 +35,48 @@ class HAYAKU_API OrderRequest {
                price_t goalPrice = 0.0, price_t planPrice = 0.0,
                OrderOrigin origin = OrderOrigin::UNSPECIFIED,
                string remark = "")
-      : m_side(side),
-        m_datetime(std::move(datetime)),
-        m_stock(std::move(stock)),
-        m_realPrice(realPrice),
-        m_number(number),
-        m_stoploss(stoploss),
-        m_goalPrice(goalPrice),
-        m_planPrice(planPrice),
-        m_origin(origin),
-        m_remark(std::move(remark)) {}
+      : side_(side),
+        datetime_(std::move(datetime)),
+        stock_(std::move(stock)),
+        real_price_(realPrice),
+        number_(number),
+        stoploss_(stoploss),
+        goal_price_(goalPrice),
+        plan_price_(planPrice),
+        origin_(origin),
+        remark_(std::move(remark)) {}
 
-  [[nodiscard]] OrderSide side() const noexcept { return m_side; }
+  [[nodiscard]] OrderSide side() const noexcept { return side_; }
 
-  [[nodiscard]] const Datetime& datetime() const noexcept { return m_datetime; }
+  [[nodiscard]] const Datetime& datetime() const noexcept { return datetime_; }
 
-  [[nodiscard]] const Stock& stock() const noexcept { return m_stock; }
+  [[nodiscard]] const Stock& stock() const noexcept { return stock_; }
 
-  [[nodiscard]] price_t realPrice() const noexcept { return m_realPrice; }
+  [[nodiscard]] price_t realPrice() const noexcept { return real_price_; }
 
-  [[nodiscard]] double number() const noexcept { return m_number; }
+  [[nodiscard]] double number() const noexcept { return number_; }
 
-  [[nodiscard]] price_t stoploss() const noexcept { return m_stoploss; }
+  [[nodiscard]] price_t stoploss() const noexcept { return stoploss_; }
 
-  [[nodiscard]] price_t goalPrice() const noexcept { return m_goalPrice; }
+  [[nodiscard]] price_t goalPrice() const noexcept { return goal_price_; }
 
-  [[nodiscard]] price_t planPrice() const noexcept { return m_planPrice; }
+  [[nodiscard]] price_t planPrice() const noexcept { return plan_price_; }
 
-  [[nodiscard]] OrderOrigin origin() const noexcept { return m_origin; }
+  [[nodiscard]] OrderOrigin origin() const noexcept { return origin_; }
 
-  [[nodiscard]] const string& remark() const noexcept { return m_remark; }
+  [[nodiscard]] const string& remark() const noexcept { return remark_; }
 
  private:
-  OrderSide m_side;
-  Datetime m_datetime;
-  Stock m_stock;
-  price_t m_realPrice;
-  double m_number;
-  price_t m_stoploss;
-  price_t m_goalPrice;
-  price_t m_planPrice;
-  OrderOrigin m_origin;
-  string m_remark;
+  OrderSide side_;
+  Datetime datetime_;
+  Stock stock_;
+  price_t real_price_;
+  double number_;
+  price_t stoploss_;
+  price_t goal_price_;
+  price_t plan_price_;
+  OrderOrigin origin_;
+  string remark_;
 };
 
 }  // namespace hayaku

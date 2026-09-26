@@ -55,7 +55,7 @@ class HAYAKU_UTILS_API MySQLStatement : public SQLStatementBase {
 
  private:
   struct Impl;
-  std::unique_ptr<Impl> m_impl;
+  std::unique_ptr<Impl> impl_;
 };
 
 }  // namespace hayaku

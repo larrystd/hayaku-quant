@@ -80,14 +80,14 @@ class HAYAKU_API ProfitGoalBase
   /** Subclass calculation interface, it is called by setTO */
   virtual void _calculate() {}
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
-  bool m_is_python_object{false};
+  bool is_python_object_{false};
 
  protected:
-  string m_name;
-  KData m_kdata;
-  internal::ExecutionAccountPortPtr m_account;
+  string name_;
+  KData kdata_;
+  internal::ExecutionAccountPortPtr account_;
 
 //============================================
 // Serialization support
@@ -97,14 +97,14 @@ class HAYAKU_API ProfitGoalBase
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -160,18 +160,18 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const ProfitGoalPtr& pg);
 
 inline void ProfitGoalBase::setAccount(
     const internal::ExecutionAccountPortPtr& account) {
-  m_account = account;
+  account_ = account;
 }
 
 inline internal::ExecutionAccountPortPtr ProfitGoalBase::getAccount() const {
-  return m_account;
+  return account_;
 }
 
-inline KData ProfitGoalBase::getTO() const { return m_kdata; }
+inline KData ProfitGoalBase::getTO() const { return kdata_; }
 
-inline const string& ProfitGoalBase::name() const { return m_name; }
+inline const string& ProfitGoalBase::name() const { return name_; }
 
-inline void ProfitGoalBase::name(const string& name) { m_name = name; }
+inline void ProfitGoalBase::name(const string& name) { name_ = name; }
 
 } /* namespace hayaku */
 

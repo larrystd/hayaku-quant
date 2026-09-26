@@ -28,23 +28,23 @@ class HAYAKU_API BacktestResult {
   [[nodiscard]] bool empty() const noexcept;
 
  private:
-  Stock m_stock;
-  KQuery m_query;
-  TradeRecordList m_trades;
+  Stock stock_;
+  KQuery query_;
+  TradeRecordList trades_;
 };
 
-inline const Stock& BacktestResult::stock() const noexcept { return m_stock; }
+inline const Stock& BacktestResult::stock() const noexcept { return stock_; }
 
-inline const KQuery& BacktestResult::query() const noexcept { return m_query; }
+inline const KQuery& BacktestResult::query() const noexcept { return query_; }
 
 inline const TradeRecordList& BacktestResult::trades() const noexcept {
-  return m_trades;
+  return trades_;
 }
 
 inline size_t BacktestResult::tradeCount() const noexcept {
-  return m_trades.size();
+  return trades_.size();
 }
 
-inline bool BacktestResult::empty() const noexcept { return m_trades.empty(); }
+inline bool BacktestResult::empty() const noexcept { return trades_.empty(); }
 
 }  // namespace hayaku

@@ -1,0 +1,14 @@
+filegroup(
+    name = "test_fixtures",
+    srcs = glob(
+        ["test_data/**", "hayaku/plugin/**", "i18n/**"],
+        exclude = ["test_data/tmp/**", "**/__pycache__/**"],
+    ),
+    visibility = ["//visibility:public"],
+)
+
+exports_files([
+    "hayaku/core.py",
+    "hayaku_ingest_native/__init__.py",
+    "hayaku_realtime_native/__init__.py",
+])

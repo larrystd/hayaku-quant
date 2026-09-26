@@ -27,11 +27,10 @@ wrapper for a local Python 3.10 build:
 .. code-block:: shell
 
     python3.10 -m pip install -r requirements.txt
-    ./op.sh configure
     ./op.sh build
     ./op.sh import-test
     ./op.sh test
 
 The wrapper's selected paths are shown by ``./op.sh doctor``. Set
-``PYTHON_PREFIX``, ``PYTHON_BIN`` or ``XMAKE_BIN`` when those tools are
+``BAZEL_BIN`` or ``PYTHON_BIN`` when those tools are
 installed elsewhere. Developer build details are in :ref:`developer`.

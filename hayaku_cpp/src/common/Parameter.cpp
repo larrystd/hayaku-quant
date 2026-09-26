@@ -24,8 +24,8 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const Parameter& param) {
   // (void)os.precision(4);
   os << "params[";
   string strip(", ");
-  Parameter::param_map_t::const_iterator iter = param.m_params.begin();
-  for (; iter != param.m_params.end(); ++iter) {
+  Parameter::param_map_t::const_iterator iter = param.params_.begin();
+  for (; iter != param.params_.end(); ++iter) {
     os << iter->first;
     if (iter->second.type() == typeid(int)) {
       os << "(int): " << boost::any_cast<int>(iter->second) << strip;
@@ -72,7 +72,7 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const Parameter& param) {
 
 Parameter::Parameter() {}
 
-Parameter::Parameter(const Parameter& p) : m_params(p.m_params) {}
+Parameter::Parameter(const Parameter& p) : params_(p.params_) {}
 
 Parameter::~Parameter() {}
 
@@ -81,7 +81,7 @@ Parameter& Parameter::operator=(const Parameter& p) {
     return *this;
   }
 
-  m_params = p.m_params;
+  params_ = p.params_;
   return *this;
 }
 
@@ -90,7 +90,7 @@ Parameter& Parameter::operator=(Parameter&& p) {
     return *this;
   }
 
-  m_params = std::move(p.m_params);
+  params_ = std::move(p.params_);
   return *this;
 }
 
@@ -104,8 +104,8 @@ bool Parameter::support(const boost::any& value) {
 }
 
 string Parameter::type(const string& name) const {
-  auto iter = m_params.find(name);
-  HAYAKU_CHECK_THROW(iter != m_params.end(), std::out_of_range,
+  auto iter = params_.find(name);
+  HAYAKU_CHECK_THROW(iter != params_.end(), std::out_of_range,
                      "out_of_range in Parameter::get : {}", name);
   HAYAKU_IF_RETURN(iter->second.type() == typeid(int), "int");
   HAYAKU_IF_RETURN(iter->second.type() == typeid(int64_t), "int64");
@@ -124,8 +124,8 @@ string Parameter::type(const string& name) const {
 
 StringList Parameter::getNameList() const {
   vector<string> result;
-  param_map_t::const_iterator iter = m_params.begin();
-  for (; iter != m_params.end(); ++iter) {
+  param_map_t::const_iterator iter = params_.begin();
+  for (; iter != params_.end(); ++iter) {
     result.push_back(iter->first);
   }
   return result;
@@ -133,10 +133,10 @@ StringList Parameter::getNameList() const {
 
 string Parameter::getNameValueList() const {
   std::stringstream os;
-  Parameter::param_map_t::const_iterator iter = m_params.begin();
+  Parameter::param_map_t::const_iterator iter = params_.begin();
   Parameter::param_map_t::const_iterator next_iter = iter;
   string equal("=");
-  for (; iter != m_params.end(); ++iter) {
+  for (; iter != params_.end(); ++iter) {
     if (iter->second.type() == typeid(int)) {
       os << iter->first << equal << boost::any_cast<int>(iter->second);
     } else if (iter->second.type() == typeid(int64_t)) {
@@ -172,7 +172,7 @@ string Parameter::getNameValueList() const {
     }
 
     ++next_iter;
-    if (next_iter != m_params.end() && iter->second.type() != typeid(KData)) {
+    if (next_iter != params_.end() && iter->second.type() != typeid(KData)) {
       os << ",";
     }
   }

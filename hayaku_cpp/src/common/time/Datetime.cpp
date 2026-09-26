@@ -57,14 +57,14 @@ Datetime::Datetime(long year, long month, long day, long hh, long mm, long sec,
   HAYAKU_CHECK(microsec >= 0 && microsec <= 999, "Out of range! microsec: {}",
                microsec);
   bd::date d((unsigned short)year, (unsigned short)month, (unsigned short)day);
-  m_data =
+  data_ =
       bt::ptime(d, bt::time_duration(hh, mm, sec, millisec * 1000 + microsec));
 }
 
 Datetime::Datetime(unsigned long long datetime) {
   if (Null<unsigned long long>() == datetime) {
     bd::date d(bd::pos_infin);
-    m_data = bt::ptime(d, bt::time_duration(0, 0, 0));
+    data_ = bt::ptime(d, bt::time_duration(0, 0, 0));
     return;
   }
 
@@ -75,7 +75,7 @@ Datetime::Datetime(unsigned long long datetime) {
     day = datetime - datetime / 100 * 100;
     bd::date d((unsigned short)year, (unsigned short)month,
                (unsigned short)day);
-    m_data = bt::ptime(d, bt::time_duration(0, 0, 0));
+    data_ = bt::ptime(d, bt::time_duration(0, 0, 0));
   } else if (datetime <= 999999999999LL) {
     unsigned long long year, month, day, hh, mm;
     year = datetime / 100000000;
@@ -89,7 +89,7 @@ Datetime::Datetime(unsigned long long datetime) {
                        "Minute value is out of range 0..59");
     bd::date d((unsigned short)year, (unsigned short)month,
                (unsigned short)day);
-    m_data = bt::ptime(
+    data_ = bt::ptime(
         d, bt::time_duration((unsigned short)hh, (unsigned short)mm, 0));
   } else if (datetime <= 99999999999999LL) {
     // YYYY MM DD hh mm ss
@@ -106,7 +106,7 @@ Datetime::Datetime(unsigned long long datetime) {
                        "Minute value is out of range 0..59");
     bd::date d((unsigned short)year, (unsigned short)month,
                (unsigned short)day);
-    m_data = bt::ptime(
+    data_ = bt::ptime(
         d, bt::time_duration((unsigned short)hh, (unsigned short)mm, ss));
   } else {
     HAYAKU_THROW_EXCEPTION(std::out_of_range,
@@ -122,14 +122,14 @@ Datetime::Datetime(const std::string &ts) {
   std::string timeStr(ts);
   trim(timeStr);
   if ("+infinity" == timeStr) {
-    m_data = bt::ptime(bd::date(bd::pos_infin), bt::time_duration(0, 0, 0));
+    data_ = bt::ptime(bd::date(bd::pos_infin), bt::time_duration(0, 0, 0));
     return;
   }
 
   to_upper(timeStr);
   auto pos = timeStr.find('T');
   if (pos != std::string::npos) {
-    m_data = bt::from_iso_string(timeStr);
+    data_ = bt::from_iso_string(timeStr);
     return;
   }
 
@@ -137,7 +137,7 @@ Datetime::Datetime(const std::string &ts) {
   auto pos1 = timeStr.find('-');
   auto pos2 = timeStr.find('/');
   if (pos == std::string::npos) {
-    m_data =
+    data_ =
         (pos1 != std::string::npos || pos2 != std::string::npos)
             ? bt::ptime(bd::from_string(timeStr), bt::time_duration(0, 0, 0))
             : bt::ptime(bd::from_undelimited_string(timeStr),
@@ -147,7 +147,7 @@ Datetime::Datetime(const std::string &ts) {
 
   auto date_str = timeStr.substr(0, pos);
   auto time_str = timeStr.substr(pos + 1);
-  m_data = (pos1 != std::string::npos || pos2 != std::string::npos)
+  data_ = (pos1 != std::string::npos || pos2 != std::string::npos)
                ? bt::time_from_string(timeStr)
                : bt::ptime(bd::from_undelimited_string(date_str),
                            bt::duration_from_string(time_str));
@@ -156,12 +156,12 @@ Datetime::Datetime(const std::string &ts) {
 bool Datetime::isNull() const {
   bd::date d(bd::pos_infin);
   bt::ptime null_date = bt::ptime(d, bt::time_duration(0, 0, 0));
-  return (m_data == null_date) ? true : false;
+  return (data_ == null_date) ? true : false;
 }
 
 Datetime &Datetime::operator=(const Datetime &d) {
   if (this == &d) return *this;
-  m_data = d.m_data;
+  data_ = d.data_;
   return *this;
 }
 
@@ -295,7 +295,7 @@ uint64_t Datetime::ymdhms() const noexcept {
 
 uint64_t Datetime::hex() const noexcept {
   try {
-    HAYAKU_IF_RETURN(m_data.date() == bd::date(bd::pos_infin),
+    HAYAKU_IF_RETURN(data_.date() == bd::date(bd::pos_infin),
                      Null<unsigned long long>());
     uint64_t ret = uint64_t(second());
     ret |= (uint64_t(minute()) << 8);
@@ -361,42 +361,42 @@ uint64_t Datetime::timestampUTC() const noexcept {
 
 long Datetime::year() const {
   HAYAKU_CHECK_THROW(!isNull(), std::logic_error, "This is Null Datetime!");
-  return m_data.date().year();
+  return data_.date().year();
 }
 
 long Datetime::month() const {
   HAYAKU_CHECK_THROW(!isNull(), std::logic_error, "This is Null Datetime!");
-  return m_data.date().month();
+  return data_.date().month();
 }
 
 long Datetime::day() const {
   HAYAKU_CHECK_THROW(!isNull(), std::logic_error, "This is Null Datetime!");
-  return m_data.date().day();
+  return data_.date().day();
 }
 
 long Datetime::hour() const {
   HAYAKU_CHECK_THROW(!isNull(), std::logic_error, "This is Null Datetime!");
-  return long(m_data.time_of_day().hours());
+  return long(data_.time_of_day().hours());
 }
 
 long Datetime::minute() const {
   HAYAKU_CHECK_THROW(!isNull(), std::logic_error, "This is Null Datetime!");
-  return long(m_data.time_of_day().minutes());
+  return long(data_.time_of_day().minutes());
 }
 
 long Datetime::second() const {
   HAYAKU_CHECK_THROW(!isNull(), std::logic_error, "This is Null Datetime!");
-  return long(m_data.time_of_day().seconds());
+  return long(data_.time_of_day().seconds());
 }
 
 long Datetime::millisecond() const {
   HAYAKU_CHECK_THROW(!isNull(), std::logic_error, "This is Null Datetime!");
-  return long(m_data.time_of_day().fractional_seconds()) / 1000;
+  return long(data_.time_of_day().fractional_seconds()) / 1000;
 }
 
 long Datetime::microsecond() const {
   HAYAKU_CHECK_THROW(!isNull(), std::logic_error, "This is Null Datetime!");
-  return long(m_data.time_of_day().fractional_seconds()) % 1000;
+  return long(data_.time_of_day().fractional_seconds()) % 1000;
 }
 
 Datetime Datetime::min() {

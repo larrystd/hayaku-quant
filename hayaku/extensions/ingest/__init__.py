@@ -26,7 +26,7 @@ def _load_native():
             raise
         raise ImportError(
             "The optional hayaku ingestion extension is not installed. "
-            "Build it with `xmake ingest` or install the ingestion package."
+            "Build it with `./op.sh build` or install the ingestion package."
         ) from exc
 
 

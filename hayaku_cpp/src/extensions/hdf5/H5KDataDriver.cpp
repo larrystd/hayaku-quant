@@ -54,44 +54,44 @@ class Hdf5FileCloser {
 };
 
 H5KDataDriver::H5KDataDriver()
-    : KDataDriver("hdf5"), m_h5DataType(H5::CompType(sizeof(H5Record))) {
-  m_h5DataType.insertMember("datetime", HOFFSET(H5Record, datetime),
+    : KDataDriver("hdf5"), h5_data_type_(H5::CompType(sizeof(H5Record))) {
+  h5_data_type_.insertMember("datetime", HOFFSET(H5Record, datetime),
                             H5::PredType::NATIVE_UINT64);
-  m_h5DataType.insertMember("openPrice", HOFFSET(H5Record, openPrice),
+  h5_data_type_.insertMember("openPrice", HOFFSET(H5Record, openPrice),
                             H5::PredType::NATIVE_UINT);
-  m_h5DataType.insertMember("highPrice", HOFFSET(H5Record, highPrice),
+  h5_data_type_.insertMember("highPrice", HOFFSET(H5Record, highPrice),
                             H5::PredType::NATIVE_UINT);
-  m_h5DataType.insertMember("lowPrice", HOFFSET(H5Record, lowPrice),
+  h5_data_type_.insertMember("lowPrice", HOFFSET(H5Record, lowPrice),
                             H5::PredType::NATIVE_UINT);
-  m_h5DataType.insertMember("closePrice", HOFFSET(H5Record, closePrice),
+  h5_data_type_.insertMember("closePrice", HOFFSET(H5Record, closePrice),
                             H5::PredType::NATIVE_UINT);
-  m_h5DataType.insertMember("transAmount", HOFFSET(H5Record, transAmount),
+  h5_data_type_.insertMember("transAmount", HOFFSET(H5Record, transAmount),
                             H5::PredType::NATIVE_UINT64);
-  m_h5DataType.insertMember("transCount", HOFFSET(H5Record, transCount),
+  h5_data_type_.insertMember("transCount", HOFFSET(H5Record, transCount),
                             H5::PredType::NATIVE_UINT64);
 
-  m_h5IndexType = H5::CompType(sizeof(H5IndexRecord));
-  m_h5IndexType.insertMember("datetime", HOFFSET(H5IndexRecord, datetime),
+  h5_index_type_ = H5::CompType(sizeof(H5IndexRecord));
+  h5_index_type_.insertMember("datetime", HOFFSET(H5IndexRecord, datetime),
                              H5::PredType::NATIVE_UINT64);
-  m_h5IndexType.insertMember("start", HOFFSET(H5IndexRecord, start),
+  h5_index_type_.insertMember("start", HOFFSET(H5IndexRecord, start),
                              H5::PredType::NATIVE_UINT64);
 
-  m_h5TimeLineType = H5::CompType(sizeof(H5TimeLineRecord));
-  m_h5TimeLineType.insertMember("datetime", HOFFSET(H5TimeLineRecord, datetime),
+  h5_time_line_type_ = H5::CompType(sizeof(H5TimeLineRecord));
+  h5_time_line_type_.insertMember("datetime", HOFFSET(H5TimeLineRecord, datetime),
                                 H5::PredType::NATIVE_UINT64);
-  m_h5TimeLineType.insertMember("price", HOFFSET(H5TimeLineRecord, price),
+  h5_time_line_type_.insertMember("price", HOFFSET(H5TimeLineRecord, price),
                                 H5::PredType::NATIVE_UINT64);
-  m_h5TimeLineType.insertMember("vol", HOFFSET(H5TimeLineRecord, vol),
+  h5_time_line_type_.insertMember("vol", HOFFSET(H5TimeLineRecord, vol),
                                 H5::PredType::NATIVE_UINT64);
 
-  m_h5TransType = H5::CompType(sizeof(H5TransRecord));
-  m_h5TransType.insertMember("datetime", HOFFSET(H5TransRecord, datetime),
+  h5_trans_type_ = H5::CompType(sizeof(H5TransRecord));
+  h5_trans_type_.insertMember("datetime", HOFFSET(H5TransRecord, datetime),
                              H5::PredType::NATIVE_UINT64);
-  m_h5TransType.insertMember("price", HOFFSET(H5TransRecord, price),
+  h5_trans_type_.insertMember("price", HOFFSET(H5TransRecord, price),
                              H5::PredType::NATIVE_UINT64);
-  m_h5TransType.insertMember("vol", HOFFSET(H5TransRecord, vol),
+  h5_trans_type_.insertMember("vol", HOFFSET(H5TransRecord, vol),
                              H5::PredType::NATIVE_UINT64);
-  m_h5TransType.insertMember("buyorsell", HOFFSET(H5TransRecord, buyorsell),
+  h5_trans_type_.insertMember("buyorsell", HOFFSET(H5TransRecord, buyorsell),
                              H5::PredType::NATIVE_UINT8);
 }
 
@@ -101,7 +101,7 @@ bool H5KDataDriver::_init() {
   // Turn off the automatic printing of the HDF exceptions
   H5::Exception::dontPrint();
 
-  StringList keys = m_params.getNameList();
+  StringList keys = params_.getNameList();
   string filename;
   for (auto iter = keys.begin(); iter != keys.end(); ++iter) {
     size_t pos = iter->find("_");
@@ -125,36 +125,36 @@ bool H5KDataDriver::_init() {
       if (ktype == KQuery::getKTypeName(KQuery::DAY)) {
         H5FilePtr h5file(new H5::H5File(filename, H5F_ACC_RDONLY),
                          Hdf5FileCloser());
-        m_h5file_map[market + "_DAY"] = h5file;
-        m_h5file_map[market + "_WEEK"] = h5file;
-        m_h5file_map[market + "_MONTH"] = h5file;
-        m_h5file_map[market + "_QUARTER"] = h5file;
-        m_h5file_map[market + "_HALFYEAR"] = h5file;
-        m_h5file_map[market + "_YEAR"] = h5file;
+        h5file_map_[market + "_DAY"] = h5file;
+        h5file_map_[market + "_WEEK"] = h5file;
+        h5file_map_[market + "_MONTH"] = h5file;
+        h5file_map_[market + "_QUARTER"] = h5file;
+        h5file_map_[market + "_HALFYEAR"] = h5file;
+        h5file_map_[market + "_YEAR"] = h5file;
 
       } else if (ktype == KQuery::getKTypeName(KQuery::MIN)) {
         H5FilePtr h5file(new H5::H5File(filename, H5F_ACC_RDONLY),
                          Hdf5FileCloser());
-        m_h5file_map[market + "_MIN"] = h5file;
+        h5file_map_[market + "_MIN"] = h5file;
 
       } else if (ktype == KQuery::getKTypeName(KQuery::MIN5)) {
         H5FilePtr h5file(new H5::H5File(filename, H5F_ACC_RDONLY),
                          Hdf5FileCloser());
-        m_h5file_map[market + "_MIN5"] = h5file;
-        m_h5file_map[market + "_MIN15"] = h5file;
-        m_h5file_map[market + "_MIN30"] = h5file;
-        m_h5file_map[market + "_MIN60"] = h5file;
-        m_h5file_map[market + "_HOUR2"] = h5file;
+        h5file_map_[market + "_MIN5"] = h5file;
+        h5file_map_[market + "_MIN15"] = h5file;
+        h5file_map_[market + "_MIN30"] = h5file;
+        h5file_map_[market + "_MIN60"] = h5file;
+        h5file_map_[market + "_HOUR2"] = h5file;
 
       } else if (ktype == KQuery::TIMELINE) {
         H5FilePtr h5file(new H5::H5File(filename, H5F_ACC_RDONLY),
                          Hdf5FileCloser());
-        m_h5file_map[market + "_TIMELINE"] = h5file;
+        h5file_map_[market + "_TIMELINE"] = h5file;
 
       } else if (ktype == KQuery::TRANS) {
         H5FilePtr h5file(new H5::H5File(filename, H5F_ACC_RDONLY),
                          Hdf5FileCloser());
-        m_h5file_map[market + "_TRANS"] = h5file;
+        h5file_map_[market + "_TRANS"] = h5file;
       }
 
     } catch (...) {
@@ -174,7 +174,7 @@ void H5KDataDriver::H5ReadRecords(H5::DataSet& dataset, hsize_t start,
   count[0] = nrecords;
   H5::DataSpace memspace(1, count);
   dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);
-  dataset.read(data, m_h5DataType, memspace, dataspace);
+  dataset.read(data, h5_data_type_, memspace, dataspace);
   memspace.close();
   dataspace.close();
   return;
@@ -189,7 +189,7 @@ void H5KDataDriver::H5ReadIndexRecords(H5::DataSet& dataset, hsize_t start,
   count[0] = nrecords;
   H5::DataSpace memspace(1, count);
   dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);
-  dataset.read(data, m_h5IndexType, memspace, dataspace);
+  dataset.read(data, h5_index_type_, memspace, dataspace);
   memspace.close();
   dataspace.close();
   return;
@@ -204,7 +204,7 @@ void H5KDataDriver::H5ReadTimeLineRecords(H5::DataSet& dataset, hsize_t start,
   count[0] = nrecords;
   H5::DataSpace memspace(1, count);
   dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);
-  dataset.read(data, m_h5TimeLineType, memspace, dataspace);
+  dataset.read(data, h5_time_line_type_, memspace, dataspace);
   memspace.close();
   dataspace.close();
   return;
@@ -219,7 +219,7 @@ void H5KDataDriver::H5ReadTransRecords(H5::DataSet& dataset, hsize_t start,
   count[0] = nrecords;
   H5::DataSpace memspace(1, count);
   dataspace.selectHyperslab(H5S_SELECT_SET, count, offset);
-  dataset.read(data, m_h5TransType, memspace, dataspace);
+  dataset.read(data, h5_trans_type_, memspace, dataspace);
   memspace.close();
   dataspace.close();
   return;
@@ -232,8 +232,8 @@ bool H5KDataDriver::_getH5FileAndGroup(const string& market, const string& code,
     string key(format("{}_{}", market, kType));
     to_upper(key);
 
-    auto iter = m_h5file_map.find(key);
-    HAYAKU_IF_RETURN(iter == m_h5file_map.end(), false);
+    auto iter = h5file_map_.find(key);
+    HAYAKU_IF_RETURN(iter == h5file_map_.end(), false);
 
     out_file = iter->second;
 

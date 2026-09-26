@@ -56,21 +56,21 @@ class HAYAKU_UTILS_API StealThreadPool {
    * empty
    */
   explicit StealThreadPool(size_t n, bool until_empty = true)
-      : m_done(false), m_worker_num(n), m_running_until_empty(until_empty) {
+      : done_(false), worker_num_(n), running_until_empty_(until_empty) {
     try {
-      m_interrupt_flags.resize(m_worker_num);
-      for (int i = 0; i < m_worker_num; i++) {
+      interrupt_flags_.resize(worker_num_);
+      for (int i = 0; i < worker_num_; i++) {
         // Create the worker threads and their task queues
-        m_queues.emplace_back(new WorkStealQueue);
+        queues_.emplace_back(new WorkStealQueue);
       }
       // The threads are started after all the thread resources have been
       // initialized
-      for (int i = 0; i < m_worker_num; i++) {
-        m_threads.emplace_back(&StealThreadPool::worker_thread, this, i);
-        m_thread_index[m_threads.back().get_id()] = i;
+      for (int i = 0; i < worker_num_; i++) {
+        threads_.emplace_back(&StealThreadPool::worker_thread, this, i);
+        thread_index_[threads_.back().get_id()] = i;
       }
     } catch (...) {
-      m_done = true;
+      done_ = true;
       throw;
     }
   }
@@ -80,23 +80,23 @@ class HAYAKU_UTILS_API StealThreadPool {
    * finished
    */
   ~StealThreadPool() {
-    if (!m_done) {
+    if (!done_) {
       join();
     }
-    m_threads.clear();
+    threads_.clear();
   }
 
   /** Get the number of the worker threads */
-  size_t worker_num() const { return m_worker_num; }
+  size_t worker_num() const { return worker_num_; }
 
   /** Number of the remaining tasks */
   size_t remain_task_count() const {
-    if (m_done) {
+    if (done_) {
       return 0;
     }
-    size_t total = m_master_work_queue.size();
-    for (size_t i = 0; i < m_worker_num; i++) {
-      total += m_queues[i]->size();
+    size_t total = master_work_queue_.size();
+    for (size_t i = 0; i < worker_num_; i++) {
+      total += queues_[i]->size();
     }
     return total;
   }
@@ -114,27 +114,27 @@ class HAYAKU_UTILS_API StealThreadPool {
   /** Submit a task to the thread pool */
   template <typename FunctionType>
   auto submit(FunctionType&& f) {
-    if (m_done) {
+    if (done_) {
       throw std::logic_error(
           "You can't submit a task to the stopped StealThreadPool!!");
     }
 
     int index = -1;
-    auto iter = m_thread_index.find(std::this_thread::get_id());
-    if (iter != m_thread_index.end()) {
+    auto iter = thread_index_.find(std::this_thread::get_id());
+    if (iter != thread_index_.end()) {
       index = iter->second;
     }
 
     typedef typename std::invoke_result<FunctionType>::type result_type;
     std::packaged_task<result_type()> task(std::forward<FunctionType>(f));
     task_handle<result_type> res(task.get_future());
-    if (index != -1 && !m_interrupt_flags[index]) {
+    if (index != -1 && !interrupt_flags_[index]) {
       // The local thread tasks enter the queue from the front (recursion
       // becomes a stack)
-      m_queues[index]->push_front(std::move(task));
+      queues_[index]->push_front(std::move(task));
     } else {
-      m_master_work_queue.push(std::move(task));
-      m_cv.notify_one();
+      master_work_queue_.push(std::move(task));
+      cv_.notify_one();
     }
     return res;
   }
@@ -144,36 +144,36 @@ class HAYAKU_UTILS_API StealThreadPool {
 #endif
 
   /** Return the end state of the thread pool */
-  bool done() const { return m_done; }
+  bool done() const { return done_; }
 
   /**
    * It waits for every thread to finish the currently executed task and then
    * exits immediately
    */
   void stop() {
-    if (m_done) {
+    if (done_) {
       return;
     }
 
-    m_done = true;
+    done_ = true;
 
     // At the same time the end task indication is added, so that it can also be
     // terminated when the dll exits
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_interrupt_flags[i].set();
-      m_queues[i]->push_front(FuncWrapper());
+    for (size_t i = 0; i < worker_num_; i++) {
+      interrupt_flags_[i].set();
+      queues_[i]->push_front(FuncWrapper());
     }
 
-    m_cv.notify_all();  // Wake up all the worker threads
-    for (size_t i = 0; i < m_worker_num; i++) {
-      if (m_threads[i].joinable()) {
-        m_threads[i].join();
+    cv_.notify_all();  // Wake up all the worker threads
+    for (size_t i = 0; i < worker_num_; i++) {
+      if (threads_[i].joinable()) {
+        threads_[i].join();
       }
     }
 
-    m_master_work_queue.clear();
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_queues[i]->clear();
+    master_work_queue_.clear();
+    for (size_t i = 0; i < worker_num_; i++) {
+      queues_[i]->clear();
     }
   }
 
@@ -183,19 +183,19 @@ class HAYAKU_UTILS_API StealThreadPool {
    * are ended
    */
   void join() {
-    if (m_done) {
+    if (done_) {
       return;
     }
 
     // It instructs every worker thread to stop running when no work task is got
-    if (m_running_until_empty) {
+    if (running_until_empty_) {
       while (true) {
-        if (m_master_work_queue.size() != 0) {
+        if (master_work_queue_.size() != 0) {
           std::this_thread::yield();
         } else {
           bool can_quit = true;
-          for (size_t i = 0; i < m_worker_num; i++) {
-            if (!m_queues[i]->empty()) {
+          for (size_t i = 0; i < worker_num_; i++) {
+            if (!queues_[i]->empty()) {
               can_quit = false;
               break;
             }
@@ -208,30 +208,30 @@ class HAYAKU_UTILS_API StealThreadPool {
         }
       }
 
-      m_done = true;
-      for (size_t i = 0; i < m_worker_num; i++) {
-        m_interrupt_flags[i].set();
+      done_ = true;
+      for (size_t i = 0; i < worker_num_; i++) {
+        interrupt_flags_[i].set();
       }
     }
 
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_master_work_queue.push(FuncWrapper());
+    for (size_t i = 0; i < worker_num_; i++) {
+      master_work_queue_.push(FuncWrapper());
     }
 
     // Wake up all the worker threads
-    m_cv.notify_all();
+    cv_.notify_all();
 
     // Wait for the threads to be finished
-    for (size_t i = 0; i < m_worker_num; i++) {
-      if (m_threads[i].joinable()) {
-        m_threads[i].join();
+    for (size_t i = 0; i < worker_num_; i++) {
+      if (threads_[i].joinable()) {
+        threads_[i].join();
       }
     }
 
-    m_done = true;
-    m_master_work_queue.clear();
-    for (size_t i = 0; i < m_worker_num; i++) {
-      m_queues[i]->clear();
+    done_ = true;
+    master_work_queue_.clear();
+    for (size_t i = 0; i < worker_num_; i++) {
+      queues_[i]->clear();
     }
   }
 
@@ -249,25 +249,25 @@ class HAYAKU_UTILS_API StealThreadPool {
  private:
   typedef FuncWrapper task_type;
   std::atomic_bool
-      m_done;           // The global termination indication of the thread pool
-  size_t m_worker_num;  // Number of the worker threads
-  bool m_running_until_empty;  // It stops running automatically when the task
+      done_;           // The global termination indication of the thread pool
+  size_t worker_num_;  // Number of the worker threads
+  bool running_until_empty_;  // It stops running automatically when the task
                                // queue is empty
   std::condition_variable
-      m_cv;  // Semaphore, it blocks the threads and waits when there is no task
-  std::mutex m_cv_mutex;  // The mutex working together with the semaphore
+      cv_;  // Semaphore, it blocks the threads and waits when there is no task
+  std::mutex cv_mutex_;  // The mutex working together with the semaphore
 
-  std::vector<InterruptFlag> m_interrupt_flags;  // Worker thread states
+  std::vector<InterruptFlag> interrupt_flags_;  // Worker thread states
   ThreadSafeQueue<task_type>
-      m_master_work_queue;  // Task queue of the master thread
+      master_work_queue_;  // Task queue of the master thread
   std::vector<std::unique_ptr<WorkStealQueue>>
-      m_queues;                        // Task queues (one for every worker
+      queues_;                        // Task queues (one for every worker
                                        // thread)
-  std::vector<std::thread> m_threads;  // Worker threads
-  std::unordered_map<std::thread::id, int> m_thread_index;
+  std::vector<std::thread> threads_;  // Worker threads
+  std::unordered_map<std::thread::id, int> thread_index_;
 
   void worker_thread(int index) {
-    while (!m_done && !m_interrupt_flags[index]) {
+    while (!done_ && !interrupt_flags_[index]) {
       run_pending_task(index);
     }
   }
@@ -282,39 +282,39 @@ class HAYAKU_UTILS_API StealThreadPool {
       if (!task.isNullTask()) {
         task();
       } else {
-        m_interrupt_flags[index].set();
+        interrupt_flags_[index].set();
       }
     } else if (pop_task_from_master_queue(task)) {
       if (!task.isNullTask()) {
         task();
       } else {
-        m_interrupt_flags[index].set();
+        interrupt_flags_[index].set();
       }
     } else if (pop_task_from_other_thread_queue(task, index)) {
       task();
     } else {
-      std::unique_lock<std::mutex> lk(m_cv_mutex);
-      m_cv.wait(lk, [this] {
-        return this->m_done || !this->m_master_work_queue.empty();
+      std::unique_lock<std::mutex> lk(cv_mutex_);
+      cv_.wait(lk, [this] {
+        return this->done_ || !this->master_work_queue_.empty();
       });
     }
   }
 
   bool pop_task_from_master_queue(task_type& task) {
-    return m_master_work_queue.try_pop(task);
+    return master_work_queue_.try_pop(task);
   }
 
   // cppcheck-suppress functionStatic  // Suppress the cppcheck suggestion of
   // converting it into a static function
   bool pop_task_from_local_queue(task_type& task, int index) {
-    return m_queues[index]->try_pop(task);
+    return queues_[index]->try_pop(task);
   }
 
   bool pop_task_from_other_thread_queue(task_type& task, int index) {
-    for (int i = 0; i < m_worker_num; ++i) {
-      int pos = (index + i + 1) % m_worker_num;
-      if (pos != index && !m_interrupt_flags[pos] &&
-          m_queues[pos]->try_steal(task)) {
+    for (int i = 0; i < worker_num_; ++i) {
+      int pos = (index + i + 1) % worker_num_;
+      if (pos != index && !interrupt_flags_[pos] &&
+          queues_[pos]->try_steal(task)) {
         return true;
       }
     }

@@ -1,219 +1,127 @@
 <p align="center">
-  <img src="docs/zh/_static/00000-title.png" width="200" alt="title">
+  <img src="docs/zh/_static/00000-title.png" width="200" alt="Hayaku">
 </p>
 
 <p align="center">
-  基于 C++/Python 的开源高性能量化交易研究框架，聚焦策略分析与回测。
-  <strong>交易模型研发 · 极速计算引擎 · 高效回测体系</strong>
+  用 C++ 和 Python 研究行情数据与策略回测<br>
+  <strong>显式会话 · 可组合策略 · Bazel 构建</strong>
 </p>
 
-<p align="center">
-  <img src="https://github.com/larrystd/hayaku-quant/actions/workflows/windows.yml/badge.svg?branch=poc" alt="Windows build">
-  <img src="https://github.com/larrystd/hayaku-quant/actions/workflows/ubuntu.yml/badge.svg?branch=poc" alt="Ubuntu build">
-  <img src="https://img.shields.io/github/license/larrystd/hayaku-quant.svg" alt="License">
-  <img src="https://static.pepy.tech/badge/hayaku" alt="Downloads">
-</p>
+# Hayaku Quant
 
-<p align="center">
-  <a href="readme.md">English</a> | <b>简体中文</b>
-</p>
+[English](readme.md) | 简体中文
 
-Hayaku Quant Framework 依托成熟的系统化交易与投资组合理念，核心目标聚焦于打造策略(或资产)组合的快速策略研究体系，同时将量化分析体系拆解为市场环境、信号、止损 / 止盈、资金管理、收益目标、滑点、多因子、资金分配等可独立替换的**策略部件**，自由组合即可搭建专属策略库，并通过回测验证有效性。
+Hayaku 是面向行情数据研究、指标计算、策略组合与回测的 C++/Python 框架。C++ 核心负责数据访问和计算，Python API 提供显式会话和按领域划分的使用入口。
 
-> Hayaku 源自 [Hikyuu](https://github.com/fasiondog/hikyuu)。当前仓库是破坏式架构重构
-> POC，并非上游项目的即插即用替代品。
+本仓库源自 [Hikyuu](https://github.com/fasiondog/hikyuu)，目前处于破坏式架构重构的概念验证阶段，原有 Hikyuu 程序需要适配。当前 Bazel 构建支持 **macOS、Linux 和 Python 3.10**；此构建不支持 Windows。
 
-> ⚠️ **免责声明**：本项目为开源金融技术研究工具，仅供个人学习、学术研究与数据分析使用，不构成任何投资建议与交易指导，不提供、不内置证券交易服务。用户自主新增、对接各类交易接口、开发拓展功能以及对应的实操行为，均由用户自行承担全部风险与法律责任，严禁对接非法交易通道、用于违规交易场景。
+## 仓库提供什么？
 
----
+- **数据与指标**：查询本地行情数据，组合指标计算。
+- **策略研究**：定义信号、资金管理等组件，运行回测并检查结果。
+- **执行账户**：通过会话拥有的执行引擎提交模拟订单，查看现金、持仓和成交记录。
+- **可选模块**：历史数据导入和实时行情服务使用独立的原生包。
 
-## 📊 关键数据
+导入 `hayaku` 只加载公开类型，不会打开数据源。调用 `open_session()` 后才启动运行时；退出 `with` 代码块时会关闭会话。
 
-<p align="center">
-  <table>
-    <tr>
-      <td align="center" width="33%">
-        <strong><code>⚡ 166ms</code></strong><br>
-        <sub>预热后 1913 万 K 线求和耗时（AMD 7950x）</sub>
-      </td>
-      <td align="center" width="33%">
-        <strong><code>🧩 10+</code></strong><br>
-        <sub>核心策略部件 · 自由组合构建资产库</sub>
-      </td>
-      <td align="center" width="33%">
-        <strong><code>💾 4 种</code></strong><br>
-        <sub>存储方式（HDF5 / MySQL / ClickHouse / SQLite）</sub>
-      </td>
-    </tr>
-  </table>
-</p>
+## 从源码快速开始
 
----
+需要 Bazelisk、CMake、支持 C++20 的编译器和 Python 3.10。Bazelisk 使用 [`.bazelversion`](.bazelversion) 指定的版本；C++ 依赖固定在 [`MODULE.bazel`](MODULE.bazel) 及其锁文件中。
 
-## 🔗 快速导航
+~~~bash
+git clone https://github.com/larrystd/hayaku-quant.git
+cd hayaku-quant
+python3.10 -m pip install -r requirements.txt
+./op.sh build
+./op.sh import-test
+~~~
 
-| 项目                   | 链接                                                                                                                                              |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🏠**项目仓库**   | [github.com/larrystd/hayaku-quant](https://github.com/larrystd/hayaku-quant)                                                                         |
-| 📚**文档源码**   | [`docs/`](docs/)                                                                                                                                     |
-| 🚀**入门示例**   | [当前快速入门](docs/zh/quickstart.rst) · [Notebook 教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True) |
-| 🧰**策略部件库** | [https://gitee.com/fasiondog/hikyuu_hub](https://gitee.com/fasiondog/hikyuu_hub)                                                                   |
+`./op.sh build` 会编译核心库与两个可选原生模块，再将六个库放入源码树中的 Python 包。下面的示例在仓库根目录运行，**不需要行情数据**：
 
----
+~~~bash
+python3.10 - <<'PY'
+from hayaku.operators import MA, PRICELIST
 
-## ⚡ 快速开始
+prices = PRICELIST([1, 2, 3, 4, 5])
+print(list(MA(prices, 3))[2:])  # [2.0, 3.0, 4.0]
+PY
+~~~
 
-### 环境要求
+### 使用本地行情数据
 
-- **Python 3.10+**（3.9 及以下自 2.8.0 起不再支持 pip 安装）
-- 支持 Windows / Linux / macOS（Linux 需 Ubuntu 24.04+）
-- 主要依赖自动安装：`numpy`、`pandas`、`matplotlib`、`PySide6`、`tables` 等
+先准备兼容的本地数据源和 `hayaku.ini` 配置文件。`open_session()` 默认读取 `~/.hayaku/hayaku.ini`，也可以显式传入路径。打开会话不会下载数据。
 
-### 第 1 步：安装
-
-```bash
-pip install hayaku
-```
-
-国内用户若下载缓慢，可换用镜像源：
-
-```bash
-pip install hayaku -i https://pypi.tuna.tsinghua.edu.cn/simple
-```
-
-### 第 2 步：准备本地行情数据
-
-使用可选的 ingest 组件准备兼容的本地数据源和 `hayaku.ini`。打开 core
-Session 不会下载数据。当前包的使用边界见[安装说明](docs/zh/install.rst)与
-[快速入门](docs/zh/quickstart.rst)。
-
-### 第 3 步：打开显式研究会话
-
-```python
+~~~python
 from hayaku import Query, open_session
 from hayaku.execution import AccountConfig
 
-account = AccountConfig(initial_cash=300000, name="research")
+account = AccountConfig(name="research", initial_cash=100_000)
 with open_session(filename="/path/to/hayaku.ini", account_config=account) as session:
     session.wait_ready()
-    bars = session.data.get_kdata("sz000001", Query(-150))
+    bars = session.data.get_kdata("sh600000", Query(-100))
     snapshot = session.execution.snapshot()
     print(len(bars), snapshot.funds)
-```
+~~~
 
-<p align="center">
-  <img src="docs/zh/_static/10000-overview.png" alt="回测结果示意" width="900">
-</p>
+可选的数据导入 API 位于 `hayaku.extensions.ingest`。运行策略时，先用组件组成 `StrategyDefinition`，把所需 K 线放入 `BacktestRequest`，再使用绑定当前会话执行账户的 `StrategyEngine`。参见[策略指南](docs/zh/strategy.rst)和[订单示例](examples/python/execution_engine.py)。
 
-> 📖 完整研究流程参见[快速入门](docs/zh/quickstart.rst)与[策略指南](docs/zh/strategy.rst)；可运行示例见[Notebook 教程](https://nbviewer.org/github/larrystd/hayaku-quant/blob/poc/examples/python/notebook/zh/000-Index.ipynb?flush_cache=True)。
+## 架构
 
-### ❓ 上手常见问题
+~~~text
+Python 脚本 / Notebook
+        |
+        v
+hayaku/                    会话、数据、指标、策略与执行 API
+        |
+        v
+hayaku_pywrap/             pybind11 绑定层
+        |
+        v
+hayaku_cpp/src/            C++ 数据、指标、策略与执行引擎
+        |
+        v
+本地数据驱动                HDF5、SQLite、TDX 及已配置的扩展
 
-| 现象                                              | 解决办法                                                                     |
-| :------------------------------------------------ | :--------------------------------------------------------------------------- |
-| Session 找不到行情数据                       | 检查指定的 `hayaku.ini` 及其中的本地数据路径。                            |
-| 导入可选的 ingest 或 realtime 模块失败          | 执行 `./op.sh build-optional`，或安装与当前版本匹配的可选包。             |
-| 缺少原生 HDF5 库                                | 重新安装匹配的 wheel，或重新构建 core 扩展。                              |
-| **从源码构建**时的构建工具                  | 本项目使用**xmake**，不是 cmake                                        |
+可选：hayaku.extensions.ingest   -> hayaku_ingest_native
+      hayaku.extensions.realtime -> hayaku_realtime_native
+~~~
 
-> 💡 更多问题请查 [`docs/`](docs/) 文档源码，或在
-> [GitHub 提交 issue](https://github.com/larrystd/hayaku-quant/issues)。
+| Python 入口 | 职责 |
+| --- | --- |
+| `hayaku.data` | 证券、K 线数据和查询 |
+| `hayaku.operators` | 指标与序列变换 |
+| `hayaku.strategy` | 策略组件定义与回测引擎 |
+| `hayaku.execution` | 订单、账户、持仓和成交记录 |
+| `hayaku.metrics` | 结果转换与分析辅助函数 |
+| `hayaku.application` | 会话、配置、命令行和交互工具 |
+| `hayaku.extensions` | 显式启用数据导入、实时行情服务、可视化和扩展协议 |
 
----
+核心 wheel 包含 `hayaku` 及其原生库；数据导入和实时行情服务分别打包为独立 wheel。默认 Bazel 配置包含 HDF5、SQLite、TDX 和 TA-Lib；MySQL 和 Windows 不在此构建配置内。构建目标、生成文件及依赖版本详见 [Bazel 指南](BAZEL.md)。
 
-## 🚀 为什么选择 Hayaku？
+## 构建、测试与打包
 
-> 强大的功能特性，助力您的量化交易研究
+~~~bash
+./op.sh test          # C++ 测试和原生包导入检查
+./op.sh python-test   # Python 回归测试
+./op.sh all           # 构建并运行上述两组测试
+~~~
 
-### 💹 组合灵活，分类构建策略资产库
+生成三个 Python 3.10 wheel：
 
-对系统化交易方法进行轻量化抽象，将市场环境、信号指示器、止损 / 止盈、资金管理、盈利目标、滑点、资金分配等封装为可独立替换的**策略部件**。你可以自由组合、高效回测，并在研究时专注于单一部件的效果与影响。完整部件清单见下文「交易系统化架构核心部件」。
+~~~bash
+python3.10 -m pip install wheel
+./op.sh wheel
+./op.sh wheel-ingest
+./op.sh wheel-realtime
+python3.10 bazel/check_wheels.py
+~~~
 
-<p align="center">
-  <img src="docs/zh/_static/10002-function-arc.png" alt="功能架构" width="800">
-</p>
+wheel 输出到 `dist/`。C++ 开发工具可运行 `./op.sh compdb`，从 Bazel 目标生成 `compile_commands.json`；运行 `./op.sh doctor` 可查看当前工具和路径。
 
-### 🚀 极致性能，轻松构建专属量化应用
+## 文档与项目状态
 
-项目由三大部分构成：**高性能 C++ 核心库**、**Python 接口层（hayaku）** 以及 **交互式探索工具**。
+- [快速入门](docs/zh/quickstart.rst)和[开发指南](docs/zh/developer.rst)
+- [Bazel 构建指南](BAZEL.md)和 [Python 示例](examples/python/)
+- [第三方许可证](THIRD_PARTY_LICENSES.md)和[项目许可证](LICENSE)
 
-- **AMD 7950x 实测**：A 股全市场 1913 万日 K 线，首次加载并计算 20 日均线求和仅需 **6 秒**，数据预热后同操作仅需 **166 毫秒**（[📊 性能实测详情](https://mp.weixin.qq.com/s?__biz=MzkwMzY1NzYxMA==&mid=2247483768&idx=1&sn=33e40aa9633857fa7b4c7ded51c95ae7)）。
-- **C++ 核心库**：内置完整策略框架，原生支持多线程与多核加速，为超高算力场景预留扩展空间；核心库可独立剥离使用，帮助开发者快速构建自定义量化工具。
-- **Python 接口层（hayaku）**：对 C++ 核心进行轻量化封装，集成 TA-Lib，支持与 numpy、pandas 无缝互转，轻松对接主流 Python 数据分析生态。
-- **hayaku.interactive**：交互式探索工具，内置 K 线、指标、信号可视化能力，适合快速策略验证与回测分析。
-
-### 🍳 语法简洁，策略探索更高效自由
-
-同时支持 **面向对象** 与 **命令行** 两种编程范式。尤其在策略探索阶段，命令行风格语法极简、表达直观，让你更快验证想法、迭代策略。
-
-### 🎁 模块化可扩展数据存储
-
-core 使用本地 **HDF5** 和 **SQLite** 数据源；**MySQL** 与 **ClickHouse** 属于可选适配器。打开研究 Session 前，需通过可选的 ingest 能力准备行情数据。
-
-### 💻 简洁的 API 设计
-
-几行代码即可搭建完整的策略回测系统，直观的 API 让策略开发更高效。
-
-### 🔓 开源透明，数据安全可控
-
-**Apache 2.0** 开源协议，代码透明审计无忧。核心数据、策略全量本地可控，C++ 核心库可独立剥离使用，自由打造专属客户端工具，无需担心第三方平台限制，但请遵循协议。
-
----
-
-## 🏗️ 交易系统化架构核心部件
-
-> 遵循系统化交易理念严谨架构，每个部件可独立替换、自由组合
-
-| 领域                   | 主接口                                        | 职责                               |
-| :--------------------- | :-------------------------------------------- | :--------------------------------- |
-| **数据**               | `open_session / DataEngine`                   | 显式数据生命周期与行情查询         |
-| **执行**               | `AccountConfig / ExecutionEngine`            | 订单、现金、持仓与成交历史         |
-|                        | `AccountSnapshot / AccountView`               | 不可变账户视图                     |
-| **策略**               | `StrategyDefinition / StrategyEngine`        | 组件组合与策略编排                 |
-|                        | `BacktestRequest / BacktestResult`            | 稳定的回测输入与结果值             |
-| **分析**               | `hayaku.analysis`                             | 显式结果转换与分析                 |
-| **扩展**               | `hayaku.spi / hayaku.advanced`               | 自定义协议与低层控制               |
-
----
-
-## 📂 浏览源码
-
-> 欢迎 **Star ⭐**，参与贡献
-
-| 仓库 | 链接 | 角色 |
-| :--- | :--- | :--- |
-| **Hayaku** | [github.com/larrystd/hayaku-quant](https://github.com/larrystd/hayaku-quant) | 当前重构仓库 |
-| **Hikyuu** | [github.com/fasiondog/hikyuu](https://github.com/fasiondog/hikyuu) | 上游源码与历史 |
-
----
-
-## 🌟 需要的帮助
-
-欢迎社区成员一起参与贡献：
-
-- 🐛 测试并反馈 Bug
-- 📝 编写文档
-- 🔧 开发新功能
-- 🎨 网站优化
-
-> 💡 **建议通过在 GitHub / Gitee / GitCode 开 issue 的方式贡献以上内容**
-
----
-
-## 📦 项目依赖说明
-
-C++ 核心模块直接依赖的开源项目、项目地址及 License 已汇总至 [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)（间接依赖未列出），在此向所有开源作者致敬 👍
-
-Python 侧依赖见 [requirements.txt](requirements.txt)。
-
----
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=larrystd%2Fhayaku-quant&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=larrystd/hayaku-quant&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=larrystd/hayaku-quant&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=larrystd/hayaku-quant&type=date&legend=top-left" />
- </picture>
-</a>
+Hayaku 是研究工具，不提供投资建议或内置证券交易服务。用户自行接入的外部交易通道及其使用由用户负责。

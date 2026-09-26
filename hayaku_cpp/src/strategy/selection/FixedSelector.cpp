@@ -28,7 +28,7 @@ bool FixedSelector::isMatchAF(const AFPtr& af) { return true; }
 StrategyWeightList FixedSelector::_getSelected(Datetime date) {
   auto weight = getParam<double>("weight");
   StrategyWeightList result;
-  for (auto& sys : m_real_sys_list) {
+  for (auto& sys : real_sys_list_) {
     result.emplace_back(sys, weight);
   }
   return result;

@@ -16,12 +16,12 @@ class PluginClient : public InterfaceT {
  public:
   PluginClient() = delete;
   PluginClient(const std::string &path, const std::string &filename) {
-    m_loader = std::make_unique<PluginLoader>(path);
+    loader_ = std::make_unique<PluginLoader>(path);
     HAYAKU_CHECK(
-        m_loader->load(filename, true, pluginInterfaceVersion<InterfaceT>()),
+        loader_->load(filename, true, pluginInterfaceVersion<InterfaceT>()),
         "load plugin failed! {}/{}", path, filename);
-    m_impl = m_loader->instance<InterfaceT>();
-    HAYAKU_CHECK(m_impl, "plugin interface mismatch! {}/{}", path, filename);
+    impl_ = loader_->instance<InterfaceT>();
+    HAYAKU_CHECK(impl_, "plugin interface mismatch! {}/{}", path, filename);
   }
   virtual ~PluginClient() = default;
 
@@ -29,28 +29,28 @@ class PluginClient : public InterfaceT {
   PluginClient &operator=(const PluginClient &) = delete;
 
   PluginClient(PluginClient &&rhs)
-      : m_impl(rhs.m_impl), m_loader(std::move(rhs.m_loader)) {
-    rhs.m_impl = nullptr;
+      : impl_(rhs.impl_), loader_(std::move(rhs.loader_)) {
+    rhs.impl_ = nullptr;
   }
 
   PluginClient &operator=(PluginClient &&rhs) {
     if (this != &rhs) {
-      m_loader = std::move(rhs.m_loader);
-      m_impl = rhs.m_impl;
-      rhs.m_impl = nullptr;
+      loader_ = std::move(rhs.loader_);
+      impl_ = rhs.impl_;
+      rhs.impl_ = nullptr;
     }
     return *this;
   }
 
-  std::string info() const noexcept override { return m_impl->info(); }
+  std::string info() const noexcept override { return impl_->info(); }
 
-  InterfaceT *getPlugin() const { return m_impl; }
-
- protected:
-  InterfaceT *m_impl{nullptr};
+  InterfaceT *getPlugin() const { return impl_; }
 
  protected:
-  std::unique_ptr<PluginLoader> m_loader;
+  InterfaceT *impl_{nullptr};
+
+ protected:
+  std::unique_ptr<PluginLoader> loader_;
 };
 
 }  // namespace hayaku

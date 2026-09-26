@@ -43,6 +43,7 @@ TEST_CASE("test_HayakuSession_open_close") {
   auto* dataRuntime = &getDataRuntime();
   auto options = makeCurrentOptions();
   auto session = HayakuSession::open(options);
+  session.waitReady();
 
   /** @arg An opened session exposes a ready DataEngine. */
   CHECK_UNARY(session.isOpen());

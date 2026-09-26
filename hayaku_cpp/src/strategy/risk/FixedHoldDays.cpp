@@ -27,8 +27,8 @@ void FixedHoldDays::_checkParam(const string& name) const {
 }
 
 price_t FixedHoldDays::getGoal(const Datetime& datetime, price_t price) {
-  Stock stk = m_kdata.getStock();
-  PositionRecord position = m_account->getPosition(datetime, stk);
+  Stock stk = kdata_.getStock();
+  PositionRecord position = account_->getPosition(datetime, stk);
   Datetime take_date = position.takeDatetime;
 
   KQuery query = KQueryByDate(Datetime(take_date.date()),

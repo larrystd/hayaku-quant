@@ -304,9 +304,9 @@ void IKurtosis::_calculate(const Indicator& data) {
     n = total;
   }
 
-  m_discard = data.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -530,29 +530,29 @@ void IMrr::_checkParam(const string& name) const {
 }
 
 void IMrr::_calculate(const Indicator& ind) {
-  m_discard = ind.discard();
+  discard_ = ind.discard();
   size_t total = ind.size();
-  HAYAKU_IF_RETURN(m_discard >= total, void());
+  HAYAKU_IF_RETURN(discard_ >= total, void());
 
   auto const* src = ind.data();
   auto* dst = this->data();
 
   size_t n = static_cast<size_t>(getParam<int>("n"));
-  if (n == 0 || n > total - m_discard) {
-    n = total - m_discard;
+  if (n == 0 || n > total - discard_) {
+    n = total - discard_;
   }
 
   if (n == 1) {
-    for (size_t i = m_discard; i < total; ++i) {
+    for (size_t i = discard_; i < total; ++i) {
       dst[i] = 0.0;
     }
     return;
   }
 
-  if (n == total - m_discard) {
-    value_t pre_min = src[m_discard];
+  if (n == total - discard_) {
+    value_t pre_min = src[discard_];
     value_t max_rr = 0.0;
-    for (size_t i = m_discard; i < total; i++) {
+    for (size_t i = discard_; i < total; i++) {
       if (src[i] < pre_min || pre_min == 0.) {
         pre_min = src[i];
       }
@@ -565,9 +565,9 @@ void IMrr::_calculate(const Indicator& ind) {
     return;
   }
 
-  value_t pre_min = src[m_discard];
+  value_t pre_min = src[discard_];
   value_t max_rr = 0.0;
-  for (size_t i = m_discard; i < m_discard + n; ++i) {
+  for (size_t i = discard_; i < discard_ + n; ++i) {
     if (src[i] < pre_min || pre_min == 0.) {
       pre_min = src[i];
     }
@@ -578,8 +578,8 @@ void IMrr::_calculate(const Indicator& ind) {
     dst[i] = max_rr * 100.0;
   }
 
-  if (m_discard + n < total) {
-    _increment_calculate(ind, m_discard + n);
+  if (discard_ + n < total) {
+    _increment_calculate(ind, discard_ + n);
   }
 }
 
@@ -686,9 +686,9 @@ void ISkewness::_calculate(const Indicator& data) {
     n = total;
   }
 
-  m_discard = data.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -894,15 +894,15 @@ void IStdev::_calculate(const Indicator& data) {
   // n == 0: the full accumulated standard deviation (the expand-all semantics;
   // every position outputs the accumulated std up to the current position)
   if (0 == n) {
-    m_discard = data.discard();
-    if (m_discard >= total) {
-      m_discard = total;
+    discard_ = data.discard();
+    if (discard_ >= total) {
+      discard_ = total;
       return;
     }
     size_t valid_count = 0;
     price_t mean = 0.0;
     price_t M2 = 0.0;
-    for (size_t i = m_discard; i < total; ++i) {
+    for (size_t i = discard_; i < total; ++i) {
       if (!std::isnan(src[i])) {
         valid_count++;
         if (valid_count == 1) {
@@ -928,9 +928,9 @@ void IStdev::_calculate(const Indicator& data) {
   // become negative or lose the low order precision due to the catastrophic
   // cancellation; in that case an O(k) single pass recalculation (k = the
   // window length n) is triggered to rebuild the exact state.
-  m_discard = data.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -997,7 +997,7 @@ void IStdev::_calculate(const Indicator& data) {
     }
     // Write no output when the window is not full or the valid values are not
     // enough (the buffer is already NaN)
-    if (i >= m_discard && valid_count > 1) {
+    if (i >= discard_ && valid_count > 1) {
       dst[i] = std::sqrt(std::max(0.0, M2 / (valid_count - 1)));
     }
   }
@@ -1148,9 +1148,9 @@ void IStdp::_checkParam(const string& name) const {
 
 void IStdp::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -1165,7 +1165,7 @@ void IStdp::_calculate(const Indicator& data) {
   vector<price_t> pow_buf(data.size());
   price_t ex = 0.0, ex2 = 0.0;
   size_t num = 0;
-  size_t start_pos = m_discard;
+  size_t start_pos = discard_;
   size_t first_end = start_pos + n >= total ? total : start_pos + n;
   price_t k = src[start_pos];
   for (size_t i = start_pos; i < first_end; i++) {
@@ -1288,9 +1288,9 @@ void IVar::_calculate(const Indicator& data) {
     n = total;
   }
 
-  m_discard = data.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -1431,9 +1431,9 @@ void IVarp::_calculate(const Indicator& data) {
     n = total;
   }
 
-  m_discard = data.discard() + n - 1;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + n - 1;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -1633,22 +1633,22 @@ static void normalize(IndicatorImp::value_t* dst, Indicator::value_t const* src,
 
 void IZScore::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard + 1 >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ + 1 >= total) {
+    discard_ = total;
     return;
   }
 
   double nsigma = getParam<double>("nsigma");
   bool outExtreme = getParam<bool>("out-extreme");
   bool recursive = getParam<bool>("recursive");
-  auto const* src = data.data() + m_discard;
-  auto* dst = this->data() + m_discard;
-  normalize(dst, src, total - m_discard, outExtreme, nsigma, recursive);
+  auto const* src = data.data() + discard_;
+  auto* dst = this->data() + discard_;
+  normalize(dst, src, total - discard_, outExtreme, nsigma, recursive);
 
-  for (size_t i = m_discard; i < total; i++) {
+  for (size_t i = discard_; i < total; i++) {
     if (!std::isnan(dst[i])) {
-      m_discard = i;
+      discard_ = i;
       break;
     }
   }

@@ -31,7 +31,7 @@ namespace {
 class PythonLikeIndicatorImp : public IndicatorImp {
  public:
   PythonLikeIndicatorImp() : IndicatorImp("PYTHON_LIKE") {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   IndicatorImpPtr _clone() override {
@@ -45,7 +45,7 @@ std::atomic<size_t> g_counting_indicator_clones{0};
 class CountingContextIndicatorImp : public IndicatorImp {
  public:
   CountingContextIndicatorImp() : IndicatorImp("COUNTING_CONTEXT") {
-    m_need_context = true;
+    need_context_ = true;
   }
 
   void _calculate(const Indicator&) override {
@@ -53,7 +53,7 @@ class CountingContextIndicatorImp : public IndicatorImp {
     HAYAKU_IF_RETURN(kdata.empty(), void());
     ++g_counting_indicator_calculations;
     _readyBuffer(kdata.size(), 1);
-    m_discard = 0;
+    discard_ = 0;
     auto* dst = data();
     for (size_t i = 0; i < kdata.size(); ++i) {
       dst[i] = static_cast<price_t>(i);

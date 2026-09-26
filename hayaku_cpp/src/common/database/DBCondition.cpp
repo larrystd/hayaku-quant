@@ -14,10 +14,10 @@ DBCondition& DBCondition::operator&(const DBCondition& other) {
     return *this;
   }
 
-  if (m_condition.empty()) {
-    m_condition = other.m_condition;
+  if (condition_.empty()) {
+    condition_ = other.condition_;
   } else {
-    m_condition = fmt::format("({} and {})", m_condition, other.m_condition);
+    condition_ = fmt::format("({} and {})", condition_, other.condition_);
   }
 
   return *this;
@@ -28,10 +28,10 @@ DBCondition& DBCondition::operator|(const DBCondition& other) {
     return *this;
   }
 
-  if (m_condition.empty()) {
-    m_condition = other.m_condition;
+  if (condition_.empty()) {
+    condition_ = other.condition_;
   } else {
-    m_condition = fmt::format("({} or {})", m_condition, other.m_condition);
+    condition_ = fmt::format("({} or {})", condition_, other.condition_);
   }
 
   return *this;

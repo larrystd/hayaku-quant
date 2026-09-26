@@ -6,6 +6,7 @@
  */
 
 #include "KDataPrivatedBufferImp.h"
+#include "KData.h"
 
 #include <functional>
 
@@ -15,54 +16,54 @@ KDataPrivatedBufferImp::KDataPrivatedBufferImp() : KDataImp() {}
 
 KDataPrivatedBufferImp::KDataPrivatedBufferImp(const Stock& stock,
                                                const KQuery& query)
-    : KDataImp(stock, query), m_buffer(m_stock.getKRecordList(query)) {
+    : KDataImp(stock, query), buffer_(stock_.getKRecordList(query)) {
   _recover();
 }
 
 KDataPrivatedBufferImp::KDataPrivatedBufferImp(const Stock& stock,
                                                const KQuery& query,
                                                const KRecordList& krecords)
-    : KDataImp(stock, query), m_buffer(krecords) {}
+    : KDataImp(stock, query), buffer_(krecords) {}
 
 KDataPrivatedBufferImp::~KDataPrivatedBufferImp() {}
 
 DatetimeList KDataPrivatedBufferImp::getDatetimeList() const {
   DatetimeList result;
-  result.reserve(m_buffer.size());
-  for (const auto& record : m_buffer) {
+  result.reserve(buffer_.size());
+  for (const auto& record : buffer_) {
     result.emplace_back(record.datetime);
   }
   return result;
 }
 
 size_t KDataPrivatedBufferImp::startPos() const {
-  if (!m_have_pos_in_stock) {
+  if (!have_pos_in_stock_) {
     _getPosInStock();
   }
-  return m_start;
+  return start_;
 }
 
 size_t KDataPrivatedBufferImp::endPos() const {
-  if (!m_have_pos_in_stock) {
+  if (!have_pos_in_stock_) {
     _getPosInStock();
   }
-  return m_end;
+  return end_;
 }
 
 size_t KDataPrivatedBufferImp::lastPos() const {
-  if (!m_have_pos_in_stock) {
+  if (!have_pos_in_stock_) {
     _getPosInStock();
   }
-  return m_end == 0 ? 0 : m_end - 1;
+  return end_ == 0 ? 0 : end_ - 1;
 }
 
 void KDataPrivatedBufferImp::_getPosInStock() const {
-  bool sucess = m_stock.getIndexRange(m_query, m_start, m_end);
+  bool sucess = stock_.getIndexRange(query_, start_, end_);
   if (!sucess) {
-    m_start = 0;
-    m_end = 0;
+    start_ = 0;
+    end_ = 0;
   }
-  m_have_pos_in_stock = true;
+  have_pos_in_stock_ = true;
 }
 
 size_t KDataPrivatedBufferImp::getPos(const Datetime& datetime) const noexcept {
@@ -70,29 +71,29 @@ size_t KDataPrivatedBufferImp::getPos(const Datetime& datetime) const noexcept {
   KRecord comp_record;
   comp_record.datetime = datetime;
   iter = lower_bound(
-      m_buffer.cbegin(), m_buffer.cend(), comp_record,
+      buffer_.cbegin(), buffer_.cend(), comp_record,
       std::bind(std::less<Datetime>(),
                 std::bind(&KRecord::datetime, std::placeholders::_1),
                 std::bind(&KRecord::datetime, std::placeholders::_2)));
-  if (iter == m_buffer.cend() || iter->datetime != datetime) {
+  if (iter == buffer_.cend() || iter->datetime != datetime) {
     return Null<size_t>();
   }
 
-  return (iter - m_buffer.cbegin());
+  return (iter - buffer_.cbegin());
 }
 
 void KDataPrivatedBufferImp::_recover() {
   // Return directly when the adjustment is not supported
-  if (m_buffer.empty() || m_query.recoverType() == KQuery::NO_RECOVER) return;
+  if (buffer_.empty() || query_.recoverType() == KQuery::NO_RECOVER) return;
 
   // The adjustment handling for the daily line and above
-  int64_t secs = KQuery::getKTypeInSeconds(m_query.kType());
+  int64_t secs = KQuery::getKTypeInSeconds(query_.kType());
   if (secs > KQuery::getKTypeInSeconds(KQuery::DAY)) {
     _recoverForUpDay();
     return;
   }
 
-  switch (m_query.recoverType()) {
+  switch (query_.recoverType()) {
     case KQuery::NO_RECOVER:
       // do nothing
       break;
@@ -120,33 +121,33 @@ void KDataPrivatedBufferImp::_recover() {
 }
 
 void KDataPrivatedBufferImp::_recoverForUpDay() {
-  HAYAKU_IF_RETURN(m_buffer.empty(), void());
+  HAYAKU_IF_RETURN(buffer_.empty(), void());
   std::function<Datetime(const Datetime&)> startOfPhase;
-  if (m_query.kType() == KQuery::WEEK) {
+  if (query_.kType() == KQuery::WEEK) {
     startOfPhase = &Datetime::startOfWeek;
-  } else if (m_query.kType() == KQuery::MONTH) {
+  } else if (query_.kType() == KQuery::MONTH) {
     startOfPhase = &Datetime::startOfMonth;
-  } else if (m_query.kType() == KQuery::QUARTER) {
+  } else if (query_.kType() == KQuery::QUARTER) {
     startOfPhase = &Datetime::startOfQuarter;
-  } else if (m_query.kType() == KQuery::HALFYEAR) {
+  } else if (query_.kType() == KQuery::HALFYEAR) {
     startOfPhase = &Datetime::startOfHalfyear;
-  } else if (m_query.kType() == KQuery::YEAR) {
+  } else if (query_.kType() == KQuery::YEAR) {
     startOfPhase = &Datetime::startOfYear;
   }
 
-  Datetime startDate = startOfPhase(m_buffer.front().datetime);
-  Datetime endDate = m_buffer.back().datetime.nextDay();
+  Datetime startDate = startOfPhase(buffer_.front().datetime);
+  Datetime endDate = buffer_.back().datetime.nextDay();
   KQuery query =
-      KQueryByDate(startDate, endDate, KQuery::DAY, m_query.recoverType());
-  KData day_list = m_stock.getKData(query);
+      KQueryByDate(startDate, endDate, KQuery::DAY, query_.recoverType());
+  KData day_list = stock_.getKData(query);
   if (day_list.empty()) return;
 
   size_t day_pos = 0;
   size_t day_total = day_list.size();
-  size_t length = m_buffer.size();
+  size_t length = buffer_.size();
   for (size_t i = 0; i < length; i++) {
-    Datetime phase_start_date = startOfPhase(m_buffer[i].datetime);
-    Datetime phase_end_date = m_buffer[i].datetime;
+    Datetime phase_start_date = startOfPhase(buffer_[i].datetime);
+    Datetime phase_end_date = buffer_[i].datetime;
     if (day_pos >= day_total) break;
 
     while (day_list[day_pos].datetime < phase_start_date) {
@@ -167,12 +168,12 @@ void KDataPrivatedBufferImp::_recoverForUpDay() {
       day_pos++;
     }
     if (pre_day_pos != day_pos) {
-      m_buffer[i].openPrice = record.openPrice;
-      m_buffer[i].highPrice = record.highPrice;
-      m_buffer[i].lowPrice = record.lowPrice;
-      m_buffer[i].closePrice = record.closePrice;
-      m_buffer[i].transCount = record.transCount;
-      m_buffer[i].transAmount = record.transAmount;
+      buffer_[i].openPrice = record.openPrice;
+      buffer_[i].highPrice = record.highPrice;
+      buffer_[i].lowPrice = record.lowPrice;
+      buffer_[i].closePrice = record.closePrice;
+      buffer_[i].transCount = record.transCount;
+      buffer_[i].transAmount = record.transAmount;
     }
   }
 
@@ -194,12 +195,12 @@ void KDataPrivatedBufferImp::_recoverForUpDay() {
  * calculation again.
  *****************************************************************************/
 void KDataPrivatedBufferImp::_recoverForward() {
-  size_t total = m_buffer.size();
+  size_t total = buffer_.size();
   HAYAKU_IF_RETURN(total == 0, void());
 
-  Datetime start_date(m_buffer.front().datetime.startOfDay());
-  Datetime end_date(m_buffer.back().datetime + m_query.kTypeInSeconds());
-  StockWeightList weightList = m_stock.getWeight(start_date, end_date);
+  Datetime start_date(buffer_.front().datetime.startOfDay());
+  Datetime end_date(buffer_.back().datetime + query_.kTypeInSeconds());
+  StockWeightList weightList = stock_.getWeight(start_date, end_date);
   StockWeightList::const_iterator weightIter = weightList.begin();
 
   size_t pre_pos = 0;
@@ -213,7 +214,7 @@ void KDataPrivatedBufferImp::_recoverForward() {
       continue;
 
     size_t i = pre_pos;
-    while (i < total && m_buffer[i].datetime < weightIter->datetime()) {
+    while (i < total && buffer_[i].datetime < weightIter->datetime()) {
       i++;
     }
     pre_pos = i;  // The ex-rights date
@@ -236,12 +237,12 @@ void KDataPrivatedBufferImp::_recoverForward() {
     price_t volume_k = 1.0 / denominator;
 
     for (i = 0; i < pre_pos; ++i) {
-      m_buffer[i].openPrice = (m_buffer[i].openPrice + temp) / denominator;
-      m_buffer[i].highPrice = (m_buffer[i].highPrice + temp) / denominator;
-      m_buffer[i].lowPrice = (m_buffer[i].lowPrice + temp) / denominator;
-      m_buffer[i].closePrice = (m_buffer[i].closePrice + temp) / denominator;
-      m_buffer[i].transCount = m_buffer[i].transCount * volume_k;
-      m_buffer[i].transAmount = m_buffer[i].closePrice * m_buffer[i].transCount;
+      buffer_[i].openPrice = (buffer_[i].openPrice + temp) / denominator;
+      buffer_[i].highPrice = (buffer_[i].highPrice + temp) / denominator;
+      buffer_[i].lowPrice = (buffer_[i].lowPrice + temp) / denominator;
+      buffer_[i].closePrice = (buffer_[i].closePrice + temp) / denominator;
+      buffer_[i].transCount = buffer_[i].transCount * volume_k;
+      buffer_[i].transAmount = buffer_[i].closePrice * buffer_[i].transCount;
     }
   }
 }
@@ -261,12 +262,12 @@ void KDataPrivatedBufferImp::_recoverForward() {
  *calculation again.
  *****************************************************************************/
 void KDataPrivatedBufferImp::_recoverBackward() {
-  size_t total = m_buffer.size();
+  size_t total = buffer_.size();
   HAYAKU_IF_RETURN(total == 0, void());
 
-  Datetime start_date(m_buffer.front().datetime.startOfDay());
-  Datetime end_date(m_buffer.back().datetime + m_query.kTypeInSeconds());
-  StockWeightList weightList = m_stock.getWeight(start_date, end_date);
+  Datetime start_date(buffer_.front().datetime.startOfDay());
+  Datetime end_date(buffer_.back().datetime + query_.kTypeInSeconds());
+  StockWeightList weightList = stock_.getWeight(start_date, end_date);
   StockWeightList::const_reverse_iterator weightIter = weightList.rbegin();
 
   size_t pre_pos = total - 1;
@@ -280,13 +281,13 @@ void KDataPrivatedBufferImp::_recoverBackward() {
       continue;
 
     size_t i = pre_pos;
-    while (i > 0 && m_buffer[i].datetime > weightIter->datetime()) {
+    while (i > 0 && buffer_[i].datetime > weightIter->datetime()) {
       i--;
     }
 
     // For the minute data the first time point needs to be skipped
     if (i != pre_pos &&
-        m_buffer[i].datetime != m_buffer[i].datetime.startOfDay()) {
+        buffer_[i].datetime != buffer_[i].datetime.startOfDay()) {
       i++;
     }
 
@@ -312,12 +313,12 @@ void KDataPrivatedBufferImp::_recoverBackward() {
         1.0 / denominator;  // The volume adjustment multiplier
 
     for (i = pre_pos; i < total; ++i) {
-      m_buffer[i].openPrice = m_buffer[i].openPrice * denominator + temp;
-      m_buffer[i].highPrice = m_buffer[i].highPrice * denominator + temp;
-      m_buffer[i].lowPrice = m_buffer[i].lowPrice * denominator + temp;
-      m_buffer[i].closePrice = m_buffer[i].closePrice * denominator + temp;
-      m_buffer[i].transCount = m_buffer[i].transCount * volume_multiplier;
-      m_buffer[i].transAmount = m_buffer[i].closePrice * m_buffer[i].transCount;
+      buffer_[i].openPrice = buffer_[i].openPrice * denominator + temp;
+      buffer_[i].highPrice = buffer_[i].highPrice * denominator + temp;
+      buffer_[i].lowPrice = buffer_[i].lowPrice * denominator + temp;
+      buffer_[i].closePrice = buffer_[i].closePrice * denominator + temp;
+      buffer_[i].transCount = buffer_[i].transCount * volume_multiplier;
+      buffer_[i].transAmount = buffer_[i].closePrice * buffer_[i].transCount;
     }
   }
 }
@@ -339,18 +340,18 @@ void KDataPrivatedBufferImp::_recoverBackward() {
  *calculation again.
  *****************************************************************************/
 void KDataPrivatedBufferImp::_recoverEqualForward() {
-  size_t total = m_buffer.size();
+  size_t total = buffer_.size();
   HAYAKU_IF_RETURN(total == 0, void());
 
-  Datetime start_date(m_buffer.front().datetime.startOfDay());
-  Datetime end_date(m_buffer.back().datetime + m_query.kTypeInSeconds());
-  StockWeightList weightList = m_stock.getWeight(start_date, end_date);
+  Datetime start_date(buffer_.front().datetime.startOfDay());
+  Datetime end_date(buffer_.back().datetime + query_.kTypeInSeconds());
+  StockWeightList weightList = stock_.getWeight(start_date, end_date);
   if (weightList.empty()) {
     return;
   }
 
   KRecordList kdata =
-      m_buffer;  // Prevent two ex-rights/ex-dividend records on the same day
+      buffer_;  // Prevent two ex-rights/ex-dividend records on the same day
   StockWeightList::const_iterator weightIter = weightList.begin();
   size_t pre_pos = 0;
   for (; weightIter != weightList.end(); ++weightIter) {
@@ -363,7 +364,7 @@ void KDataPrivatedBufferImp::_recoverEqualForward() {
       continue;
 
     size_t i = pre_pos;
-    while (i < total && m_buffer[i].datetime < weightIter->datetime()) {
+    while (i < total && buffer_[i].datetime < weightIter->datetime()) {
       i++;
     }
     pre_pos = i;  // The ex-rights date
@@ -399,12 +400,12 @@ void KDataPrivatedBufferImp::_recoverEqualForward() {
                                            // reciprocal of the change)
 
     for (i = 0; i < pre_pos; ++i) {
-      m_buffer[i].openPrice = k * m_buffer[i].openPrice;
-      m_buffer[i].highPrice = k * m_buffer[i].highPrice;
-      m_buffer[i].lowPrice = k * m_buffer[i].lowPrice;
-      m_buffer[i].closePrice = k * m_buffer[i].closePrice;
-      m_buffer[i].transCount = m_buffer[i].transCount * volume_k;
-      m_buffer[i].transAmount = m_buffer[i].closePrice * m_buffer[i].transCount;
+      buffer_[i].openPrice = k * buffer_[i].openPrice;
+      buffer_[i].highPrice = k * buffer_[i].highPrice;
+      buffer_[i].lowPrice = k * buffer_[i].lowPrice;
+      buffer_[i].closePrice = k * buffer_[i].closePrice;
+      buffer_[i].transCount = buffer_[i].transCount * volume_k;
+      buffer_[i].transAmount = buffer_[i].closePrice * buffer_[i].transCount;
     }
   }
 }
@@ -426,24 +427,24 @@ void KDataPrivatedBufferImp::_recoverEqualForward() {
  *calculation again.
  *****************************************************************************/
 void KDataPrivatedBufferImp::_recoverEqualBackward() {
-  size_t total = m_buffer.size();
+  size_t total = buffer_.size();
   HAYAKU_IF_RETURN(total == 0, void());
 
-  Datetime start_date(m_buffer.front().datetime.startOfDay());
-  Datetime end_date(m_buffer.back().datetime + m_query.kTypeInSeconds());
-  StockWeightList weightList = m_stock.getWeight(start_date, end_date);
+  Datetime start_date(buffer_.front().datetime.startOfDay());
+  Datetime end_date(buffer_.back().datetime + query_.kTypeInSeconds());
+  StockWeightList weightList = stock_.getWeight(start_date, end_date);
   StockWeightList::const_reverse_iterator weightIter = weightList.rbegin();
 
   size_t pre_pos = total - 1;
   for (; weightIter != weightList.rend(); ++weightIter) {
     size_t i = pre_pos;
-    while (i > 0 && m_buffer[i].datetime > weightIter->datetime()) {
+    while (i > 0 && buffer_[i].datetime > weightIter->datetime()) {
       i--;
     }
 
     // For the minute data the first time point needs to be skipped
     if (i != pre_pos &&
-        m_buffer[i].datetime != m_buffer[i].datetime.startOfDay()) {
+        buffer_[i].datetime != buffer_[i].datetime.startOfDay()) {
       i++;
     }
 
@@ -455,7 +456,7 @@ void KDataPrivatedBufferImp::_recoverEqualBackward() {
       continue;
     }
 
-    price_t closePrice = m_buffer[pre_pos - 1].closePrice;
+    price_t closePrice = buffer_[pre_pos - 1].closePrice;
 
     price_t denominator = 0.0, temp = closePrice;
     if (weightIter->suogu() != 0.0) {
@@ -479,12 +480,12 @@ void KDataPrivatedBufferImp::_recoverEqualBackward() {
     price_t volume_k = denominator;
 
     for (i = pre_pos; i < total; ++i) {
-      m_buffer[i].openPrice = k * m_buffer[i].openPrice;
-      m_buffer[i].highPrice = k * m_buffer[i].highPrice;
-      m_buffer[i].lowPrice = k * m_buffer[i].lowPrice;
-      m_buffer[i].closePrice = k * m_buffer[i].closePrice;
-      m_buffer[i].transCount = m_buffer[i].transCount * volume_k;
-      m_buffer[i].transAmount = m_buffer[i].closePrice * m_buffer[i].transCount;
+      buffer_[i].openPrice = k * buffer_[i].openPrice;
+      buffer_[i].highPrice = k * buffer_[i].highPrice;
+      buffer_[i].lowPrice = k * buffer_[i].lowPrice;
+      buffer_[i].closePrice = k * buffer_[i].closePrice;
+      buffer_[i].transCount = buffer_[i].transCount * volume_k;
+      buffer_[i].transAmount = buffer_[i].closePrice * buffer_[i].transCount;
     }
   }
 }
@@ -494,12 +495,12 @@ KDataImpPtr KDataPrivatedBufferImp::getOtherFromSelf(
   KDataImpPtr ret;
   // The other restrictions are guarded by the upper layer
   if (query.queryType() == KQuery::INDEX &&
-      m_query.queryType() == KQuery::INDEX) {
+      query_.queryType() == KQuery::INDEX) {
     ret = _getOtherFromSelfByIndex(query);
   } else if (query.queryType() == KQuery::DATE) {
     ret = _getOtherFromSelfByDate(query);
   } else {
-    ret = std::make_shared<KDataPrivatedBufferImp>(m_stock, query);
+    ret = std::make_shared<KDataPrivatedBufferImp>(stock_, query);
   }
   return ret;
 }
@@ -507,11 +508,11 @@ KDataImpPtr KDataPrivatedBufferImp::getOtherFromSelf(
 KDataImpPtr KDataPrivatedBufferImp::_getOtherFromSelfByIndex(
     const KQuery& query) const {
   size_t new_start_pos = 0, new_end_pos = 0;
-  bool success = m_stock.getIndexRange(query, new_start_pos, new_end_pos);
+  bool success = stock_.getIndexRange(query, new_start_pos, new_end_pos);
   if (!success || new_end_pos == 0) {
     auto* p = new KDataPrivatedBufferImp;
-    p->m_stock = m_stock;
-    p->m_query = query;
+    p->stock_ = stock_;
+    p->query_ = query;
     if (query.recoverType() != KQuery::NO_RECOVER) {
       p->_recover();
     }
@@ -523,18 +524,18 @@ KDataImpPtr KDataPrivatedBufferImp::_getOtherFromSelfByIndex(
   size_t old_start_pos = startPos();
   size_t old_last_pos = lastPos();
   if (new_start_pos < old_start_pos || new_start_pos > old_last_pos) {
-    return std::make_shared<KDataPrivatedBufferImp>(m_stock, query);
+    return std::make_shared<KDataPrivatedBufferImp>(stock_, query);
   }
 
   if (new_last_pos <= old_last_pos) {
     auto* p = new KDataPrivatedBufferImp;
-    p->m_stock = m_stock;
-    p->m_query = query;
+    p->stock_ = stock_;
+    p->query_ = query;
     size_t new_len = new_last_pos + 1 - new_start_pos;
-    p->m_buffer.resize(new_len);
-    std::copy(m_buffer.begin() + new_start_pos - old_start_pos,
-              m_buffer.begin() + new_last_pos + 1 - old_start_pos,
-              p->m_buffer.begin());
+    p->buffer_.resize(new_len);
+    std::copy(buffer_.begin() + new_start_pos - old_start_pos,
+              buffer_.begin() + new_last_pos + 1 - old_start_pos,
+              p->buffer_.begin());
     if (query.recoverType() != KQuery::NO_RECOVER) {
       p->_recover();
     }
@@ -542,17 +543,17 @@ KDataImpPtr KDataPrivatedBufferImp::_getOtherFromSelfByIndex(
   }
 
   auto* p = new KDataPrivatedBufferImp;
-  p->m_stock = m_stock;
-  p->m_query = query;
+  p->stock_ = stock_;
+  p->query_ = query;
   size_t new_len = new_last_pos + 1 - new_start_pos;
-  p->m_buffer.resize(new_len);
-  std::copy(m_buffer.begin() + new_start_pos - old_start_pos, m_buffer.end(),
-            p->m_buffer.begin());
-  KRecordList klist = m_stock.getKRecordList(
+  p->buffer_.resize(new_len);
+  std::copy(buffer_.begin() + new_start_pos - old_start_pos, buffer_.end(),
+            p->buffer_.begin());
+  KRecordList klist = stock_.getKRecordList(
       KQuery(old_last_pos + 1, new_end_pos, query.kType()));
   size_t remain_len = new_last_pos - old_last_pos;
   HAYAKU_ASSERT(klist.size() == remain_len);
-  std::copy(klist.begin(), klist.end(), p->m_buffer.begin() + remain_len);
+  std::copy(klist.begin(), klist.end(), p->buffer_.begin() + remain_len);
   if (query.recoverType() != KQuery::NO_RECOVER) {
     p->_recover();
   }
@@ -563,40 +564,40 @@ KDataImpPtr KDataPrivatedBufferImp::_getOtherFromSelfByDate(
     const KQuery& query) const {
   Datetime new_start_date = query.startDatetime();
   Datetime new_end_date = query.endDatetime();
-  const auto& old_start_date = m_buffer.front().datetime;
-  const auto& old_last_date = m_buffer.back().datetime;
+  const auto& old_start_date = buffer_.front().datetime;
+  const auto& old_last_date = buffer_.back().datetime;
   if (new_start_date >= new_end_date || new_start_date < old_start_date ||
       new_start_date > old_last_date ||
       (new_end_date != Null<Datetime>() && new_end_date <= old_start_date)) {
-    return std::make_shared<KDataPrivatedBufferImp>(m_stock, query);
+    return std::make_shared<KDataPrivatedBufferImp>(stock_, query);
   }
 
-  auto iter = std::lower_bound(m_buffer.begin(), m_buffer.end(),
+  auto iter = std::lower_bound(buffer_.begin(), buffer_.end(),
                                KRecord{new_start_date},
                                [](const KRecord& a, const KRecord& b) {
                                  return a.datetime < b.datetime;
                                });
-  if (iter == m_buffer.end()) {
-    return std::make_shared<KDataPrivatedBufferImp>(m_stock, query);
+  if (iter == buffer_.end()) {
+    return std::make_shared<KDataPrivatedBufferImp>(stock_, query);
   }
-  size_t new_start_pos_in_old = std::distance(m_buffer.begin(), iter);
+  size_t new_start_pos_in_old = std::distance(buffer_.begin(), iter);
 
-  size_t new_end_pos_in_old = m_buffer.size();
+  size_t new_end_pos_in_old = buffer_.size();
   if (new_end_date != Null<Datetime>()) {
-    iter = std::lower_bound(m_buffer.begin(), m_buffer.end(),
+    iter = std::lower_bound(buffer_.begin(), buffer_.end(),
                             KRecord{new_end_date},
                             [](const KRecord& a, const KRecord& b) {
                               return a.datetime < b.datetime;
                             });
-    if (iter != m_buffer.end()) {
-      new_end_pos_in_old = std::distance(m_buffer.begin(), iter);
+    if (iter != buffer_.end()) {
+      new_end_pos_in_old = std::distance(buffer_.begin(), iter);
       auto* p = new KDataPrivatedBufferImp;
-      p->m_stock = m_stock;
-      p->m_query = query;
+      p->stock_ = stock_;
+      p->query_ = query;
       size_t copy_len = new_end_pos_in_old - new_start_pos_in_old;
-      p->m_buffer.resize(copy_len);
-      std::copy(m_buffer.begin() + new_start_pos_in_old,
-                m_buffer.begin() + new_end_pos_in_old, p->m_buffer.begin());
+      p->buffer_.resize(copy_len);
+      std::copy(buffer_.begin() + new_start_pos_in_old,
+                buffer_.begin() + new_end_pos_in_old, p->buffer_.begin());
       if (query.recoverType() != KQuery::NO_RECOVER) {
         p->_recover();
       }
@@ -604,19 +605,19 @@ KDataImpPtr KDataPrivatedBufferImp::_getOtherFromSelfByDate(
     }
   }
 
-  KRecordList klist = m_stock.getKRecordList(KQueryByDate(
+  KRecordList klist = stock_.getKRecordList(KQueryByDate(
       old_last_date + Seconds(KQuery::getKTypeInSeconds(query.kType())),
       new_end_date, query.kType()));
   auto* p = new KDataPrivatedBufferImp;
-  p->m_stock = m_stock;
-  p->m_query = query;
+  p->stock_ = stock_;
+  p->query_ = query;
   size_t copy_len = new_end_pos_in_old - new_start_pos_in_old;
   size_t new_len = copy_len + klist.size();
-  p->m_buffer.resize(new_len);
-  std::copy(m_buffer.begin() + new_start_pos_in_old,
-            m_buffer.begin() + new_end_pos_in_old, p->m_buffer.begin());
+  p->buffer_.resize(new_len);
+  std::copy(buffer_.begin() + new_start_pos_in_old,
+            buffer_.begin() + new_end_pos_in_old, p->buffer_.begin());
   std::copy(klist.begin(), klist.end(),
-            p->m_buffer.begin() + m_buffer.size() - new_start_pos_in_old);
+            p->buffer_.begin() + buffer_.size() - new_start_pos_in_old);
   if (query.recoverType() != KQuery::NO_RECOVER) {
     p->_recover();
   }

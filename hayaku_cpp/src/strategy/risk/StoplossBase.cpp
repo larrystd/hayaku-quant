@@ -23,9 +23,9 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const StoplossPtr& sl) {
   return os;
 }
 
-StoplossBase::StoplossBase() : m_name("StoplossBase") {}
+StoplossBase::StoplossBase() : name_("StoplossBase") {}
 
-StoplossBase::StoplossBase(const string& name) : m_name(name) {}
+StoplossBase::StoplossBase(const string& name) : name_(name) {}
 
 StoplossBase::~StoplossBase() {}
 
@@ -33,8 +33,8 @@ void StoplossBase::baseCheckParam(const string& name) const {}
 void StoplossBase::paramChanged() {}
 
 void StoplossBase::reset() {
-  m_kdata = Null<KData>();
-  m_account.reset();
+  kdata_ = Null<KData>();
+  account_.reset();
   _reset();
 }
 
@@ -52,17 +52,17 @@ StoplossPtr StoplossBase::clone() {
     return shared_from_this();
   }
 
-  p->m_is_python_object = m_is_python_object;
-  p->m_name = m_name;
-  p->m_params = m_params;
+  p->is_python_object_ = is_python_object_;
+  p->name_ = name_;
+  p->params_ = params_;
   // The account is injected by StrategyRuntime for each run.
-  p->m_kdata = m_kdata;
+  p->kdata_ = kdata_;
   return p;
 }
 
 void StoplossBase::setTO(const KData& kdata) {
-  HAYAKU_IF_RETURN(m_kdata == kdata, void());
-  m_kdata = kdata;
+  HAYAKU_IF_RETURN(kdata_ == kdata, void());
+  kdata_ = kdata;
   if (!kdata.empty()) {
     _calculate();
   }

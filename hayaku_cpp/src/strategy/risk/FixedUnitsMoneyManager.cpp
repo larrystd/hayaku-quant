@@ -32,10 +32,10 @@ double FixedUnitsMoneyManager ::_getBuyNumber(const Datetime& datetime,
                                               price_t risk,
                                               OrderOrigin origin) {
   int n = getParam<int>("n");
-  m_account->updateWithWeight(datetime);
-  price_t fixed_risk = (m_account->currentCash() > m_account->initCash())
-                           ? m_account->currentCash() / n
-                           : m_account->initCash() / n;
+  account_->updateWithWeight(datetime);
+  price_t fixed_risk = (account_->currentCash() > account_->initCash())
+                           ? account_->currentCash() / n
+                           : account_->initCash() / n;
 
   return fixed_risk / risk;
 }

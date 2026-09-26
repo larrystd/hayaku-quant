@@ -12,7 +12,7 @@
 namespace hayaku {
 
 KDataImp::KDataImp(const Stock& stock, const KQuery& query)
-    : m_query(query), m_stock(stock) {}
+    : query_(query), stock_(stock) {}
 
 KDataImp::~KDataImp() {}
 

@@ -26,13 +26,13 @@ class MultiFactorSelector2 : public SelectorBase {
 
   void setFactorSet(const FactorSet& factorset) {
     HAYAKU_ASSERT(!factorset.empty());
-    m_factorset = factorset;
-    m_calculated = false;
+    factorset_ = factorset;
+    calculated_ = false;
   }
 
  private:
-  FactorSet m_factorset;
-  unordered_map<Stock, internal::StrategyRuntimePtr> m_stk_sys_dict;
+  FactorSet factorset_;
+  unordered_map<Stock, internal::StrategyRuntimePtr> stk_sys_dict_;
 
   //============================================
   // Serialization support
@@ -42,7 +42,7 @@ class MultiFactorSelector2 : public SelectorBase {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
     ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(SelectorBase);
-    ar& BOOST_SERIALIZATION_NVP(m_factorset);
+    ar& boost::serialization::make_nvp("m_factorset", factorset_);
   }
 #endif
 };

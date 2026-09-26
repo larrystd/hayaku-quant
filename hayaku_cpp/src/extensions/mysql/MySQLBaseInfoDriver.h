@@ -43,7 +43,7 @@ class MySQLBaseInfoDriver : public BaseInfoDriver {
                                                        Datetime end) override;
 
  private:
-  ResourcePool<MySQLConnect>* m_pool;
+  ResourcePool<MySQLConnect>* pool_;
 };
 
 } /* namespace hayaku */

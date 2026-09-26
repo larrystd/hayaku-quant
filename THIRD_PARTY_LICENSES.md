@@ -9,7 +9,7 @@ to all the open-source authors for their contributions.
 
 | Name           | Project                                                                                 | License                                                                                 |
 | :------------- | :-------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
-| xmake          | [https://github.com/xmake-io/xmake](https://github.com/xmake-io/xmake)                   | Apache 2.0                                                                              |
+| Bazel          | [https://github.com/bazelbuild/bazel](https://github.com/bazelbuild/bazel)               | Apache 2.0                                                                              |
 | hdf5           | [https://github.com/HDFGroup/hdf5](https://github.com/HDFGroup/hdf5)                     | [hdf5 license](https://github.com/HDFGroup/hdf5?tab=License-1-ov-file#License-1-ov-file) |
 | mysql(client)  | [https://github.com/mysql/mysql-server](https://github.com/mysql/mysql-server)           | [mysql license](https://github.com/mysql/mysql-server?tab=License-1-ov-file#readme)      |
 | fmt            | [https://github.com/fmtlib/fmt](https://github.com/fmtlib/fmt)                           | [fmt license](https://github.com/fmtlib/fmt?tab=License-1-ov-file#readme)                |

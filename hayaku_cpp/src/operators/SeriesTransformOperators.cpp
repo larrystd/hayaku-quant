@@ -210,12 +210,12 @@ void IAlign::_calculate(const Indicator& ind) {
     total = dates.size();
   }
 
-  m_result_num = ind.getResultNumber();
-  _readyBuffer(total, m_result_num);
+  result_num_ = ind.getResultNumber();
+  _readyBuffer(total, result_num_);
 
   size_t ind_total = ind.size();
   if (total == 0 || ind_total == 0) {
-    m_discard = total;
+    discard_ = total;
     return;
   }
 
@@ -235,27 +235,27 @@ void IAlign::_calculate(const Indicator& ind) {
   if (ind_dates.size() == 0) {
     if (ind_total <= total) {
       size_t offset = total - ind_total;
-      m_discard = offset + ind.discard();
-      for (size_t r = 0; r < m_result_num; r++) {
+      discard_ = offset + ind.discard();
+      for (size_t r = 0; r < result_num_; r++) {
         auto const* src = ind.data(r);
         auto* dst = this->data(r);
-        memcpy(dst + m_discard, src + ind.discard(),
-               sizeof(IndicatorImp::value_t) * (total - m_discard));
+        memcpy(dst + discard_, src + ind.discard(),
+               sizeof(IndicatorImp::value_t) * (total - discard_));
       }
       return;
 
     } else {
       // ind_total > total
-      m_discard = 0;
+      discard_ = 0;
       size_t offset = ind_total - total;
       if (ind.discard() > offset) {
-        m_discard = ind.discard() - offset;
+        discard_ = ind.discard() - offset;
       }
 
-      for (size_t r = 0; r < m_result_num; r++) {
+      for (size_t r = 0; r < result_num_; r++) {
         auto const* src = ind.data(r);
         auto* dst = this->data(r);
-        for (size_t i = m_discard; i < total; i++) {
+        for (size_t i = discard_; i < total; i++) {
           dst[i] = src[i + offset];
         }
       }
@@ -277,7 +277,7 @@ void IAlign::_calculate(const Indicator& ind) {
 
       const Datetime& ind_date = ind_dates[ind_idx];
       if (ind_date == dates[i]) {
-        for (size_t r = 0; r < m_result_num; r++) {
+        for (size_t r = 0; r < result_num_; r++) {
           _set(ind.get(ind_idx, r), i, r);
         }
         ind_idx++;
@@ -293,7 +293,7 @@ void IAlign::_calculate(const Indicator& ind) {
         }
 
         if (ind_dates[j] == dates[i]) {
-          for (size_t r = 0; r < m_result_num; r++) {
+          for (size_t r = 0; r < result_num_; r++) {
             _set(ind.get(j, r), i, r);
           }
         }
@@ -305,13 +305,13 @@ void IAlign::_calculate(const Indicator& ind) {
   } else {
     if (ind_dates[0] > dates[total - 1]) {
       // If the first data date > the last reference date, ignore everything
-      m_discard = total;
+      discard_ = total;
       return;
 
     } else if (dates[0] > ind_dates[ind_total - 1]) {
       // If all the reference dates are later than the last date of ind_dates,
       // use the last data of ind_dates directly
-      for (size_t r = 0; r < m_result_num; r++) {
+      for (size_t r = 0; r < result_num_; r++) {
         value_t val = ind.get(ind_total - 1, r);
         auto* dst = this->data(r);
         for (size_t i = 0; i < total; i++) {
@@ -331,11 +331,11 @@ void IAlign::_calculate(const Indicator& ind) {
         const Datetime& ind_date = ind_dates[ind_idx];
         for (size_t i = pos; i < total; i++) {
           if (dates[i] < ind_date) {
-            for (size_t r = 0; r < m_result_num; r++) {
+            for (size_t r = 0; r < result_num_; r++) {
               _set(ind.get(ind_idx - 1, r), i, r);
             }
           } else if (dates[i] == ind_date) {
-            for (size_t r = 0; r < m_result_num; r++) {
+            for (size_t r = 0; r < result_num_; r++) {
               _set(ind.get(ind_idx, r), i, r);
             }
           } else {
@@ -349,13 +349,13 @@ void IAlign::_calculate(const Indicator& ind) {
       }
       if (pos < total) {
         if (dates[pos] >= ind_dates[ind_total - 1]) {
-          for (size_t r = 0; r < m_result_num; r++) {
+          for (size_t r = 0; r < result_num_; r++) {
             for (size_t i = pos; i < total; i++) {
               _set(ind.get(ind_total - 1, r), i, r);
             }
           }
         } else {
-          for (size_t r = 0; r < m_result_num; r++) {
+          for (size_t r = 0; r < result_num_; r++) {
             auto* dst = this->data(r);
             for (size_t i = pos; i < total; i++) {
               dst[i] = dst[i - 1];
@@ -367,7 +367,7 @@ void IAlign::_calculate(const Indicator& ind) {
   }
 
   // Force updating m_discard again
-  m_discard = 0;
+  discard_ = 0;
   updateDiscard();
 }
 
@@ -409,7 +409,7 @@ BOOST_CLASS_EXPORT(hayaku::IBackset)
 namespace hayaku {
 
 IBackset::IBackset() : IndicatorImp("BACKSET", 1) {
-  m_is_serial = true;
+  is_serial_ = true;
   setParam<int>("n", 2);
 }
 
@@ -424,9 +424,9 @@ void IBackset::_checkParam(const string& name) const {
 void IBackset::_calculate(const Indicator& ind) {
   size_t total = ind.size();
   int n = getParam<int>("n");
-  m_discard = ind.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = ind.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
@@ -434,7 +434,7 @@ void IBackset::_calculate(const Indicator& ind) {
   auto* dst = this->data();
 
   size_t i = total;
-  size_t end_i = m_discard + n;
+  size_t end_i = discard_ + n;
   if (end_i > total) {
     end_i = total;
   }
@@ -456,13 +456,13 @@ void IBackset::_calculate(const Indicator& ind) {
   // i = end_i - 1;
   while (true) {
     if (src[i] != 0.0) {
-      for (size_t j = m_discard; j <= i; j++) {
+      for (size_t j = discard_; j <= i; j++) {
         dst[j] = 1.0;
       }
       break;
     } else {
       dst[i] = 0.0;
-      if (i == m_discard) {
+      if (i == discard_) {
         break;
       }
       i--;
@@ -528,21 +528,21 @@ void IDiscard::_calculate(const Indicator& data) {
   size_t result_num = data.getResultNumber();
   _readyBuffer(total, result_num);
 
-  m_discard = (size_t)getParam<int>("discard");
-  if (m_discard < data.discard()) {
-    m_discard = data.discard();
+  discard_ = (size_t)getParam<int>("discard");
+  if (discard_ < data.discard()) {
+    discard_ = data.discard();
   }
 
-  if (m_discard >= total) {
-    m_discard = total;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
   for (size_t r = 0; r < result_num; ++r) {
     auto const* src = data.data(r);
     auto* dst = this->data(r);
-    memcpy(dst + m_discard, src + m_discard,
-           (total - m_discard) * sizeof(value_t));
+    memcpy(dst + discard_, src + discard_,
+           (total - discard_) * sizeof(value_t));
   }
 }
 
@@ -570,7 +570,7 @@ BOOST_CLASS_EXPORT(hayaku::IDropna)
 namespace hayaku {
 
 IDropna::IDropna() : IndicatorImp("DROPNA", 1) {
-  m_need_self_alike_compare = true;
+  need_self_alike_compare_ = true;
   setParam<DatetimeList>("align_date_list", DatetimeList());
 }
 
@@ -581,27 +581,27 @@ void IDropna::_calculate(const Indicator& ind) {
   // modify it at will
   size_t total = ind.size();
   if (ind.discard() >= total) {
-    m_discard = 0;
+    discard_ = 0;
     setParam<DatetimeList>("align_date_list", DatetimeList());
     _readyBuffer(0, ind.getResultNumber());
     return;
   }
 
-  m_result_num = ind.getResultNumber();
+  result_num_ = ind.getResultNumber();
   size_t row_len = total - ind.discard();
 
 #if CPP_STANDARD >= CPP_STANDARD_17
   std::unique_ptr<price_t[]> buf =
-      std::make_unique<price_t[]>(m_result_num * row_len);
+      std::make_unique<price_t[]>(result_num_ * row_len);
 #else
-  std::unique_ptr<price_t[]> buf(new price_t[m_result_num * row_len]);
+  std::unique_ptr<price_t[]> buf(new price_t[result_num_ * row_len]);
 #endif
 
   DatetimeList dates;
   size_t pos = 0;
   for (size_t i = ind.discard(); i < total; i++) {
     bool has_nan = false;
-    for (size_t r = 0; r < m_result_num; r++) {
+    for (size_t r = 0; r < result_num_; r++) {
       if (std::isnan(ind.get(i, r))) {
         has_nan = true;
         break;
@@ -610,24 +610,24 @@ void IDropna::_calculate(const Indicator& ind) {
 
     if (!has_nan) {
       dates.push_back(ind.getDatetime(i));
-      for (size_t r = 0; r < m_result_num; r++) {
-        buf[pos + r * m_result_num] = ind.get(i, r);
+      for (size_t r = 0; r < result_num_; r++) {
+        buf[pos + r * result_num_] = ind.get(i, r);
       }
       pos++;
     }
   }
 
-  _readyBuffer(pos / m_result_num, m_result_num);
+  _readyBuffer(pos / result_num_, result_num_);
 
-  for (size_t r = 0; r < m_result_num; r++) {
+  for (size_t r = 0; r < result_num_; r++) {
     auto* dst = this->data(r);
-    int start = r * m_result_num;
+    int start = r * result_num_;
     for (size_t i = 0; i < pos; i++) {
       dst[i] = buf[start + i];
     }
   }
 
-  m_discard = 0;
+  discard_ = 0;
   setParam<DatetimeList>("align_date_list", dates);
 }
 
@@ -664,11 +664,11 @@ void IReplace::_calculate(const Indicator& data) {
 
   bool ignore_discard = getParam<bool>("ignore_discard");
   if (ignore_discard) {
-    m_discard = 0;
+    discard_ = 0;
   } else {
-    m_discard = data.discard();
-    if (m_discard >= total) {
-      m_discard = total;
+    discard_ = data.discard();
+    if (discard_ >= total) {
+      discard_ = total;
       return;
     }
   }
@@ -680,12 +680,12 @@ void IReplace::_calculate(const Indicator& data) {
   auto* dst = this->data();
 
   if (std::isnan(old_value)) {
-    for (size_t i = m_discard; i < total; ++i) {
+    for (size_t i = discard_; i < total; ++i) {
       dst[i] = std::isnan(src[i]) ? new_value : src[i];
     }
   } else {
     value_t epsilon = std::numeric_limits<value_t>::epsilon();
-    for (size_t i = m_discard; i < total; ++i) {
+    for (size_t i = discard_; i < total; ++i) {
       dst[i] = (std::fabs(src[i] - old_value) < epsilon) ? new_value : src[i];
     }
   }
@@ -731,13 +731,13 @@ IReverse::~IReverse() {}
 
 void IReverse::_calculate(const Indicator& data) {
   size_t total = data.size();
-  m_discard = data.discard();
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard();
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IReverse::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -793,7 +793,7 @@ void ISlice::_checkParam(const string& name) const {
 void ISlice::_calculate(const Indicator& data) {
   // On a leaf node, take its own data parameter directly
   if (isLeaf()) {
-    m_discard = 0;
+    discard_ = 0;
     const PriceList& x = getParam<const PriceList&>("data");
     size_t total = x.size();
     int64_t startix = getParam<int64_t>("start");
@@ -862,7 +862,7 @@ void ISlice::_calculate(const Indicator& data) {
   }
 
   // Update the discard number
-  m_discard = data.discard() <= size_t(startix) ? 0 : data.discard() - startix;
+  discard_ = data.discard() <= size_t(startix) ? 0 : data.discard() - startix;
 }
 
 Indicator HAYAKU_API SLICE(const PriceList& data, int64_t start, int64_t end) {

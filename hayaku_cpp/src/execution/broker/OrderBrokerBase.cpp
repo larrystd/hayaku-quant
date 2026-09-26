@@ -58,9 +58,9 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-OrderBrokerBase::OrderBrokerBase() : m_name("NO_NAME") {}
+OrderBrokerBase::OrderBrokerBase() : name_("NO_NAME") {}
 
-OrderBrokerBase::OrderBrokerBase(const string& name) : m_name(name) {}
+OrderBrokerBase::OrderBrokerBase(const string& name) : name_(name) {}
 
 OrderBrokerBase::~OrderBrokerBase() {}
 

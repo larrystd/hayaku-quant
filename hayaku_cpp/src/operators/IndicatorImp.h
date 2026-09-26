@@ -241,7 +241,7 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
                                  size_t step) {}
 
   /** Whether the calculation must be serial */
-  bool isSerial() const noexcept { return m_is_serial; }
+  bool isSerial() const noexcept { return is_serial_; }
   // ====== end dynamic parameter calculation related interface ======
 
   // ====== start incremental calculation related interface =======
@@ -255,7 +255,7 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
 
   virtual IndicatorImpPtr _clone() { return make_shared<IndicatorImp>(); }
 
-  bool isNeedContext() const noexcept { return m_need_context; }
+  bool isNeedContext() const noexcept { return need_context_; }
 
  public:
   static void enableIncrementCalculate(bool flag) {
@@ -298,7 +298,7 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
   /* For a special indicator that needs to implement the selfAlike function
    * itself, needSelfAlikeCompare should return true */
   bool needSelfAlikeCompare() const noexcept {
-    return m_need_self_alike_compare;
+    return need_self_alike_compare_;
   }
 
   // A special indicator needs to implement the selfAlike function itself;
@@ -362,27 +362,27 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
   static size_t _get_step_start(size_t pos, size_t step, size_t discard);
 
  protected:
-  string m_name;
-  size_t m_discard{0};
-  size_t m_result_num{0};
-  KData m_context;
-  KData m_old_context;
+  string name_;
+  size_t discard_{0};
+  size_t result_num_{0};
+  KData context_;
+  KData old_context_;
 
-  buffer_t* m_pBuffer[MAX_RESULT_NUM];
+  buffer_t* p_buffer_[MAX_RESULT_NUM];
 
-  bool m_need_context{false};
-  bool m_is_python_object{false};
-  bool m_need_self_alike_compare{false};
-  bool m_is_serial{false};
-  bool m_need_calculate{true};
-  bool m_param_changed{true};
-  OPType m_optype{LEAF};
-  IndicatorImpPtr m_left;
-  IndicatorImpPtr m_right;
-  IndicatorImpPtr m_three;
-  ind_param_map_t m_ind_params;  // don't use unordered_map
+  bool need_context_{false};
+  bool is_python_object_{false};
+  bool need_self_alike_compare_{false};
+  bool is_serial_{false};
+  bool need_calculate_{true};
+  bool param_changed_{true};
+  OPType optype_{LEAF};
+  IndicatorImpPtr left_;
+  IndicatorImpPtr right_;
+  IndicatorImpPtr three_;
+  ind_param_map_t ind_params_;  // don't use unordered_map
 
-  IndicatorImp* m_parent{
+  IndicatorImp* parent_{
       nullptr};  // can't use shared_from_this in python, so not weak_ptr
 
   /** Construction id issuer: defined only in IndicatorImp.cpp, guaranteeing
@@ -391,7 +391,7 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
 
   /** Construction origin identifier: issued at construction and inherited by
    * clone/cloneNode, it does not enter the serialization NVP list */
-  uint64_t m_origin_id{nextOriginId()};
+  uint64_t origin_id_{nextOriginId()};
 
  public:
   static void initEngine();
@@ -406,27 +406,27 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
     namespace bs = boost::serialization;
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_discard);
-    ar& BOOST_SERIALIZATION_NVP(m_result_num);
-    ar& BOOST_SERIALIZATION_NVP(m_context);
-    ar& BOOST_SERIALIZATION_NVP(m_old_context);
-    ar& BOOST_SERIALIZATION_NVP(m_need_context);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_need_self_alike_compare);
-    ar& BOOST_SERIALIZATION_NVP(m_is_serial);
-    ar& BOOST_SERIALIZATION_NVP(m_need_calculate);
-    ar& BOOST_SERIALIZATION_NVP(m_param_changed);
-    ar& BOOST_SERIALIZATION_NVP(m_optype);
-    ar& BOOST_SERIALIZATION_NVP(m_left);
-    ar& BOOST_SERIALIZATION_NVP(m_right);
-    ar& BOOST_SERIALIZATION_NVP(m_three);
-    ar& BOOST_SERIALIZATION_NVP(m_ind_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_discard", discard_);
+    ar& boost::serialization::make_nvp("m_result_num", result_num_);
+    ar& boost::serialization::make_nvp("m_context", context_);
+    ar& boost::serialization::make_nvp("m_old_context", old_context_);
+    ar& boost::serialization::make_nvp("m_need_context", need_context_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_need_self_alike_compare", need_self_alike_compare_);
+    ar& boost::serialization::make_nvp("m_is_serial", is_serial_);
+    ar& boost::serialization::make_nvp("m_need_calculate", need_calculate_);
+    ar& boost::serialization::make_nvp("m_param_changed", param_changed_);
+    ar& boost::serialization::make_nvp("m_optype", optype_);
+    ar& boost::serialization::make_nvp("m_left", left_);
+    ar& boost::serialization::make_nvp("m_right", right_);
+    ar& boost::serialization::make_nvp("m_three", three_);
+    ar& boost::serialization::make_nvp("m_ind_params", ind_params_);
 
     size_t act_result_num = 0;
-    for (size_t i = 0; i < m_result_num; i++) {
-      if (m_pBuffer[i]) {
+    for (size_t i = 0; i < result_num_; i++) {
+      if (p_buffer_[i]) {
         act_result_num++;
       }
     }
@@ -437,7 +437,7 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
     for (size_t i = 0; i < act_result_num; ++i) {
       size_t count = size();
       ar& BOOST_SERIALIZATION_NVP(count);
-      const buffer_t& values = *m_pBuffer[i];
+      const buffer_t& values = *p_buffer_[i];
       for (size_t j = 0; j < count; j++) {
         if (std::isnan(values[j])) {
           ar& boost::serialization::make_nvp<string>("item", nan);
@@ -455,23 +455,23 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
     namespace bs = boost::serialization;
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
-    ar& BOOST_SERIALIZATION_NVP(m_discard);
-    ar& BOOST_SERIALIZATION_NVP(m_result_num);
-    ar& BOOST_SERIALIZATION_NVP(m_context);
-    ar& BOOST_SERIALIZATION_NVP(m_old_context);
-    ar& BOOST_SERIALIZATION_NVP(m_need_context);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_need_self_alike_compare);
-    ar& BOOST_SERIALIZATION_NVP(m_is_serial);
-    ar& BOOST_SERIALIZATION_NVP(m_need_calculate);
-    ar& BOOST_SERIALIZATION_NVP(m_param_changed);
-    ar& BOOST_SERIALIZATION_NVP(m_optype);
-    ar& BOOST_SERIALIZATION_NVP(m_left);
-    ar& BOOST_SERIALIZATION_NVP(m_right);
-    ar& BOOST_SERIALIZATION_NVP(m_three);
-    ar& BOOST_SERIALIZATION_NVP(m_ind_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_params", params_);
+    ar& boost::serialization::make_nvp("m_discard", discard_);
+    ar& boost::serialization::make_nvp("m_result_num", result_num_);
+    ar& boost::serialization::make_nvp("m_context", context_);
+    ar& boost::serialization::make_nvp("m_old_context", old_context_);
+    ar& boost::serialization::make_nvp("m_need_context", need_context_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_need_self_alike_compare", need_self_alike_compare_);
+    ar& boost::serialization::make_nvp("m_is_serial", is_serial_);
+    ar& boost::serialization::make_nvp("m_need_calculate", need_calculate_);
+    ar& boost::serialization::make_nvp("m_param_changed", param_changed_);
+    ar& boost::serialization::make_nvp("m_optype", optype_);
+    ar& boost::serialization::make_nvp("m_left", left_);
+    ar& boost::serialization::make_nvp("m_right", right_);
+    ar& boost::serialization::make_nvp("m_three", three_);
+    ar& boost::serialization::make_nvp("m_ind_params", ind_params_);
 
     size_t act_result_num = 0;
     ar& BOOST_SERIALIZATION_NVP(act_result_num);
@@ -479,7 +479,7 @@ class HAYAKU_API IndicatorImp : public enable_shared_from_this<IndicatorImp> {
     for (size_t i = 0; i < act_result_num; ++i) {
       size_t count = 0;
       ar& BOOST_SERIALIZATION_NVP(count);
-      buffer_t& values = *m_pBuffer[i];
+      buffer_t& values = *p_buffer_[i];
       values.resize(count);
       for (size_t j = 0; j < count; j++) {
         std::string vstr;
@@ -542,59 +542,59 @@ HAYAKU_API std::ostream& operator<<(std::ostream&, const IndicatorImp&);
 HAYAKU_API std::ostream& operator<<(std::ostream&, const IndicatorImpPtr&);
 
 inline IndicatorImp::OPType IndicatorImp::getOPType() const noexcept {
-  return m_optype;
+  return optype_;
 }
 
 inline size_t IndicatorImp::getResultNumber() const noexcept {
-  return m_result_num;
+  return result_num_;
 }
 
-inline size_t IndicatorImp::discard() const noexcept { return m_discard; }
+inline size_t IndicatorImp::discard() const noexcept { return discard_; }
 
 inline size_t IndicatorImp::size() const noexcept {
-  return m_pBuffer[0] ? m_pBuffer[0]->size() : 0;
+  return p_buffer_[0] ? p_buffer_[0]->size() : 0;
 }
 
-inline const string& IndicatorImp::name() const noexcept { return m_name; }
+inline const string& IndicatorImp::name() const noexcept { return name_; }
 
-inline void IndicatorImp::name(const string& name) noexcept { m_name = name; }
+inline void IndicatorImp::name(const string& name) noexcept { name_ = name; }
 
 inline bool IndicatorImp::isLeaf() const noexcept {
-  return m_optype == LEAF ? true : false;
+  return optype_ == LEAF ? true : false;
 }
 
-inline const KData& IndicatorImp::getContext() const { return m_context; }
+inline const KData& IndicatorImp::getContext() const { return context_; }
 
 inline void IndicatorImp::setContext(const Stock& stock, const KQuery& query) {
   setContext(stock.getKData(query));
 }
 
 inline void IndicatorImp::onlySetContext(const KData& k) {
-  if (m_context != k) {
-    m_old_context = m_context;
-    m_context = k;
+  if (context_ != k) {
+    old_context_ = context_;
+    context_ = k;
   }
 }
 
 inline void IndicatorImp::setCalculateFlag(bool flag) noexcept {
-  m_need_calculate = flag;
+  need_calculate_ = flag;
 }
 
 inline const IndicatorImp::ind_param_map_t& IndicatorImp::getIndParams() const {
-  return m_ind_params;
+  return ind_params_;
 }
 
 inline bool IndicatorImp::haveIndParam(const string& name) const {
-  return m_ind_params.find(name) != m_ind_params.end();
+  return ind_params_.find(name) != ind_params_.end();
 }
 
 inline IndicatorImp::value_t* IndicatorImp::data(size_t result_idx) noexcept {
-  return m_pBuffer[result_idx] ? m_pBuffer[result_idx]->data() : nullptr;
+  return p_buffer_[result_idx] ? p_buffer_[result_idx]->data() : nullptr;
 }
 
 inline IndicatorImp::value_t const* IndicatorImp::data(
     size_t result_idx) const noexcept {
-  return m_pBuffer[result_idx] ? m_pBuffer[result_idx]->data() : nullptr;
+  return p_buffer_[result_idx] ? p_buffer_[result_idx]->data() : nullptr;
 }
 
 inline size_t IndicatorImp::_get_step_start(size_t pos, size_t step,
@@ -603,29 +603,29 @@ inline size_t IndicatorImp::_get_step_start(size_t pos, size_t step,
 }
 
 inline bool IndicatorImp::isPythonObject() const noexcept {
-  return m_is_python_object;
+  return is_python_object_;
 }
 
 inline bool IndicatorImp::supportBatchReuse() const {
   static const string param_name("_support_batch_reuse");
-  return !m_is_python_object &&
+  return !is_python_object_ &&
          (!haveParam(param_name) || getParam<bool>(param_name));
 }
 
 inline void IndicatorImp::supportBatchReuse(bool enable) {
-  m_params.set<bool>("_support_batch_reuse", enable);
+  params_.set<bool>("_support_batch_reuse", enable);
 }
 
 inline IndicatorImpPtr IndicatorImp::getRightNode() const noexcept {
-  return m_right;
+  return right_;
 }
 
 inline IndicatorImpPtr IndicatorImp::getLeftNode() const noexcept {
-  return m_left;
+  return left_;
 }
 
 inline IndicatorImpPtr IndicatorImp::getThreeNode() const noexcept {
-  return m_three;
+  return three_;
 }
 
 inline std::ostream& operator<<(std::ostream& os,

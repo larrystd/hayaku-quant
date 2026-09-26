@@ -23,15 +23,15 @@ HAYAKU_API std::ostream& operator<<(std::ostream& os, const SlippagePtr& sp) {
   return os;
 }
 
-SlippageBase::SlippageBase() : m_name("SlippageBase") {}
+SlippageBase::SlippageBase() : name_("SlippageBase") {}
 
-SlippageBase::SlippageBase(const string& name) : m_name(name) {}
+SlippageBase::SlippageBase(const string& name) : name_(name) {}
 
 void SlippageBase::baseCheckParam(const string& name) const {}
 void SlippageBase::paramChanged() {}
 
 void SlippageBase::reset() {
-  m_kdata = Null<KData>();
+  kdata_ = Null<KData>();
   _reset();
 }
 
@@ -49,16 +49,16 @@ SlippagePtr SlippageBase::clone() {
     return shared_from_this();
   }
 
-  p->m_params = m_params;
-  p->m_name = m_name;
-  p->m_is_python_object = m_is_python_object;
-  p->m_kdata = m_kdata;
+  p->params_ = params_;
+  p->name_ = name_;
+  p->is_python_object_ = is_python_object_;
+  p->kdata_ = kdata_;
   return p;
 }
 
 void SlippageBase::setTO(const KData& kdata) {
-  HAYAKU_IF_RETURN(m_kdata == kdata, void());
-  m_kdata = kdata;
+  HAYAKU_IF_RETURN(kdata_ == kdata, void());
+  kdata_ = kdata;
   if (!kdata.empty()) {
     _calculate();
   }

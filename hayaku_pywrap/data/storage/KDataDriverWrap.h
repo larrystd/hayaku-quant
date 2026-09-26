@@ -19,10 +19,10 @@ class PyKDataDriver : public KDataDriver {
   PY_CLONE(PyKDataDriver, KDataDriver)
 
  public:
-  PyKDataDriver() : KDataDriver() { m_is_python_object = true; }
+  PyKDataDriver() : KDataDriver() { is_python_object_ = true; }
 
   PyKDataDriver(const string& name) : KDataDriver(name) {
-    m_is_python_object = true;
+    is_python_object_ = true;
   }
 
   py::function get_py_override(const char* name) const {

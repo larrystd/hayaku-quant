@@ -13,11 +13,11 @@ HAYAKU_API std::ostream& operator<<(std::ostream& out,
                                     const ScoresFilterBase& scfilter) {
   out << "SCFilter{";
   out << scfilter.name() << "(params:" << scfilter.getParameter() << ")";
-  auto child = scfilter.m_child;
+  auto child = scfilter.child_;
   while (child) {
     out << " -> " << child->name() << "(params:" << child->getParameter()
         << ")";
-    child = child->m_child;
+    child = child->child_;
   }
   out << "}";
   return out;
@@ -39,12 +39,12 @@ void ScoresFilterBase::paramChanged() {}
 
 ScoresFilterPtr ScoresFilterBase::clone() {
   auto p = _clone();
-  p->m_params = m_params;
-  p->m_name = m_name;
-  p->m_is_python_object = m_is_python_object;
+  p->params_ = params_;
+  p->name_ = name_;
+  p->is_python_object_ = is_python_object_;
 
-  if (m_child) {
-    p->m_child = m_child->clone();
+  if (child_) {
+    p->child_ = child_->clone();
   }
   return p;
 }
@@ -53,8 +53,8 @@ ScoreRecordList ScoresFilterBase::filter(const ScoreRecordList& scores,
                                          const Datetime& date,
                                          const KQuery& query) {
   auto ret = _filter(scores, date, query);
-  if (m_child) {
-    ret = m_child->filter(ret, date, query);
+  if (child_) {
+    ret = child_->filter(ret, date, query);
   }
   return ret;
 }
@@ -64,10 +64,10 @@ HAYAKU_API ScoresFilterPtr operator|(const ScoresFilterPtr& a,
   ScoresFilterPtr ret;
   if (a && b) {
     auto node = a;
-    while (node->m_child) {
-      node = node->m_child;
+    while (node->child_) {
+      node = node->child_;
     }
-    node->m_child = b;
+    node->child_ = b;
     ret = a;
   } else if (a) {
     HAYAKU_WARN("filter b is null, will be ignored.");

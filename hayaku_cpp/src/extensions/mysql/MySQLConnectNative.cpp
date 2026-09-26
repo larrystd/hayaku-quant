@@ -29,13 +29,13 @@ struct MySQLConnect::Impl {
 };
 
 MySQLConnect::MySQLConnect(const Parameter& param)
-    : DBConnectBase(param), m_impl(std::make_unique<Impl>()) {
+    : DBConnectBase(param), impl_(std::make_unique<Impl>()) {
   connect();
 }
 
 MySQLConnect::~MySQLConnect() { close(); }
 
-void* MySQLConnect::getRawConnection() const noexcept { return m_impl->mysql; }
+void* MySQLConnect::getRawConnection() const noexcept { return impl_->mysql; }
 
 bool MySQLConnect::tryConnect() noexcept {
   bool success = false;
@@ -51,8 +51,8 @@ bool MySQLConnect::tryConnect() noexcept {
 
 void MySQLConnect::connect() {
   try {
-    m_impl->mysql = new MYSQL;
-    HAYAKU_CHECK(mysql_init(m_impl->mysql) != NULL,
+    impl_->mysql = new MYSQL;
+    HAYAKU_CHECK(mysql_init(impl_->mysql) != NULL,
                  "Initial MySQL handle error!");
 
     std::string host = tryGetParam<std::string>("host", "127.0.0.1");
@@ -70,24 +70,24 @@ void MySQLConnect::connect() {
     my_bool reconnect = 1;
 #endif
     SQL_CHECK(
-        mysql_options(m_impl->mysql, MYSQL_OPT_RECONNECT, &reconnect) == 0,
-        mysql_errno(m_impl->mysql), "Failed set reconnect options, {}",
-        mysql_error(m_impl->mysql));
+        mysql_options(impl_->mysql, MYSQL_OPT_RECONNECT, &reconnect) == 0,
+        mysql_errno(impl_->mysql), "Failed set reconnect options, {}",
+        mysql_error(impl_->mysql));
 #endif
 
 #if MYSQL_VERSION_ID >= 80000
     bool opt_true = 1;
-    mysql_options(m_impl->mysql, MYSQL_OPT_GET_SERVER_PUBLIC_KEY, &opt_true);
+    mysql_options(impl_->mysql, MYSQL_OPT_GET_SERVER_PUBLIC_KEY, &opt_true);
 #endif
 
-    SQL_CHECK(mysql_real_connect(m_impl->mysql, host.c_str(), usr.c_str(),
+    SQL_CHECK(mysql_real_connect(impl_->mysql, host.c_str(), usr.c_str(),
                                  pwd.c_str(), database.c_str(), port, NULL,
                                  CLIENT_MULTI_STATEMENTS) != NULL,
-              mysql_errno(m_impl->mysql), "Failed to connect to database! {}",
-              mysql_error(m_impl->mysql));
-    SQL_CHECK(mysql_set_character_set(m_impl->mysql, "utf8") == 0,
-              mysql_errno(m_impl->mysql), "mysql_set_character_set error! {}",
-              mysql_error(m_impl->mysql));
+              mysql_errno(impl_->mysql), "Failed to connect to database! {}",
+              mysql_error(impl_->mysql));
+    SQL_CHECK(mysql_set_character_set(impl_->mysql, "utf8") == 0,
+              mysql_errno(impl_->mysql), "mysql_set_character_set error! {}",
+              mysql_error(impl_->mysql));
 
   } catch (std::bad_alloc& e) {
     close();
@@ -113,20 +113,20 @@ void MySQLConnect::connect() {
 }
 
 void MySQLConnect::close() {
-  if (m_impl && m_impl->mysql) {
-    mysql_close(m_impl->mysql);
-    delete m_impl->mysql;
-    m_impl->mysql = nullptr;
+  if (impl_ && impl_->mysql) {
+    mysql_close(impl_->mysql);
+    delete impl_->mysql;
+    impl_->mysql = nullptr;
   }
 }
 
 bool MySQLConnect::ping() {
-  HAYAKU_ERROR_IF_RETURN((!m_impl || !m_impl->mysql) && !tryConnect(), false,
+  HAYAKU_ERROR_IF_RETURN((!impl_ || !impl_->mysql) && !tryConnect(), false,
                          "Failed connect to mysql!");
-  auto ret = mysql_ping(m_impl->mysql);
+  auto ret = mysql_ping(impl_->mysql);
   HAYAKU_ERROR_IF_RETURN(ret && !tryConnect(), false,
                          "mysql_ping error code: {}, msg: {}", ret,
-                         mysql_error(m_impl->mysql));
+                         mysql_error(impl_->mysql));
   return true;
 }
 
@@ -134,50 +134,50 @@ int64_t MySQLConnect::exec(const std::string& sql_string) {
 #if HAYAKU_SQL_TRACE
   HAYAKU_DEBUG(sql_string);
 #endif
-  if (!m_impl || !m_impl->mysql) {
+  if (!impl_ || !impl_->mysql) {
     SQL_CHECK(tryConnect(), -1, "Failed connect to mysql!");
   }
 
   int ret =
-      mysql_real_query(m_impl->mysql, sql_string.c_str(), sql_string.size());
+      mysql_real_query(impl_->mysql, sql_string.c_str(), sql_string.size());
   if (ret) {
     // Try to reconnect
     if (ping()) {
-      ret = mysql_real_query(m_impl->mysql, sql_string.c_str(),
+      ret = mysql_real_query(impl_->mysql, sql_string.c_str(),
                              sql_string.size());
     } else {
       SQL_THROW(ret, "SQL error: {}! error msg: {}", sql_string,
-                mysql_error(m_impl->mysql));
+                mysql_error(impl_->mysql));
     }
   }
 
   if (ret) {
     SQL_THROW(ret, "SQL error: {}! error msg: {}", sql_string,
-              mysql_error(m_impl->mysql));
+              mysql_error(impl_->mysql));
   }
 
-  int64_t affect_rows = mysql_affected_rows(m_impl->mysql);
+  int64_t affect_rows = mysql_affected_rows(impl_->mysql);
   if (affect_rows == (my_ulonglong)-1) {
     affect_rows = 0;
   }
 
   do {
-    MYSQL_RES* result = mysql_store_result(m_impl->mysql);
+    MYSQL_RES* result = mysql_store_result(impl_->mysql);
     if (result) {
       mysql_num_fields(result);
       mysql_free_result(result);
     } else {
-      if (mysql_field_count(m_impl->mysql) == 0) {
+      if (mysql_field_count(impl_->mysql) == 0) {
 #if defined(_DEBUG) || defined(DEBUG)
-        auto num_rows = mysql_affected_rows(m_impl->mysql);
+        auto num_rows = mysql_affected_rows(impl_->mysql);
         HAYAKU_TRACE("num_rows: {}", num_rows);
 #endif
       } else {
         SQL_THROW(ret, "mysql_field_count error: {}! error msg: {}", sql_string,
-                  mysql_error(m_impl->mysql));
+                  mysql_error(impl_->mysql));
       }
     }
-  } while (!mysql_next_result(m_impl->mysql));
+  } while (!mysql_next_result(impl_->mysql));
   return affect_rows;
 }
 

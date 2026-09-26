@@ -85,15 +85,15 @@ void Strategy::register_signal() {
 Strategy::Strategy() : Strategy("Strategy", "") {}
 
 Strategy::Strategy(const string& name, const string& config_file)
-    : m_name(name), m_config_file(config_file) {
+    : name_(name), config_file_(config_file) {
   _initParam();
-  if (m_config_file.empty()) {
+  if (config_file_.empty()) {
     string home = getUserDir();
     HAYAKU_ERROR_IF(home == "", "Failed get user home path!");
 #if HAYAKU_OS_WINOWS
-    m_config_file = format("{}\\{}", home, ".hayaku\\hayaku.ini");
+    config_file_ = format("{}\\{}", home, ".hayaku\\hayaku.ini");
 #else
-    m_config_file = format("{}/{}", home, ".hayaku/hayaku.ini");
+    config_file_ = format("{}/{}", home, ".hayaku/hayaku.ini");
 #endif
   }
 }
@@ -104,16 +104,16 @@ Strategy::Strategy(const vector<string>& codeList,
                    const string& name, const string& config_file)
     : Strategy(name, config_file) {
   _initParam();
-  m_context.setStockCodeList(codeList);
-  m_context.setKTypeList(ktypeList);
-  m_context.setPreloadNum(preloadNum);
+  context_.setStockCodeList(codeList);
+  context_.setKTypeList(ktypeList);
+  context_.setPreloadNum(preloadNum);
 }
 
 Strategy::Strategy(const StrategyContext& context, const string& name,
                    const string& config_file)
     : Strategy(name, config_file) {
   _initParam();
-  m_context = context;
+  context_ = context;
 }
 
 Strategy::~Strategy() {
@@ -149,21 +149,21 @@ void Strategy::_init() {
       register_signal();
     }
 
-    CLS_INFO("{} is running! You can press Ctrl-C to terminte ...", m_name);
+    CLS_INFO("{} is running! You can press Ctrl-C to terminte ...", name_);
 
     // Initialization
-    m_session = std::make_unique<HayakuSession>(HayakuSession::open(
-        SessionOptions::fromIni(m_config_file, false, m_context)));
+    session_ = std::make_unique<HayakuSession>(HayakuSession::open(
+        SessionOptions::fromIni(config_file_, false, context_)));
 
   } else {
-    m_context = sm.getStrategyContext();
+    context_ = sm.getStrategyContext();
   }
 
   if (!runningInPython()) {
     register_signal();
   }
 
-  CLS_CHECK(!m_context.getStockCodeList().empty(),
+  CLS_CHECK(!context_.getStockCodeList().empty(),
             "The context does not contain any stocks!");
 
   // Stop the market data receiving agent first, so that the handlers can be
@@ -174,9 +174,9 @@ void Strategy::_init() {
 void Strategy::start(bool autoRecieveSpot) {
   HAYAKU_WARN_IF_RETURN(pythonInInteractive(), void(),
                         "Can not start strategy in python interactive mode!");
-  HAYAKU_WARN_IF(!m_on_recieved_spot && !m_on_change &&
-                     m_run_daily_at_list.empty() &&
-                     m_run_daily_at_funcs.empty(),
+  HAYAKU_WARN_IF(!on_recieved_spot_ && !on_change_ &&
+                     run_daily_at_list_.empty() &&
+                     run_daily_at_funcs_.empty(),
                  "No any process function is set!");
 
   _init();
@@ -188,8 +188,8 @@ void Strategy::start(bool autoRecieveSpot) {
       _receivedSpot(spot);
     };
     RealtimePostProcess postProcess = [this](Datetime revTime) {
-      if (m_on_recieved_spot) {
-        event([this, revTime]() { m_on_recieved_spot(this, revTime); });
+      if (on_recieved_spot_) {
+        event([this, revTime]() { on_recieved_spot_(this, revTime); });
       }
     };
     startRealtimeForStrategy(process, postProcess,
@@ -207,20 +207,20 @@ void Strategy::onChange(
     const std::function<void(Strategy*, const Stock&, const SpotRecord& spot)>&
         changeFunc) {
   HAYAKU_CHECK(changeFunc, "Invalid changeFunc!");
-  m_on_change = std::move(changeFunc);
+  on_change_ = std::move(changeFunc);
 }
 
 void Strategy::onReceivedSpot(
     const std::function<void(Strategy*, const Datetime&)>& recievedFucn) {
   HAYAKU_CHECK(recievedFucn, "Invalid recievedFucn!");
-  m_on_recieved_spot = std::move(recievedFucn);
+  on_recieved_spot_ = std::move(recievedFucn);
 }
 
 void Strategy::_receivedSpot(const SpotRecord& spot) {
   Stock stk = getStock(format("{}{}", spot.market, spot.code));
   if (!stk.isNull()) {
-    if (m_on_change) {
-      event([this, stk, spot]() { m_on_change(this, stk, spot); });
+    if (on_change_) {
+      event([this, stk, spot]() { on_change_(this, stk, spot); });
     }
   }
 }
@@ -263,15 +263,15 @@ void Strategy::runDaily(const std::function<void(Strategy*)>& func,
     };
   }
 
-  m_run_daily_at_list.push_front(run_at);
+  run_daily_at_list_.push_front(run_at);
 }
 
 void Strategy::_runDaily() {
-  HAYAKU_IF_RETURN(m_run_daily_at_list.empty(), void());
+  HAYAKU_IF_RETURN(run_daily_at_list_.empty(), void());
 
   auto* scheduler = getScheduler();
 
-  for (auto& run_at : m_run_daily_at_list) {
+  for (auto& run_at : run_daily_at_list_) {
     if (run_at.ignoreMarket) {
       scheduler->addDurationFunc(std::numeric_limits<int>::max(), run_at.delta,
                                  run_at.func);
@@ -364,7 +364,7 @@ void Strategy::runDailyAt(const std::function<void(Strategy*)>& func,
                           const TimeDelta& delta, bool ignoreHoliday) {
   HAYAKU_CHECK(func, "Invalid func!");
   HAYAKU_CHECK(delta < Days(1), "TimeDelta must < Days(1)!");
-  HAYAKU_CHECK(m_run_daily_at_funcs.find(delta) == m_run_daily_at_funcs.end(),
+  HAYAKU_CHECK(run_daily_at_funcs_.find(delta) == run_daily_at_funcs_.end(),
                "A task already exists at this point in time!");
 
   std::function<void()> new_func;
@@ -384,15 +384,15 @@ void Strategy::runDailyAt(const std::function<void(Strategy*)>& func,
     };
   }
 
-  m_run_daily_at_funcs[delta] = new_func;
+  run_daily_at_funcs_[delta] = new_func;
 }
 
 void Strategy::_runDailyAt() {
   auto* scheduler = getScheduler();
-  for (const auto& [time, func] : m_run_daily_at_funcs) {
+  for (const auto& [time, func] : run_daily_at_funcs_) {
     scheduler->addFuncAtTimeEveryDay(time, func);
   }
-  m_run_daily_at_funcs.clear();
+  run_daily_at_funcs_.clear();
 }
 
 /*
@@ -401,7 +401,7 @@ void Strategy::_runDailyAt() {
 void Strategy::_startEventLoop() {
   while (ms_keep_running) {
     event_type task;
-    m_event_queue.wait_and_pop(task);
+    event_queue_.wait_and_pop(task);
     if (task.isNullTask()) {
       ms_keep_running = false;
     } else {
@@ -519,14 +519,14 @@ TradeRecord Strategy::orderValue(const Stock& stk, price_t value,
   price_t price = k[0].closePrice;
   if (value > 0.0) {
     double n = value / price;
-    HAYAKU_CHECK(m_account, "Strategy execution account is not configured");
-    CostRecord cost = m_account->getBuyCost(now(), stk, price, n);
+    HAYAKU_CHECK(account_, "Strategy execution account is not configured");
+    CostRecord cost = account_->getBuyCost(now(), stk, price, n);
     price_t need_cash = n * price + cost.total;
-    price_t current_cash = m_account->currentCash();
+    price_t current_cash = account_->currentCash();
     double min_trade = stk.minTradeNumber();
     while (n > min_trade && need_cash > current_cash) {
       n = n - min_trade;
-      cost = m_account->getBuyCost(now(), stk, price, n);
+      cost = account_->getBuyCost(now(), stk, price, n);
       need_cash = n * price + cost.total;
     }
     if (need_cash > current_cash) {
@@ -547,8 +547,8 @@ TradeRecord Strategy::orderValue(const Stock& stk, price_t value,
 TradeRecord Strategy::buy(const Stock& stk, price_t price, double num,
                           double stoploss, double goal_price,
                           OrderOrigin origin, const string& remark) {
-  HAYAKU_ASSERT(m_account);
-  return m_account
+  HAYAKU_ASSERT(account_);
+  return account_
       ->submit(OrderRequest(OrderSide::BUY, Datetime::now(), stk, price, num,
                             stoploss, goal_price, price, origin, remark))
       .trade();
@@ -557,8 +557,8 @@ TradeRecord Strategy::buy(const Stock& stk, price_t price, double num,
 TradeRecord Strategy::sell(const Stock& stk, price_t price, double num,
                            price_t stoploss, price_t goal_price,
                            OrderOrigin origin, const string& remark) {
-  HAYAKU_ASSERT(m_account);
-  return m_account
+  HAYAKU_ASSERT(account_);
+  return account_
       ->submit(OrderRequest(OrderSide::SELL, Datetime::now(), stk, price, num,
                             stoploss, goal_price, price, origin, remark))
       .trade();

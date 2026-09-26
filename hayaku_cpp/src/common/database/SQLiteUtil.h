@@ -36,8 +36,8 @@ class HAYAKU_UTILS_API SQLiteUtil {
     RECOVER_FAILED_INVALID_DST,  ///< The given recovery target file name is
                                  ///< invalid or the file is occupied and cannot
                                  ///< be deleted
-    RECOVER_FAILED_EXECUTE,      ///< The recovery execution failed
-    RECOVER_FAILED_OTHER,        ///< The recovery failed for other reasons
+    RECOVER_FAILED_EXECUTE,  ///< The recovery execution failed
+    RECOVER_FAILED_OTHER,    ///< The recovery failed for other reasons
   };
 
   /**

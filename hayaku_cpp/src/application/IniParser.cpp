@@ -19,22 +19,22 @@ namespace hayaku {
 // number and the wrong line content) For the internal use of IniParser only
 class ParsingError {
  public:
-  ParsingError() { m_haveError = false; }
+  ParsingError() { have_error_ = false; }
 
   void append(size_t lineno, const std::string& line);
 
-  bool haveError() { return m_haveError; }
+  bool haveError() { return have_error_; }
 
-  std::string str() { return m_info.str(); }
+  std::string str() { return info_.str(); }
 
  private:
-  std::stringstream m_info;
-  bool m_haveError;
+  std::stringstream info_;
+  bool have_error_;
 };
 
 void ParsingError::append(size_t lineno, const std::string& line) {
-  m_info << "\n\t[line " << lineno << "] " << line;
-  m_haveError = true;
+  info_ << "\n\t[line " << lineno << "] " << line;
+  have_error_ = true;
 }
 
 IniParser::IniParser() {}
@@ -98,7 +98,7 @@ void IniParser::read(const std::string& filename) {
         continue;
       }
 
-      m_sections[section];
+      sections_[section];
 
     } else {
       if (section.empty()) {
@@ -127,7 +127,7 @@ void IniParser::read(const std::string& filename) {
         continue;
       }
 
-      m_sections[section][key] = value;
+      sections_[section][key] = value;
     }
   }
 
@@ -142,13 +142,13 @@ void IniParser::read(const std::string& filename) {
 /**
  * Clear the information already read
  */
-void IniParser::clear() { m_sections.clear(); }
+void IniParser::clear() { sections_.clear(); }
 
 /**
  * Judge whether the given section exists
  */
 bool IniParser::hasSection(const std::string& section) const {
-  return m_sections.count(section) ? true : false;
+  return sections_.count(section) ? true : false;
 }
 
 /**
@@ -156,12 +156,12 @@ bool IniParser::hasSection(const std::string& section) const {
  */
 bool IniParser::hasOption(const std::string& section,
                           const std::string& option) const {
-  if (m_sections.count(section) == 0) {
+  if (sections_.count(section) == 0) {
     return false;
   }
 
   // if(m_sections[section].count(option) == 0) {
-  if (m_sections.find(section)->second.count(option) == 0) {
+  if (sections_.find(section)->second.count(option) == 0) {
     return false;
   }
 
@@ -174,8 +174,8 @@ bool IniParser::hasOption(const std::string& section,
  */
 IniParser::StringListPtr IniParser::getSectionList() const {
   StringListPtr result = std::make_shared<std::list<std::string>>();
-  section_map_type::const_iterator iter = m_sections.begin();
-  for (; iter != m_sections.end(); ++iter) {
+  section_map_type::const_iterator iter = sections_.begin();
+  for (; iter != sections_.end(); ++iter) {
     result->push_back(iter->first);
   }
   return result;
@@ -189,12 +189,12 @@ IniParser::StringListPtr IniParser::getSectionList() const {
  */
 IniParser::StringListPtr IniParser::getOptionList(
     const std::string& section) const {
-  if (m_sections.count(section) == 0) {
+  if (sections_.count(section) == 0) {
     throw(std::invalid_argument("No section: " + section));
   }
 
   StringListPtr result = std::make_shared<std::list<std::string>>();
-  item_map_type option_map = m_sections.find(section)->second;
+  item_map_type option_map = sections_.find(section)->second;
   item_map_type::const_iterator iter = option_map.begin();
   for (; iter != option_map.end(); ++iter) {
     result->push_back(iter->first);
@@ -219,11 +219,11 @@ std::string IniParser::get(const std::string& section,
                            const std::string& option,
                            const std::string& default_str) const {
   std::string result;
-  if (m_sections.count(section) == 0) {
+  if (sections_.count(section) == 0) {
     throw(std::invalid_argument("No section: " + section));
   }
 
-  if (m_sections.find(section)->second.count(option) == 0) {
+  if (sections_.find(section)->second.count(option) == 0) {
     if (default_str.empty()) {
       throw(std::invalid_argument("No option(" + option + ") in section(" +
                                   section + ")"));
@@ -232,7 +232,7 @@ std::string IniParser::get(const std::string& section,
       trim(result);
     }
   } else {
-    result.assign(m_sections.find(section)->second.find(option)->second);
+    result.assign(sections_.find(section)->second.find(option)->second);
   }
 
   return result;
@@ -253,11 +253,12 @@ std::string IniParser::get(const std::string& section,
  */
 int IniParser::getInt(const std::string& section, const std::string& option,
                       const std::string& default_str) const {
+  int result = 0;
   size_t remain = 0;
 
   // First check whether default_str can be converted into int
   if (!default_str.empty()) {
-    std::stoi(default_str, &remain);
+    result = std::stoi(default_str, &remain);
     if (remain != default_str.size()) {
       throw(std::invalid_argument("Invalid default value: " + default_str));
     }
@@ -265,7 +266,8 @@ int IniParser::getInt(const std::string& section, const std::string& option,
 
   std::string value_str = get(section, option, default_str);
   remain = 0;
-  int result = std::stoi(value_str, &remain);
+  result =
+      std::stoi(value_str, &remain);  // cppcheck-suppress redundantAssignment
   if (remain != value_str.size()) {
     throw(std::invalid_argument(
         "This option cannot be converted to an integer! " + value_str));
@@ -289,11 +291,12 @@ int IniParser::getInt(const std::string& section, const std::string& option,
  */
 float IniParser::getFloat(const std::string& section, const std::string& option,
                           const std::string& default_str) const {
+  float result;
   size_t remain = 0;
 
   // First check whether default_str can be converted into float
   if (!default_str.empty()) {
-    std::stof(default_str, &remain);
+    result = std::stof(default_str, &remain);
     if (remain != default_str.size()) {
       throw(std::invalid_argument("Invalid default value: " + default_str));
     }
@@ -301,7 +304,8 @@ float IniParser::getFloat(const std::string& section, const std::string& option,
 
   std::string value_str = get(section, option, default_str);
   remain = 0;
-  float result = std::stof(value_str, &remain);
+  result =
+      std::stof(value_str, &remain);  // cppcheck-suppress redundantAssignment
   if (remain != value_str.size()) {
     throw(std::invalid_argument(
         "This option cannot be converted to an float! " + value_str));
@@ -326,11 +330,12 @@ float IniParser::getFloat(const std::string& section, const std::string& option,
 double IniParser::getDouble(const std::string& section,
                             const std::string& option,
                             const std::string& default_str) const {
+  double result;
   size_t remain = 0;
 
   // First check whether default_str can be converted into float
   if (!default_str.empty()) {
-    std::stod(default_str, &remain);
+    result = std::stod(default_str, &remain);
     if (remain != default_str.size()) {
       throw(std::invalid_argument("Invalid default value: " + default_str));
     }
@@ -338,7 +343,8 @@ double IniParser::getDouble(const std::string& section,
 
   std::string value_str = get(section, option, default_str);
   remain = 0;
-  double result = std::stod(value_str, &remain);
+  result =
+      std::stod(value_str, &remain);  // cppcheck-suppress redundantAssignment
   if (remain != value_str.size()) {
     throw(std::invalid_argument(
         "This option cannot be converted to an double! " + value_str));

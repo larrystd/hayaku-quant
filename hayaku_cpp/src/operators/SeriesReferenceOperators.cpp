@@ -160,7 +160,7 @@ void IRecover::_calculate(const Indicator& ind) {
 
   KQuery::RecoverType recover_type =
       static_cast<KQuery::RecoverType>(getParam<int>("recover_type"));
-  m_name = fmt::format("RECOVER_{}", KQuery::getRecoverTypeName(recover_type));
+  name_ = fmt::format("RECOVER_{}", KQuery::getRecoverTypeName(recover_type));
 
   query.recoverType(recover_type);
   KData new_k = kdata.getKData(query);
@@ -220,10 +220,10 @@ void IRecover::_increment_calculate(const Indicator& ind, size_t start_pos) {
       static_cast<KQuery::RecoverType>(getParam<int>("recover_type"));
 
     // Guarantee that the data from the old context start to the new context end are all calculated
-    query = KQueryByDate(m_old_context.front().datetime,
+    query = KQueryByDate(old_context_.front().datetime,
                          kdata.back().datetime + Seconds(KQuery::getKTypeInSeconds(query.kType())),
                          query.kType(), recover_type);
-    KData new_k = m_old_context.getKData(query);
+    KData new_k = old_context_.getKData(query);
 
     size_t pos = new_k.getPos(kdata[start_pos].datetime);
     HAYAKU_ASSERT(new_k.size() == (pos + ind.size() - start_pos));
@@ -330,13 +330,13 @@ void IRef::_calculate(const Indicator& data) {
   size_t total = data.size();
   int n = getParam<int>("n");
 
-  m_discard = data.discard() + n;
-  if (m_discard >= total) {
-    m_discard = total;
+  discard_ = data.discard() + n;
+  if (discard_ >= total) {
+    discard_ = total;
     return;
   }
 
-  _increment_calculate(data, m_discard);
+  _increment_calculate(data, discard_);
 }
 
 void IRef::_increment_calculate(const Indicator& data, size_t start_pos) {
@@ -390,42 +390,42 @@ void IRefX::_calculate(const Indicator& data) {
   int n = getParam<int>("n");
 
   if (0 == n) {
-    m_discard = data.discard();
-    const auto* src = data.data() + m_discard;
-    auto* dst = this->data() + m_discard;
-    memcpy(dst, src, (total - m_discard) * sizeof(value_t));
+    discard_ = data.discard();
+    const auto* src = data.data() + discard_;
+    auto* dst = this->data() + discard_;
+    memcpy(dst, src, (total - discard_) * sizeof(value_t));
     return;
 
   } else if (n > 0) {
-    m_discard = data.discard() + n;
-    if (m_discard >= total) {
-      m_discard = total;
+    discard_ = data.discard() + n;
+    if (discard_ >= total) {
+      discard_ = total;
       return;
     }
 
     const auto* src = data.data() + data.discard();
-    auto* dst = this->data() + m_discard;
-    memcpy(dst, src, (total - m_discard) * sizeof(value_t));
+    auto* dst = this->data() + discard_;
+    memcpy(dst, src, (total - discard_) * sizeof(value_t));
     return;
 
   } else {
     size_t absn = std::abs(n);
     if (absn >= total) {
-      m_discard = total;
+      discard_ = total;
       return;
     }
 
     int64_t startix = data.discard() - absn;
     size_t len = total - data.discard();
     if (startix < 0) {
-      m_discard = 0;
+      discard_ = 0;
       len = total - absn;
     } else {
-      m_discard = startix;
+      discard_ = startix;
     }
 
     const auto* src = data.data() + total - len;
-    auto* dst = this->data() + m_discard;
+    auto* dst = this->data() + discard_;
     memcpy(dst, src, len * sizeof(value_t));
     return;
   }
@@ -465,16 +465,16 @@ void ILastValue::_calculate(const Indicator& data) {
 
   bool ignore_discard = getParam<bool>("ignore_discard");
   if (!ignore_discard) {
-    m_discard = data.discard();
-    if (m_discard >= total) {
-      m_discard = total;
+    discard_ = data.discard();
+    if (discard_ >= total) {
+      discard_ = total;
       return;
     }
   }
 
   value_t last_val = data[total - 1];
   auto* dst = this->data();
-  for (size_t i = m_discard; i < total; ++i) {
+  for (size_t i = discard_; i < total; ++i) {
     dst[i] = last_val;
   }
 }

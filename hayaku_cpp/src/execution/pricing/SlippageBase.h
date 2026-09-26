@@ -71,12 +71,12 @@ class HAYAKU_API SlippageBase : public enable_shared_from_this<SlippageBase> {
   /** Subclass calculation interface, it is called by setTO */
   virtual void _calculate() = 0;
 
-  bool isPythonObject() const noexcept { return m_is_python_object; }
+  bool isPythonObject() const noexcept { return is_python_object_; }
 
  protected:
-  string m_name;
-  KData m_kdata;
-  bool m_is_python_object{false};
+  string name_;
+  KData kdata_;
+  bool is_python_object_{false};
 
 //============================================
 // Serialization support
@@ -86,16 +86,16 @@ class HAYAKU_API SlippageBase : public enable_shared_from_this<SlippageBase> {
   friend class boost::serialization::access;
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_params", params_);
   }
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
-    ar& BOOST_SERIALIZATION_NVP(m_name);
-    ar& BOOST_SERIALIZATION_NVP(m_is_python_object);
-    ar& BOOST_SERIALIZATION_NVP(m_params);
+    ar& boost::serialization::make_nvp("m_name", name_);
+    ar& boost::serialization::make_nvp("m_is_python_object", is_python_object_);
+    ar& boost::serialization::make_nvp("m_params", params_);
   }
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -152,11 +152,11 @@ typedef shared_ptr<SlippageBase> SPPtr;
 HAYAKU_API std::ostream& operator<<(std::ostream&, const SlippageBase&);
 HAYAKU_API std::ostream& operator<<(std::ostream&, const SlippagePtr&);
 
-inline const string& SlippageBase::name() const { return m_name; }
+inline const string& SlippageBase::name() const { return name_; }
 
-inline void SlippageBase::name(const string& name) { m_name = name; }
+inline void SlippageBase::name(const string& name) { name_ = name; }
 
-inline KData SlippageBase::getTO() const { return m_kdata; }
+inline KData SlippageBase::getTO() const { return kdata_; }
 
 } /* namespace hayaku */
 

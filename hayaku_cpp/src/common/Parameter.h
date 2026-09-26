@@ -216,11 +216,11 @@ class HAYAKU_API Parameter {
 
   /** Whether a parameter with the given name exists */
   bool have(const string& name) const noexcept {
-    return m_params.find(name) != m_params.end();
+    return params_.find(name) != params_.end();
   }
 
   /** Get the number of the parameters */
-  size_t size() const { return m_params.size(); }
+  size_t size() const { return params_.size(); }
 
   /**
    * Get the actual type of the given parameter
@@ -265,12 +265,12 @@ class HAYAKU_API Parameter {
   typedef map<string, boost::any> param_map_t;
   typedef param_map_t::const_iterator iterator;
 
-  iterator begin() const { return m_params.begin(); }
+  iterator begin() const { return params_.begin(); }
 
-  iterator end() const { return m_params.end(); }
+  iterator end() const { return params_.end(); }
 
  private:
-  param_map_t m_params;
+  param_map_t params_;
 
 //================================
 // Serialization support
@@ -282,10 +282,10 @@ class HAYAKU_API Parameter {
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
     namespace bs = boost::serialization;
-    size_t total = m_params.size();
+    size_t total = params_.size();
     ar& bs::make_nvp<size_t>("count", total);
-    param_map_t::const_iterator iter = m_params.begin();
-    for (; iter != m_params.end(); ++iter) {
+    param_map_t::const_iterator iter = params_.begin();
+    for (; iter != params_.end(); ++iter) {
       ParamItemRecord record(iter->first, iter->second);
       ar& bs::make_nvp<ParamItemRecord>("Item", record);
     }
@@ -301,29 +301,29 @@ class HAYAKU_API Parameter {
       ar& bs::make_nvp<ParamItemRecord>("Item", record);
 
       if (record.type == "bool") {
-        m_params[record.name] = boost::lexical_cast<bool>(record.value);
+        params_[record.name] = boost::lexical_cast<bool>(record.value);
       } else if (record.type == "int") {
-        m_params[record.name] = boost::lexical_cast<int64_t>(record.value);
+        params_[record.name] = boost::lexical_cast<int64_t>(record.value);
       } else if (record.type == "int64") {
-        m_params[record.name] = boost::lexical_cast<int64_t>(record.value);
+        params_[record.name] = boost::lexical_cast<int64_t>(record.value);
       } else if (record.type == "double") {
-        m_params[record.name] = boost::lexical_cast<double>(record.value);
+        params_[record.name] = boost::lexical_cast<double>(record.value);
       } else if (record.type == "string") {
-        m_params[record.name] = record.value;
+        params_[record.name] = record.value;
       } else if (record.type == "Datetime") {
-        m_params[record.name] = record.datetime;
+        params_[record.name] = record.datetime;
       } else if (record.type == "stock") {
-        m_params[record.name] = record.stock;
+        params_[record.name] = record.stock;
       } else if (record.type == "block") {
-        m_params[record.name] = record.block;
+        params_[record.name] = record.block;
       } else if (record.type == "query") {
-        m_params[record.name] = record.query;
+        params_[record.name] = record.query;
       } else if (record.type == "kdata") {
-        m_params[record.name] = record.kdata;
+        params_[record.name] = record.kdata;
       } else if (record.type == "PriceList") {
-        m_params[record.name] = record.price_list;
+        params_[record.name] = record.price_list;
       } else if (record.type == "DatetimeList") {
-        m_params[record.name] = record.date_list;
+        params_[record.name] = record.date_list;
       } else {
         std::cout << "Unknown type! [Parameter::load]" << std::endl;
       }
@@ -335,34 +335,34 @@ class HAYAKU_API Parameter {
 
 #define PARAMETER_SUPPORT                                                 \
  protected:                                                               \
-  Parameter m_params;                                                     \
+  Parameter params_;                                                     \
                                                                           \
  public:                                                                  \
-  const Parameter& getParameter() const { return m_params; }              \
+  const Parameter& getParameter() const { return params_; }              \
                                                                           \
-  void setParameter(const Parameter& param) { m_params = param; }         \
+  void setParameter(const Parameter& param) { params_ = param; }         \
                                                                           \
   bool haveParam(const string& name) const noexcept {                     \
-    return m_params.have(name);                                           \
+    return params_.have(name);                                           \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   void setParam(const string& name, const ValueType& value) {             \
-    m_params.set<ValueType>(name, value);                                 \
+    params_.set<ValueType>(name, value);                                 \
   }                                                                       \
   template <typename ValueType>                                           \
   void setParam(const string& name, ValueType& value) {                   \
-    m_params.set<ValueType>(name, std::forward<ValueType>(value));        \
+    params_.set<ValueType>(name, std::forward<ValueType>(value));        \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   ValueType getParam(const string& name) const {                          \
-    return m_params.get<ValueType>(name);                                 \
+    return params_.get<ValueType>(name);                                 \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   ValueType tryGetParam(const string& name, const ValueType& val) const { \
-    return m_params.tryGet<ValueType>(name, val);                         \
+    return params_.tryGet<ValueType>(name, val);                         \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
@@ -388,7 +388,7 @@ class HAYAKU_API Parameter {
  */
 #define PARAMETER_SUPPORT_WITH_CHECK                                      \
  protected:                                                               \
-  Parameter m_params;                                                     \
+  Parameter params_;                                                     \
   void paramChanged();                                                    \
   void checkParam(const string& name) const {                             \
     baseCheckParam(name);                                                 \
@@ -400,41 +400,41 @@ class HAYAKU_API Parameter {
   void baseCheckParam(const string& name) const;                          \
                                                                           \
  public:                                                                  \
-  const Parameter& getParameter() const { return m_params; }              \
+  const Parameter& getParameter() const { return params_; }              \
                                                                           \
   void setParameter(const Parameter& param) {                             \
-    m_params = param;                                                     \
-    for (auto iter = m_params.begin(); iter != m_params.end(); ++iter) {  \
+    params_ = param;                                                     \
+    for (auto iter = params_.begin(); iter != params_.end(); ++iter) {  \
       checkParam(iter->first);                                            \
     }                                                                     \
     paramChanged();                                                       \
   }                                                                       \
                                                                           \
   bool haveParam(const string& name) const noexcept {                     \
-    return m_params.have(name);                                           \
+    return params_.have(name);                                           \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   void setParam(const string& name, const ValueType& value) {             \
-    m_params.set<ValueType>(name, value);                                 \
+    params_.set<ValueType>(name, value);                                 \
     checkParam(name);                                                     \
     paramChanged();                                                       \
   }                                                                       \
   template <typename ValueType>                                           \
   void setParam(const string& name, ValueType&& value) {                  \
-    m_params.set<ValueType>(name, std::forward<ValueType>(value));        \
+    params_.set<ValueType>(name, std::forward<ValueType>(value));        \
     checkParam(name);                                                     \
     paramChanged();                                                       \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   ValueType getParam(const string& name) const {                          \
-    return m_params.get<ValueType>(name);                                 \
+    return params_.get<ValueType>(name);                                 \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
   ValueType tryGetParam(const string& name, const ValueType& val) const { \
-    return m_params.tryGet<ValueType>(name, val);                         \
+    return params_.tryGet<ValueType>(name, val);                         \
   }                                                                       \
                                                                           \
   template <typename ValueType>                                           \
@@ -451,8 +451,8 @@ class HAYAKU_API Parameter {
 template <typename ValueType>
 ValueType Parameter::get(const string& name) const {
   param_map_t::const_iterator iter;
-  iter = m_params.find(name);
-  if (iter == m_params.end()) {
+  iter = params_.find(name);
+  if (iter == params_.end()) {
     throw std::out_of_range("out_of_range in Parameter::get : " + name);
   }
   try {
@@ -476,35 +476,35 @@ void Parameter::set(const string& name, const ValueType& value) {
   if constexpr (std::same_as<std::decay_t<ValueType>, boost::any>) {
     if (!have(name)) {
       if (value.type() == typeid(int)) {
-        m_params[name] = static_cast<int64_t>(boost::any_cast<int>(value));
+        params_[name] = static_cast<int64_t>(boost::any_cast<int>(value));
       } else {
-        m_params[name] = value;
+        params_[name] = value;
       }
       return;
     }
 
-    if (strcmp(m_params[name].type().name(), value.type().name()) != 0) {
+    if (strcmp(params_[name].type().name(), value.type().name()) != 0) {
       throw std::logic_error("Mismatching type! need type " +
-                             string(m_params[name].type().name()) +
+                             string(params_[name].type().name()) +
                              " but value type is " +
                              string(value.type().name()));
     }
 
-    m_params[name] = value;
+    params_[name] = value;
 
   } else if constexpr (std::same_as<std::decay_t<ValueType>, int>) {
     if (!have(name)) {
-      m_params[name] = static_cast<int64_t>(value);
+      params_[name] = static_cast<int64_t>(value);
       return;
     }
 
-    if (m_params[name].type() != typeid(int64_t) &&
-        m_params[name].type() != typeid(int)) {
+    if (params_[name].type() != typeid(int64_t) &&
+        params_[name].type() != typeid(int)) {
       throw std::logic_error(
           "Mismatching type! need type int or int64_t, but value type is " +
           string(typeid(ValueType).name()));
     }
-    m_params[name] = static_cast<int64_t>(value);
+    params_[name] = static_cast<int64_t>(value);
 
   } else {
     if (!have(name)) {
@@ -512,25 +512,25 @@ void Parameter::set(const string& name, const ValueType& value) {
         throw std::logic_error("Unsuport Type! input valut type: " +
                                string(typeid(ValueType).name()));
       }
-      m_params[name] = value;
+      params_[name] = value;
       return;
     }
 
-    if (strcmp(m_params[name].type().name(), typeid(ValueType).name()) != 0) {
-      if ((m_params[name].type() == typeid(int) ||
-           m_params[name].type() == typeid(int64_t)) &&
+    if (strcmp(params_[name].type().name(), typeid(ValueType).name()) != 0) {
+      if ((params_[name].type() == typeid(int) ||
+           params_[name].type() == typeid(int64_t)) &&
           (typeid(ValueType) == typeid(int) ||
            typeid(ValueType) == typeid(int64_t))) {
         // Ignored, the setting is allowed
       } else {
         throw std::logic_error("Mismatching type! need type " +
-                               string(m_params[name].type().name()) +
+                               string(params_[name].type().name()) +
                                " but value type is " +
                                string(typeid(ValueType).name()));
       }
     }
 
-    m_params[name] = value;
+    params_[name] = value;
   }
 }
 
@@ -538,39 +538,39 @@ template <typename ValueType>
 void Parameter::set(const string& name, ValueType&& value) {
   if constexpr (std::same_as<std::decay_t<ValueType>, boost::any>) {
     if (!have(name)) {
-      m_params[name] = std::forward<ValueType>(value);
+      params_[name] = std::forward<ValueType>(value);
       return;
     }
 
-    if (strcmp(m_params[name].type().name(), typeid(ValueType).name()) != 0) {
-      if ((m_params[name].type() == typeid(int64_t) ||
-           m_params[name].type() == typeid(int)) &&
+    if (strcmp(params_[name].type().name(), typeid(ValueType).name()) != 0) {
+      if ((params_[name].type() == typeid(int64_t) ||
+           params_[name].type() == typeid(int)) &&
           (typeid(ValueType) == typeid(int64_t) ||
            typeid(ValueType) == typeid(int))) {
         // Ignored, the setting is allowed
       } else {
         throw std::logic_error("Mismatching type! need type " +
-                               string(m_params[name].type().name()) +
+                               string(params_[name].type().name()) +
                                " but value type is " +
                                string(typeid(ValueType).name()));
       }
     }
 
-    m_params[name] = std::forward<ValueType>(value);
+    params_[name] = std::forward<ValueType>(value);
 
   } else if constexpr (std::same_as<std::decay_t<ValueType>, int>) {
     if (!have(name)) {
-      m_params[name] = value;
+      params_[name] = value;
       return;
     }
 
-    if (m_params[name].type() != typeid(int64_t) &&
-        m_params[name].type() != typeid(int)) {
+    if (params_[name].type() != typeid(int64_t) &&
+        params_[name].type() != typeid(int)) {
       throw std::logic_error(
           "Mismatching type! need type int or int64_t, but value type is " +
           string(typeid(ValueType).name()));
     }
-    m_params[name] = static_cast<int64_t>(value);
+    params_[name] = static_cast<int64_t>(value);
 
   } else {
     if (!have(name)) {
@@ -578,33 +578,33 @@ void Parameter::set(const string& name, ValueType&& value) {
         throw std::logic_error("Unsuport Type! input valut type: " +
                                string(typeid(ValueType).name()));
       }
-      m_params[name] = std::forward<ValueType>(value);
+      params_[name] = std::forward<ValueType>(value);
       return;
     }
 
-    if (strcmp(m_params[name].type().name(), typeid(ValueType).name()) != 0) {
-      if ((m_params[name].type() == typeid(int) ||
-           m_params[name].type() == typeid(int64_t)) &&
+    if (strcmp(params_[name].type().name(), typeid(ValueType).name()) != 0) {
+      if ((params_[name].type() == typeid(int) ||
+           params_[name].type() == typeid(int64_t)) &&
           (typeid(ValueType) == typeid(int) ||
            typeid(ValueType) == typeid(int64_t))) {
         // Ignored, the setting is allowed
       } else {
         throw std::logic_error("Mismatching type! need type " +
-                               string(m_params[name].type().name()) +
+                               string(params_[name].type().name()) +
                                " but value type is " +
                                string(typeid(ValueType).name()));
       }
     }
 
-    m_params[name] = std::forward<ValueType>(value);
+    params_[name] = std::forward<ValueType>(value);
   }
 }
 
 template <>
 inline boost::any Parameter::get<boost::any>(const std::string& name) const {
   param_map_t::const_iterator iter;
-  iter = m_params.find(name);
-  if (iter == m_params.end()) {
+  iter = params_.find(name);
+  if (iter == params_.end()) {
     throw std::out_of_range("out_of_range in Parameter::get : " + name);
   }
   return iter->second;
@@ -613,8 +613,8 @@ inline boost::any Parameter::get<boost::any>(const std::string& name) const {
 template <>
 inline int Parameter::get(const string& name) const {
   param_map_t::const_iterator iter;
-  iter = m_params.find(name);
-  if (iter == m_params.end()) {
+  iter = params_.find(name);
+  if (iter == params_.end()) {
     throw std::out_of_range("out_of_range in Parameter::get : " + name);
   }
   try {
@@ -630,8 +630,8 @@ inline int Parameter::get(const string& name) const {
 template <>
 inline int64_t Parameter::get(const string& name) const {
   param_map_t::const_iterator iter;
-  iter = m_params.find(name);
-  if (iter == m_params.end()) {
+  iter = params_.find(name);
+  if (iter == params_.end()) {
     throw std::out_of_range("out_of_range in Parameter::get : " + name);
   }
   if (iter->second.type() == typeid(int64_t)) {

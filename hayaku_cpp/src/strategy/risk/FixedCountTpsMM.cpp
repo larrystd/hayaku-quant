@@ -18,8 +18,8 @@ FixedCountTpsMM::FixedCountTpsMM() : MoneyManagerBase("MM_FixedCountTpsMM") {}
 FixedCountTpsMM::FixedCountTpsMM(const vector<double>& buy_counts,
                                  const vector<double>& sell_counts)
     : MoneyManagerBase("MM_FixedCountTpsMM"),
-      m_buy_counts(buy_counts),
-      m_sell_counts(sell_counts) {
+      buy_counts_(buy_counts),
+      sell_counts_(sell_counts) {
   double total_buy_count = 0.0;
   for (size_t i = 0, total = buy_counts.size(); i < total; i++) {
     HAYAKU_CHECK(buy_counts[i] >= 0.0, "buy_counts[{}] must >= 0.0!", i);
@@ -43,8 +43,8 @@ FixedCountTpsMM::~FixedCountTpsMM() {}
 
 MoneyManagerPtr FixedCountTpsMM::_clone() {
   auto p = make_shared<FixedCountTpsMM>();
-  p->m_buy_counts = m_buy_counts;
-  p->m_sell_counts = m_sell_counts;
+  p->buy_counts_ = buy_counts_;
+  p->sell_counts_ = sell_counts_;
   return p;
 }
 
@@ -52,8 +52,8 @@ double FixedCountTpsMM::_getBuyNumber(const Datetime& datetime,
                                       const Stock& stock, price_t price,
                                       price_t risk, OrderOrigin origin) {
   size_t current_buy_count = currentBuyCount(stock);
-  return (current_buy_count < m_buy_counts.size())
-             ? m_buy_counts[current_buy_count]
+  return (current_buy_count < buy_counts_.size())
+             ? buy_counts_[current_buy_count]
              : 0.0;
 }
 
@@ -61,8 +61,8 @@ double FixedCountTpsMM::_getSellNumber(const Datetime& datetime,
                                        const Stock& stock, price_t price,
                                        price_t risk, OrderOrigin origin) {
   size_t current_sell_count = currentSellCount(stock);
-  return (current_sell_count < m_sell_counts.size())
-             ? m_sell_counts[current_sell_count]
+  return (current_sell_count < sell_counts_.size())
+             ? sell_counts_[current_sell_count]
              : 0.0;
 }
 

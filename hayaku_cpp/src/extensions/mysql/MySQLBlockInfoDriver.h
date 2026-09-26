@@ -31,8 +31,8 @@ class MySQLBlockInfoDriver : public BlockInfoDriver {
   DBConnectPtr getConnect();
 
  private:
-  unordered_map<string, unordered_map<string, Block>> m_buffer;
-  std::shared_mutex m_buffer_mutex;
+  unordered_map<string, unordered_map<string, Block>> buffer_;
+  std::shared_mutex buffer_mutex_;
 };
 
 }  // namespace hayaku

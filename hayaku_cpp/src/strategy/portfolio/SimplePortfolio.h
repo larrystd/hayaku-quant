@@ -30,12 +30,12 @@ class HAYAKU_API SimplePortfolio : public Portfolio {
 
  private:
   internal::StrategyRuntimeList
-      m_dlist_sys_list;  // The systems that cannot execute a sell because the
+      dlist_sys_list_;  // The systems that cannot execute a sell because the
                          // security is delisted (the whole assets are lost)
   StrategyWeightList
-      m_delay_adjust_sys_list;  // System list of the delayed rebalancing sells
-  StrategyWeightList m_tmp_selected_list;
-  StrategyWeightList m_tmp_will_remove_sys;
+      delay_adjust_sys_list_;  // System list of the delayed rebalancing sells
+  StrategyWeightList tmp_selected_list_;
+  StrategyWeightList tmp_will_remove_sys_;
 
 //============================================
 // Serialization support

@@ -22,15 +22,15 @@ class KDataTempCsvDriver : public KDataDriver {
   virtual ~KDataTempCsvDriver() override;
 
   void setDayFileName(const string& day_filename) {
-    m_day_filename = day_filename;
+    day_filename_ = day_filename;
   }
 
   void setMinFileName(const string& min_filename) {
-    m_min_filename = min_filename;
+    min_filename_ = min_filename;
   }
 
   virtual KDataDriverPtr _clone() override {
-    return std::make_shared<KDataTempCsvDriver>(m_day_filename, m_min_filename);
+    return std::make_shared<KDataTempCsvDriver>(day_filename_, min_filename_);
   }
 
   virtual bool isIndexFirst() override { return false; }
@@ -79,8 +79,8 @@ class KDataTempCsvDriver : public KDataDriver {
                                      const KQuery::KType& kType);
 
  private:
-  string m_day_filename;
-  string m_min_filename;
+  string day_filename_;
+  string min_filename_;
 
   enum COLUMN {
     DATE = 0,
@@ -93,8 +93,8 @@ class KDataTempCsvDriver : public KDataDriver {
     LAST = 7
   };
 
-  size_t m_column[LAST];
-  vector<string> m_token_buf;
+  size_t column_[LAST];
+  vector<string> token_buf_;
 };
 
 } /* namespace hayaku */
